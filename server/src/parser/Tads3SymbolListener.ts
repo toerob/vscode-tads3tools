@@ -1,8 +1,8 @@
 import { DocumentSymbol, Range, SymbolKind } from 'vscode-languageserver';
-import { FunctionDeclarationContext, ObjectDeclarationContext } from './T3ParserParser';
-import { T3ParserListener } from './T3ParserListener';
+import { FunctionDeclarationContext, ObjectDeclarationContext } from './Tads3Parser';
+import { Tads3Listener } from './Tads3Listener';
 
-export default class Tads3SymbolListener implements T3ParserListener {
+export default class Tads3SymbolListener implements Tads3Listener {
 
 	symbols: DocumentSymbol[] = [];
 

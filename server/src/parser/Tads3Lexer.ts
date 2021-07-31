@@ -1,4 +1,4 @@
-// Generated from client/src/extension/modules/parser/T3Parser.g4 by ANTLR 4.9.0-SNAPSHOT
+// Generated from server/src/parser/Tads3.g4 by ANTLR 4.9.0-SNAPSHOT
 
 
 import { ATN } from "antlr4ts/atn/ATN";
@@ -15,7 +15,7 @@ import { VocabularyImpl } from "antlr4ts/VocabularyImpl";
 import * as Utils from "antlr4ts/misc/Utils";
 
 
-export class T3ParserLexer extends Lexer {
+export class Tads3Lexer extends Lexer {
 	public static readonly GRAMMAR = 1;
 	public static readonly SWITCH = 2;
 	public static readonly CASE = 3;
@@ -168,35 +168,35 @@ export class T3ParserLexer extends Lexer {
 		"LTEQ", "ARITHMETIC_LEFT", "LT", "GTEQ", "GT", "ARITHMETIC_RIGHT", "LOGICAL_RIGHT_SHIFT", 
 		"COMMENT", "LINE_COMMENT", "WS", "ANY",
 	];
-	public static readonly VOCABULARY: Vocabulary = new VocabularyImpl(T3ParserLexer._LITERAL_NAMES, T3ParserLexer._SYMBOLIC_NAMES, []);
+	public static readonly VOCABULARY: Vocabulary = new VocabularyImpl(Tads3Lexer._LITERAL_NAMES, Tads3Lexer._SYMBOLIC_NAMES, []);
 
 	// @Override
 	// @NotNull
 	public get vocabulary(): Vocabulary {
-		return T3ParserLexer.VOCABULARY;
+		return Tads3Lexer.VOCABULARY;
 	}
 	// tslint:enable:no-trailing-whitespace
 
 
 	constructor(input: CharStream) {
 		super(input);
-		this._interp = new LexerATNSimulator(T3ParserLexer._ATN, this);
+		this._interp = new LexerATNSimulator(Tads3Lexer._ATN, this);
 	}
 
 	// @Override
-	public get grammarFileName(): string { return "T3Parser.g4"; }
+	public get grammarFileName(): string { return "Tads3.g4"; }
 
 	// @Override
-	public get ruleNames(): string[] { return T3ParserLexer.ruleNames; }
+	public get ruleNames(): string[] { return Tads3Lexer.ruleNames; }
 
 	// @Override
-	public get serializedATN(): string { return T3ParserLexer._serializedATN; }
+	public get serializedATN(): string { return Tads3Lexer._serializedATN; }
 
 	// @Override
-	public get channelNames(): string[] { return T3ParserLexer.channelNames; }
+	public get channelNames(): string[] { return Tads3Lexer.channelNames; }
 
 	// @Override
-	public get modeNames(): string[] { return T3ParserLexer.modeNames; }
+	public get modeNames(): string[] { return Tads3Lexer.modeNames; }
 
 	private static readonly _serializedATNSegments: number = 2;
 	private static readonly _serializedATNSegment0: string =
@@ -536,18 +536,18 @@ export class T3ParserLexer extends Lexer {
 		"\u02C7\u02CB\x04\b\x02\x02\x02\x03\x02";
 	public static readonly _serializedATN: string = Utils.join(
 		[
-			T3ParserLexer._serializedATNSegment0,
-			T3ParserLexer._serializedATNSegment1,
+			Tads3Lexer._serializedATNSegment0,
+			Tads3Lexer._serializedATNSegment1,
 		],
 		"",
 	);
 	public static __ATN: ATN;
 	public static get _ATN(): ATN {
-		if (!T3ParserLexer.__ATN) {
-			T3ParserLexer.__ATN = new ATNDeserializer().deserialize(Utils.toCharArray(T3ParserLexer._serializedATN));
+		if (!Tads3Lexer.__ATN) {
+			Tads3Lexer.__ATN = new ATNDeserializer().deserialize(Utils.toCharArray(Tads3Lexer._serializedATN));
 		}
 
-		return T3ParserLexer.__ATN;
+		return Tads3Lexer.__ATN;
 	}
 
 }

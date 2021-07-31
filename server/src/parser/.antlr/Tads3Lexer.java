@@ -1,4 +1,4 @@
-// Generated from /Users/tomasoberg/repos/vscode-tads3tools/server/src/parser/T3.g4 by ANTLR 4.8
+// Generated from /Users/tomasoberg/repos/vscode-tads3tools/server/src/parser/Tads3.g4 by ANTLR 4.8
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.*;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
-public class T3ParserLexer extends Lexer {
+public class Tads3Lexer extends Lexer {
 	static { RuntimeMetaData.checkVersion("4.8", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
@@ -128,13 +128,13 @@ public class T3ParserLexer extends Lexer {
 	}
 
 
-	public T3ParserLexer(CharStream input) {
+	public Tads3Lexer(CharStream input) {
 		super(input);
 		_interp = new LexerATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 
 	@Override
-	public String getGrammarFileName() { return "T3.g4"; }
+	public String getGrammarFileName() { return "Tads3.g4"; }
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }

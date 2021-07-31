@@ -1,4 +1,4 @@
-// Generated from client/src/extension/modules/parser/T3Parser.g4 by ANTLR 4.9.0-SNAPSHOT
+// Generated from server/src/parser/Tads3.g4 by ANTLR 4.9.0-SNAPSHOT
 
 
 import { ATN } from "antlr4ts/atn/ATN";
@@ -23,11 +23,9 @@ import { VocabularyImpl } from "antlr4ts/VocabularyImpl";
 
 import * as Utils from "antlr4ts/misc/Utils";
 
-import { T3ParserListener } from "./T3ParserListener";
-import { T3ParserVisitor } from "./T3ParserVisitor";
+import { Tads3Listener } from "./Tads3Listener";
 
-
-export class T3ParserParser extends Parser {
+export class Tads3Parser extends Parser {
 	public static readonly GRAMMAR = 1;
 	public static readonly SWITCH = 2;
 	public static readonly CASE = 3;
@@ -221,23 +219,23 @@ export class T3ParserParser extends Parser {
 		"LTEQ", "ARITHMETIC_LEFT", "LT", "GTEQ", "GT", "ARITHMETIC_RIGHT", "LOGICAL_RIGHT_SHIFT", 
 		"COMMENT", "LINE_COMMENT", "WS", "ANY",
 	];
-	public static readonly VOCABULARY: Vocabulary = new VocabularyImpl(T3ParserParser._LITERAL_NAMES, T3ParserParser._SYMBOLIC_NAMES, []);
+	public static readonly VOCABULARY: Vocabulary = new VocabularyImpl(Tads3Parser._LITERAL_NAMES, Tads3Parser._SYMBOLIC_NAMES, []);
 
 	// @Override
 	// @NotNull
 	public get vocabulary(): Vocabulary {
-		return T3ParserParser.VOCABULARY;
+		return Tads3Parser.VOCABULARY;
 	}
 	// tslint:enable:no-trailing-whitespace
 
 	// @Override
-	public get grammarFileName(): string { return "T3Parser.g4"; }
+	public get grammarFileName(): string { return "Tads3.g4"; }
 
 	// @Override
-	public get ruleNames(): string[] { return T3ParserParser.ruleNames; }
+	public get ruleNames(): string[] { return Tads3Parser.ruleNames; }
 
 	// @Override
-	public get serializedATN(): string { return T3ParserParser._serializedATN; }
+	public get serializedATN(): string { return Tads3Parser._serializedATN; }
 
 	protected createFailedPredicateException(predicate?: string, message?: string): FailedPredicateException {
 		return new FailedPredicateException(this, predicate, message);
@@ -245,12 +243,12 @@ export class T3ParserParser extends Parser {
 
 	constructor(input: TokenStream) {
 		super(input);
-		this._interp = new ParserATNSimulator(T3ParserParser._ATN, this);
+		this._interp = new ParserATNSimulator(Tads3Parser._ATN, this);
 	}
 	// @RuleVersion(0)
 	public program(): ProgramContext {
 		let _localctx: ProgramContext = new ProgramContext(this._ctx, this.state);
-		this.enterRule(_localctx, 0, T3ParserParser.RULE_program);
+		this.enterRule(_localctx, 0, Tads3Parser.RULE_program);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
@@ -258,7 +256,7 @@ export class T3ParserParser extends Parser {
 			this.state = 109;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (((((_la - 1)) & ~0x1F) === 0 && ((1 << (_la - 1)) & ((1 << (T3ParserParser.GRAMMAR - 1)) | (1 << (T3ParserParser.FUNCTION - 1)) | (1 << (T3ParserParser.ENUM - 1)) | (1 << (T3ParserParser.CLASS - 1)) | (1 << (T3ParserParser.TRANSIENT - 1)) | (1 << (T3ParserParser.MODIFY - 1)) | (1 << (T3ParserParser.REPLACE - 1)) | (1 << (T3ParserParser.INTRINSIC - 1)) | (1 << (T3ParserParser.PROPERTY - 1)) | (1 << (T3ParserParser.DICTIONARY - 1)) | (1 << (T3ParserParser.EXPORT - 1)) | (1 << (T3ParserParser.EXTERN - 1)))) !== 0) || ((((_la - 34)) & ~0x1F) === 0 && ((1 << (_la - 34)) & ((1 << (T3ParserParser.STATIC - 34)) | (1 << (T3ParserParser.STRING - 34)) | (1 << (T3ParserParser.IN - 34)) | (1 << (T3ParserParser.PLUS - 34)) | (1 << (T3ParserParser.ID - 34)))) !== 0)) {
+			while (((((_la - 1)) & ~0x1F) === 0 && ((1 << (_la - 1)) & ((1 << (Tads3Parser.GRAMMAR - 1)) | (1 << (Tads3Parser.FUNCTION - 1)) | (1 << (Tads3Parser.ENUM - 1)) | (1 << (Tads3Parser.CLASS - 1)) | (1 << (Tads3Parser.TRANSIENT - 1)) | (1 << (Tads3Parser.MODIFY - 1)) | (1 << (Tads3Parser.REPLACE - 1)) | (1 << (Tads3Parser.INTRINSIC - 1)) | (1 << (Tads3Parser.PROPERTY - 1)) | (1 << (Tads3Parser.DICTIONARY - 1)) | (1 << (Tads3Parser.EXPORT - 1)) | (1 << (Tads3Parser.EXTERN - 1)))) !== 0) || ((((_la - 34)) & ~0x1F) === 0 && ((1 << (_la - 34)) & ((1 << (Tads3Parser.STATIC - 34)) | (1 << (Tads3Parser.STRING - 34)) | (1 << (Tads3Parser.IN - 34)) | (1 << (Tads3Parser.PLUS - 34)) | (1 << (Tads3Parser.ID - 34)))) !== 0)) {
 				{
 				{
 				this.state = 106;
@@ -271,7 +269,7 @@ export class T3ParserParser extends Parser {
 				_la = this._input.LA(1);
 			}
 			this.state = 112;
-			this.match(T3ParserParser.EOF);
+			this.match(Tads3Parser.EOF);
 			}
 		}
 		catch (re) {
@@ -291,7 +289,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public directive(): DirectiveContext {
 		let _localctx: DirectiveContext = new DirectiveContext(this._ctx, this.state);
-		this.enterRule(_localctx, 2, T3ParserParser.RULE_directive);
+		this.enterRule(_localctx, 2, Tads3Parser.RULE_directive);
 		try {
 			this.state = 123;
 			this._errHandler.sync(this);
@@ -386,7 +384,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public grammarDeclaration(): GrammarDeclarationContext {
 		let _localctx: GrammarDeclarationContext = new GrammarDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 4, T3ParserParser.RULE_grammarDeclaration);
+		this.enterRule(_localctx, 4, Tads3Parser.RULE_grammarDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
@@ -394,73 +392,73 @@ export class T3ParserParser extends Parser {
 			this.state = 127;
 			this._errHandler.sync(this);
 			switch (this._input.LA(1)) {
-			case T3ParserParser.MODIFY:
+			case Tads3Parser.MODIFY:
 				{
 				this.state = 125;
-				_localctx._isModify = this.match(T3ParserParser.MODIFY);
+				_localctx._isModify = this.match(Tads3Parser.MODIFY);
 				}
 				break;
-			case T3ParserParser.REPLACE:
+			case Tads3Parser.REPLACE:
 				{
 				this.state = 126;
-				_localctx._isReplace = this.match(T3ParserParser.REPLACE);
+				_localctx._isReplace = this.match(Tads3Parser.REPLACE);
 				}
 				break;
-			case T3ParserParser.GRAMMAR:
+			case Tads3Parser.GRAMMAR:
 				break;
 			default:
 				break;
 			}
 			this.state = 129;
-			this.match(T3ParserParser.GRAMMAR);
+			this.match(Tads3Parser.GRAMMAR);
 			this.state = 130;
 			_localctx._prodName = this.identifierAtom();
 			this.state = 135;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (_la === T3ParserParser.LEFT_PAREN) {
+			if (_la === Tads3Parser.LEFT_PAREN) {
 				{
 				this.state = 131;
-				this.match(T3ParserParser.LEFT_PAREN);
+				this.match(Tads3Parser.LEFT_PAREN);
 				this.state = 132;
 				_localctx._tag = this.identifierAtom();
 				this.state = 133;
-				this.match(T3ParserParser.RIGHT_PAREN);
+				this.match(Tads3Parser.RIGHT_PAREN);
 				}
 			}
 
 			this.state = 137;
-			this.match(T3ParserParser.COLON);
+			this.match(Tads3Parser.COLON);
 			this.state = 138;
 			this.grammarRules();
 			this.state = 139;
-			this.match(T3ParserParser.COLON);
+			this.match(Tads3Parser.COLON);
 			this.state = 140;
 			this.superTypes();
 			this.state = 143;
 			this._errHandler.sync(this);
 			switch (this._input.LA(1)) {
-			case T3ParserParser.LEFT_CURLY:
+			case Tads3Parser.LEFT_CURLY:
 				{
 				this.state = 141;
 				this.curlyObjectBody();
 				}
 				break;
-			case T3ParserParser.FUNCTION:
-			case T3ParserParser.PROPERTYSET:
-			case T3ParserParser.EXTERN:
-			case T3ParserParser.STATIC:
-			case T3ParserParser.STRING:
-			case T3ParserParser.IN:
-			case T3ParserParser.AT:
-			case T3ParserParser.PLUS:
-			case T3ParserParser.ARROW:
-			case T3ParserParser.ID:
-			case T3ParserParser.SEMICOLON:
-			case T3ParserParser.LEFT_BRACKET:
-			case T3ParserParser.DSTR:
-			case T3ParserParser.SSTR:
-			case T3ParserParser.RIGHT_CURLY:
+			case Tads3Parser.FUNCTION:
+			case Tads3Parser.PROPERTYSET:
+			case Tads3Parser.EXTERN:
+			case Tads3Parser.STATIC:
+			case Tads3Parser.STRING:
+			case Tads3Parser.IN:
+			case Tads3Parser.AT:
+			case Tads3Parser.PLUS:
+			case Tads3Parser.ARROW:
+			case Tads3Parser.ID:
+			case Tads3Parser.SEMICOLON:
+			case Tads3Parser.LEFT_BRACKET:
+			case Tads3Parser.DSTR:
+			case Tads3Parser.SSTR:
+			case Tads3Parser.RIGHT_CURLY:
 				{
 				this.state = 142;
 				this.semiColonEndedObjectBody();
@@ -488,7 +486,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public grammarRules(): GrammarRulesContext {
 		let _localctx: GrammarRulesContext = new GrammarRulesContext(this._ctx, this.state);
-		this.enterRule(_localctx, 6, T3ParserParser.RULE_grammarRules);
+		this.enterRule(_localctx, 6, Tads3Parser.RULE_grammarRules);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
@@ -498,11 +496,11 @@ export class T3ParserParser extends Parser {
 			this.state = 150;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (_la === T3ParserParser.BITWISE_OR) {
+			while (_la === Tads3Parser.BITWISE_OR) {
 				{
 				{
 				this.state = 146;
-				this.match(T3ParserParser.BITWISE_OR);
+				this.match(Tads3Parser.BITWISE_OR);
 				this.state = 147;
 				this.itemList();
 				}
@@ -530,7 +528,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public itemList(): ItemListContext {
 		let _localctx: ItemListContext = new ItemListContext(this._ctx, this.state);
-		this.enterRule(_localctx, 8, T3ParserParser.RULE_itemList);
+		this.enterRule(_localctx, 8, Tads3Parser.RULE_itemList);
 		try {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
@@ -580,18 +578,18 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public qualifiers(): QualifiersContext {
 		let _localctx: QualifiersContext = new QualifiersContext(this._ctx, this.state);
-		this.enterRule(_localctx, 10, T3ParserParser.RULE_qualifiers);
+		this.enterRule(_localctx, 10, Tads3Parser.RULE_qualifiers);
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 162;
-			this.match(T3ParserParser.LEFT_BRACKET);
+			this.match(Tads3Parser.LEFT_BRACKET);
 			this.state = 163;
 			this.identifierAtom();
 			this.state = 164;
-			this.match(T3ParserParser.NR);
+			this.match(Tads3Parser.NR);
 			this.state = 165;
-			this.match(T3ParserParser.RIGHT_BRACKET);
+			this.match(Tads3Parser.RIGHT_BRACKET);
 			}
 		}
 		catch (re) {
@@ -622,7 +620,7 @@ export class T3ParserParser extends Parser {
 		let _localctx: ItemContext = new ItemContext(this._ctx, _parentState);
 		let _prevctx: ItemContext = _localctx;
 		let _startState: number = 12;
-		this.enterRecursionRule(_localctx, 12, T3ParserParser.RULE_item, _p);
+		this.enterRecursionRule(_localctx, 12, Tads3Parser.RULE_item, _p);
 		let _la: number;
 		try {
 			let _alt: number;
@@ -634,7 +632,7 @@ export class T3ParserParser extends Parser {
 			case 1:
 				{
 				this.state = 168;
-				this.match(T3ParserParser.LEFT_PAREN);
+				this.match(Tads3Parser.LEFT_PAREN);
 				this.state = 170;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
@@ -648,16 +646,16 @@ export class T3ParserParser extends Parser {
 					this.state = 172;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
-				} while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.BITWISE_OR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0));
+				} while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.BITWISE_OR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0));
 				this.state = 174;
-				this.match(T3ParserParser.RIGHT_PAREN);
+				this.match(Tads3Parser.RIGHT_PAREN);
 				}
 				break;
 
 			case 2:
 				{
 				this.state = 176;
-				this.match(T3ParserParser.BITWISE_OR);
+				this.match(Tads3Parser.BITWISE_OR);
 				this.state = 177;
 				this.item(3);
 				}
@@ -673,7 +671,7 @@ export class T3ParserParser extends Parser {
 			case 4:
 				{
 				this.state = 179;
-				this.match(T3ParserParser.STAR);
+				this.match(Tads3Parser.STAR);
 				}
 				break;
 			}
@@ -690,13 +688,13 @@ export class T3ParserParser extends Parser {
 					{
 					{
 					_localctx = new ItemContext(_parentctx, _parentState);
-					this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_item);
+					this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_item);
 					this.state = 182;
 					if (!(this.precpred(this._ctx, 4))) {
 						throw this.createFailedPredicateException("this.precpred(this._ctx, 4)");
 					}
 					this.state = 183;
-					this.match(T3ParserParser.BITWISE_OR);
+					this.match(Tads3Parser.BITWISE_OR);
 					}
 					}
 				}
@@ -723,7 +721,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public templateDeclaration(): TemplateDeclarationContext {
 		let _localctx: TemplateDeclarationContext = new TemplateDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 14, T3ParserParser.RULE_templateDeclaration);
+		this.enterRule(_localctx, 14, Tads3Parser.RULE_templateDeclaration);
 		let _la: number;
 		try {
 			this.state = 215;
@@ -735,7 +733,7 @@ export class T3ParserParser extends Parser {
 				this.state = 189;
 				_localctx._className = this.identifierAtom();
 				this.state = 190;
-				this.match(T3ParserParser.TEMPLATE);
+				this.match(Tads3Parser.TEMPLATE);
 				this.state = 195;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
@@ -748,10 +746,10 @@ export class T3ParserParser extends Parser {
 					this.state = 193;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
-					if (_la === T3ParserParser.OPTIONAL) {
+					if (_la === Tads3Parser.OPTIONAL) {
 						{
 						this.state = 192;
-						this.match(T3ParserParser.OPTIONAL);
+						this.match(Tads3Parser.OPTIONAL);
 						}
 					}
 
@@ -760,9 +758,9 @@ export class T3ParserParser extends Parser {
 					this.state = 197;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
-				} while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0));
+				} while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0));
 				this.state = 199;
-				this.match(T3ParserParser.SEMICOLON);
+				this.match(Tads3Parser.SEMICOLON);
 				}
 				break;
 
@@ -770,31 +768,31 @@ export class T3ParserParser extends Parser {
 				this.enterOuterAlt(_localctx, 2);
 				{
 				this.state = 201;
-				this.match(T3ParserParser.STRING);
+				this.match(Tads3Parser.STRING);
 				this.state = 202;
-				this.match(T3ParserParser.TEMPLATE);
+				this.match(Tads3Parser.TEMPLATE);
 				this.state = 203;
-				this.match(T3ParserParser.ARITHMETIC_LEFT);
+				this.match(Tads3Parser.ARITHMETIC_LEFT);
 				this.state = 208;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				while (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (T3ParserParser.STRING - 35)) | (1 << (T3ParserParser.IN - 35)) | (1 << (T3ParserParser.ID - 35)))) !== 0) || _la === T3ParserParser.STAR) {
+				while (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0) || _la === Tads3Parser.STAR) {
 					{
 					this.state = 206;
 					this._errHandler.sync(this);
 					switch (this._input.LA(1)) {
-					case T3ParserParser.STRING:
-					case T3ParserParser.IN:
-					case T3ParserParser.ID:
+					case Tads3Parser.STRING:
+					case Tads3Parser.IN:
+					case Tads3Parser.ID:
 						{
 						this.state = 204;
 						this.identifierAtom();
 						}
 						break;
-					case T3ParserParser.STAR:
+					case Tads3Parser.STAR:
 						{
 						this.state = 205;
-						this.match(T3ParserParser.STAR);
+						this.match(Tads3Parser.STAR);
 						}
 						break;
 					default:
@@ -806,11 +804,11 @@ export class T3ParserParser extends Parser {
 					_la = this._input.LA(1);
 				}
 				this.state = 211;
-				this.match(T3ParserParser.ARITHMETIC_RIGHT);
+				this.match(Tads3Parser.ARITHMETIC_RIGHT);
 				this.state = 212;
 				_localctx._templateId = this.identifierAtom();
 				this.state = 213;
-				this.match(T3ParserParser.SEMICOLON);
+				this.match(Tads3Parser.SEMICOLON);
 				}
 				break;
 			}
@@ -832,20 +830,20 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public enumDeclaration(): EnumDeclarationContext {
 		let _localctx: EnumDeclarationContext = new EnumDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 16, T3ParserParser.RULE_enumDeclaration);
+		this.enterRule(_localctx, 16, Tads3Parser.RULE_enumDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 217;
-			this.match(T3ParserParser.ENUM);
+			this.match(Tads3Parser.ENUM);
 			this.state = 219;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (_la === T3ParserParser.TOKEN) {
+			if (_la === Tads3Parser.TOKEN) {
 				{
 				this.state = 218;
-				_localctx._isToken = this.match(T3ParserParser.TOKEN);
+				_localctx._isToken = this.match(Tads3Parser.TOKEN);
 				}
 			}
 
@@ -854,11 +852,11 @@ export class T3ParserParser extends Parser {
 			this.state = 226;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (_la === T3ParserParser.COMMA) {
+			while (_la === Tads3Parser.COMMA) {
 				{
 				{
 				this.state = 222;
-				this.match(T3ParserParser.COMMA);
+				this.match(Tads3Parser.COMMA);
 				this.state = 223;
 				this.identifierAtom();
 				}
@@ -868,7 +866,7 @@ export class T3ParserParser extends Parser {
 				_la = this._input.LA(1);
 			}
 			this.state = 229;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -888,7 +886,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public propertyDeclaration(): PropertyDeclarationContext {
 		let _localctx: PropertyDeclarationContext = new PropertyDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 18, T3ParserParser.RULE_propertyDeclaration);
+		this.enterRule(_localctx, 18, Tads3Parser.RULE_propertyDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
@@ -896,11 +894,11 @@ export class T3ParserParser extends Parser {
 			this.state = 234;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (_la === T3ParserParser.PLUS) {
+			while (_la === Tads3Parser.PLUS) {
 				{
 				{
 				this.state = 231;
-				_localctx._level = this.match(T3ParserParser.PLUS);
+				_localctx._level = this.match(Tads3Parser.PLUS);
 				}
 				}
 				this.state = 236;
@@ -908,18 +906,18 @@ export class T3ParserParser extends Parser {
 				_la = this._input.LA(1);
 			}
 			this.state = 237;
-			_localctx._isProperty = this.match(T3ParserParser.PROPERTY);
+			_localctx._isProperty = this.match(Tads3Parser.PROPERTY);
 			this.state = 238;
 			_localctx._identifierAtom = this.identifierAtom();
 			_localctx._identifiers.push(_localctx._identifierAtom);
 			this.state = 243;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (_la === T3ParserParser.COMMA) {
+			while (_la === Tads3Parser.COMMA) {
 				{
 				{
 				this.state = 239;
-				this.match(T3ParserParser.COMMA);
+				this.match(Tads3Parser.COMMA);
 				this.state = 240;
 				_localctx._identifierAtom = this.identifierAtom();
 				_localctx._identifiers.push(_localctx._identifierAtom);
@@ -930,7 +928,7 @@ export class T3ParserParser extends Parser {
 				_la = this._input.LA(1);
 			}
 			this.state = 246;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -950,7 +948,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public dictionaryDeclaration(): DictionaryDeclarationContext {
 		let _localctx: DictionaryDeclarationContext = new DictionaryDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 20, T3ParserParser.RULE_dictionaryDeclaration);
+		this.enterRule(_localctx, 20, Tads3Parser.RULE_dictionaryDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
@@ -958,11 +956,11 @@ export class T3ParserParser extends Parser {
 			this.state = 251;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (_la === T3ParserParser.PLUS) {
+			while (_la === Tads3Parser.PLUS) {
 				{
 				{
 				this.state = 248;
-				_localctx._level = this.match(T3ParserParser.PLUS);
+				_localctx._level = this.match(Tads3Parser.PLUS);
 				}
 				}
 				this.state = 253;
@@ -970,14 +968,14 @@ export class T3ParserParser extends Parser {
 				_la = this._input.LA(1);
 			}
 			this.state = 254;
-			this.match(T3ParserParser.DICTIONARY);
+			this.match(Tads3Parser.DICTIONARY);
 			this.state = 256;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (_la === T3ParserParser.PROPERTY) {
+			if (_la === Tads3Parser.PROPERTY) {
 				{
 				this.state = 255;
-				_localctx._isProperty = this.match(T3ParserParser.PROPERTY);
+				_localctx._isProperty = this.match(Tads3Parser.PROPERTY);
 				}
 			}
 
@@ -987,11 +985,11 @@ export class T3ParserParser extends Parser {
 			this.state = 263;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (_la === T3ParserParser.COMMA) {
+			while (_la === Tads3Parser.COMMA) {
 				{
 				{
 				this.state = 259;
-				this.match(T3ParserParser.COMMA);
+				this.match(Tads3Parser.COMMA);
 				this.state = 260;
 				_localctx._identifierAtom = this.identifierAtom();
 				_localctx._identifiers.push(_localctx._identifierAtom);
@@ -1002,7 +1000,7 @@ export class T3ParserParser extends Parser {
 				_la = this._input.LA(1);
 			}
 			this.state = 266;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -1022,27 +1020,27 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public exportDeclaration(): ExportDeclarationContext {
 		let _localctx: ExportDeclarationContext = new ExportDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 22, T3ParserParser.RULE_exportDeclaration);
+		this.enterRule(_localctx, 22, Tads3Parser.RULE_exportDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 268;
-			this.match(T3ParserParser.EXPORT);
+			this.match(Tads3Parser.EXPORT);
 			this.state = 269;
 			this.identifierAtom();
 			this.state = 271;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (_la === T3ParserParser.SSTR) {
+			if (_la === Tads3Parser.SSTR) {
 				{
 				this.state = 270;
-				this.match(T3ParserParser.SSTR);
+				this.match(Tads3Parser.SSTR);
 				}
 			}
 
 			this.state = 273;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -1062,27 +1060,27 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public intrinsicDeclaration(): IntrinsicDeclarationContext {
 		let _localctx: IntrinsicDeclarationContext = new IntrinsicDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 24, T3ParserParser.RULE_intrinsicDeclaration);
+		this.enterRule(_localctx, 24, Tads3Parser.RULE_intrinsicDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 275;
-			this.match(T3ParserParser.INTRINSIC);
+			this.match(Tads3Parser.INTRINSIC);
 			this.state = 277;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (_la === T3ParserParser.CLASS) {
+			if (_la === Tads3Parser.CLASS) {
 				{
 				this.state = 276;
-				this.match(T3ParserParser.CLASS);
+				this.match(Tads3Parser.CLASS);
 				}
 			}
 
 			this.state = 280;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (T3ParserParser.STRING - 35)) | (1 << (T3ParserParser.IN - 35)) | (1 << (T3ParserParser.ID - 35)))) !== 0)) {
+			if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0)) {
 				{
 				this.state = 279;
 				_localctx._name = this.identifierAtom();
@@ -1092,11 +1090,11 @@ export class T3ParserParser extends Parser {
 			this.state = 283;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (_la === T3ParserParser.DSTR || _la === T3ParserParser.SSTR) {
+			if (_la === Tads3Parser.DSTR || _la === Tads3Parser.SSTR) {
 				{
 				this.state = 282;
 				_la = this._input.LA(1);
-				if (!(_la === T3ParserParser.DSTR || _la === T3ParserParser.SSTR)) {
+				if (!(_la === Tads3Parser.DSTR || _la === Tads3Parser.SSTR)) {
 				this._errHandler.recoverInline(this);
 				} else {
 					if (this._input.LA(1) === Token.EOF) {
@@ -1112,21 +1110,21 @@ export class T3ParserParser extends Parser {
 			this.state = 287;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (_la === T3ParserParser.COLON) {
+			if (_la === Tads3Parser.COLON) {
 				{
 				this.state = 285;
-				this.match(T3ParserParser.COLON);
+				this.match(Tads3Parser.COLON);
 				this.state = 286;
 				this.superTypes();
 				}
 			}
 
 			this.state = 289;
-			this.match(T3ParserParser.LEFT_CURLY);
+			this.match(Tads3Parser.LEFT_CURLY);
 			this.state = 293;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (((((_la - 34)) & ~0x1F) === 0 && ((1 << (_la - 34)) & ((1 << (T3ParserParser.STATIC - 34)) | (1 << (T3ParserParser.STRING - 34)) | (1 << (T3ParserParser.IN - 34)) | (1 << (T3ParserParser.ID - 34)))) !== 0)) {
+			while (((((_la - 34)) & ~0x1F) === 0 && ((1 << (_la - 34)) & ((1 << (Tads3Parser.STATIC - 34)) | (1 << (Tads3Parser.STRING - 34)) | (1 << (Tads3Parser.IN - 34)) | (1 << (Tads3Parser.ID - 34)))) !== 0)) {
 				{
 				{
 				this.state = 290;
@@ -1139,7 +1137,7 @@ export class T3ParserParser extends Parser {
 				_la = this._input.LA(1);
 			}
 			this.state = 296;
-			this.match(T3ParserParser.RIGHT_CURLY);
+			this.match(Tads3Parser.RIGHT_CURLY);
 			}
 		}
 		catch (re) {
@@ -1159,7 +1157,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public intrinsicMethodDeclaration(): IntrinsicMethodDeclarationContext {
 		let _localctx: IntrinsicMethodDeclarationContext = new IntrinsicMethodDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 26, T3ParserParser.RULE_intrinsicMethodDeclaration);
+		this.enterRule(_localctx, 26, Tads3Parser.RULE_intrinsicMethodDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
@@ -1167,10 +1165,10 @@ export class T3ParserParser extends Parser {
 			this.state = 299;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (_la === T3ParserParser.STATIC) {
+			if (_la === Tads3Parser.STATIC) {
 				{
 				this.state = 298;
-				this.match(T3ParserParser.STATIC);
+				this.match(Tads3Parser.STATIC);
 				}
 			}
 
@@ -1178,11 +1176,11 @@ export class T3ParserParser extends Parser {
 			this.identifierAtom();
 			{
 			this.state = 302;
-			this.match(T3ParserParser.LEFT_PAREN);
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 304;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.SPREAD - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
 				this.state = 303;
 				this.params();
@@ -1190,10 +1188,10 @@ export class T3ParserParser extends Parser {
 			}
 
 			this.state = 306;
-			this.match(T3ParserParser.RIGHT_PAREN);
+			this.match(Tads3Parser.RIGHT_PAREN);
 			}
 			this.state = 308;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -1213,7 +1211,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public objectDeclaration(): ObjectDeclarationContext {
 		let _localctx: ObjectDeclarationContext = new ObjectDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 28, T3ParserParser.RULE_objectDeclaration);
+		this.enterRule(_localctx, 28, Tads3Parser.RULE_objectDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
@@ -1226,10 +1224,10 @@ export class T3ParserParser extends Parser {
 				this.state = 311;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === T3ParserParser.MODIFY) {
+				if (_la === Tads3Parser.MODIFY) {
 					{
 					this.state = 310;
-					_localctx._isModify = this.match(T3ParserParser.MODIFY);
+					_localctx._isModify = this.match(Tads3Parser.MODIFY);
 					}
 				}
 
@@ -1241,10 +1239,10 @@ export class T3ParserParser extends Parser {
 				this.state = 314;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === T3ParserParser.REPLACE) {
+				if (_la === Tads3Parser.REPLACE) {
 					{
 					this.state = 313;
-					_localctx._isReplace = this.match(T3ParserParser.REPLACE);
+					_localctx._isReplace = this.match(Tads3Parser.REPLACE);
 					}
 				}
 
@@ -1256,10 +1254,10 @@ export class T3ParserParser extends Parser {
 				this.state = 317;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === T3ParserParser.CLASS) {
+				if (_la === Tads3Parser.CLASS) {
 					{
 					this.state = 316;
-					_localctx._isClass = this.match(T3ParserParser.CLASS);
+					_localctx._isClass = this.match(Tads3Parser.CLASS);
 					}
 				}
 
@@ -1269,11 +1267,11 @@ export class T3ParserParser extends Parser {
 			this.state = 324;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (_la === T3ParserParser.PLUS) {
+			while (_la === Tads3Parser.PLUS) {
 				{
 				{
 				this.state = 321;
-				_localctx._PLUS = this.match(T3ParserParser.PLUS);
+				_localctx._PLUS = this.match(Tads3Parser.PLUS);
 				_localctx._level.push(_localctx._PLUS);
 				}
 				}
@@ -1297,17 +1295,17 @@ export class T3ParserParser extends Parser {
 				this.state = 329;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === T3ParserParser.TRANSIENT) {
+				if (_la === Tads3Parser.TRANSIENT) {
 					{
 					this.state = 328;
-					_localctx._isTransient = this.match(T3ParserParser.TRANSIENT);
+					_localctx._isTransient = this.match(Tads3Parser.TRANSIENT);
 					}
 				}
 
 				this.state = 331;
 				_localctx._id = this.identifierAtom();
 				this.state = 332;
-				this.match(T3ParserParser.COLON);
+				this.match(Tads3Parser.COLON);
 				this.state = 333;
 				this.superTypes();
 				}
@@ -1317,27 +1315,27 @@ export class T3ParserParser extends Parser {
 			this.state = 339;
 			this._errHandler.sync(this);
 			switch (this._input.LA(1)) {
-			case T3ParserParser.LEFT_CURLY:
+			case Tads3Parser.LEFT_CURLY:
 				{
 				this.state = 337;
 				this.curlyObjectBody();
 				}
 				break;
-			case T3ParserParser.FUNCTION:
-			case T3ParserParser.PROPERTYSET:
-			case T3ParserParser.EXTERN:
-			case T3ParserParser.STATIC:
-			case T3ParserParser.STRING:
-			case T3ParserParser.IN:
-			case T3ParserParser.AT:
-			case T3ParserParser.PLUS:
-			case T3ParserParser.ARROW:
-			case T3ParserParser.ID:
-			case T3ParserParser.SEMICOLON:
-			case T3ParserParser.LEFT_BRACKET:
-			case T3ParserParser.DSTR:
-			case T3ParserParser.SSTR:
-			case T3ParserParser.RIGHT_CURLY:
+			case Tads3Parser.FUNCTION:
+			case Tads3Parser.PROPERTYSET:
+			case Tads3Parser.EXTERN:
+			case Tads3Parser.STATIC:
+			case Tads3Parser.STRING:
+			case Tads3Parser.IN:
+			case Tads3Parser.AT:
+			case Tads3Parser.PLUS:
+			case Tads3Parser.ARROW:
+			case Tads3Parser.ID:
+			case Tads3Parser.SEMICOLON:
+			case Tads3Parser.LEFT_BRACKET:
+			case Tads3Parser.DSTR:
+			case Tads3Parser.SSTR:
+			case Tads3Parser.RIGHT_CURLY:
 				{
 				this.state = 338;
 				this.semiColonEndedObjectBody();
@@ -1365,7 +1363,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public templateExpr(): TemplateExprContext {
 		let _localctx: TemplateExprContext = new TemplateExprContext(this._ctx, this.state);
-		this.enterRule(_localctx, 30, T3ParserParser.RULE_templateExpr);
+		this.enterRule(_localctx, 30, Tads3Parser.RULE_templateExpr);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
@@ -1373,58 +1371,58 @@ export class T3ParserParser extends Parser {
 			this.state = 362;
 			this._errHandler.sync(this);
 			switch (this._input.LA(1)) {
-			case T3ParserParser.SSTR:
+			case Tads3Parser.SSTR:
 				{
 				this.state = 341;
-				_localctx._singleString = this.match(T3ParserParser.SSTR);
+				_localctx._singleString = this.match(Tads3Parser.SSTR);
 				this.state = 343;
 				this._errHandler.sync(this);
 				switch ( this.interpreter.adaptivePredict(this._input, 39, this._ctx) ) {
 				case 1:
 					{
 					this.state = 342;
-					this.match(T3ParserParser.SEMICOLON);
+					this.match(Tads3Parser.SEMICOLON);
 					}
 					break;
 				}
 				}
 				break;
-			case T3ParserParser.AT:
+			case Tads3Parser.AT:
 				{
 				this.state = 345;
-				this.match(T3ParserParser.AT);
+				this.match(Tads3Parser.AT);
 				this.state = 346;
 				_localctx._atLocation = this.identifierAtom();
 				}
 				break;
-			case T3ParserParser.DSTR:
+			case Tads3Parser.DSTR:
 				{
 				this.state = 347;
-				_localctx._doubleString = this.match(T3ParserParser.DSTR);
+				_localctx._doubleString = this.match(Tads3Parser.DSTR);
 				this.state = 349;
 				this._errHandler.sync(this);
 				switch ( this.interpreter.adaptivePredict(this._input, 40, this._ctx) ) {
 				case 1:
 					{
 					this.state = 348;
-					this.match(T3ParserParser.SEMICOLON);
+					this.match(Tads3Parser.SEMICOLON);
 					}
 					break;
 				}
 				}
 				break;
-			case T3ParserParser.PLUS:
+			case Tads3Parser.PLUS:
 				{
 				this.state = 351;
-				this.match(T3ParserParser.PLUS);
+				this.match(Tads3Parser.PLUS);
 				this.state = 352;
-				_localctx._number = this.match(T3ParserParser.NR);
+				_localctx._number = this.match(Tads3Parser.NR);
 				}
 				break;
-			case T3ParserParser.ARROW:
+			case Tads3Parser.ARROW:
 				{
 				this.state = 353;
-				this.match(T3ParserParser.ARROW);
+				this.match(Tads3Parser.ARROW);
 				this.state = 356;
 				this._errHandler.sync(this);
 				switch ( this.interpreter.adaptivePredict(this._input, 41, this._ctx) ) {
@@ -1444,14 +1442,14 @@ export class T3ParserParser extends Parser {
 				}
 				}
 				break;
-			case T3ParserParser.LEFT_BRACKET:
+			case Tads3Parser.LEFT_BRACKET:
 				{
 				this.state = 358;
-				this.match(T3ParserParser.LEFT_BRACKET);
+				this.match(Tads3Parser.LEFT_BRACKET);
 				this.state = 359;
 				this.array();
 				this.state = 360;
-				this.match(T3ParserParser.RIGHT_BRACKET);
+				this.match(Tads3Parser.RIGHT_BRACKET);
 				}
 				break;
 			default:
@@ -1460,10 +1458,10 @@ export class T3ParserParser extends Parser {
 			this.state = 365;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (_la === T3ParserParser.OPTIONAL) {
+			if (_la === Tads3Parser.OPTIONAL) {
 				{
 				this.state = 364;
-				this.match(T3ParserParser.OPTIONAL);
+				this.match(Tads3Parser.OPTIONAL);
 				}
 			}
 
@@ -1486,7 +1484,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public array(): ArrayContext {
 		let _localctx: ArrayContext = new ArrayContext(this._ctx, this.state);
-		this.enterRule(_localctx, 32, T3ParserParser.RULE_array);
+		this.enterRule(_localctx, 32, Tads3Parser.RULE_array);
 		try {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
@@ -1501,7 +1499,7 @@ export class T3ParserParser extends Parser {
 					{
 					{
 					this.state = 368;
-					this.match(T3ParserParser.COMMA);
+					this.match(Tads3Parser.COMMA);
 					this.state = 369;
 					this.array();
 					}
@@ -1530,16 +1528,16 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public curlyObjectBody(): CurlyObjectBodyContext {
 		let _localctx: CurlyObjectBodyContext = new CurlyObjectBodyContext(this._ctx, this.state);
-		this.enterRule(_localctx, 34, T3ParserParser.RULE_curlyObjectBody);
+		this.enterRule(_localctx, 34, Tads3Parser.RULE_curlyObjectBody);
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 375;
-			this.match(T3ParserParser.LEFT_CURLY);
+			this.match(Tads3Parser.LEFT_CURLY);
 			this.state = 376;
 			this.objectBody();
 			this.state = 377;
-			this.match(T3ParserParser.RIGHT_CURLY);
+			this.match(Tads3Parser.RIGHT_CURLY);
 			}
 		}
 		catch (re) {
@@ -1559,14 +1557,14 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public semiColonEndedObjectBody(): SemiColonEndedObjectBodyContext {
 		let _localctx: SemiColonEndedObjectBodyContext = new SemiColonEndedObjectBodyContext(this._ctx, this.state);
-		this.enterRule(_localctx, 36, T3ParserParser.RULE_semiColonEndedObjectBody);
+		this.enterRule(_localctx, 36, Tads3Parser.RULE_semiColonEndedObjectBody);
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 379;
 			this.objectBody();
 			this.state = 380;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -1586,7 +1584,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public superTypes(): SuperTypesContext {
 		let _localctx: SuperTypesContext = new SuperTypesContext(this._ctx, this.state);
-		this.enterRule(_localctx, 38, T3ParserParser.RULE_superTypes);
+		this.enterRule(_localctx, 38, Tads3Parser.RULE_superTypes);
 		try {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
@@ -1602,7 +1600,7 @@ export class T3ParserParser extends Parser {
 					{
 					{
 					this.state = 383;
-					this.match(T3ParserParser.COMMA);
+					this.match(Tads3Parser.COMMA);
 					this.state = 384;
 					this.superTypes();
 					}
@@ -1631,7 +1629,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public objectBody(): ObjectBodyContext {
 		let _localctx: ObjectBodyContext = new ObjectBodyContext(this._ctx, this.state);
-		this.enterRule(_localctx, 40, T3ParserParser.RULE_objectBody);
+		this.enterRule(_localctx, 40, Tads3Parser.RULE_objectBody);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
@@ -1640,7 +1638,7 @@ export class T3ParserParser extends Parser {
 			this.state = 393;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (((((_la - 47)) & ~0x1F) === 0 && ((1 << (_la - 47)) & ((1 << (T3ParserParser.AT - 47)) | (1 << (T3ParserParser.PLUS - 47)) | (1 << (T3ParserParser.ARROW - 47)) | (1 << (T3ParserParser.LEFT_BRACKET - 47)))) !== 0) || _la === T3ParserParser.DSTR || _la === T3ParserParser.SSTR) {
+			while (((((_la - 47)) & ~0x1F) === 0 && ((1 << (_la - 47)) & ((1 << (Tads3Parser.AT - 47)) | (1 << (Tads3Parser.PLUS - 47)) | (1 << (Tads3Parser.ARROW - 47)) | (1 << (Tads3Parser.LEFT_BRACKET - 47)))) !== 0) || _la === Tads3Parser.DSTR || _la === Tads3Parser.SSTR) {
 				{
 				{
 				this.state = 390;
@@ -1656,7 +1654,7 @@ export class T3ParserParser extends Parser {
 			this.state = 401;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (((((_la - 5)) & ~0x1F) === 0 && ((1 << (_la - 5)) & ((1 << (T3ParserParser.FUNCTION - 5)) | (1 << (T3ParserParser.PROPERTYSET - 5)) | (1 << (T3ParserParser.EXTERN - 5)) | (1 << (T3ParserParser.STATIC - 5)) | (1 << (T3ParserParser.STRING - 5)))) !== 0) || _la === T3ParserParser.IN || _la === T3ParserParser.ID) {
+			while (((((_la - 5)) & ~0x1F) === 0 && ((1 << (_la - 5)) & ((1 << (Tads3Parser.FUNCTION - 5)) | (1 << (Tads3Parser.PROPERTYSET - 5)) | (1 << (Tads3Parser.EXTERN - 5)) | (1 << (Tads3Parser.STATIC - 5)) | (1 << (Tads3Parser.STRING - 5)))) !== 0) || _la === Tads3Parser.IN || _la === Tads3Parser.ID) {
 				{
 				this.state = 399;
 				this._errHandler.sync(this);
@@ -1709,7 +1707,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public property(): PropertyContext {
 		let _localctx: PropertyContext = new PropertyContext(this._ctx, this.state);
-		this.enterRule(_localctx, 42, T3ParserParser.RULE_property);
+		this.enterRule(_localctx, 42, Tads3Parser.RULE_property);
 		let _la: number;
 		try {
 			this.state = 438;
@@ -1731,19 +1729,19 @@ export class T3ParserParser extends Parser {
 				case 2:
 					{
 					this.state = 405;
-					this.match(T3ParserParser.IN);
+					this.match(Tads3Parser.IN);
 					}
 					break;
 				}
 				this.state = 408;
-				this.match(T3ParserParser.ASSIGN);
+				this.match(Tads3Parser.ASSIGN);
 				this.state = 410;
 				this._errHandler.sync(this);
 				switch ( this.interpreter.adaptivePredict(this._input, 50, this._ctx) ) {
 				case 1:
 					{
 					this.state = 409;
-					this.match(T3ParserParser.STATIC);
+					this.match(Tads3Parser.STATIC);
 					}
 					break;
 				}
@@ -1770,7 +1768,7 @@ export class T3ParserParser extends Parser {
 				case 1:
 					{
 					this.state = 416;
-					this.match(T3ParserParser.SEMICOLON);
+					this.match(Tads3Parser.SEMICOLON);
 					}
 					break;
 				}
@@ -1793,16 +1791,16 @@ export class T3ParserParser extends Parser {
 				case 2:
 					{
 					this.state = 420;
-					this.match(T3ParserParser.IN);
+					this.match(Tads3Parser.IN);
 					}
 					break;
 				}
 				this.state = 423;
-				this.match(T3ParserParser.COLON);
+				this.match(Tads3Parser.COLON);
 				this.state = 425;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (T3ParserParser.STRING - 35)) | (1 << (T3ParserParser.IN - 35)) | (1 << (T3ParserParser.ID - 35)))) !== 0)) {
+				if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0)) {
 					{
 					this.state = 424;
 					_localctx._objectName = this.identifierAtom();
@@ -1812,11 +1810,11 @@ export class T3ParserParser extends Parser {
 				this.state = 431;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				while (_la === T3ParserParser.COMMA) {
+				while (_la === Tads3Parser.COMMA) {
 					{
 					{
 					this.state = 427;
-					this.match(T3ParserParser.COMMA);
+					this.match(Tads3Parser.COMMA);
 					this.state = 428;
 					this.superTypes();
 					}
@@ -1833,7 +1831,7 @@ export class T3ParserParser extends Parser {
 				case 1:
 					{
 					this.state = 435;
-					this.match(T3ParserParser.SEMICOLON);
+					this.match(Tads3Parser.SEMICOLON);
 					}
 					break;
 				}
@@ -1858,7 +1856,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public dictionaryProperty(): DictionaryPropertyContext {
 		let _localctx: DictionaryPropertyContext = new DictionaryPropertyContext(this._ctx, this.state);
-		this.enterRule(_localctx, 44, T3ParserParser.RULE_dictionaryProperty);
+		this.enterRule(_localctx, 44, Tads3Parser.RULE_dictionaryProperty);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
@@ -1866,11 +1864,11 @@ export class T3ParserParser extends Parser {
 			this.state = 443;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (_la === T3ParserParser.SSTR) {
+			while (_la === Tads3Parser.SSTR) {
 				{
 				{
 				this.state = 440;
-				this.match(T3ParserParser.SSTR);
+				this.match(Tads3Parser.SSTR);
 				}
 				}
 				this.state = 445;
@@ -1896,7 +1894,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public propertySet(): PropertySetContext {
 		let _localctx: PropertySetContext = new PropertySetContext(this._ctx, this.state);
-		this.enterRule(_localctx, 46, T3ParserParser.RULE_propertySet);
+		this.enterRule(_localctx, 46, Tads3Parser.RULE_propertySet);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
@@ -1907,7 +1905,7 @@ export class T3ParserParser extends Parser {
 			case 1:
 				{
 				this.state = 446;
-				this.match(T3ParserParser.PROPERTYSET);
+				this.match(Tads3Parser.PROPERTYSET);
 				this.state = 447;
 				this.paramsWithWildcard();
 				}
@@ -1916,13 +1914,13 @@ export class T3ParserParser extends Parser {
 			case 2:
 				{
 				this.state = 448;
-				this.match(T3ParserParser.PROPERTYSET);
+				this.match(Tads3Parser.PROPERTYSET);
 				this.state = 449;
-				this.match(T3ParserParser.LEFT_PAREN);
+				this.match(Tads3Parser.LEFT_PAREN);
 				this.state = 451;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (((((_la - 24)) & ~0x1F) === 0 && ((1 << (_la - 24)) & ((1 << (T3ParserParser.TRUE - 24)) | (1 << (T3ParserParser.NIL - 24)) | (1 << (T3ParserParser.INHERITED - 24)) | (1 << (T3ParserParser.STRING - 24)) | (1 << (T3ParserParser.IN - 24)) | (1 << (T3ParserParser.AMP - 24)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)))) !== 0)) {
+				if (((((_la - 24)) & ~0x1F) === 0 && ((1 << (_la - 24)) & ((1 << (Tads3Parser.TRUE - 24)) | (1 << (Tads3Parser.NIL - 24)) | (1 << (Tads3Parser.INHERITED - 24)) | (1 << (Tads3Parser.STRING - 24)) | (1 << (Tads3Parser.IN - 24)) | (1 << (Tads3Parser.AMP - 24)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)))) !== 0)) {
 					{
 					this.state = 450;
 					this.paramsWithWildcard();
@@ -1930,7 +1928,7 @@ export class T3ParserParser extends Parser {
 				}
 
 				this.state = 453;
-				this.match(T3ParserParser.RIGHT_PAREN);
+				this.match(Tads3Parser.RIGHT_PAREN);
 				}
 				break;
 			}
@@ -1955,7 +1953,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public paramsWithWildcard(): ParamsWithWildcardContext {
 		let _localctx: ParamsWithWildcardContext = new ParamsWithWildcardContext(this._ctx, this.state);
-		this.enterRule(_localctx, 48, T3ParserParser.RULE_paramsWithWildcard);
+		this.enterRule(_localctx, 48, Tads3Parser.RULE_paramsWithWildcard);
 		try {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
@@ -1963,28 +1961,28 @@ export class T3ParserParser extends Parser {
 			this.state = 460;
 			this._errHandler.sync(this);
 			switch (this._input.LA(1)) {
-			case T3ParserParser.TRUE:
-			case T3ParserParser.NIL:
-			case T3ParserParser.INHERITED:
-			case T3ParserParser.STRING:
-			case T3ParserParser.IN:
-			case T3ParserParser.AMP:
-			case T3ParserParser.ID:
-			case T3ParserParser.NR:
-			case T3ParserParser.HEX:
-			case T3ParserParser.DSTR:
-			case T3ParserParser.SSTR:
-			case T3ParserParser.RSTR:
+			case Tads3Parser.TRUE:
+			case Tads3Parser.NIL:
+			case Tads3Parser.INHERITED:
+			case Tads3Parser.STRING:
+			case Tads3Parser.IN:
+			case Tads3Parser.AMP:
+			case Tads3Parser.ID:
+			case Tads3Parser.NR:
+			case Tads3Parser.HEX:
+			case Tads3Parser.DSTR:
+			case Tads3Parser.SSTR:
+			case Tads3Parser.RSTR:
 				{
 				this.state = 458;
 				_localctx._primary = this.primary();
 				_localctx._parameters.push(_localctx._primary);
 				}
 				break;
-			case T3ParserParser.STAR:
+			case Tads3Parser.STAR:
 				{
 				this.state = 459;
-				this.match(T3ParserParser.STAR);
+				this.match(Tads3Parser.STAR);
 				}
 				break;
 			default:
@@ -1998,7 +1996,7 @@ export class T3ParserParser extends Parser {
 					{
 					{
 					this.state = 462;
-					this.match(T3ParserParser.COMMA);
+					this.match(Tads3Parser.COMMA);
 					this.state = 463;
 					this.paramsWithWildcard();
 					}
@@ -2027,7 +2025,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public functionDeclaration(): FunctionDeclarationContext {
 		let _localctx: FunctionDeclarationContext = new FunctionDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 50, T3ParserParser.RULE_functionDeclaration);
+		this.enterRule(_localctx, 50, Tads3Parser.RULE_functionDeclaration);
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
@@ -2054,7 +2052,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public functionHead(): FunctionHeadContext {
 		let _localctx: FunctionHeadContext = new FunctionHeadContext(this._ctx, this.state);
-		this.enterRule(_localctx, 52, T3ParserParser.RULE_functionHead);
+		this.enterRule(_localctx, 52, Tads3Parser.RULE_functionHead);
 		let _la: number;
 		try {
 			this.state = 497;
@@ -2066,30 +2064,30 @@ export class T3ParserParser extends Parser {
 				this.state = 473;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === T3ParserParser.EXTERN) {
+				if (_la === Tads3Parser.EXTERN) {
 					{
 					this.state = 472;
-					_localctx._isExtern = this.match(T3ParserParser.EXTERN);
+					_localctx._isExtern = this.match(Tads3Parser.EXTERN);
 					}
 				}
 
 				this.state = 476;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === T3ParserParser.STATIC) {
+				if (_la === Tads3Parser.STATIC) {
 					{
 					this.state = 475;
-					_localctx._isStatic = this.match(T3ParserParser.STATIC);
+					_localctx._isStatic = this.match(Tads3Parser.STATIC);
 					}
 				}
 
 				this.state = 479;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === T3ParserParser.FUNCTION) {
+				if (_la === Tads3Parser.FUNCTION) {
 					{
 					this.state = 478;
-					this.match(T3ParserParser.FUNCTION);
+					this.match(Tads3Parser.FUNCTION);
 					}
 				}
 
@@ -2101,11 +2099,11 @@ export class T3ParserParser extends Parser {
 				case 1:
 					{
 					this.state = 482;
-					this.match(T3ParserParser.LEFT_PAREN);
+					this.match(Tads3Parser.LEFT_PAREN);
 					this.state = 484;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
-					if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.SPREAD - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+					if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 						{
 						this.state = 483;
 						this.params();
@@ -2113,7 +2111,7 @@ export class T3ParserParser extends Parser {
 					}
 
 					this.state = 486;
-					this.match(T3ParserParser.RIGHT_PAREN);
+					this.match(Tads3Parser.RIGHT_PAREN);
 					}
 					break;
 				}
@@ -2124,18 +2122,18 @@ export class T3ParserParser extends Parser {
 				this.enterOuterAlt(_localctx, 2);
 				{
 				this.state = 489;
-				this.match(T3ParserParser.FUNCTION);
+				this.match(Tads3Parser.FUNCTION);
 				this.state = 495;
 				this._errHandler.sync(this);
 				switch ( this.interpreter.adaptivePredict(this._input, 69, this._ctx) ) {
 				case 1:
 					{
 					this.state = 490;
-					this.match(T3ParserParser.LEFT_PAREN);
+					this.match(Tads3Parser.LEFT_PAREN);
 					this.state = 492;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
-					if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.SPREAD - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+					if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 						{
 						this.state = 491;
 						this.params();
@@ -2143,7 +2141,7 @@ export class T3ParserParser extends Parser {
 					}
 
 					this.state = 494;
-					this.match(T3ParserParser.RIGHT_PAREN);
+					this.match(Tads3Parser.RIGHT_PAREN);
 					}
 					break;
 				}
@@ -2168,7 +2166,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public codeBlock(): CodeBlockContext {
 		let _localctx: CodeBlockContext = new CodeBlockContext(this._ctx, this.state);
-		this.enterRule(_localctx, 54, T3ParserParser.RULE_codeBlock);
+		this.enterRule(_localctx, 54, Tads3Parser.RULE_codeBlock);
 		let _la: number;
 		try {
 			this.state = 508;
@@ -2178,11 +2176,11 @@ export class T3ParserParser extends Parser {
 				this.enterOuterAlt(_localctx, 1);
 				{
 				this.state = 499;
-				this.match(T3ParserParser.LEFT_CURLY);
+				this.match(Tads3Parser.LEFT_CURLY);
 				this.state = 503;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.SWITCH) | (1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.THROW) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.FOR) | (1 << T3ParserParser.TRY) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.IF) | (1 << T3ParserParser.DO) | (1 << T3ParserParser.WHILE) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.RETURN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.FOREACH - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.BREAK - 32)) | (1 << (T3ParserParser.CONTINUE - 32)) | (1 << (T3ParserParser.GOTO - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.SEMICOLON - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+				while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.SWITCH) | (1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.THROW) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.FOR) | (1 << Tads3Parser.TRY) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.IF) | (1 << Tads3Parser.DO) | (1 << Tads3Parser.WHILE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.RETURN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.FOREACH - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.BREAK - 32)) | (1 << (Tads3Parser.CONTINUE - 32)) | (1 << (Tads3Parser.GOTO - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.SEMICOLON - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 					{
 					{
 					this.state = 500;
@@ -2194,7 +2192,7 @@ export class T3ParserParser extends Parser {
 					_la = this._input.LA(1);
 				}
 				this.state = 506;
-				this.match(T3ParserParser.RIGHT_CURLY);
+				this.match(Tads3Parser.RIGHT_CURLY);
 				}
 				break;
 
@@ -2224,7 +2222,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public stats(): StatsContext {
 		let _localctx: StatsContext = new StatsContext(this._ctx, this.state);
-		this.enterRule(_localctx, 56, T3ParserParser.RULE_stats);
+		this.enterRule(_localctx, 56, Tads3Parser.RULE_stats);
 		try {
 			this.state = 527;
 			this._errHandler.sync(this);
@@ -2383,17 +2381,17 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public gotoStatement(): GotoStatementContext {
 		let _localctx: GotoStatementContext = new GotoStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 58, T3ParserParser.RULE_gotoStatement);
+		this.enterRule(_localctx, 58, Tads3Parser.RULE_gotoStatement);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 529;
-			this.match(T3ParserParser.GOTO);
+			this.match(Tads3Parser.GOTO);
 			this.state = 531;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (T3ParserParser.STRING - 35)) | (1 << (T3ParserParser.IN - 35)) | (1 << (T3ParserParser.ID - 35)))) !== 0)) {
+			if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0)) {
 				{
 				this.state = 530;
 				_localctx._label = this.identifierAtom();
@@ -2401,7 +2399,7 @@ export class T3ParserParser extends Parser {
 			}
 
 			this.state = 533;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -2421,17 +2419,17 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public breakStatement(): BreakStatementContext {
 		let _localctx: BreakStatementContext = new BreakStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 60, T3ParserParser.RULE_breakStatement);
+		this.enterRule(_localctx, 60, Tads3Parser.RULE_breakStatement);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 535;
-			this.match(T3ParserParser.BREAK);
+			this.match(Tads3Parser.BREAK);
 			this.state = 537;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (T3ParserParser.STRING - 35)) | (1 << (T3ParserParser.IN - 35)) | (1 << (T3ParserParser.ID - 35)))) !== 0)) {
+			if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0)) {
 				{
 				this.state = 536;
 				_localctx._label = this.identifierAtom();
@@ -2439,7 +2437,7 @@ export class T3ParserParser extends Parser {
 			}
 
 			this.state = 539;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -2459,17 +2457,17 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public continueStatement(): ContinueStatementContext {
 		let _localctx: ContinueStatementContext = new ContinueStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 62, T3ParserParser.RULE_continueStatement);
+		this.enterRule(_localctx, 62, Tads3Parser.RULE_continueStatement);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 541;
-			this.match(T3ParserParser.CONTINUE);
+			this.match(Tads3Parser.CONTINUE);
 			this.state = 543;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (T3ParserParser.STRING - 35)) | (1 << (T3ParserParser.IN - 35)) | (1 << (T3ParserParser.ID - 35)))) !== 0)) {
+			if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0)) {
 				{
 				this.state = 542;
 				_localctx._label = this.identifierAtom();
@@ -2477,7 +2475,7 @@ export class T3ParserParser extends Parser {
 			}
 
 			this.state = 545;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -2497,14 +2495,14 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public labelStatement(): LabelStatementContext {
 		let _localctx: LabelStatementContext = new LabelStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 64, T3ParserParser.RULE_labelStatement);
+		this.enterRule(_localctx, 64, Tads3Parser.RULE_labelStatement);
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 547;
 			this.identifierAtom();
 			this.state = 548;
-			this.match(T3ParserParser.COLON);
+			this.match(Tads3Parser.COLON);
 			}
 		}
 		catch (re) {
@@ -2524,33 +2522,33 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public switchStatement(): SwitchStatementContext {
 		let _localctx: SwitchStatementContext = new SwitchStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 66, T3ParserParser.RULE_switchStatement);
+		this.enterRule(_localctx, 66, Tads3Parser.RULE_switchStatement);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 550;
-			this.match(T3ParserParser.SWITCH);
+			this.match(Tads3Parser.SWITCH);
 			this.state = 551;
-			this.match(T3ParserParser.LEFT_PAREN);
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 552;
 			this.expr(0);
 			this.state = 553;
-			this.match(T3ParserParser.RIGHT_PAREN);
+			this.match(Tads3Parser.RIGHT_PAREN);
 			this.state = 554;
-			this.match(T3ParserParser.LEFT_CURLY);
+			this.match(Tads3Parser.LEFT_CURLY);
 			this.state = 569;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			while (_la === T3ParserParser.CASE) {
+			while (_la === Tads3Parser.CASE) {
 				{
 				{
 				this.state = 555;
-				this.match(T3ParserParser.CASE);
+				this.match(Tads3Parser.CASE);
 				this.state = 556;
 				this.primary();
 				this.state = 557;
-				this.match(T3ParserParser.COLON);
+				this.match(Tads3Parser.COLON);
 				this.state = 565;
 				this._errHandler.sync(this);
 				switch ( this.interpreter.adaptivePredict(this._input, 78, this._ctx) ) {
@@ -2566,7 +2564,7 @@ export class T3ParserParser extends Parser {
 					this.state = 562;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
-					while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.SWITCH) | (1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.THROW) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.FOR) | (1 << T3ParserParser.TRY) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.IF) | (1 << T3ParserParser.DO) | (1 << T3ParserParser.WHILE) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.RETURN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.FOREACH - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.BREAK - 32)) | (1 << (T3ParserParser.CONTINUE - 32)) | (1 << (T3ParserParser.GOTO - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.SEMICOLON - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+					while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.SWITCH) | (1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.THROW) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.FOR) | (1 << Tads3Parser.TRY) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.IF) | (1 << Tads3Parser.DO) | (1 << Tads3Parser.WHILE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.RETURN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.FOREACH - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.BREAK - 32)) | (1 << (Tads3Parser.CONTINUE - 32)) | (1 << (Tads3Parser.GOTO - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.SEMICOLON - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 						{
 						{
 						this.state = 559;
@@ -2589,16 +2587,16 @@ export class T3ParserParser extends Parser {
 			this.state = 580;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (_la === T3ParserParser.DEFAULT) {
+			if (_la === Tads3Parser.DEFAULT) {
 				{
 				this.state = 572;
-				this.match(T3ParserParser.DEFAULT);
+				this.match(Tads3Parser.DEFAULT);
 				this.state = 573;
-				this.match(T3ParserParser.COLON);
+				this.match(Tads3Parser.COLON);
 				this.state = 577;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.SWITCH) | (1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.THROW) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.FOR) | (1 << T3ParserParser.TRY) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.IF) | (1 << T3ParserParser.DO) | (1 << T3ParserParser.WHILE) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.RETURN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.FOREACH - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.BREAK - 32)) | (1 << (T3ParserParser.CONTINUE - 32)) | (1 << (T3ParserParser.GOTO - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.SEMICOLON - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+				while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.SWITCH) | (1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.THROW) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.FOR) | (1 << Tads3Parser.TRY) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.IF) | (1 << Tads3Parser.DO) | (1 << Tads3Parser.WHILE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.RETURN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.FOREACH - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.BREAK - 32)) | (1 << (Tads3Parser.CONTINUE - 32)) | (1 << (Tads3Parser.GOTO - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.SEMICOLON - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 					{
 					{
 					this.state = 574;
@@ -2613,7 +2611,7 @@ export class T3ParserParser extends Parser {
 			}
 
 			this.state = 582;
-			this.match(T3ParserParser.RIGHT_CURLY);
+			this.match(Tads3Parser.RIGHT_CURLY);
 			}
 		}
 		catch (re) {
@@ -2633,12 +2631,12 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public throwStatement(): ThrowStatementContext {
 		let _localctx: ThrowStatementContext = new ThrowStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 68, T3ParserParser.RULE_throwStatement);
+		this.enterRule(_localctx, 68, Tads3Parser.RULE_throwStatement);
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 584;
-			this.match(T3ParserParser.THROW);
+			this.match(Tads3Parser.THROW);
 			this.state = 585;
 			this.expr(0);
 			}
@@ -2660,24 +2658,24 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public forInStatement(): ForInStatementContext {
 		let _localctx: ForInStatementContext = new ForInStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 70, T3ParserParser.RULE_forInStatement);
+		this.enterRule(_localctx, 70, Tads3Parser.RULE_forInStatement);
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 587;
-			this.match(T3ParserParser.FOR);
+			this.match(Tads3Parser.FOR);
 			this.state = 588;
-			this.match(T3ParserParser.LEFT_PAREN);
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 589;
-			this.match(T3ParserParser.LOCAL);
+			this.match(Tads3Parser.LOCAL);
 			this.state = 590;
-			this.match(T3ParserParser.ID);
+			this.match(Tads3Parser.ID);
 			this.state = 591;
-			this.match(T3ParserParser.IN);
+			this.match(Tads3Parser.IN);
 			this.state = 592;
 			this.expr(0);
 			this.state = 593;
-			this.match(T3ParserParser.RIGHT_PAREN);
+			this.match(Tads3Parser.RIGHT_PAREN);
 			this.state = 594;
 			this.codeBlock();
 			}
@@ -2699,22 +2697,22 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public forEachStatement(): ForEachStatementContext {
 		let _localctx: ForEachStatementContext = new ForEachStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 72, T3ParserParser.RULE_forEachStatement);
+		this.enterRule(_localctx, 72, Tads3Parser.RULE_forEachStatement);
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 596;
-			this.match(T3ParserParser.FOREACH);
+			this.match(Tads3Parser.FOREACH);
 			this.state = 597;
-			this.match(T3ParserParser.LEFT_PAREN);
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 598;
 			this.expr(0);
 			this.state = 599;
-			this.match(T3ParserParser.IN);
+			this.match(Tads3Parser.IN);
 			this.state = 600;
 			this.expr(0);
 			this.state = 601;
-			this.match(T3ParserParser.RIGHT_PAREN);
+			this.match(Tads3Parser.RIGHT_PAREN);
 			this.state = 602;
 			this.codeBlock();
 			}
@@ -2736,17 +2734,17 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public returnStatement(): ReturnStatementContext {
 		let _localctx: ReturnStatementContext = new ReturnStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 74, T3ParserParser.RULE_returnStatement);
+		this.enterRule(_localctx, 74, Tads3Parser.RULE_returnStatement);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 604;
-			this.match(T3ParserParser.RETURN);
+			this.match(Tads3Parser.RETURN);
 			this.state = 606;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
 				this.state = 605;
 				this.expr(0);
@@ -2754,7 +2752,7 @@ export class T3ParserParser extends Parser {
 			}
 
 			this.state = 608;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -2774,23 +2772,23 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public doWhileStatement(): DoWhileStatementContext {
 		let _localctx: DoWhileStatementContext = new DoWhileStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 76, T3ParserParser.RULE_doWhileStatement);
+		this.enterRule(_localctx, 76, Tads3Parser.RULE_doWhileStatement);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 610;
-			this.match(T3ParserParser.DO);
+			this.match(Tads3Parser.DO);
 			this.state = 611;
 			this.codeBlock();
 			this.state = 612;
-			this.match(T3ParserParser.WHILE);
+			this.match(Tads3Parser.WHILE);
 			this.state = 613;
-			this.match(T3ParserParser.LEFT_PAREN);
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 615;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
 				this.state = 614;
 				this.expr(0);
@@ -2798,7 +2796,7 @@ export class T3ParserParser extends Parser {
 			}
 
 			this.state = 617;
-			this.match(T3ParserParser.RIGHT_PAREN);
+			this.match(Tads3Parser.RIGHT_PAREN);
 			}
 		}
 		catch (re) {
@@ -2818,19 +2816,19 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public whileStatement(): WhileStatementContext {
 		let _localctx: WhileStatementContext = new WhileStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 78, T3ParserParser.RULE_whileStatement);
+		this.enterRule(_localctx, 78, Tads3Parser.RULE_whileStatement);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 619;
-			this.match(T3ParserParser.WHILE);
+			this.match(Tads3Parser.WHILE);
 			this.state = 620;
-			this.match(T3ParserParser.LEFT_PAREN);
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 622;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
 				this.state = 621;
 				this.expr(0);
@@ -2838,7 +2836,7 @@ export class T3ParserParser extends Parser {
 			}
 
 			this.state = 624;
-			this.match(T3ParserParser.RIGHT_PAREN);
+			this.match(Tads3Parser.RIGHT_PAREN);
 			this.state = 625;
 			this.codeBlock();
 			}
@@ -2860,19 +2858,19 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public forStatement(): ForStatementContext {
 		let _localctx: ForStatementContext = new ForStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 80, T3ParserParser.RULE_forStatement);
+		this.enterRule(_localctx, 80, Tads3Parser.RULE_forStatement);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 627;
-			this.match(T3ParserParser.FOR);
+			this.match(Tads3Parser.FOR);
 			this.state = 628;
-			this.match(T3ParserParser.LEFT_PAREN);
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 630;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
 				this.state = 629;
 				this.expr(0);
@@ -2880,11 +2878,11 @@ export class T3ParserParser extends Parser {
 			}
 
 			this.state = 632;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			this.state = 634;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
 				this.state = 633;
 				this.expr(0);
@@ -2892,11 +2890,11 @@ export class T3ParserParser extends Parser {
 			}
 
 			this.state = 636;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			this.state = 638;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
 				this.state = 637;
 				this.expr(0);
@@ -2904,7 +2902,7 @@ export class T3ParserParser extends Parser {
 			}
 
 			this.state = 640;
-			this.match(T3ParserParser.RIGHT_PAREN);
+			this.match(Tads3Parser.RIGHT_PAREN);
 			this.state = 641;
 			this.codeBlock();
 			}
@@ -2926,14 +2924,14 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public tryCatchStatement(): TryCatchStatementContext {
 		let _localctx: TryCatchStatementContext = new TryCatchStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 82, T3ParserParser.RULE_tryCatchStatement);
+		this.enterRule(_localctx, 82, Tads3Parser.RULE_tryCatchStatement);
 		let _la: number;
 		try {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 643;
-			this.match(T3ParserParser.TRY);
+			this.match(Tads3Parser.TRY);
 			this.state = 644;
 			this.codeBlock();
 			this.state = 654;
@@ -2944,13 +2942,13 @@ export class T3ParserParser extends Parser {
 					{
 					{
 					this.state = 645;
-					this.match(T3ParserParser.CATCH);
+					this.match(Tads3Parser.CATCH);
 					this.state = 646;
-					this.match(T3ParserParser.LEFT_PAREN);
+					this.match(Tads3Parser.LEFT_PAREN);
 					this.state = 648;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
-					if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.SPREAD - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+					if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 						{
 						this.state = 647;
 						this.params();
@@ -2958,7 +2956,7 @@ export class T3ParserParser extends Parser {
 					}
 
 					this.state = 650;
-					this.match(T3ParserParser.RIGHT_PAREN);
+					this.match(Tads3Parser.RIGHT_PAREN);
 					this.state = 651;
 					this.codeBlock();
 					}
@@ -2974,7 +2972,7 @@ export class T3ParserParser extends Parser {
 			case 1:
 				{
 				this.state = 657;
-				this.match(T3ParserParser.FINALLY);
+				this.match(Tads3Parser.FINALLY);
 				this.state = 658;
 				this.codeBlock();
 				}
@@ -2999,7 +2997,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public callStatement(): CallStatementContext {
 		let _localctx: CallStatementContext = new CallStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 84, T3ParserParser.RULE_callStatement);
+		this.enterRule(_localctx, 84, Tads3Parser.RULE_callStatement);
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
@@ -3011,7 +3009,7 @@ export class T3ParserParser extends Parser {
 			case 1:
 				{
 				this.state = 662;
-				this.match(T3ParserParser.DOT);
+				this.match(Tads3Parser.DOT);
 				this.state = 663;
 				this.callStatement();
 				}
@@ -3036,7 +3034,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public emptyStatement(): EmptyStatementContext {
 		let _localctx: EmptyStatementContext = new EmptyStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 86, T3ParserParser.RULE_emptyStatement);
+		this.enterRule(_localctx, 86, Tads3Parser.RULE_emptyStatement);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
@@ -3044,7 +3042,7 @@ export class T3ParserParser extends Parser {
 			this.state = 667;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
 				this.state = 666;
 				this.expr(0);
@@ -3052,7 +3050,7 @@ export class T3ParserParser extends Parser {
 			}
 
 			this.state = 669;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -3072,14 +3070,14 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public sayStatement(): SayStatementContext {
 		let _localctx: SayStatementContext = new SayStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 88, T3ParserParser.RULE_sayStatement);
+		this.enterRule(_localctx, 88, Tads3Parser.RULE_sayStatement);
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 671;
-			this.match(T3ParserParser.DSTR);
+			this.match(Tads3Parser.DSTR);
 			this.state = 672;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -3099,29 +3097,29 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public assignmentStatement(): AssignmentStatementContext {
 		let _localctx: AssignmentStatementContext = new AssignmentStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 90, T3ParserParser.RULE_assignmentStatement);
+		this.enterRule(_localctx, 90, Tads3Parser.RULE_assignmentStatement);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 674;
-			this.match(T3ParserParser.LOCAL);
+			this.match(Tads3Parser.LOCAL);
 			this.state = 675;
 			this.identifierAtom();
 			this.state = 678;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
-			if (_la === T3ParserParser.ASSIGN) {
+			if (_la === Tads3Parser.ASSIGN) {
 				{
 				this.state = 676;
-				this.match(T3ParserParser.ASSIGN);
+				this.match(Tads3Parser.ASSIGN);
 				this.state = 677;
 				this.expr(0);
 				}
 			}
 
 			this.state = 680;
-			this.match(T3ParserParser.SEMICOLON);
+			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
 		catch (re) {
@@ -3141,13 +3139,13 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public ifStatement(): IfStatementContext {
 		let _localctx: IfStatementContext = new IfStatementContext(this._ctx, this.state);
-		this.enterRule(_localctx, 92, T3ParserParser.RULE_ifStatement);
+		this.enterRule(_localctx, 92, Tads3Parser.RULE_ifStatement);
 		try {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 682;
-			this.match(T3ParserParser.IF);
+			this.match(Tads3Parser.IF);
 			this.state = 683;
 			_localctx._ifExprAndBlock = this.enclosedExprCodeBlock();
 			this.state = 689;
@@ -3158,9 +3156,9 @@ export class T3ParserParser extends Parser {
 					{
 					{
 					this.state = 684;
-					this.match(T3ParserParser.ELSE);
+					this.match(Tads3Parser.ELSE);
 					this.state = 685;
-					this.match(T3ParserParser.IF);
+					this.match(Tads3Parser.IF);
 					this.state = 686;
 					_localctx._elseIfExprAndBlock = this.enclosedExprCodeBlock();
 					}
@@ -3176,7 +3174,7 @@ export class T3ParserParser extends Parser {
 			case 1:
 				{
 				this.state = 692;
-				this.match(T3ParserParser.ELSE);
+				this.match(Tads3Parser.ELSE);
 				this.state = 693;
 				_localctx._elseBlock = this.codeBlock();
 				}
@@ -3201,16 +3199,16 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public enclosedExprCodeBlock(): EnclosedExprCodeBlockContext {
 		let _localctx: EnclosedExprCodeBlockContext = new EnclosedExprCodeBlockContext(this._ctx, this.state);
-		this.enterRule(_localctx, 94, T3ParserParser.RULE_enclosedExprCodeBlock);
+		this.enterRule(_localctx, 94, Tads3Parser.RULE_enclosedExprCodeBlock);
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 696;
-			this.match(T3ParserParser.LEFT_PAREN);
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 697;
 			_localctx._expression = this.expr(0);
 			this.state = 698;
-			this.match(T3ParserParser.RIGHT_PAREN);
+			this.match(Tads3Parser.RIGHT_PAREN);
 			this.state = 699;
 			this.codeBlock();
 			}
@@ -3243,7 +3241,7 @@ export class T3ParserParser extends Parser {
 		let _localctx: ExprContext = new ExprContext(this._ctx, _parentState);
 		let _prevctx: ExprContext = _localctx;
 		let _startState: number = 96;
-		this.enterRecursionRule(_localctx, 96, T3ParserParser.RULE_expr, _p);
+		this.enterRecursionRule(_localctx, 96, Tads3Parser.RULE_expr, _p);
 		let _la: number;
 		try {
 			let _alt: number;
@@ -3259,11 +3257,11 @@ export class T3ParserParser extends Parser {
 				_prevctx = _localctx;
 
 				this.state = 702;
-				this.match(T3ParserParser.LEFT_BRACKET);
+				this.match(Tads3Parser.LEFT_BRACKET);
 				this.state = 704;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 					{
 					this.state = 703;
 					this.expr(0);
@@ -3271,7 +3269,7 @@ export class T3ParserParser extends Parser {
 				}
 
 				this.state = 706;
-				this.match(T3ParserParser.RIGHT_BRACKET);
+				this.match(Tads3Parser.RIGHT_BRACKET);
 				}
 				break;
 
@@ -3281,7 +3279,7 @@ export class T3ParserParser extends Parser {
 				this._ctx = _localctx;
 				_prevctx = _localctx;
 				this.state = 707;
-				this.match(T3ParserParser.DELEGATED);
+				this.match(Tads3Parser.DELEGATED);
 				this.state = 708;
 				this.expr(34);
 				}
@@ -3293,7 +3291,7 @@ export class T3ParserParser extends Parser {
 				this._ctx = _localctx;
 				_prevctx = _localctx;
 				this.state = 709;
-				this.match(T3ParserParser.INHERITED);
+				this.match(Tads3Parser.INHERITED);
 				this.state = 710;
 				this.expr(33);
 				}
@@ -3305,7 +3303,7 @@ export class T3ParserParser extends Parser {
 				this._ctx = _localctx;
 				_prevctx = _localctx;
 				this.state = 711;
-				this.match(T3ParserParser.TRANSIENT);
+				this.match(Tads3Parser.TRANSIENT);
 				this.state = 712;
 				this.expr(32);
 				}
@@ -3327,11 +3325,11 @@ export class T3ParserParser extends Parser {
 				this._ctx = _localctx;
 				_prevctx = _localctx;
 				this.state = 714;
-				this.match(T3ParserParser.LEFT_PAREN);
+				this.match(Tads3Parser.LEFT_PAREN);
 				this.state = 716;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 					{
 					this.state = 715;
 					this.expr(0);
@@ -3339,7 +3337,7 @@ export class T3ParserParser extends Parser {
 				}
 
 				this.state = 718;
-				this.match(T3ParserParser.RIGHT_PAREN);
+				this.match(Tads3Parser.RIGHT_PAREN);
 				}
 				break;
 
@@ -3349,7 +3347,7 @@ export class T3ParserParser extends Parser {
 				this._ctx = _localctx;
 				_prevctx = _localctx;
 				this.state = 719;
-				this.match(T3ParserParser.LOCAL);
+				this.match(Tads3Parser.LOCAL);
 				this.state = 720;
 				this.expr(26);
 				}
@@ -3361,7 +3359,7 @@ export class T3ParserParser extends Parser {
 				this._ctx = _localctx;
 				_prevctx = _localctx;
 				this.state = 721;
-				this.match(T3ParserParser.STATIC);
+				this.match(Tads3Parser.STATIC);
 				this.state = 722;
 				this.expr(25);
 				}
@@ -3373,7 +3371,7 @@ export class T3ParserParser extends Parser {
 				this._ctx = _localctx;
 				_prevctx = _localctx;
 				this.state = 723;
-				this.match(T3ParserParser.NEW);
+				this.match(Tads3Parser.NEW);
 				this.state = 724;
 				this.expr(24);
 				}
@@ -3385,11 +3383,11 @@ export class T3ParserParser extends Parser {
 				this._ctx = _localctx;
 				_prevctx = _localctx;
 				this.state = 725;
-				this.match(T3ParserParser.LEFT_CURLY);
+				this.match(Tads3Parser.LEFT_CURLY);
 				this.state = 727;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.SPREAD - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 					{
 					this.state = 726;
 					this.params();
@@ -3397,11 +3395,11 @@ export class T3ParserParser extends Parser {
 				}
 
 				this.state = 729;
-				this.match(T3ParserParser.COLON);
+				this.match(Tads3Parser.COLON);
 				this.state = 731;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 					{
 					this.state = 730;
 					this.expr(0);
@@ -3409,7 +3407,7 @@ export class T3ParserParser extends Parser {
 				}
 
 				this.state = 733;
-				this.match(T3ParserParser.RIGHT_CURLY);
+				this.match(Tads3Parser.RIGHT_CURLY);
 				}
 				break;
 
@@ -3420,7 +3418,7 @@ export class T3ParserParser extends Parser {
 				_prevctx = _localctx;
 				{
 				this.state = 734;
-				this.match(T3ParserParser.ARROW);
+				this.match(Tads3Parser.ARROW);
 				}
 				this.state = 735;
 				this.expr(6);
@@ -3433,9 +3431,9 @@ export class T3ParserParser extends Parser {
 				this._ctx = _localctx;
 				_prevctx = _localctx;
 				this.state = 736;
-				this.match(T3ParserParser.STAR);
+				this.match(Tads3Parser.STAR);
 				this.state = 737;
-				this.match(T3ParserParser.ARROW);
+				this.match(Tads3Parser.ARROW);
 				this.state = 738;
 				this.expr(5);
 				}
@@ -3448,7 +3446,7 @@ export class T3ParserParser extends Parser {
 				_prevctx = _localctx;
 				this.state = 739;
 				_la = this._input.LA(1);
-				if (!(((((_la - 47)) & ~0x1F) === 0 && ((1 << (_la - 47)) & ((1 << (T3ParserParser.AT - 47)) | (1 << (T3ParserParser.AMP - 47)) | (1 << (T3ParserParser.NOT - 47)) | (1 << (T3ParserParser.PLUS - 47)) | (1 << (T3ParserParser.MINUS - 47)) | (1 << (T3ParserParser.TILDE - 47)))) !== 0))) {
+				if (!(((((_la - 47)) & ~0x1F) === 0 && ((1 << (_la - 47)) & ((1 << (Tads3Parser.AT - 47)) | (1 << (Tads3Parser.AMP - 47)) | (1 << (Tads3Parser.NOT - 47)) | (1 << (Tads3Parser.PLUS - 47)) | (1 << (Tads3Parser.MINUS - 47)) | (1 << (Tads3Parser.TILDE - 47)))) !== 0))) {
 				this._errHandler.recoverInline(this);
 				} else {
 					if (this._input.LA(1) === Token.EOF) {
@@ -3491,13 +3489,13 @@ export class T3ParserParser extends Parser {
 						{
 						_localctx = new MemberExprContext(new ExprContext(_parentctx, _parentState));
 						(_localctx as MemberExprContext)._prev = _prevctx;
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 744;
 						if (!(this.precpred(this._ctx, 38))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 38)");
 						}
 						this.state = 745;
-						this.match(T3ParserParser.DOT);
+						this.match(Tads3Parser.DOT);
 						this.state = 746;
 						(_localctx as MemberExprContext)._next = this.expr(39);
 						}
@@ -3506,13 +3504,13 @@ export class T3ParserParser extends Parser {
 					case 2:
 						{
 						_localctx = new CommaExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 747;
 						if (!(this.precpred(this._ctx, 36))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 36)");
 						}
 						this.state = 748;
-						this.match(T3ParserParser.COMMA);
+						this.match(Tads3Parser.COMMA);
 						this.state = 749;
 						this.expr(37);
 						}
@@ -3521,13 +3519,13 @@ export class T3ParserParser extends Parser {
 					case 3:
 						{
 						_localctx = new ReferenceExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 750;
 						if (!(this.precpred(this._ctx, 23))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 23)");
 						}
 						this.state = 751;
-						this.match(T3ParserParser.AMP);
+						this.match(Tads3Parser.AMP);
 						this.state = 752;
 						this.expr(24);
 						}
@@ -3536,15 +3534,15 @@ export class T3ParserParser extends Parser {
 					case 4:
 						{
 						_localctx = new NotInExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 753;
 						if (!(this.precpred(this._ctx, 22))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 22)");
 						}
 						this.state = 754;
-						this.match(T3ParserParser.LITERAL_NOT);
+						this.match(Tads3Parser.LITERAL_NOT);
 						this.state = 755;
-						this.match(T3ParserParser.IN);
+						this.match(Tads3Parser.IN);
 						this.state = 756;
 						this.expr(23);
 						}
@@ -3553,15 +3551,15 @@ export class T3ParserParser extends Parser {
 					case 5:
 						{
 						_localctx = new IsExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 757;
 						if (!(this.precpred(this._ctx, 21))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 21)");
 						}
 						this.state = 758;
-						this.match(T3ParserParser.IS);
+						this.match(Tads3Parser.IS);
 						this.state = 759;
-						this.match(T3ParserParser.IN);
+						this.match(Tads3Parser.IN);
 						this.state = 760;
 						this.expr(22);
 						}
@@ -3570,13 +3568,13 @@ export class T3ParserParser extends Parser {
 					case 6:
 						{
 						_localctx = new IsExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 761;
 						if (!(this.precpred(this._ctx, 20))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 20)");
 						}
 						this.state = 762;
-						this.match(T3ParserParser.IS);
+						this.match(Tads3Parser.IS);
 						this.state = 763;
 						this.expr(21);
 						}
@@ -3585,13 +3583,13 @@ export class T3ParserParser extends Parser {
 					case 7:
 						{
 						_localctx = new InExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 764;
 						if (!(this.precpred(this._ctx, 19))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 19)");
 						}
 						this.state = 765;
-						this.match(T3ParserParser.IN);
+						this.match(Tads3Parser.IN);
 						this.state = 766;
 						this.expr(20);
 						}
@@ -3600,13 +3598,13 @@ export class T3ParserParser extends Parser {
 					case 8:
 						{
 						_localctx = new AssignmentExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 767;
 						if (!(this.precpred(this._ctx, 18))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 18)");
 						}
 						this.state = 768;
-						this.match(T3ParserParser.ASSIGN);
+						this.match(Tads3Parser.ASSIGN);
 						this.state = 769;
 						this.expr(19);
 						}
@@ -3615,13 +3613,13 @@ export class T3ParserParser extends Parser {
 					case 9:
 						{
 						_localctx = new IfNilExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 770;
 						if (!(this.precpred(this._ctx, 17))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 17)");
 						}
 						this.state = 771;
-						this.match(T3ParserParser.IFNIL);
+						this.match(Tads3Parser.IFNIL);
 						this.state = 772;
 						this.expr(18);
 						}
@@ -3630,14 +3628,14 @@ export class T3ParserParser extends Parser {
 					case 10:
 						{
 						_localctx = new BitwiseExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 773;
 						if (!(this.precpred(this._ctx, 15))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 15)");
 						}
 						this.state = 774;
 						_la = this._input.LA(1);
-						if (!(_la === T3ParserParser.AMP || _la === T3ParserParser.BITWISE_OR)) {
+						if (!(_la === Tads3Parser.AMP || _la === Tads3Parser.BITWISE_OR)) {
 						this._errHandler.recoverInline(this);
 						} else {
 							if (this._input.LA(1) === Token.EOF) {
@@ -3650,10 +3648,10 @@ export class T3ParserParser extends Parser {
 						this.state = 776;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
-						if (_la === T3ParserParser.ASSIGN) {
+						if (_la === Tads3Parser.ASSIGN) {
 							{
 							this.state = 775;
-							this.match(T3ParserParser.ASSIGN);
+							this.match(Tads3Parser.ASSIGN);
 							}
 						}
 
@@ -3665,7 +3663,7 @@ export class T3ParserParser extends Parser {
 					case 11:
 						{
 						_localctx = new AndOrExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 779;
 						if (!(this.precpred(this._ctx, 14))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 14)");
@@ -3673,7 +3671,7 @@ export class T3ParserParser extends Parser {
 						this.state = 780;
 						(_localctx as AndOrExprContext)._op = this._input.LT(1);
 						_la = this._input.LA(1);
-						if (!(_la === T3ParserParser.AND || _la === T3ParserParser.OR)) {
+						if (!(_la === Tads3Parser.AND || _la === Tads3Parser.OR)) {
 							(_localctx as AndOrExprContext)._op = this._errHandler.recoverInline(this);
 						} else {
 							if (this._input.LA(1) === Token.EOF) {
@@ -3691,22 +3689,22 @@ export class T3ParserParser extends Parser {
 					case 12:
 						{
 						_localctx = new PowerOfExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 782;
 						if (!(this.precpred(this._ctx, 13))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 13)");
 						}
 						{
 						this.state = 783;
-						this.match(T3ParserParser.POW);
+						this.match(Tads3Parser.POW);
 						}
 						this.state = 785;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
-						if (_la === T3ParserParser.ASSIGN) {
+						if (_la === Tads3Parser.ASSIGN) {
 							{
 							this.state = 784;
-							(_localctx as PowerOfExprContext)._isInc = this.match(T3ParserParser.ASSIGN);
+							(_localctx as PowerOfExprContext)._isInc = this.match(Tads3Parser.ASSIGN);
 							}
 						}
 
@@ -3718,7 +3716,7 @@ export class T3ParserParser extends Parser {
 					case 13:
 						{
 						_localctx = new MultiplicationExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 788;
 						if (!(this.precpred(this._ctx, 12))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 12)");
@@ -3726,7 +3724,7 @@ export class T3ParserParser extends Parser {
 						this.state = 789;
 						(_localctx as MultiplicationExprContext)._op = this._input.LT(1);
 						_la = this._input.LA(1);
-						if (!(((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & ((1 << (T3ParserParser.DIV - 54)) | (1 << (T3ParserParser.MOD - 54)) | (1 << (T3ParserParser.STAR - 54)))) !== 0))) {
+						if (!(((((_la - 54)) & ~0x1F) === 0 && ((1 << (_la - 54)) & ((1 << (Tads3Parser.DIV - 54)) | (1 << (Tads3Parser.MOD - 54)) | (1 << (Tads3Parser.STAR - 54)))) !== 0))) {
 							(_localctx as MultiplicationExprContext)._op = this._errHandler.recoverInline(this);
 						} else {
 							if (this._input.LA(1) === Token.EOF) {
@@ -3739,10 +3737,10 @@ export class T3ParserParser extends Parser {
 						this.state = 791;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
-						if (_la === T3ParserParser.ASSIGN) {
+						if (_la === Tads3Parser.ASSIGN) {
 							{
 							this.state = 790;
-							(_localctx as MultiplicationExprContext)._isInc = this.match(T3ParserParser.ASSIGN);
+							(_localctx as MultiplicationExprContext)._isInc = this.match(Tads3Parser.ASSIGN);
 							}
 						}
 
@@ -3754,7 +3752,7 @@ export class T3ParserParser extends Parser {
 					case 14:
 						{
 						_localctx = new AdditiveExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 794;
 						if (!(this.precpred(this._ctx, 11))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 11)");
@@ -3762,7 +3760,7 @@ export class T3ParserParser extends Parser {
 						this.state = 795;
 						(_localctx as AdditiveExprContext)._op = this._input.LT(1);
 						_la = this._input.LA(1);
-						if (!(_la === T3ParserParser.PLUS || _la === T3ParserParser.MINUS)) {
+						if (!(_la === Tads3Parser.PLUS || _la === Tads3Parser.MINUS)) {
 							(_localctx as AdditiveExprContext)._op = this._errHandler.recoverInline(this);
 						} else {
 							if (this._input.LA(1) === Token.EOF) {
@@ -3775,10 +3773,10 @@ export class T3ParserParser extends Parser {
 						this.state = 797;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
-						if (_la === T3ParserParser.ASSIGN) {
+						if (_la === Tads3Parser.ASSIGN) {
 							{
 							this.state = 796;
-							(_localctx as AdditiveExprContext)._isInc = this.match(T3ParserParser.ASSIGN);
+							(_localctx as AdditiveExprContext)._isInc = this.match(Tads3Parser.ASSIGN);
 							}
 						}
 
@@ -3790,7 +3788,7 @@ export class T3ParserParser extends Parser {
 					case 15:
 						{
 						_localctx = new RelationalExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 800;
 						if (!(this.precpred(this._ctx, 10))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 10)");
@@ -3798,7 +3796,7 @@ export class T3ParserParser extends Parser {
 						this.state = 801;
 						(_localctx as RelationalExprContext)._op = this._input.LT(1);
 						_la = this._input.LA(1);
-						if (!(((((_la - 84)) & ~0x1F) === 0 && ((1 << (_la - 84)) & ((1 << (T3ParserParser.LTEQ - 84)) | (1 << (T3ParserParser.LT - 84)) | (1 << (T3ParserParser.GTEQ - 84)) | (1 << (T3ParserParser.GT - 84)))) !== 0))) {
+						if (!(((((_la - 84)) & ~0x1F) === 0 && ((1 << (_la - 84)) & ((1 << (Tads3Parser.LTEQ - 84)) | (1 << (Tads3Parser.LT - 84)) | (1 << (Tads3Parser.GTEQ - 84)) | (1 << (Tads3Parser.GT - 84)))) !== 0))) {
 							(_localctx as RelationalExprContext)._op = this._errHandler.recoverInline(this);
 						} else {
 							if (this._input.LA(1) === Token.EOF) {
@@ -3816,7 +3814,7 @@ export class T3ParserParser extends Parser {
 					case 16:
 						{
 						_localctx = new EqualityExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 803;
 						if (!(this.precpred(this._ctx, 9))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 9)");
@@ -3824,7 +3822,7 @@ export class T3ParserParser extends Parser {
 						this.state = 804;
 						(_localctx as EqualityExprContext)._op = this._input.LT(1);
 						_la = this._input.LA(1);
-						if (!(_la === T3ParserParser.NEQ || _la === T3ParserParser.EQ)) {
+						if (!(_la === Tads3Parser.NEQ || _la === Tads3Parser.EQ)) {
 							(_localctx as EqualityExprContext)._op = this._errHandler.recoverInline(this);
 						} else {
 							if (this._input.LA(1) === Token.EOF) {
@@ -3842,7 +3840,7 @@ export class T3ParserParser extends Parser {
 					case 17:
 						{
 						_localctx = new BitwiseExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 806;
 						if (!(this.precpred(this._ctx, 8))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 8)");
@@ -3850,7 +3848,7 @@ export class T3ParserParser extends Parser {
 						this.state = 807;
 						(_localctx as BitwiseExprContext)._op = this._input.LT(1);
 						_la = this._input.LA(1);
-						if (!(((((_la - 85)) & ~0x1F) === 0 && ((1 << (_la - 85)) & ((1 << (T3ParserParser.ARITHMETIC_LEFT - 85)) | (1 << (T3ParserParser.ARITHMETIC_RIGHT - 85)) | (1 << (T3ParserParser.LOGICAL_RIGHT_SHIFT - 85)))) !== 0))) {
+						if (!(((((_la - 85)) & ~0x1F) === 0 && ((1 << (_la - 85)) & ((1 << (Tads3Parser.ARITHMETIC_LEFT - 85)) | (1 << (Tads3Parser.ARITHMETIC_RIGHT - 85)) | (1 << (Tads3Parser.LOGICAL_RIGHT_SHIFT - 85)))) !== 0))) {
 							(_localctx as BitwiseExprContext)._op = this._errHandler.recoverInline(this);
 						} else {
 							if (this._input.LA(1) === Token.EOF) {
@@ -3863,10 +3861,10 @@ export class T3ParserParser extends Parser {
 						this.state = 809;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
-						if (_la === T3ParserParser.ASSIGN) {
+						if (_la === Tads3Parser.ASSIGN) {
 							{
 							this.state = 808;
-							(_localctx as BitwiseExprContext)._isInc = this.match(T3ParserParser.ASSIGN);
+							(_localctx as BitwiseExprContext)._isInc = this.match(Tads3Parser.ASSIGN);
 							}
 						}
 
@@ -3878,14 +3876,14 @@ export class T3ParserParser extends Parser {
 					case 18:
 						{
 						_localctx = new ArrowExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 812;
 						if (!(this.precpred(this._ctx, 7))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 7)");
 						}
 						{
 						this.state = 813;
-						this.match(T3ParserParser.ARROW);
+						this.match(Tads3Parser.ARROW);
 						}
 						this.state = 814;
 						this.expr(8);
@@ -3895,17 +3893,17 @@ export class T3ParserParser extends Parser {
 					case 19:
 						{
 						_localctx = new TernaryExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 815;
 						if (!(this.precpred(this._ctx, 2))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 2)");
 						}
 						this.state = 816;
-						this.match(T3ParserParser.OPTIONAL);
+						this.match(Tads3Parser.OPTIONAL);
 						this.state = 817;
 						this.expr(0);
 						this.state = 818;
-						this.match(T3ParserParser.COLON);
+						this.match(Tads3Parser.COLON);
 						this.state = 819;
 						this.expr(3);
 						}
@@ -3914,17 +3912,17 @@ export class T3ParserParser extends Parser {
 					case 20:
 						{
 						_localctx = new IndexExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 821;
 						if (!(this.precpred(this._ctx, 37))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 37)");
 						}
 						this.state = 822;
-						this.match(T3ParserParser.LEFT_BRACKET);
+						this.match(Tads3Parser.LEFT_BRACKET);
 						this.state = 824;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
-						if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+						if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 							{
 							this.state = 823;
 							this.expr(0);
@@ -3932,20 +3930,20 @@ export class T3ParserParser extends Parser {
 						}
 
 						this.state = 826;
-						this.match(T3ParserParser.RIGHT_BRACKET);
+						this.match(Tads3Parser.RIGHT_BRACKET);
 						}
 						break;
 
 					case 21:
 						{
 						_localctx = new RangeExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 827;
 						if (!(this.precpred(this._ctx, 35))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 35)");
 						}
 						this.state = 828;
-						this.match(T3ParserParser.RANGE);
+						this.match(Tads3Parser.RANGE);
 						this.state = 829;
 						this.expr(0);
 						this.state = 832;
@@ -3954,7 +3952,7 @@ export class T3ParserParser extends Parser {
 						case 1:
 							{
 							this.state = 830;
-							(_localctx as RangeExprContext)._hasStep = this.match(T3ParserParser.STEP);
+							(_localctx as RangeExprContext)._hasStep = this.match(Tads3Parser.STEP);
 							this.state = 831;
 							this.expr(0);
 							}
@@ -3966,13 +3964,13 @@ export class T3ParserParser extends Parser {
 					case 22:
 						{
 						_localctx = new CallWithParamsExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 834;
 						if (!(this.precpred(this._ctx, 30))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 30)");
 						}
 						this.state = 835;
-						this.match(T3ParserParser.LEFT_PAREN);
+						this.match(Tads3Parser.LEFT_PAREN);
 						this.state = 837;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
@@ -3986,26 +3984,26 @@ export class T3ParserParser extends Parser {
 							this.state = 839;
 							this._errHandler.sync(this);
 							_la = this._input.LA(1);
-						} while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.SPREAD - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0));
+						} while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0));
 						this.state = 841;
-						this.match(T3ParserParser.RIGHT_PAREN);
+						this.match(Tads3Parser.RIGHT_PAREN);
 						}
 						break;
 
 					case 23:
 						{
 						_localctx = new ExprWithParenExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 843;
 						if (!(this.precpred(this._ctx, 29))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 29)");
 						}
 						this.state = 844;
-						this.match(T3ParserParser.LEFT_PAREN);
+						this.match(Tads3Parser.LEFT_PAREN);
 						this.state = 846;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
-						if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+						if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 							{
 							this.state = 845;
 							this.expr(0);
@@ -4013,24 +4011,24 @@ export class T3ParserParser extends Parser {
 						}
 
 						this.state = 848;
-						this.match(T3ParserParser.RIGHT_PAREN);
+						this.match(Tads3Parser.RIGHT_PAREN);
 						}
 						break;
 
 					case 24:
 						{
 						_localctx = new ExprWithAnonymousObjectExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 849;
 						if (!(this.precpred(this._ctx, 28))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 28)");
 						}
 						this.state = 850;
-						this.match(T3ParserParser.LEFT_CURLY);
+						this.match(Tads3Parser.LEFT_CURLY);
 						this.state = 852;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
-						if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.SPREAD - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+						if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 							{
 							this.state = 851;
 							this.params();
@@ -4038,11 +4036,11 @@ export class T3ParserParser extends Parser {
 						}
 
 						this.state = 854;
-						this.match(T3ParserParser.COLON);
+						this.match(Tads3Parser.COLON);
 						this.state = 856;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
-						if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << T3ParserParser.FUNCTION) | (1 << T3ParserParser.NEW) | (1 << T3ParserParser.TRANSIENT) | (1 << T3ParserParser.LOCAL) | (1 << T3ParserParser.TRUE) | (1 << T3ParserParser.NIL) | (1 << T3ParserParser.INHERITED) | (1 << T3ParserParser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (T3ParserParser.EXTERN - 32)) | (1 << (T3ParserParser.STATIC - 32)) | (1 << (T3ParserParser.STRING - 32)) | (1 << (T3ParserParser.IN - 32)) | (1 << (T3ParserParser.AT - 32)) | (1 << (T3ParserParser.AMP - 32)) | (1 << (T3ParserParser.NOT - 32)) | (1 << (T3ParserParser.PLUS - 32)) | (1 << (T3ParserParser.MINUS - 32)) | (1 << (T3ParserParser.ARROW - 32)) | (1 << (T3ParserParser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (T3ParserParser.ID - 64)) | (1 << (T3ParserParser.NR - 64)) | (1 << (T3ParserParser.HEX - 64)) | (1 << (T3ParserParser.STAR - 64)) | (1 << (T3ParserParser.LEFT_PAREN - 64)) | (1 << (T3ParserParser.LEFT_BRACKET - 64)) | (1 << (T3ParserParser.DSTR - 64)) | (1 << (T3ParserParser.SSTR - 64)) | (1 << (T3ParserParser.RSTR - 64)) | (1 << (T3ParserParser.LEFT_CURLY - 64)))) !== 0)) {
+						if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)) | (1 << (Tads3Parser.TILDE - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 							{
 							this.state = 855;
 							this.expr(0);
@@ -4050,14 +4048,14 @@ export class T3ParserParser extends Parser {
 						}
 
 						this.state = 858;
-						this.match(T3ParserParser.RIGHT_CURLY);
+						this.match(Tads3Parser.RIGHT_CURLY);
 						}
 						break;
 
 					case 25:
 						{
 						_localctx = new PostFixExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, T3ParserParser.RULE_expr);
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 859;
 						if (!(this.precpred(this._ctx, 3))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 3)");
@@ -4065,20 +4063,20 @@ export class T3ParserParser extends Parser {
 						this.state = 864;
 						this._errHandler.sync(this);
 						switch (this._input.LA(1)) {
-						case T3ParserParser.PLUS:
+						case Tads3Parser.PLUS:
 							{
 							this.state = 860;
-							this.match(T3ParserParser.PLUS);
+							this.match(Tads3Parser.PLUS);
 							this.state = 861;
-							this.match(T3ParserParser.PLUS);
+							this.match(Tads3Parser.PLUS);
 							}
 							break;
-						case T3ParserParser.MINUS:
+						case Tads3Parser.MINUS:
 							{
 							this.state = 862;
-							this.match(T3ParserParser.MINUS);
+							this.match(Tads3Parser.MINUS);
 							this.state = 863;
-							this.match(T3ParserParser.MINUS);
+							this.match(Tads3Parser.MINUS);
 							}
 							break;
 						default:
@@ -4112,48 +4110,48 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public primary(): PrimaryContext {
 		let _localctx: PrimaryContext = new PrimaryContext(this._ctx, this.state);
-		this.enterRule(_localctx, 98, T3ParserParser.RULE_primary);
+		this.enterRule(_localctx, 98, Tads3Parser.RULE_primary);
 		try {
 			this.state = 882;
 			this._errHandler.sync(this);
 			switch (this._input.LA(1)) {
-			case T3ParserParser.INHERITED:
+			case Tads3Parser.INHERITED:
 				_localctx = new InheritedAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 1);
 				{
 				this.state = 871;
-				this.match(T3ParserParser.INHERITED);
+				this.match(Tads3Parser.INHERITED);
 				}
 				break;
-			case T3ParserParser.HEX:
+			case Tads3Parser.HEX:
 				_localctx = new HexAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 2);
 				{
 				this.state = 872;
-				this.match(T3ParserParser.HEX);
+				this.match(Tads3Parser.HEX);
 				}
 				break;
-			case T3ParserParser.NR:
+			case Tads3Parser.NR:
 				_localctx = new NumberAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 3);
 				{
 				this.state = 873;
-				this.match(T3ParserParser.NR);
+				this.match(Tads3Parser.NR);
 				}
 				break;
-			case T3ParserParser.AMP:
+			case Tads3Parser.AMP:
 				_localctx = new ReferenceAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 4);
 				{
 				this.state = 874;
-				this.match(T3ParserParser.AMP);
+				this.match(Tads3Parser.AMP);
 				this.state = 875;
 				this.identifierAtom();
 				}
 				break;
-			case T3ParserParser.STRING:
-			case T3ParserParser.IN:
-			case T3ParserParser.ID:
+			case Tads3Parser.STRING:
+			case Tads3Parser.IN:
+			case Tads3Parser.ID:
 				_localctx = new IdAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 5);
 				{
@@ -4161,44 +4159,44 @@ export class T3ParserParser extends Parser {
 				this.identifierAtom();
 				}
 				break;
-			case T3ParserParser.SSTR:
+			case Tads3Parser.SSTR:
 				_localctx = new DoubleQuotestringAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 6);
 				{
 				this.state = 877;
-				this.match(T3ParserParser.SSTR);
+				this.match(Tads3Parser.SSTR);
 				}
 				break;
-			case T3ParserParser.DSTR:
+			case Tads3Parser.DSTR:
 				_localctx = new SingleQuotestringAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 7);
 				{
 				this.state = 878;
-				this.match(T3ParserParser.DSTR);
+				this.match(Tads3Parser.DSTR);
 				}
 				break;
-			case T3ParserParser.RSTR:
+			case Tads3Parser.RSTR:
 				_localctx = new RegexpStringAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 8);
 				{
 				this.state = 879;
-				this.match(T3ParserParser.RSTR);
+				this.match(Tads3Parser.RSTR);
 				}
 				break;
-			case T3ParserParser.TRUE:
+			case Tads3Parser.TRUE:
 				_localctx = new BooleanAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 9);
 				{
 				this.state = 880;
-				this.match(T3ParserParser.TRUE);
+				this.match(Tads3Parser.TRUE);
 				}
 				break;
-			case T3ParserParser.NIL:
+			case Tads3Parser.NIL:
 				_localctx = new NilAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 10);
 				{
 				this.state = 881;
-				this.match(T3ParserParser.NIL);
+				this.match(Tads3Parser.NIL);
 				}
 				break;
 			default:
@@ -4222,14 +4220,14 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public identifierAtom(): IdentifierAtomContext {
 		let _localctx: IdentifierAtomContext = new IdentifierAtomContext(this._ctx, this.state);
-		this.enterRule(_localctx, 100, T3ParserParser.RULE_identifierAtom);
+		this.enterRule(_localctx, 100, Tads3Parser.RULE_identifierAtom);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			this.state = 884;
 			_la = this._input.LA(1);
-			if (!(((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (T3ParserParser.STRING - 35)) | (1 << (T3ParserParser.IN - 35)) | (1 << (T3ParserParser.ID - 35)))) !== 0))) {
+			if (!(((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0))) {
 			this._errHandler.recoverInline(this);
 			} else {
 				if (this._input.LA(1) === Token.EOF) {
@@ -4258,7 +4256,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public params(): ParamsContext {
 		let _localctx: ParamsContext = new ParamsContext(this._ctx, this.state);
-		this.enterRule(_localctx, 102, T3ParserParser.RULE_params);
+		this.enterRule(_localctx, 102, Tads3Parser.RULE_params);
 		try {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
@@ -4276,7 +4274,7 @@ export class T3ParserParser extends Parser {
 			case 2:
 				{
 				this.state = 887;
-				this.match(T3ParserParser.SPREAD);
+				this.match(Tads3Parser.SPREAD);
 				}
 				break;
 
@@ -4295,7 +4293,7 @@ export class T3ParserParser extends Parser {
 					{
 					{
 					this.state = 891;
-					this.match(T3ParserParser.COMMA);
+					this.match(Tads3Parser.COMMA);
 					this.state = 892;
 					this.params();
 					}
@@ -4324,7 +4322,7 @@ export class T3ParserParser extends Parser {
 	// @RuleVersion(0)
 	public optionallyTypedOptionalId(): OptionallyTypedOptionalIdContext {
 		let _localctx: OptionallyTypedOptionalIdContext = new OptionallyTypedOptionalIdContext(this._ctx, this.state);
-		this.enterRule(_localctx, 104, T3ParserParser.RULE_optionallyTypedOptionalId);
+		this.enterRule(_localctx, 104, Tads3Parser.RULE_optionallyTypedOptionalId);
 		let _la: number;
 		try {
 			this.state = 915;
@@ -4342,7 +4340,7 @@ export class T3ParserParser extends Parser {
 					this.state = 898;
 					_localctx._identifier = this.identifierAtom();
 					this.state = 899;
-					this.match(T3ParserParser.COLON);
+					this.match(Tads3Parser.COLON);
 					}
 					break;
 				}
@@ -4363,10 +4361,10 @@ export class T3ParserParser extends Parser {
 				this.state = 908;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === T3ParserParser.OPTIONAL) {
+				if (_la === Tads3Parser.OPTIONAL) {
 					{
 					this.state = 907;
-					_localctx._optional = this.match(T3ParserParser.OPTIONAL);
+					_localctx._optional = this.match(Tads3Parser.OPTIONAL);
 					}
 				}
 
@@ -4381,14 +4379,14 @@ export class T3ParserParser extends Parser {
 				this.state = 910;
 				_localctx._identifier = this.identifierAtom();
 				this.state = 911;
-				_localctx._emptyColon = this.match(T3ParserParser.COLON);
+				_localctx._emptyColon = this.match(Tads3Parser.COLON);
 				this.state = 913;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === T3ParserParser.OPTIONAL) {
+				if (_la === Tads3Parser.OPTIONAL) {
 					{
 					this.state = 912;
-					_localctx._optional = this.match(T3ParserParser.OPTIONAL);
+					_localctx._optional = this.match(Tads3Parser.OPTIONAL);
 					}
 				}
 
@@ -4998,18 +4996,18 @@ export class T3ParserParser extends Parser {
 		"\u038A\u038E\u0393\u0395";
 	public static readonly _serializedATN: string = Utils.join(
 		[
-			T3ParserParser._serializedATNSegment0,
-			T3ParserParser._serializedATNSegment1,
+			Tads3Parser._serializedATNSegment0,
+			Tads3Parser._serializedATNSegment1,
 		],
 		"",
 	);
 	public static __ATN: ATN;
 	public static get _ATN(): ATN {
-		if (!T3ParserParser.__ATN) {
-			T3ParserParser.__ATN = new ATNDeserializer().deserialize(Utils.toCharArray(T3ParserParser._serializedATN));
+		if (!Tads3Parser.__ATN) {
+			Tads3Parser.__ATN = new ATNDeserializer().deserialize(Utils.toCharArray(Tads3Parser._serializedATN));
 		}
 
-		return T3ParserParser.__ATN;
+		return Tads3Parser.__ATN;
 	}
 
 }
@@ -5017,7 +5015,7 @@ export class T3ParserParser extends Parser {
 export class ProgramContext extends ParserRuleContext {
 	public _directive!: DirectiveContext;
 	public _directives: DirectiveContext[] = [];
-	public EOF(): TerminalNode { return this.getToken(T3ParserParser.EOF, 0); }
+	public EOF(): TerminalNode { return this.getToken(Tads3Parser.EOF, 0); }
 	public directive(): DirectiveContext[];
 	public directive(i: number): DirectiveContext;
 	public directive(i?: number): DirectiveContext | DirectiveContext[] {
@@ -5031,25 +5029,17 @@ export class ProgramContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_program; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_program; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterProgram) {
 			listener.enterProgram(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitProgram) {
 			listener.exitProgram(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitProgram) {
-			return visitor.visitProgram(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5087,25 +5077,17 @@ export class DirectiveContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_directive; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_directive; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterDirective) {
 			listener.enterDirective(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitDirective) {
 			listener.exitDirective(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitDirective) {
-			return visitor.visitDirective(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5116,14 +5098,14 @@ export class GrammarDeclarationContext extends ParserRuleContext {
 	public _isReplace!: Token;
 	public _prodName!: IdentifierAtomContext;
 	public _tag!: IdentifierAtomContext;
-	public GRAMMAR(): TerminalNode { return this.getToken(T3ParserParser.GRAMMAR, 0); }
+	public GRAMMAR(): TerminalNode { return this.getToken(Tads3Parser.GRAMMAR, 0); }
 	public COLON(): TerminalNode[];
 	public COLON(i: number): TerminalNode;
 	public COLON(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.COLON);
+			return this.getTokens(Tads3Parser.COLON);
 		} else {
-			return this.getToken(T3ParserParser.COLON, i);
+			return this.getToken(Tads3Parser.COLON, i);
 		}
 	}
 	public grammarRules(): GrammarRulesContext {
@@ -5147,33 +5129,25 @@ export class GrammarDeclarationContext extends ParserRuleContext {
 	public semiColonEndedObjectBody(): SemiColonEndedObjectBodyContext | undefined {
 		return this.tryGetRuleContext(0, SemiColonEndedObjectBodyContext);
 	}
-	public LEFT_PAREN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.LEFT_PAREN, 0); }
-	public RIGHT_PAREN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.RIGHT_PAREN, 0); }
-	public MODIFY(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.MODIFY, 0); }
-	public REPLACE(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.REPLACE, 0); }
+	public LEFT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LEFT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.RIGHT_PAREN, 0); }
+	public MODIFY(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.MODIFY, 0); }
+	public REPLACE(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.REPLACE, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_grammarDeclaration; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_grammarDeclaration; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterGrammarDeclaration) {
 			listener.enterGrammarDeclaration(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitGrammarDeclaration) {
 			listener.exitGrammarDeclaration(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitGrammarDeclaration) {
-			return visitor.visitGrammarDeclaration(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5193,34 +5167,26 @@ export class GrammarRulesContext extends ParserRuleContext {
 	public BITWISE_OR(i: number): TerminalNode;
 	public BITWISE_OR(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.BITWISE_OR);
+			return this.getTokens(Tads3Parser.BITWISE_OR);
 		} else {
-			return this.getToken(T3ParserParser.BITWISE_OR, i);
+			return this.getToken(Tads3Parser.BITWISE_OR, i);
 		}
 	}
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_grammarRules; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_grammarRules; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterGrammarRules) {
 			listener.enterGrammarRules(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitGrammarRules) {
 			listener.exitGrammarRules(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitGrammarRules) {
-			return visitor.visitGrammarRules(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5243,68 +5209,52 @@ export class ItemListContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_itemList; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_itemList; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterItemList) {
 			listener.enterItemList(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitItemList) {
 			listener.exitItemList(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitItemList) {
-			return visitor.visitItemList(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class QualifiersContext extends ParserRuleContext {
-	public LEFT_BRACKET(): TerminalNode { return this.getToken(T3ParserParser.LEFT_BRACKET, 0); }
+	public LEFT_BRACKET(): TerminalNode { return this.getToken(Tads3Parser.LEFT_BRACKET, 0); }
 	public identifierAtom(): IdentifierAtomContext {
 		return this.getRuleContext(0, IdentifierAtomContext);
 	}
-	public NR(): TerminalNode { return this.getToken(T3ParserParser.NR, 0); }
-	public RIGHT_BRACKET(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_BRACKET, 0); }
+	public NR(): TerminalNode { return this.getToken(Tads3Parser.NR, 0); }
+	public RIGHT_BRACKET(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_BRACKET, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_qualifiers; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_qualifiers; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterQualifiers) {
 			listener.enterQualifiers(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitQualifiers) {
 			listener.exitQualifiers(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitQualifiers) {
-			return visitor.visitQualifiers(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class ItemContext extends ParserRuleContext {
-	public LEFT_PAREN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.LEFT_PAREN, 0); }
-	public RIGHT_PAREN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.RIGHT_PAREN, 0); }
+	public LEFT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LEFT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.RIGHT_PAREN, 0); }
 	public item(): ItemContext[];
 	public item(i: number): ItemContext;
 	public item(i?: number): ItemContext | ItemContext[] {
@@ -5314,34 +5264,26 @@ export class ItemContext extends ParserRuleContext {
 			return this.getRuleContext(i, ItemContext);
 		}
 	}
-	public BITWISE_OR(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.BITWISE_OR, 0); }
+	public BITWISE_OR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.BITWISE_OR, 0); }
 	public expr(): ExprContext | undefined {
 		return this.tryGetRuleContext(0, ExprContext);
 	}
-	public STAR(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.STAR, 0); }
+	public STAR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.STAR, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_item; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_item; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterItem) {
 			listener.enterItem(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitItem) {
 			listener.exitItem(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitItem) {
-			return visitor.visitItem(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5352,8 +5294,8 @@ export class TemplateDeclarationContext extends ParserRuleContext {
 	public _expr!: ExprContext;
 	public _properties: ExprContext[] = [];
 	public _templateId!: IdentifierAtomContext;
-	public TEMPLATE(): TerminalNode { return this.getToken(T3ParserParser.TEMPLATE, 0); }
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
+	public TEMPLATE(): TerminalNode { return this.getToken(Tads3Parser.TEMPLATE, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
 	public identifierAtom(): IdentifierAtomContext[];
 	public identifierAtom(i: number): IdentifierAtomContext;
 	public identifierAtom(i?: number): IdentifierAtomContext | IdentifierAtomContext[] {
@@ -5376,46 +5318,38 @@ export class TemplateDeclarationContext extends ParserRuleContext {
 	public OPTIONAL(i: number): TerminalNode;
 	public OPTIONAL(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.OPTIONAL);
+			return this.getTokens(Tads3Parser.OPTIONAL);
 		} else {
-			return this.getToken(T3ParserParser.OPTIONAL, i);
+			return this.getToken(Tads3Parser.OPTIONAL, i);
 		}
 	}
-	public STRING(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.STRING, 0); }
-	public ARITHMETIC_LEFT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ARITHMETIC_LEFT, 0); }
-	public ARITHMETIC_RIGHT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ARITHMETIC_RIGHT, 0); }
+	public STRING(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.STRING, 0); }
+	public ARITHMETIC_LEFT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ARITHMETIC_LEFT, 0); }
+	public ARITHMETIC_RIGHT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ARITHMETIC_RIGHT, 0); }
 	public STAR(): TerminalNode[];
 	public STAR(i: number): TerminalNode;
 	public STAR(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.STAR);
+			return this.getTokens(Tads3Parser.STAR);
 		} else {
-			return this.getToken(T3ParserParser.STAR, i);
+			return this.getToken(Tads3Parser.STAR, i);
 		}
 	}
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_templateDeclaration; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_templateDeclaration; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterTemplateDeclaration) {
 			listener.enterTemplateDeclaration(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitTemplateDeclaration) {
 			listener.exitTemplateDeclaration(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitTemplateDeclaration) {
-			return visitor.visitTemplateDeclaration(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5423,7 +5357,7 @@ export class TemplateDeclarationContext extends ParserRuleContext {
 
 export class EnumDeclarationContext extends ParserRuleContext {
 	public _isToken!: Token;
-	public ENUM(): TerminalNode { return this.getToken(T3ParserParser.ENUM, 0); }
+	public ENUM(): TerminalNode { return this.getToken(Tads3Parser.ENUM, 0); }
 	public identifierAtom(): IdentifierAtomContext[];
 	public identifierAtom(i: number): IdentifierAtomContext;
 	public identifierAtom(i?: number): IdentifierAtomContext | IdentifierAtomContext[] {
@@ -5433,40 +5367,32 @@ export class EnumDeclarationContext extends ParserRuleContext {
 			return this.getRuleContext(i, IdentifierAtomContext);
 		}
 	}
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
 	public COMMA(): TerminalNode[];
 	public COMMA(i: number): TerminalNode;
 	public COMMA(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.COMMA);
+			return this.getTokens(Tads3Parser.COMMA);
 		} else {
-			return this.getToken(T3ParserParser.COMMA, i);
+			return this.getToken(Tads3Parser.COMMA, i);
 		}
 	}
-	public TOKEN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.TOKEN, 0); }
+	public TOKEN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.TOKEN, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_enumDeclaration; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_enumDeclaration; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterEnumDeclaration) {
 			listener.enterEnumDeclaration(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitEnumDeclaration) {
 			listener.exitEnumDeclaration(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitEnumDeclaration) {
-			return visitor.visitEnumDeclaration(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5477,8 +5403,8 @@ export class PropertyDeclarationContext extends ParserRuleContext {
 	public _isProperty!: Token;
 	public _identifierAtom!: IdentifierAtomContext;
 	public _identifiers: IdentifierAtomContext[] = [];
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
-	public PROPERTY(): TerminalNode { return this.getToken(T3ParserParser.PROPERTY, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
+	public PROPERTY(): TerminalNode { return this.getToken(Tads3Parser.PROPERTY, 0); }
 	public identifierAtom(): IdentifierAtomContext[];
 	public identifierAtom(i: number): IdentifierAtomContext;
 	public identifierAtom(i?: number): IdentifierAtomContext | IdentifierAtomContext[] {
@@ -5492,43 +5418,35 @@ export class PropertyDeclarationContext extends ParserRuleContext {
 	public COMMA(i: number): TerminalNode;
 	public COMMA(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.COMMA);
+			return this.getTokens(Tads3Parser.COMMA);
 		} else {
-			return this.getToken(T3ParserParser.COMMA, i);
+			return this.getToken(Tads3Parser.COMMA, i);
 		}
 	}
 	public PLUS(): TerminalNode[];
 	public PLUS(i: number): TerminalNode;
 	public PLUS(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.PLUS);
+			return this.getTokens(Tads3Parser.PLUS);
 		} else {
-			return this.getToken(T3ParserParser.PLUS, i);
+			return this.getToken(Tads3Parser.PLUS, i);
 		}
 	}
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_propertyDeclaration; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_propertyDeclaration; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterPropertyDeclaration) {
 			listener.enterPropertyDeclaration(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitPropertyDeclaration) {
 			listener.exitPropertyDeclaration(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitPropertyDeclaration) {
-			return visitor.visitPropertyDeclaration(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5539,8 +5457,8 @@ export class DictionaryDeclarationContext extends ParserRuleContext {
 	public _isProperty!: Token;
 	public _identifierAtom!: IdentifierAtomContext;
 	public _identifiers: IdentifierAtomContext[] = [];
-	public DICTIONARY(): TerminalNode { return this.getToken(T3ParserParser.DICTIONARY, 0); }
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
+	public DICTIONARY(): TerminalNode { return this.getToken(Tads3Parser.DICTIONARY, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
 	public identifierAtom(): IdentifierAtomContext[];
 	public identifierAtom(i: number): IdentifierAtomContext;
 	public identifierAtom(i?: number): IdentifierAtomContext | IdentifierAtomContext[] {
@@ -5554,79 +5472,63 @@ export class DictionaryDeclarationContext extends ParserRuleContext {
 	public COMMA(i: number): TerminalNode;
 	public COMMA(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.COMMA);
+			return this.getTokens(Tads3Parser.COMMA);
 		} else {
-			return this.getToken(T3ParserParser.COMMA, i);
+			return this.getToken(Tads3Parser.COMMA, i);
 		}
 	}
 	public PLUS(): TerminalNode[];
 	public PLUS(i: number): TerminalNode;
 	public PLUS(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.PLUS);
+			return this.getTokens(Tads3Parser.PLUS);
 		} else {
-			return this.getToken(T3ParserParser.PLUS, i);
+			return this.getToken(Tads3Parser.PLUS, i);
 		}
 	}
-	public PROPERTY(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.PROPERTY, 0); }
+	public PROPERTY(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.PROPERTY, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_dictionaryDeclaration; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_dictionaryDeclaration; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterDictionaryDeclaration) {
 			listener.enterDictionaryDeclaration(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitDictionaryDeclaration) {
 			listener.exitDictionaryDeclaration(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitDictionaryDeclaration) {
-			return visitor.visitDictionaryDeclaration(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class ExportDeclarationContext extends ParserRuleContext {
-	public EXPORT(): TerminalNode { return this.getToken(T3ParserParser.EXPORT, 0); }
+	public EXPORT(): TerminalNode { return this.getToken(Tads3Parser.EXPORT, 0); }
 	public identifierAtom(): IdentifierAtomContext {
 		return this.getRuleContext(0, IdentifierAtomContext);
 	}
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
-	public SSTR(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.SSTR, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
+	public SSTR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.SSTR, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_exportDeclaration; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_exportDeclaration; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterExportDeclaration) {
 			listener.enterExportDeclaration(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitExportDeclaration) {
 			listener.exitExportDeclaration(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitExportDeclaration) {
-			return visitor.visitExportDeclaration(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5636,19 +5538,19 @@ export class IntrinsicDeclarationContext extends ParserRuleContext {
 	public _name!: IdentifierAtomContext;
 	public _intrinsicMethodDeclaration!: IntrinsicMethodDeclarationContext;
 	public _methods: IntrinsicMethodDeclarationContext[] = [];
-	public INTRINSIC(): TerminalNode { return this.getToken(T3ParserParser.INTRINSIC, 0); }
-	public LEFT_CURLY(): TerminalNode { return this.getToken(T3ParserParser.LEFT_CURLY, 0); }
-	public RIGHT_CURLY(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_CURLY, 0); }
-	public CLASS(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.CLASS, 0); }
-	public COLON(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.COLON, 0); }
+	public INTRINSIC(): TerminalNode { return this.getToken(Tads3Parser.INTRINSIC, 0); }
+	public LEFT_CURLY(): TerminalNode { return this.getToken(Tads3Parser.LEFT_CURLY, 0); }
+	public RIGHT_CURLY(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_CURLY, 0); }
+	public CLASS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.CLASS, 0); }
+	public COLON(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.COLON, 0); }
 	public superTypes(): SuperTypesContext | undefined {
 		return this.tryGetRuleContext(0, SuperTypesContext);
 	}
 	public identifierAtom(): IdentifierAtomContext | undefined {
 		return this.tryGetRuleContext(0, IdentifierAtomContext);
 	}
-	public SSTR(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.SSTR, 0); }
-	public DSTR(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.DSTR, 0); }
+	public SSTR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.SSTR, 0); }
+	public DSTR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.DSTR, 0); }
 	public intrinsicMethodDeclaration(): IntrinsicMethodDeclarationContext[];
 	public intrinsicMethodDeclaration(i: number): IntrinsicMethodDeclarationContext;
 	public intrinsicMethodDeclaration(i?: number): IntrinsicMethodDeclarationContext | IntrinsicMethodDeclarationContext[] {
@@ -5662,25 +5564,17 @@ export class IntrinsicDeclarationContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_intrinsicDeclaration; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_intrinsicDeclaration; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterIntrinsicDeclaration) {
 			listener.enterIntrinsicDeclaration(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitIntrinsicDeclaration) {
 			listener.exitIntrinsicDeclaration(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitIntrinsicDeclaration) {
-			return visitor.visitIntrinsicDeclaration(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5690,10 +5584,10 @@ export class IntrinsicMethodDeclarationContext extends ParserRuleContext {
 	public identifierAtom(): IdentifierAtomContext {
 		return this.getRuleContext(0, IdentifierAtomContext);
 	}
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
-	public LEFT_PAREN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.LEFT_PAREN, 0); }
-	public RIGHT_PAREN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.RIGHT_PAREN, 0); }
-	public STATIC(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.STATIC, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
+	public LEFT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LEFT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.RIGHT_PAREN, 0); }
+	public STATIC(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.STATIC, 0); }
 	public params(): ParamsContext | undefined {
 		return this.tryGetRuleContext(0, ParamsContext);
 	}
@@ -5701,25 +5595,17 @@ export class IntrinsicMethodDeclarationContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_intrinsicMethodDeclaration; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_intrinsicMethodDeclaration; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterIntrinsicMethodDeclaration) {
 			listener.enterIntrinsicMethodDeclaration(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitIntrinsicMethodDeclaration) {
 			listener.exitIntrinsicMethodDeclaration(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitIntrinsicMethodDeclaration) {
-			return visitor.visitIntrinsicMethodDeclaration(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5746,42 +5632,34 @@ export class ObjectDeclarationContext extends ParserRuleContext {
 	public PLUS(i: number): TerminalNode;
 	public PLUS(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.PLUS);
+			return this.getTokens(Tads3Parser.PLUS);
 		} else {
-			return this.getToken(T3ParserParser.PLUS, i);
+			return this.getToken(Tads3Parser.PLUS, i);
 		}
 	}
-	public COLON(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.COLON, 0); }
+	public COLON(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.COLON, 0); }
 	public identifierAtom(): IdentifierAtomContext | undefined {
 		return this.tryGetRuleContext(0, IdentifierAtomContext);
 	}
-	public MODIFY(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.MODIFY, 0); }
-	public REPLACE(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.REPLACE, 0); }
-	public CLASS(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.CLASS, 0); }
-	public TRANSIENT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.TRANSIENT, 0); }
+	public MODIFY(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.MODIFY, 0); }
+	public REPLACE(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.REPLACE, 0); }
+	public CLASS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.CLASS, 0); }
+	public TRANSIENT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.TRANSIENT, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_objectDeclaration; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_objectDeclaration; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterObjectDeclaration) {
 			listener.enterObjectDeclaration(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitObjectDeclaration) {
 			listener.exitObjectDeclaration(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitObjectDeclaration) {
-			return visitor.visitObjectDeclaration(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5794,22 +5672,22 @@ export class TemplateExprContext extends ParserRuleContext {
 	public _number!: Token;
 	public _connection!: IdentifierAtomContext;
 	public _expression!: ExprContext;
-	public AT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.AT, 0); }
-	public PLUS(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.PLUS, 0); }
-	public ARROW(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ARROW, 0); }
-	public LEFT_BRACKET(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.LEFT_BRACKET, 0); }
+	public AT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.AT, 0); }
+	public PLUS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.PLUS, 0); }
+	public ARROW(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ARROW, 0); }
+	public LEFT_BRACKET(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LEFT_BRACKET, 0); }
 	public array(): ArrayContext | undefined {
 		return this.tryGetRuleContext(0, ArrayContext);
 	}
-	public RIGHT_BRACKET(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.RIGHT_BRACKET, 0); }
-	public SSTR(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.SSTR, 0); }
+	public RIGHT_BRACKET(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.RIGHT_BRACKET, 0); }
+	public SSTR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.SSTR, 0); }
 	public identifierAtom(): IdentifierAtomContext | undefined {
 		return this.tryGetRuleContext(0, IdentifierAtomContext);
 	}
-	public DSTR(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.DSTR, 0); }
-	public NR(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.NR, 0); }
-	public OPTIONAL(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.OPTIONAL, 0); }
-	public SEMICOLON(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.SEMICOLON, 0); }
+	public DSTR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.DSTR, 0); }
+	public NR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.NR, 0); }
+	public OPTIONAL(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.OPTIONAL, 0); }
+	public SEMICOLON(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.SEMICOLON, 0); }
 	public expr(): ExprContext | undefined {
 		return this.tryGetRuleContext(0, ExprContext);
 	}
@@ -5817,25 +5695,17 @@ export class TemplateExprContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_templateExpr; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_templateExpr; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterTemplateExpr) {
 			listener.enterTemplateExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitTemplateExpr) {
 			listener.exitTemplateExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitTemplateExpr) {
-			return visitor.visitTemplateExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5849,9 +5719,9 @@ export class ArrayContext extends ParserRuleContext {
 	public COMMA(i: number): TerminalNode;
 	public COMMA(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.COMMA);
+			return this.getTokens(Tads3Parser.COMMA);
 		} else {
-			return this.getToken(T3ParserParser.COMMA, i);
+			return this.getToken(Tads3Parser.COMMA, i);
 		}
 	}
 	public array(): ArrayContext[];
@@ -5867,59 +5737,43 @@ export class ArrayContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_array; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_array; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterArray) {
 			listener.enterArray(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitArray) {
 			listener.exitArray(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitArray) {
-			return visitor.visitArray(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class CurlyObjectBodyContext extends ParserRuleContext {
-	public LEFT_CURLY(): TerminalNode { return this.getToken(T3ParserParser.LEFT_CURLY, 0); }
+	public LEFT_CURLY(): TerminalNode { return this.getToken(Tads3Parser.LEFT_CURLY, 0); }
 	public objectBody(): ObjectBodyContext {
 		return this.getRuleContext(0, ObjectBodyContext);
 	}
-	public RIGHT_CURLY(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_CURLY, 0); }
+	public RIGHT_CURLY(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_CURLY, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_curlyObjectBody; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_curlyObjectBody; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterCurlyObjectBody) {
 			listener.enterCurlyObjectBody(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitCurlyObjectBody) {
 			listener.exitCurlyObjectBody(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitCurlyObjectBody) {
-			return visitor.visitCurlyObjectBody(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5929,30 +5783,22 @@ export class SemiColonEndedObjectBodyContext extends ParserRuleContext {
 	public objectBody(): ObjectBodyContext {
 		return this.getRuleContext(0, ObjectBodyContext);
 	}
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_semiColonEndedObjectBody; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_semiColonEndedObjectBody; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterSemiColonEndedObjectBody) {
 			listener.enterSemiColonEndedObjectBody(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitSemiColonEndedObjectBody) {
 			listener.exitSemiColonEndedObjectBody(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitSemiColonEndedObjectBody) {
-			return visitor.visitSemiColonEndedObjectBody(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5968,9 +5814,9 @@ export class SuperTypesContext extends ParserRuleContext {
 	public COMMA(i: number): TerminalNode;
 	public COMMA(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.COMMA);
+			return this.getTokens(Tads3Parser.COMMA);
 		} else {
-			return this.getToken(T3ParserParser.COMMA, i);
+			return this.getToken(Tads3Parser.COMMA, i);
 		}
 	}
 	public superTypes(): SuperTypesContext[];
@@ -5986,25 +5832,17 @@ export class SuperTypesContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_superTypes; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_superTypes; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterSuperTypes) {
 			listener.enterSuperTypes(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitSuperTypes) {
 			listener.exitSuperTypes(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitSuperTypes) {
-			return visitor.visitSuperTypes(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6059,25 +5897,17 @@ export class ObjectBodyContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_objectBody; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_objectBody; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterObjectBody) {
 			listener.enterObjectBody(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitObjectBody) {
 			listener.exitObjectBody(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitObjectBody) {
-			return visitor.visitObjectBody(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6085,7 +5915,7 @@ export class ObjectBodyContext extends ParserRuleContext {
 
 export class PropertyContext extends ParserRuleContext {
 	public _objectName!: IdentifierAtomContext;
-	public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ASSIGN, 0); }
+	public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ASSIGN, 0); }
 	public identifierAtom(): IdentifierAtomContext[];
 	public identifierAtom(i: number): IdentifierAtomContext;
 	public identifierAtom(i?: number): IdentifierAtomContext | IdentifierAtomContext[] {
@@ -6095,16 +5925,16 @@ export class PropertyContext extends ParserRuleContext {
 			return this.getRuleContext(i, IdentifierAtomContext);
 		}
 	}
-	public IN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.IN, 0); }
+	public IN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.IN, 0); }
 	public expr(): ExprContext | undefined {
 		return this.tryGetRuleContext(0, ExprContext);
 	}
 	public dictionaryProperty(): DictionaryPropertyContext | undefined {
 		return this.tryGetRuleContext(0, DictionaryPropertyContext);
 	}
-	public STATIC(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.STATIC, 0); }
-	public SEMICOLON(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.SEMICOLON, 0); }
-	public COLON(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.COLON, 0); }
+	public STATIC(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.STATIC, 0); }
+	public SEMICOLON(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.SEMICOLON, 0); }
+	public COLON(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.COLON, 0); }
 	public curlyObjectBody(): CurlyObjectBodyContext | undefined {
 		return this.tryGetRuleContext(0, CurlyObjectBodyContext);
 	}
@@ -6112,9 +5942,9 @@ export class PropertyContext extends ParserRuleContext {
 	public COMMA(i: number): TerminalNode;
 	public COMMA(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.COMMA);
+			return this.getTokens(Tads3Parser.COMMA);
 		} else {
-			return this.getToken(T3ParserParser.COMMA, i);
+			return this.getToken(Tads3Parser.COMMA, i);
 		}
 	}
 	public superTypes(): SuperTypesContext[];
@@ -6130,25 +5960,17 @@ export class PropertyContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_property; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_property; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterProperty) {
 			listener.enterProperty(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitProperty) {
 			listener.exitProperty(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitProperty) {
-			return visitor.visitProperty(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6159,34 +5981,26 @@ export class DictionaryPropertyContext extends ParserRuleContext {
 	public SSTR(i: number): TerminalNode;
 	public SSTR(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.SSTR);
+			return this.getTokens(Tads3Parser.SSTR);
 		} else {
-			return this.getToken(T3ParserParser.SSTR, i);
+			return this.getToken(Tads3Parser.SSTR, i);
 		}
 	}
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_dictionaryProperty; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_dictionaryProperty; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterDictionaryProperty) {
 			listener.enterDictionaryProperty(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitDictionaryProperty) {
 			listener.exitDictionaryProperty(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitDictionaryProperty) {
-			return visitor.visitDictionaryProperty(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6196,35 +6010,27 @@ export class PropertySetContext extends ParserRuleContext {
 	public curlyObjectBody(): CurlyObjectBodyContext {
 		return this.getRuleContext(0, CurlyObjectBodyContext);
 	}
-	public PROPERTYSET(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.PROPERTYSET, 0); }
+	public PROPERTYSET(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.PROPERTYSET, 0); }
 	public paramsWithWildcard(): ParamsWithWildcardContext | undefined {
 		return this.tryGetRuleContext(0, ParamsWithWildcardContext);
 	}
-	public LEFT_PAREN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.LEFT_PAREN, 0); }
-	public RIGHT_PAREN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.RIGHT_PAREN, 0); }
+	public LEFT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LEFT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.RIGHT_PAREN, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_propertySet; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_propertySet; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterPropertySet) {
 			listener.enterPropertySet(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitPropertySet) {
 			listener.exitPropertySet(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitPropertySet) {
-			return visitor.visitPropertySet(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6233,7 +6039,7 @@ export class PropertySetContext extends ParserRuleContext {
 export class ParamsWithWildcardContext extends ParserRuleContext {
 	public _primary!: PrimaryContext;
 	public _parameters: PrimaryContext[] = [];
-	public STAR(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.STAR, 0); }
+	public STAR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.STAR, 0); }
 	public primary(): PrimaryContext | undefined {
 		return this.tryGetRuleContext(0, PrimaryContext);
 	}
@@ -6241,9 +6047,9 @@ export class ParamsWithWildcardContext extends ParserRuleContext {
 	public COMMA(i: number): TerminalNode;
 	public COMMA(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.COMMA);
+			return this.getTokens(Tads3Parser.COMMA);
 		} else {
-			return this.getToken(T3ParserParser.COMMA, i);
+			return this.getToken(Tads3Parser.COMMA, i);
 		}
 	}
 	public paramsWithWildcard(): ParamsWithWildcardContext[];
@@ -6259,25 +6065,17 @@ export class ParamsWithWildcardContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_paramsWithWildcard; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_paramsWithWildcard; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterParamsWithWildcard) {
 			listener.enterParamsWithWildcard(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitParamsWithWildcard) {
 			listener.exitParamsWithWildcard(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitParamsWithWildcard) {
-			return visitor.visitParamsWithWildcard(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6294,25 +6092,17 @@ export class FunctionDeclarationContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_functionDeclaration; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_functionDeclaration; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterFunctionDeclaration) {
 			listener.enterFunctionDeclaration(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitFunctionDeclaration) {
 			listener.exitFunctionDeclaration(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitFunctionDeclaration) {
-			return visitor.visitFunctionDeclaration(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6324,11 +6114,11 @@ export class FunctionHeadContext extends ParserRuleContext {
 	public identifierAtom(): IdentifierAtomContext | undefined {
 		return this.tryGetRuleContext(0, IdentifierAtomContext);
 	}
-	public FUNCTION(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.FUNCTION, 0); }
-	public LEFT_PAREN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.LEFT_PAREN, 0); }
-	public RIGHT_PAREN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.RIGHT_PAREN, 0); }
-	public EXTERN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.EXTERN, 0); }
-	public STATIC(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.STATIC, 0); }
+	public FUNCTION(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.FUNCTION, 0); }
+	public LEFT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LEFT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.RIGHT_PAREN, 0); }
+	public EXTERN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.EXTERN, 0); }
+	public STATIC(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.STATIC, 0); }
 	public params(): ParamsContext | undefined {
 		return this.tryGetRuleContext(0, ParamsContext);
 	}
@@ -6336,33 +6126,25 @@ export class FunctionHeadContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_functionHead; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_functionHead; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterFunctionHead) {
 			listener.enterFunctionHead(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitFunctionHead) {
 			listener.exitFunctionHead(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitFunctionHead) {
-			return visitor.visitFunctionHead(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class CodeBlockContext extends ParserRuleContext {
-	public LEFT_CURLY(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.LEFT_CURLY, 0); }
-	public RIGHT_CURLY(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.RIGHT_CURLY, 0); }
+	public LEFT_CURLY(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LEFT_CURLY, 0); }
+	public RIGHT_CURLY(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.RIGHT_CURLY, 0); }
 	public stats(): StatsContext[];
 	public stats(i: number): StatsContext;
 	public stats(i?: number): StatsContext | StatsContext[] {
@@ -6376,25 +6158,17 @@ export class CodeBlockContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_codeBlock; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_codeBlock; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterCodeBlock) {
 			listener.enterCodeBlock(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitCodeBlock) {
 			listener.exitCodeBlock(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitCodeBlock) {
-			return visitor.visitCodeBlock(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6456,25 +6230,17 @@ export class StatsContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_stats; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_stats; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterStats) {
 			listener.enterStats(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitStats) {
 			listener.exitStats(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitStats) {
-			return visitor.visitStats(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6482,8 +6248,8 @@ export class StatsContext extends ParserRuleContext {
 
 export class GotoStatementContext extends ParserRuleContext {
 	public _label!: IdentifierAtomContext;
-	public GOTO(): TerminalNode { return this.getToken(T3ParserParser.GOTO, 0); }
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
+	public GOTO(): TerminalNode { return this.getToken(Tads3Parser.GOTO, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
 	public identifierAtom(): IdentifierAtomContext | undefined {
 		return this.tryGetRuleContext(0, IdentifierAtomContext);
 	}
@@ -6491,25 +6257,17 @@ export class GotoStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_gotoStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_gotoStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterGotoStatement) {
 			listener.enterGotoStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitGotoStatement) {
 			listener.exitGotoStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitGotoStatement) {
-			return visitor.visitGotoStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6517,8 +6275,8 @@ export class GotoStatementContext extends ParserRuleContext {
 
 export class BreakStatementContext extends ParserRuleContext {
 	public _label!: IdentifierAtomContext;
-	public BREAK(): TerminalNode { return this.getToken(T3ParserParser.BREAK, 0); }
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
+	public BREAK(): TerminalNode { return this.getToken(Tads3Parser.BREAK, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
 	public identifierAtom(): IdentifierAtomContext | undefined {
 		return this.tryGetRuleContext(0, IdentifierAtomContext);
 	}
@@ -6526,25 +6284,17 @@ export class BreakStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_breakStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_breakStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterBreakStatement) {
 			listener.enterBreakStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitBreakStatement) {
 			listener.exitBreakStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitBreakStatement) {
-			return visitor.visitBreakStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6552,8 +6302,8 @@ export class BreakStatementContext extends ParserRuleContext {
 
 export class ContinueStatementContext extends ParserRuleContext {
 	public _label!: IdentifierAtomContext;
-	public CONTINUE(): TerminalNode { return this.getToken(T3ParserParser.CONTINUE, 0); }
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
+	public CONTINUE(): TerminalNode { return this.getToken(Tads3Parser.CONTINUE, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
 	public identifierAtom(): IdentifierAtomContext | undefined {
 		return this.tryGetRuleContext(0, IdentifierAtomContext);
 	}
@@ -6561,25 +6311,17 @@ export class ContinueStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_continueStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_continueStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterContinueStatement) {
 			listener.enterContinueStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitContinueStatement) {
 			listener.exitContinueStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitContinueStatement) {
-			return visitor.visitContinueStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6589,51 +6331,43 @@ export class LabelStatementContext extends ParserRuleContext {
 	public identifierAtom(): IdentifierAtomContext {
 		return this.getRuleContext(0, IdentifierAtomContext);
 	}
-	public COLON(): TerminalNode { return this.getToken(T3ParserParser.COLON, 0); }
+	public COLON(): TerminalNode { return this.getToken(Tads3Parser.COLON, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_labelStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_labelStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterLabelStatement) {
 			listener.enterLabelStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitLabelStatement) {
 			listener.exitLabelStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitLabelStatement) {
-			return visitor.visitLabelStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class SwitchStatementContext extends ParserRuleContext {
-	public SWITCH(): TerminalNode { return this.getToken(T3ParserParser.SWITCH, 0); }
-	public LEFT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.LEFT_PAREN, 0); }
+	public SWITCH(): TerminalNode { return this.getToken(Tads3Parser.SWITCH, 0); }
+	public LEFT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.LEFT_PAREN, 0); }
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
-	public RIGHT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_PAREN, 0); }
-	public LEFT_CURLY(): TerminalNode { return this.getToken(T3ParserParser.LEFT_CURLY, 0); }
-	public RIGHT_CURLY(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_CURLY, 0); }
+	public RIGHT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_PAREN, 0); }
+	public LEFT_CURLY(): TerminalNode { return this.getToken(Tads3Parser.LEFT_CURLY, 0); }
+	public RIGHT_CURLY(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_CURLY, 0); }
 	public CASE(): TerminalNode[];
 	public CASE(i: number): TerminalNode;
 	public CASE(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.CASE);
+			return this.getTokens(Tads3Parser.CASE);
 		} else {
-			return this.getToken(T3ParserParser.CASE, i);
+			return this.getToken(Tads3Parser.CASE, i);
 		}
 	}
 	public primary(): PrimaryContext[];
@@ -6649,12 +6383,12 @@ export class SwitchStatementContext extends ParserRuleContext {
 	public COLON(i: number): TerminalNode;
 	public COLON(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.COLON);
+			return this.getTokens(Tads3Parser.COLON);
 		} else {
-			return this.getToken(T3ParserParser.COLON, i);
+			return this.getToken(Tads3Parser.COLON, i);
 		}
 	}
-	public DEFAULT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.DEFAULT, 0); }
+	public DEFAULT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.DEFAULT, 0); }
 	public codeBlock(): CodeBlockContext[];
 	public codeBlock(i: number): CodeBlockContext;
 	public codeBlock(i?: number): CodeBlockContext | CodeBlockContext[] {
@@ -6677,32 +6411,24 @@ export class SwitchStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_switchStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_switchStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterSwitchStatement) {
 			listener.enterSwitchStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitSwitchStatement) {
 			listener.exitSwitchStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitSwitchStatement) {
-			return visitor.visitSwitchStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class ThrowStatementContext extends ParserRuleContext {
-	public THROW(): TerminalNode { return this.getToken(T3ParserParser.THROW, 0); }
+	public THROW(): TerminalNode { return this.getToken(Tads3Parser.THROW, 0); }
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
@@ -6710,40 +6436,32 @@ export class ThrowStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_throwStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_throwStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterThrowStatement) {
 			listener.enterThrowStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitThrowStatement) {
 			listener.exitThrowStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitThrowStatement) {
-			return visitor.visitThrowStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class ForInStatementContext extends ParserRuleContext {
-	public FOR(): TerminalNode { return this.getToken(T3ParserParser.FOR, 0); }
-	public LEFT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.LEFT_PAREN, 0); }
-	public LOCAL(): TerminalNode { return this.getToken(T3ParserParser.LOCAL, 0); }
-	public ID(): TerminalNode { return this.getToken(T3ParserParser.ID, 0); }
-	public IN(): TerminalNode { return this.getToken(T3ParserParser.IN, 0); }
+	public FOR(): TerminalNode { return this.getToken(Tads3Parser.FOR, 0); }
+	public LEFT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.LEFT_PAREN, 0); }
+	public LOCAL(): TerminalNode { return this.getToken(Tads3Parser.LOCAL, 0); }
+	public ID(): TerminalNode { return this.getToken(Tads3Parser.ID, 0); }
+	public IN(): TerminalNode { return this.getToken(Tads3Parser.IN, 0); }
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
-	public RIGHT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_PAREN, 0); }
 	public codeBlock(): CodeBlockContext {
 		return this.getRuleContext(0, CodeBlockContext);
 	}
@@ -6751,33 +6469,25 @@ export class ForInStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_forInStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_forInStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterForInStatement) {
 			listener.enterForInStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitForInStatement) {
 			listener.exitForInStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitForInStatement) {
-			return visitor.visitForInStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class ForEachStatementContext extends ParserRuleContext {
-	public FOREACH(): TerminalNode { return this.getToken(T3ParserParser.FOREACH, 0); }
-	public LEFT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.LEFT_PAREN, 0); }
+	public FOREACH(): TerminalNode { return this.getToken(Tads3Parser.FOREACH, 0); }
+	public LEFT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.LEFT_PAREN, 0); }
 	public expr(): ExprContext[];
 	public expr(i: number): ExprContext;
 	public expr(i?: number): ExprContext | ExprContext[] {
@@ -6787,8 +6497,8 @@ export class ForEachStatementContext extends ParserRuleContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public IN(): TerminalNode { return this.getToken(T3ParserParser.IN, 0); }
-	public RIGHT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_PAREN, 0); }
+	public IN(): TerminalNode { return this.getToken(Tads3Parser.IN, 0); }
+	public RIGHT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_PAREN, 0); }
 	public codeBlock(): CodeBlockContext {
 		return this.getRuleContext(0, CodeBlockContext);
 	}
@@ -6796,33 +6506,25 @@ export class ForEachStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_forEachStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_forEachStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterForEachStatement) {
 			listener.enterForEachStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitForEachStatement) {
 			listener.exitForEachStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitForEachStatement) {
-			return visitor.visitForEachStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class ReturnStatementContext extends ParserRuleContext {
-	public RETURN(): TerminalNode { return this.getToken(T3ParserParser.RETURN, 0); }
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
+	public RETURN(): TerminalNode { return this.getToken(Tads3Parser.RETURN, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
 	public expr(): ExprContext | undefined {
 		return this.tryGetRuleContext(0, ExprContext);
 	}
@@ -6830,38 +6532,30 @@ export class ReturnStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_returnStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_returnStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterReturnStatement) {
 			listener.enterReturnStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitReturnStatement) {
 			listener.exitReturnStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitReturnStatement) {
-			return visitor.visitReturnStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class DoWhileStatementContext extends ParserRuleContext {
-	public DO(): TerminalNode { return this.getToken(T3ParserParser.DO, 0); }
+	public DO(): TerminalNode { return this.getToken(Tads3Parser.DO, 0); }
 	public codeBlock(): CodeBlockContext {
 		return this.getRuleContext(0, CodeBlockContext);
 	}
-	public WHILE(): TerminalNode { return this.getToken(T3ParserParser.WHILE, 0); }
-	public LEFT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.LEFT_PAREN, 0); }
-	public RIGHT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_PAREN, 0); }
+	public WHILE(): TerminalNode { return this.getToken(Tads3Parser.WHILE, 0); }
+	public LEFT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.LEFT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_PAREN, 0); }
 	public expr(): ExprContext | undefined {
 		return this.tryGetRuleContext(0, ExprContext);
 	}
@@ -6869,34 +6563,26 @@ export class DoWhileStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_doWhileStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_doWhileStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterDoWhileStatement) {
 			listener.enterDoWhileStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitDoWhileStatement) {
 			listener.exitDoWhileStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitDoWhileStatement) {
-			return visitor.visitDoWhileStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class WhileStatementContext extends ParserRuleContext {
-	public WHILE(): TerminalNode { return this.getToken(T3ParserParser.WHILE, 0); }
-	public LEFT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.LEFT_PAREN, 0); }
-	public RIGHT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_PAREN, 0); }
+	public WHILE(): TerminalNode { return this.getToken(Tads3Parser.WHILE, 0); }
+	public LEFT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.LEFT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_PAREN, 0); }
 	public codeBlock(): CodeBlockContext {
 		return this.getRuleContext(0, CodeBlockContext);
 	}
@@ -6907,43 +6593,35 @@ export class WhileStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_whileStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_whileStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterWhileStatement) {
 			listener.enterWhileStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitWhileStatement) {
 			listener.exitWhileStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitWhileStatement) {
-			return visitor.visitWhileStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class ForStatementContext extends ParserRuleContext {
-	public FOR(): TerminalNode { return this.getToken(T3ParserParser.FOR, 0); }
-	public LEFT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.LEFT_PAREN, 0); }
+	public FOR(): TerminalNode { return this.getToken(Tads3Parser.FOR, 0); }
+	public LEFT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.LEFT_PAREN, 0); }
 	public SEMICOLON(): TerminalNode[];
 	public SEMICOLON(i: number): TerminalNode;
 	public SEMICOLON(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.SEMICOLON);
+			return this.getTokens(Tads3Parser.SEMICOLON);
 		} else {
-			return this.getToken(T3ParserParser.SEMICOLON, i);
+			return this.getToken(Tads3Parser.SEMICOLON, i);
 		}
 	}
-	public RIGHT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_PAREN, 0); }
 	public codeBlock(): CodeBlockContext {
 		return this.getRuleContext(0, CodeBlockContext);
 	}
@@ -6960,32 +6638,24 @@ export class ForStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_forStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_forStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterForStatement) {
 			listener.enterForStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitForStatement) {
 			listener.exitForStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitForStatement) {
-			return visitor.visitForStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class TryCatchStatementContext extends ParserRuleContext {
-	public TRY(): TerminalNode { return this.getToken(T3ParserParser.TRY, 0); }
+	public TRY(): TerminalNode { return this.getToken(Tads3Parser.TRY, 0); }
 	public codeBlock(): CodeBlockContext[];
 	public codeBlock(i: number): CodeBlockContext;
 	public codeBlock(i?: number): CodeBlockContext | CodeBlockContext[] {
@@ -6999,30 +6669,30 @@ export class TryCatchStatementContext extends ParserRuleContext {
 	public CATCH(i: number): TerminalNode;
 	public CATCH(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.CATCH);
+			return this.getTokens(Tads3Parser.CATCH);
 		} else {
-			return this.getToken(T3ParserParser.CATCH, i);
+			return this.getToken(Tads3Parser.CATCH, i);
 		}
 	}
 	public LEFT_PAREN(): TerminalNode[];
 	public LEFT_PAREN(i: number): TerminalNode;
 	public LEFT_PAREN(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.LEFT_PAREN);
+			return this.getTokens(Tads3Parser.LEFT_PAREN);
 		} else {
-			return this.getToken(T3ParserParser.LEFT_PAREN, i);
+			return this.getToken(Tads3Parser.LEFT_PAREN, i);
 		}
 	}
 	public RIGHT_PAREN(): TerminalNode[];
 	public RIGHT_PAREN(i: number): TerminalNode;
 	public RIGHT_PAREN(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.RIGHT_PAREN);
+			return this.getTokens(Tads3Parser.RIGHT_PAREN);
 		} else {
-			return this.getToken(T3ParserParser.RIGHT_PAREN, i);
+			return this.getToken(Tads3Parser.RIGHT_PAREN, i);
 		}
 	}
-	public FINALLY(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.FINALLY, 0); }
+	public FINALLY(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.FINALLY, 0); }
 	public params(): ParamsContext[];
 	public params(i: number): ParamsContext;
 	public params(i?: number): ParamsContext | ParamsContext[] {
@@ -7036,25 +6706,17 @@ export class TryCatchStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_tryCatchStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_tryCatchStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterTryCatchStatement) {
 			listener.enterTryCatchStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitTryCatchStatement) {
 			listener.exitTryCatchStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitTryCatchStatement) {
-			return visitor.visitTryCatchStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7064,7 +6726,7 @@ export class CallStatementContext extends ParserRuleContext {
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
-	public DOT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.DOT, 0); }
+	public DOT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.DOT, 0); }
 	public callStatement(): CallStatementContext | undefined {
 		return this.tryGetRuleContext(0, CallStatementContext);
 	}
@@ -7072,32 +6734,24 @@ export class CallStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_callStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_callStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterCallStatement) {
 			listener.enterCallStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitCallStatement) {
 			listener.exitCallStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitCallStatement) {
-			return visitor.visitCallStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class EmptyStatementContext extends ParserRuleContext {
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
 	public expr(): ExprContext | undefined {
 		return this.tryGetRuleContext(0, ExprContext);
 	}
@@ -7105,68 +6759,52 @@ export class EmptyStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_emptyStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_emptyStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterEmptyStatement) {
 			listener.enterEmptyStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitEmptyStatement) {
 			listener.exitEmptyStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitEmptyStatement) {
-			return visitor.visitEmptyStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class SayStatementContext extends ParserRuleContext {
-	public DSTR(): TerminalNode { return this.getToken(T3ParserParser.DSTR, 0); }
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
+	public DSTR(): TerminalNode { return this.getToken(Tads3Parser.DSTR, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_sayStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_sayStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterSayStatement) {
 			listener.enterSayStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitSayStatement) {
 			listener.exitSayStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitSayStatement) {
-			return visitor.visitSayStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class AssignmentStatementContext extends ParserRuleContext {
-	public LOCAL(): TerminalNode { return this.getToken(T3ParserParser.LOCAL, 0); }
+	public LOCAL(): TerminalNode { return this.getToken(Tads3Parser.LOCAL, 0); }
 	public identifierAtom(): IdentifierAtomContext {
 		return this.getRuleContext(0, IdentifierAtomContext);
 	}
-	public SEMICOLON(): TerminalNode { return this.getToken(T3ParserParser.SEMICOLON, 0); }
-	public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ASSIGN, 0); }
+	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }
+	public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ASSIGN, 0); }
 	public expr(): ExprContext | undefined {
 		return this.tryGetRuleContext(0, ExprContext);
 	}
@@ -7174,25 +6812,17 @@ export class AssignmentStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_assignmentStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_assignmentStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterAssignmentStatement) {
 			listener.enterAssignmentStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitAssignmentStatement) {
 			listener.exitAssignmentStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitAssignmentStatement) {
-			return visitor.visitAssignmentStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7206,9 +6836,9 @@ export class IfStatementContext extends ParserRuleContext {
 	public IF(i: number): TerminalNode;
 	public IF(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.IF);
+			return this.getTokens(Tads3Parser.IF);
 		} else {
-			return this.getToken(T3ParserParser.IF, i);
+			return this.getToken(Tads3Parser.IF, i);
 		}
 	}
 	public enclosedExprCodeBlock(): EnclosedExprCodeBlockContext[];
@@ -7224,9 +6854,9 @@ export class IfStatementContext extends ParserRuleContext {
 	public ELSE(i: number): TerminalNode;
 	public ELSE(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.ELSE);
+			return this.getTokens(Tads3Parser.ELSE);
 		} else {
-			return this.getToken(T3ParserParser.ELSE, i);
+			return this.getToken(Tads3Parser.ELSE, i);
 		}
 	}
 	public codeBlock(): CodeBlockContext | undefined {
@@ -7236,25 +6866,17 @@ export class IfStatementContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_ifStatement; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_ifStatement; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterIfStatement) {
 			listener.enterIfStatement(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitIfStatement) {
 			listener.exitIfStatement(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitIfStatement) {
-			return visitor.visitIfStatement(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7262,8 +6884,8 @@ export class IfStatementContext extends ParserRuleContext {
 
 export class EnclosedExprCodeBlockContext extends ParserRuleContext {
 	public _expression!: ExprContext;
-	public LEFT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.LEFT_PAREN, 0); }
-	public RIGHT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_PAREN, 0); }
+	public LEFT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.LEFT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_PAREN, 0); }
 	public codeBlock(): CodeBlockContext {
 		return this.getRuleContext(0, CodeBlockContext);
 	}
@@ -7274,25 +6896,17 @@ export class EnclosedExprCodeBlockContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_enclosedExprCodeBlock; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_enclosedExprCodeBlock; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterEnclosedExprCodeBlock) {
 			listener.enterEnclosedExprCodeBlock(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitEnclosedExprCodeBlock) {
 			listener.exitEnclosedExprCodeBlock(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitEnclosedExprCodeBlock) {
-			return visitor.visitEnclosedExprCodeBlock(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7303,14 +6917,14 @@ export class ExprContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_expr; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_expr; }
 	public copyFrom(ctx: ExprContext): void {
 		super.copyFrom(ctx);
 	}
 }
 export class ArrayExprContext extends ExprContext {
-	public LEFT_BRACKET(): TerminalNode { return this.getToken(T3ParserParser.LEFT_BRACKET, 0); }
-	public RIGHT_BRACKET(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_BRACKET, 0); }
+	public LEFT_BRACKET(): TerminalNode { return this.getToken(Tads3Parser.LEFT_BRACKET, 0); }
+	public RIGHT_BRACKET(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_BRACKET, 0); }
 	public expr(): ExprContext | undefined {
 		return this.tryGetRuleContext(0, ExprContext);
 	}
@@ -7319,30 +6933,22 @@ export class ArrayExprContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterArrayExpr) {
 			listener.enterArrayExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitArrayExpr) {
 			listener.exitArrayExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitArrayExpr) {
-			return visitor.visitArrayExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 export class MemberExprContext extends ExprContext {
 	public _prev!: ExprContext;
 	public _next!: ExprContext;
-	public DOT(): TerminalNode { return this.getToken(T3ParserParser.DOT, 0); }
+	public DOT(): TerminalNode { return this.getToken(Tads3Parser.DOT, 0); }
 	public expr(): ExprContext[];
 	public expr(i: number): ExprContext;
 	public expr(i?: number): ExprContext | ExprContext[] {
@@ -7357,23 +6963,15 @@ export class MemberExprContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterMemberExpr) {
 			listener.enterMemberExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitMemberExpr) {
 			listener.exitMemberExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitMemberExpr) {
-			return visitor.visitMemberExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7387,30 +6985,22 @@ export class IndexExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public LEFT_BRACKET(): TerminalNode { return this.getToken(T3ParserParser.LEFT_BRACKET, 0); }
-	public RIGHT_BRACKET(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_BRACKET, 0); }
+	public LEFT_BRACKET(): TerminalNode { return this.getToken(Tads3Parser.LEFT_BRACKET, 0); }
+	public RIGHT_BRACKET(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_BRACKET, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterIndexExpr) {
 			listener.enterIndexExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitIndexExpr) {
 			listener.exitIndexExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitIndexExpr) {
-			return visitor.visitIndexExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7424,29 +7014,21 @@ export class CommaExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public COMMA(): TerminalNode { return this.getToken(T3ParserParser.COMMA, 0); }
+	public COMMA(): TerminalNode { return this.getToken(Tads3Parser.COMMA, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterCommaExpr) {
 			listener.enterCommaExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitCommaExpr) {
 			listener.exitCommaExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitCommaExpr) {
-			return visitor.visitCommaExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7461,35 +7043,27 @@ export class RangeExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public RANGE(): TerminalNode { return this.getToken(T3ParserParser.RANGE, 0); }
-	public STEP(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.STEP, 0); }
+	public RANGE(): TerminalNode { return this.getToken(Tads3Parser.RANGE, 0); }
+	public STEP(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.STEP, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterRangeExpr) {
 			listener.enterRangeExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitRangeExpr) {
 			listener.exitRangeExpr(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitRangeExpr) {
-			return visitor.visitRangeExpr(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class DelegatedExpressionContext extends ExprContext {
-	public DELEGATED(): TerminalNode { return this.getToken(T3ParserParser.DELEGATED, 0); }
+	public DELEGATED(): TerminalNode { return this.getToken(Tads3Parser.DELEGATED, 0); }
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
@@ -7498,28 +7072,20 @@ export class DelegatedExpressionContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterDelegatedExpression) {
 			listener.enterDelegatedExpression(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitDelegatedExpression) {
 			listener.exitDelegatedExpression(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitDelegatedExpression) {
-			return visitor.visitDelegatedExpression(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class InheritedExpressionContext extends ExprContext {
-	public INHERITED(): TerminalNode { return this.getToken(T3ParserParser.INHERITED, 0); }
+	public INHERITED(): TerminalNode { return this.getToken(Tads3Parser.INHERITED, 0); }
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
@@ -7528,28 +7094,20 @@ export class InheritedExpressionContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterInheritedExpression) {
 			listener.enterInheritedExpression(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitInheritedExpression) {
 			listener.exitInheritedExpression(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitInheritedExpression) {
-			return visitor.visitInheritedExpression(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class TransientExpressionContext extends ExprContext {
-	public TRANSIENT(): TerminalNode { return this.getToken(T3ParserParser.TRANSIENT, 0); }
+	public TRANSIENT(): TerminalNode { return this.getToken(Tads3Parser.TRANSIENT, 0); }
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
@@ -7558,23 +7116,15 @@ export class TransientExpressionContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterTransientExpression) {
 			listener.enterTransientExpression(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitTransientExpression) {
 			listener.exitTransientExpression(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitTransientExpression) {
-			return visitor.visitTransientExpression(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7587,23 +7137,15 @@ export class PrimaryExprContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterPrimaryExpr) {
 			listener.enterPrimaryExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitPrimaryExpr) {
 			listener.exitPrimaryExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitPrimaryExpr) {
-			return visitor.visitPrimaryExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7611,8 +7153,8 @@ export class CallWithParamsExprContext extends ExprContext {
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
-	public LEFT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.LEFT_PAREN, 0); }
-	public RIGHT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_PAREN, 0); }
+	public LEFT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.LEFT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_PAREN, 0); }
 	public params(): ParamsContext[];
 	public params(i: number): ParamsContext;
 	public params(i?: number): ParamsContext | ParamsContext[] {
@@ -7627,23 +7169,15 @@ export class CallWithParamsExprContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterCallWithParamsExpr) {
 			listener.enterCallWithParamsExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitCallWithParamsExpr) {
 			listener.exitCallWithParamsExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitCallWithParamsExpr) {
-			return visitor.visitCallWithParamsExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7657,30 +7191,22 @@ export class ExprWithParenExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public LEFT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.LEFT_PAREN, 0); }
-	public RIGHT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_PAREN, 0); }
+	public LEFT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.LEFT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_PAREN, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterExprWithParenExpr) {
 			listener.enterExprWithParenExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitExprWithParenExpr) {
 			listener.exitExprWithParenExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitExprWithParenExpr) {
-			return visitor.visitExprWithParenExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7694,9 +7220,9 @@ export class ExprWithAnonymousObjectExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public LEFT_CURLY(): TerminalNode { return this.getToken(T3ParserParser.LEFT_CURLY, 0); }
-	public COLON(): TerminalNode { return this.getToken(T3ParserParser.COLON, 0); }
-	public RIGHT_CURLY(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_CURLY, 0); }
+	public LEFT_CURLY(): TerminalNode { return this.getToken(Tads3Parser.LEFT_CURLY, 0); }
+	public COLON(): TerminalNode { return this.getToken(Tads3Parser.COLON, 0); }
+	public RIGHT_CURLY(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_CURLY, 0); }
 	public params(): ParamsContext | undefined {
 		return this.tryGetRuleContext(0, ParamsContext);
 	}
@@ -7705,29 +7231,21 @@ export class ExprWithAnonymousObjectExprContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterExprWithAnonymousObjectExpr) {
 			listener.enterExprWithAnonymousObjectExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitExprWithAnonymousObjectExpr) {
 			listener.exitExprWithAnonymousObjectExpr(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitExprWithAnonymousObjectExpr) {
-			return visitor.visitExprWithAnonymousObjectExpr(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class ParenExpr2Context extends ExprContext {
-	public LEFT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.LEFT_PAREN, 0); }
-	public RIGHT_PAREN(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_PAREN, 0); }
+	public LEFT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.LEFT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_PAREN, 0); }
 	public expr(): ExprContext | undefined {
 		return this.tryGetRuleContext(0, ExprContext);
 	}
@@ -7736,28 +7254,20 @@ export class ParenExpr2Context extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterParenExpr2) {
 			listener.enterParenExpr2(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitParenExpr2) {
 			listener.exitParenExpr2(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitParenExpr2) {
-			return visitor.visitParenExpr2(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class LocalExprContext extends ExprContext {
-	public LOCAL(): TerminalNode { return this.getToken(T3ParserParser.LOCAL, 0); }
+	public LOCAL(): TerminalNode { return this.getToken(Tads3Parser.LOCAL, 0); }
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
@@ -7766,28 +7276,20 @@ export class LocalExprContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterLocalExpr) {
 			listener.enterLocalExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitLocalExpr) {
 			listener.exitLocalExpr(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitLocalExpr) {
-			return visitor.visitLocalExpr(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class StaticExprContext extends ExprContext {
-	public STATIC(): TerminalNode { return this.getToken(T3ParserParser.STATIC, 0); }
+	public STATIC(): TerminalNode { return this.getToken(Tads3Parser.STATIC, 0); }
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
@@ -7796,28 +7298,20 @@ export class StaticExprContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterStaticExpr) {
 			listener.enterStaticExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitStaticExpr) {
 			listener.exitStaticExpr(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitStaticExpr) {
-			return visitor.visitStaticExpr(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class NewExprContext extends ExprContext {
-	public NEW(): TerminalNode { return this.getToken(T3ParserParser.NEW, 0); }
+	public NEW(): TerminalNode { return this.getToken(Tads3Parser.NEW, 0); }
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
@@ -7826,23 +7320,15 @@ export class NewExprContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterNewExpr) {
 			listener.enterNewExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitNewExpr) {
 			listener.exitNewExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitNewExpr) {
-			return visitor.visitNewExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7856,29 +7342,21 @@ export class ReferenceExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public AMP(): TerminalNode { return this.getToken(T3ParserParser.AMP, 0); }
+	public AMP(): TerminalNode { return this.getToken(Tads3Parser.AMP, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterReferenceExpr) {
 			listener.enterReferenceExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitReferenceExpr) {
 			listener.exitReferenceExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitReferenceExpr) {
-			return visitor.visitReferenceExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7892,30 +7370,22 @@ export class NotInExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public LITERAL_NOT(): TerminalNode { return this.getToken(T3ParserParser.LITERAL_NOT, 0); }
-	public IN(): TerminalNode { return this.getToken(T3ParserParser.IN, 0); }
+	public LITERAL_NOT(): TerminalNode { return this.getToken(Tads3Parser.LITERAL_NOT, 0); }
+	public IN(): TerminalNode { return this.getToken(Tads3Parser.IN, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterNotInExpr) {
 			listener.enterNotInExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitNotInExpr) {
 			listener.exitNotInExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitNotInExpr) {
-			return visitor.visitNotInExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7929,30 +7399,22 @@ export class IsExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public IS(): TerminalNode { return this.getToken(T3ParserParser.IS, 0); }
-	public IN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.IN, 0); }
+	public IS(): TerminalNode { return this.getToken(Tads3Parser.IS, 0); }
+	public IN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.IN, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterIsExpr) {
 			listener.enterIsExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitIsExpr) {
 			listener.exitIsExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitIsExpr) {
-			return visitor.visitIsExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7966,29 +7428,21 @@ export class InExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public IN(): TerminalNode { return this.getToken(T3ParserParser.IN, 0); }
+	public IN(): TerminalNode { return this.getToken(Tads3Parser.IN, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterInExpr) {
 			listener.enterInExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitInExpr) {
 			listener.exitInExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitInExpr) {
-			return visitor.visitInExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8002,29 +7456,21 @@ export class AssignmentExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public ASSIGN(): TerminalNode { return this.getToken(T3ParserParser.ASSIGN, 0); }
+	public ASSIGN(): TerminalNode { return this.getToken(Tads3Parser.ASSIGN, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterAssignmentExpr) {
 			listener.enterAssignmentExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitAssignmentExpr) {
 			listener.exitAssignmentExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitAssignmentExpr) {
-			return visitor.visitAssignmentExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8038,36 +7484,28 @@ export class IfNilExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public IFNIL(): TerminalNode { return this.getToken(T3ParserParser.IFNIL, 0); }
+	public IFNIL(): TerminalNode { return this.getToken(Tads3Parser.IFNIL, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterIfNilExpr) {
 			listener.enterIfNilExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitIfNilExpr) {
 			listener.exitIfNilExpr(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitIfNilExpr) {
-			return visitor.visitIfNilExpr(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class AnonymousObjectExprContext extends ExprContext {
-	public LEFT_CURLY(): TerminalNode { return this.getToken(T3ParserParser.LEFT_CURLY, 0); }
-	public COLON(): TerminalNode { return this.getToken(T3ParserParser.COLON, 0); }
-	public RIGHT_CURLY(): TerminalNode { return this.getToken(T3ParserParser.RIGHT_CURLY, 0); }
+	public LEFT_CURLY(): TerminalNode { return this.getToken(Tads3Parser.LEFT_CURLY, 0); }
+	public COLON(): TerminalNode { return this.getToken(Tads3Parser.COLON, 0); }
+	public RIGHT_CURLY(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_CURLY, 0); }
 	public params(): ParamsContext | undefined {
 		return this.tryGetRuleContext(0, ParamsContext);
 	}
@@ -8079,23 +7517,15 @@ export class AnonymousObjectExprContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterAnonymousObjectExpr) {
 			listener.enterAnonymousObjectExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitAnonymousObjectExpr) {
 			listener.exitAnonymousObjectExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitAnonymousObjectExpr) {
-			return visitor.visitAnonymousObjectExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8111,34 +7541,26 @@ export class BitwiseExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public BITWISE_OR(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.BITWISE_OR, 0); }
-	public AMP(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.AMP, 0); }
-	public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ASSIGN, 0); }
-	public ARITHMETIC_LEFT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ARITHMETIC_LEFT, 0); }
-	public ARITHMETIC_RIGHT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ARITHMETIC_RIGHT, 0); }
-	public LOGICAL_RIGHT_SHIFT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.LOGICAL_RIGHT_SHIFT, 0); }
+	public BITWISE_OR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.BITWISE_OR, 0); }
+	public AMP(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.AMP, 0); }
+	public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ASSIGN, 0); }
+	public ARITHMETIC_LEFT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ARITHMETIC_LEFT, 0); }
+	public ARITHMETIC_RIGHT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ARITHMETIC_RIGHT, 0); }
+	public LOGICAL_RIGHT_SHIFT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LOGICAL_RIGHT_SHIFT, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterBitwiseExpr) {
 			listener.enterBitwiseExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitBitwiseExpr) {
 			listener.exitBitwiseExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitBitwiseExpr) {
-			return visitor.visitBitwiseExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8153,30 +7575,22 @@ export class AndOrExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public AND(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.AND, 0); }
-	public OR(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.OR, 0); }
+	public AND(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.AND, 0); }
+	public OR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.OR, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterAndOrExpr) {
 			listener.enterAndOrExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitAndOrExpr) {
 			listener.exitAndOrExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitAndOrExpr) {
-			return visitor.visitAndOrExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8191,30 +7605,22 @@ export class PowerOfExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public POW(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.POW, 0); }
-	public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ASSIGN, 0); }
+	public POW(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.POW, 0); }
+	public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ASSIGN, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterPowerOfExpr) {
 			listener.enterPowerOfExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitPowerOfExpr) {
 			listener.exitPowerOfExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitPowerOfExpr) {
-			return visitor.visitPowerOfExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8230,32 +7636,24 @@ export class MultiplicationExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public STAR(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.STAR, 0); }
-	public DIV(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.DIV, 0); }
-	public MOD(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.MOD, 0); }
-	public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ASSIGN, 0); }
+	public STAR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.STAR, 0); }
+	public DIV(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.DIV, 0); }
+	public MOD(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.MOD, 0); }
+	public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ASSIGN, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterMultiplicationExpr) {
 			listener.enterMultiplicationExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitMultiplicationExpr) {
 			listener.exitMultiplicationExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitMultiplicationExpr) {
-			return visitor.visitMultiplicationExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8271,31 +7669,23 @@ export class AdditiveExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public PLUS(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.PLUS, 0); }
-	public MINUS(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.MINUS, 0); }
-	public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ASSIGN, 0); }
+	public PLUS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.PLUS, 0); }
+	public MINUS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.MINUS, 0); }
+	public ASSIGN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ASSIGN, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterAdditiveExpr) {
 			listener.enterAdditiveExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitAdditiveExpr) {
 			listener.exitAdditiveExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitAdditiveExpr) {
-			return visitor.visitAdditiveExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8310,32 +7700,24 @@ export class RelationalExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public LTEQ(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.LTEQ, 0); }
-	public GTEQ(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.GTEQ, 0); }
-	public LT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.LT, 0); }
-	public GT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.GT, 0); }
+	public LTEQ(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LTEQ, 0); }
+	public GTEQ(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.GTEQ, 0); }
+	public LT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LT, 0); }
+	public GT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.GT, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterRelationalExpr) {
 			listener.enterRelationalExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitRelationalExpr) {
 			listener.exitRelationalExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitRelationalExpr) {
-			return visitor.visitRelationalExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8350,30 +7732,22 @@ export class EqualityExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public EQ(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.EQ, 0); }
-	public NEQ(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.NEQ, 0); }
+	public EQ(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.EQ, 0); }
+	public NEQ(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.NEQ, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterEqualityExpr) {
 			listener.enterEqualityExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitEqualityExpr) {
 			listener.exitEqualityExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitEqualityExpr) {
-			return visitor.visitEqualityExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8387,29 +7761,21 @@ export class ArrowExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public ARROW(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ARROW, 0); }
+	public ARROW(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ARROW, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterArrowExpr) {
 			listener.enterArrowExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitArrowExpr) {
 			listener.exitArrowExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitArrowExpr) {
-			return visitor.visitArrowExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8417,35 +7783,27 @@ export class ArrowExpr2Context extends ExprContext {
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
-	public ARROW(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ARROW, 0); }
+	public ARROW(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ARROW, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterArrowExpr2) {
 			listener.enterArrowExpr2(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitArrowExpr2) {
 			listener.exitArrowExpr2(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitArrowExpr2) {
-			return visitor.visitArrowExpr2(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class ArrowExpr3Context extends ExprContext {
-	public STAR(): TerminalNode { return this.getToken(T3ParserParser.STAR, 0); }
-	public ARROW(): TerminalNode { return this.getToken(T3ParserParser.ARROW, 0); }
+	public STAR(): TerminalNode { return this.getToken(Tads3Parser.STAR, 0); }
+	public ARROW(): TerminalNode { return this.getToken(Tads3Parser.ARROW, 0); }
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
@@ -8454,23 +7812,15 @@ export class ArrowExpr3Context extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterArrowExpr3) {
 			listener.enterArrowExpr3(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitArrowExpr3) {
 			listener.exitArrowExpr3(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitArrowExpr3) {
-			return visitor.visitArrowExpr3(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8478,34 +7828,26 @@ export class UnaryExprContext extends ExprContext {
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
 	}
-	public AT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.AT, 0); }
-	public AMP(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.AMP, 0); }
-	public NOT(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.NOT, 0); }
-	public PLUS(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.PLUS, 0); }
-	public MINUS(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.MINUS, 0); }
-	public TILDE(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.TILDE, 0); }
+	public AT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.AT, 0); }
+	public AMP(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.AMP, 0); }
+	public NOT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.NOT, 0); }
+	public PLUS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.PLUS, 0); }
+	public MINUS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.MINUS, 0); }
+	public TILDE(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.TILDE, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterUnaryExpr) {
 			listener.enterUnaryExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitUnaryExpr) {
 			listener.exitUnaryExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitUnaryExpr) {
-			return visitor.visitUnaryExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8517,18 +7859,18 @@ export class PostFixExprContext extends ExprContext {
 	public PLUS(i: number): TerminalNode;
 	public PLUS(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.PLUS);
+			return this.getTokens(Tads3Parser.PLUS);
 		} else {
-			return this.getToken(T3ParserParser.PLUS, i);
+			return this.getToken(Tads3Parser.PLUS, i);
 		}
 	}
 	public MINUS(): TerminalNode[];
 	public MINUS(i: number): TerminalNode;
 	public MINUS(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.MINUS);
+			return this.getTokens(Tads3Parser.MINUS);
 		} else {
-			return this.getToken(T3ParserParser.MINUS, i);
+			return this.getToken(Tads3Parser.MINUS, i);
 		}
 	}
 	constructor(ctx: ExprContext) {
@@ -8536,23 +7878,15 @@ export class PostFixExprContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterPostFixExpr) {
 			listener.enterPostFixExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitPostFixExpr) {
 			listener.exitPostFixExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitPostFixExpr) {
-			return visitor.visitPostFixExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8566,30 +7900,22 @@ export class TernaryExprContext extends ExprContext {
 			return this.getRuleContext(i, ExprContext);
 		}
 	}
-	public OPTIONAL(): TerminalNode { return this.getToken(T3ParserParser.OPTIONAL, 0); }
-	public COLON(): TerminalNode { return this.getToken(T3ParserParser.COLON, 0); }
+	public OPTIONAL(): TerminalNode { return this.getToken(Tads3Parser.OPTIONAL, 0); }
+	public COLON(): TerminalNode { return this.getToken(Tads3Parser.COLON, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterTernaryExpr) {
 			listener.enterTernaryExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitTernaryExpr) {
 			listener.exitTernaryExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitTernaryExpr) {
-			return visitor.visitTernaryExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8602,23 +7928,15 @@ export class AnonymousFunctionExprContext extends ExprContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterAnonymousFunctionExpr) {
 			listener.enterAnonymousFunctionExpr(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitAnonymousFunctionExpr) {
 			listener.exitAnonymousFunctionExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitAnonymousFunctionExpr) {
-			return visitor.visitAnonymousFunctionExpr(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8629,94 +7947,70 @@ export class PrimaryContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_primary; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_primary; }
 	public copyFrom(ctx: PrimaryContext): void {
 		super.copyFrom(ctx);
 	}
 }
 export class InheritedAtomContext extends PrimaryContext {
-	public INHERITED(): TerminalNode { return this.getToken(T3ParserParser.INHERITED, 0); }
+	public INHERITED(): TerminalNode { return this.getToken(Tads3Parser.INHERITED, 0); }
 	constructor(ctx: PrimaryContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterInheritedAtom) {
 			listener.enterInheritedAtom(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitInheritedAtom) {
 			listener.exitInheritedAtom(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitInheritedAtom) {
-			return visitor.visitInheritedAtom(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class HexAtomContext extends PrimaryContext {
-	public HEX(): TerminalNode { return this.getToken(T3ParserParser.HEX, 0); }
+	public HEX(): TerminalNode { return this.getToken(Tads3Parser.HEX, 0); }
 	constructor(ctx: PrimaryContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterHexAtom) {
 			listener.enterHexAtom(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitHexAtom) {
 			listener.exitHexAtom(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitHexAtom) {
-			return visitor.visitHexAtom(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class NumberAtomContext extends PrimaryContext {
-	public NR(): TerminalNode { return this.getToken(T3ParserParser.NR, 0); }
+	public NR(): TerminalNode { return this.getToken(Tads3Parser.NR, 0); }
 	constructor(ctx: PrimaryContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterNumberAtom) {
 			listener.enterNumberAtom(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitNumberAtom) {
 			listener.exitNumberAtom(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitNumberAtom) {
-			return visitor.visitNumberAtom(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class ReferenceAtomContext extends PrimaryContext {
-	public AMP(): TerminalNode { return this.getToken(T3ParserParser.AMP, 0); }
+	public AMP(): TerminalNode { return this.getToken(Tads3Parser.AMP, 0); }
 	public identifierAtom(): IdentifierAtomContext {
 		return this.getRuleContext(0, IdentifierAtomContext);
 	}
@@ -8725,23 +8019,15 @@ export class ReferenceAtomContext extends PrimaryContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterReferenceAtom) {
 			listener.enterReferenceAtom(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitReferenceAtom) {
 			listener.exitReferenceAtom(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitReferenceAtom) {
-			return visitor.visitReferenceAtom(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8754,190 +8040,134 @@ export class IdAtomContext extends PrimaryContext {
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterIdAtom) {
 			listener.enterIdAtom(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitIdAtom) {
 			listener.exitIdAtom(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitIdAtom) {
-			return visitor.visitIdAtom(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class DoubleQuotestringAtomContext extends PrimaryContext {
-	public SSTR(): TerminalNode { return this.getToken(T3ParserParser.SSTR, 0); }
+	public SSTR(): TerminalNode { return this.getToken(Tads3Parser.SSTR, 0); }
 	constructor(ctx: PrimaryContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterDoubleQuotestringAtom) {
 			listener.enterDoubleQuotestringAtom(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitDoubleQuotestringAtom) {
 			listener.exitDoubleQuotestringAtom(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitDoubleQuotestringAtom) {
-			return visitor.visitDoubleQuotestringAtom(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class SingleQuotestringAtomContext extends PrimaryContext {
-	public DSTR(): TerminalNode { return this.getToken(T3ParserParser.DSTR, 0); }
+	public DSTR(): TerminalNode { return this.getToken(Tads3Parser.DSTR, 0); }
 	constructor(ctx: PrimaryContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterSingleQuotestringAtom) {
 			listener.enterSingleQuotestringAtom(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitSingleQuotestringAtom) {
 			listener.exitSingleQuotestringAtom(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitSingleQuotestringAtom) {
-			return visitor.visitSingleQuotestringAtom(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class RegexpStringAtomContext extends PrimaryContext {
-	public RSTR(): TerminalNode { return this.getToken(T3ParserParser.RSTR, 0); }
+	public RSTR(): TerminalNode { return this.getToken(Tads3Parser.RSTR, 0); }
 	constructor(ctx: PrimaryContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterRegexpStringAtom) {
 			listener.enterRegexpStringAtom(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitRegexpStringAtom) {
 			listener.exitRegexpStringAtom(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitRegexpStringAtom) {
-			return visitor.visitRegexpStringAtom(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class BooleanAtomContext extends PrimaryContext {
-	public TRUE(): TerminalNode { return this.getToken(T3ParserParser.TRUE, 0); }
+	public TRUE(): TerminalNode { return this.getToken(Tads3Parser.TRUE, 0); }
 	constructor(ctx: PrimaryContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterBooleanAtom) {
 			listener.enterBooleanAtom(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitBooleanAtom) {
 			listener.exitBooleanAtom(this);
 		}
 	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitBooleanAtom) {
-			return visitor.visitBooleanAtom(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
 }
 export class NilAtomContext extends PrimaryContext {
-	public NIL(): TerminalNode { return this.getToken(T3ParserParser.NIL, 0); }
+	public NIL(): TerminalNode { return this.getToken(Tads3Parser.NIL, 0); }
 	constructor(ctx: PrimaryContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
 	}
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterNilAtom) {
 			listener.enterNilAtom(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitNilAtom) {
 			listener.exitNilAtom(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitNilAtom) {
-			return visitor.visitNilAtom(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
 
 
 export class IdentifierAtomContext extends ParserRuleContext {
-	public ID(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.ID, 0); }
-	public IN(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.IN, 0); }
-	public STRING(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.STRING, 0); }
+	public ID(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ID, 0); }
+	public IN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.IN, 0); }
+	public STRING(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.STRING, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_identifierAtom; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_identifierAtom; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterIdentifierAtom) {
 			listener.enterIdentifierAtom(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitIdentifierAtom) {
 			listener.exitIdentifierAtom(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitIdentifierAtom) {
-			return visitor.visitIdentifierAtom(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8947,7 +8177,7 @@ export class ParamsContext extends ParserRuleContext {
 	public optionallyTypedOptionalId(): OptionallyTypedOptionalIdContext | undefined {
 		return this.tryGetRuleContext(0, OptionallyTypedOptionalIdContext);
 	}
-	public SPREAD(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.SPREAD, 0); }
+	public SPREAD(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.SPREAD, 0); }
 	public array(): ArrayContext | undefined {
 		return this.tryGetRuleContext(0, ArrayContext);
 	}
@@ -8955,9 +8185,9 @@ export class ParamsContext extends ParserRuleContext {
 	public COMMA(i: number): TerminalNode;
 	public COMMA(i?: number): TerminalNode | TerminalNode[] {
 		if (i === undefined) {
-			return this.getTokens(T3ParserParser.COMMA);
+			return this.getTokens(Tads3Parser.COMMA);
 		} else {
-			return this.getToken(T3ParserParser.COMMA, i);
+			return this.getToken(Tads3Parser.COMMA, i);
 		}
 	}
 	public params(): ParamsContext[];
@@ -8973,25 +8203,17 @@ export class ParamsContext extends ParserRuleContext {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_params; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_params; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterParams) {
 			listener.enterParams(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitParams) {
 			listener.exitParams(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitParams) {
-			return visitor.visitParams(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -9003,7 +8225,7 @@ export class OptionallyTypedOptionalIdContext extends ParserRuleContext {
 	public _name!: IdentifierAtomContext;
 	public _optional!: Token;
 	public _emptyColon!: Token;
-	public COLON(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.COLON, 0); }
+	public COLON(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.COLON, 0); }
 	public identifierAtom(): IdentifierAtomContext[];
 	public identifierAtom(i: number): IdentifierAtomContext;
 	public identifierAtom(i?: number): IdentifierAtomContext | IdentifierAtomContext[] {
@@ -9013,30 +8235,22 @@ export class OptionallyTypedOptionalIdContext extends ParserRuleContext {
 			return this.getRuleContext(i, IdentifierAtomContext);
 		}
 	}
-	public OPTIONAL(): TerminalNode | undefined { return this.tryGetToken(T3ParserParser.OPTIONAL, 0); }
+	public OPTIONAL(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.OPTIONAL, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
 	// @Override
-	public get ruleIndex(): number { return T3ParserParser.RULE_optionallyTypedOptionalId; }
+	public get ruleIndex(): number { return Tads3Parser.RULE_optionallyTypedOptionalId; }
 	// @Override
-	public enterRule(listener: T3ParserListener): void {
+	public enterRule(listener: Tads3Listener): void {
 		if (listener.enterOptionallyTypedOptionalId) {
 			listener.enterOptionallyTypedOptionalId(this);
 		}
 	}
 	// @Override
-	public exitRule(listener: T3ParserListener): void {
+	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitOptionallyTypedOptionalId) {
 			listener.exitOptionallyTypedOptionalId(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: T3ParserVisitor<Result>): Result {
-		if (visitor.visitOptionallyTypedOptionalId) {
-			return visitor.visitOptionallyTypedOptionalId(this);
-		} else {
-			return visitor.visitChildren(this);
 		}
 	}
 }

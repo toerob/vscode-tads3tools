@@ -20,7 +20,6 @@
 		"onLanguage:tads3"
 	],
 	"main": "./client/out/extension",
-	
 	"grammars": [
 		{
 			"language": "tads3",
@@ -41,7 +40,6 @@
 				"path": "./snippets/snippets.json"
 			}
 		],
-
 		"languages": [
 			{
 				"id": "tads3",
@@ -83,6 +81,7 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
+		"antlr4ts": "antlr4ts server/src/parser/Tads3.g4",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
@@ -99,6 +98,7 @@
 	},
 	"dependencies": {
 		"antlr4ts": "^0.5.0-alpha.4",
+		"antlr4ts-cli": "^0.5.0-alpha.4",
 		"node-worker-threads-pool": "^1.5.0",
 		"threads": "^1.6.5"
 	}

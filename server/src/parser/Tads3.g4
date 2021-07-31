@@ -1,4 +1,4 @@
-grammar T3Parser;
+grammar Tads3;
 
 program:
     directives+=directive*
