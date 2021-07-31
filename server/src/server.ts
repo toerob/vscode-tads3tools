@@ -201,8 +201,41 @@ connection.listen();
 async function preprocessAndParseAllFiles(makefileLocation: any, filePaths: any) {
 	await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
 
-	const allFilePaths = filePaths ?? [...preprocessedFilesCacheMap.keys()];
+	let allFilePaths = filePaths;
 
+	// Parse project files close to the makefile first:
+	if (filePaths === undefined) {
+		const baseDir = Utils.dirname(URI.parse(makefileLocation)).fsPath;
+		allFilePaths = [...preprocessedFilesCacheMap.keys()];
+		allFilePaths = allFilePaths.sort((a:string, b:string) => {
+			if (a.startsWith(baseDir)) {
+				return -1;
+			}
+			return 0;
+		});
+	}
+
+	// TODO: possibly make the project libraries be parsed before the std library:
+
+
+	/*
+
+		const preferredFilesfirst = ['misc.t', 'action.t', 'actor.t', 'travel.t'];
+	
+	const sortedByUtility = libraryPrepFiles.sort((a, b) => {
+		for (let p of preferredFilesfirst) {
+			if (a.endsWith(p)) {
+				return -1;
+			}
+		}
+		return 0;
+	});
+	//return sortedByUtility;
+
+	/*const smallestFileFirst = sortedByUtility.sort(function(a, b) {
+	  return statSync(a).size - statSync(b).size;
+	});*/
+	
 	const workerPool = Pool(() => spawn(new Worker('./worker')), 4);
 	try {
 		const startTime = Date.now();

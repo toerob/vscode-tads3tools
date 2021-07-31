@@ -7,7 +7,7 @@ import { exec } from 'child_process';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages } from 'vscode';
 
 import {
 	ConnectionError,
@@ -17,6 +17,13 @@ import {
 	TransportKind
 } from 'vscode-languageclient/node';
 import { Tads3CompileErrorParser } from './tads3-error-parser';
+
+let errorDiagnostics = [];
+const collection = languages.createDiagnosticCollection('tads3diagnostics');
+
+const tads3CompileErrorParser = new Tads3CompileErrorParser();
+let allFilesBeenProcessed = false;
+
 
 let client: LanguageClient;
 export function activate(context: ExtensionContext) {
@@ -52,7 +59,14 @@ export function activate(context: ExtensionContext) {
 	client.onReady().then(()=> {
 		
 		client.onNotification('symbolparsing/success', (path)=> {
-			window.showInformationMessage(`${basename(path)} has been parsed successfully`);
+			//window.showInformationMessage(`${basename(path)} has been parsed successfully`);
+
+			if (window.activeTextEditor.document.uri.fsPath === path) {
+				//TODO: refresh the outliner somehow
+				//workspace.onDidChangeTextDocument(window.activeTextEditor.document.uri);
+				workspace.openTextDocument(window.activeTextEditor.document.uri);
+
+			}
 		});
 		client.onNotification("symbolparsing/allfiles/success", ({elapsedTime}) => {
 			window.showInformationMessage(`All project/library files parsed in ${elapsedTime} ms`);
@@ -72,8 +86,6 @@ export function deactivate(): Thenable<void> | undefined {
 
 let source: CancellationTokenSource;
 let chosenMakefileUri: Uri|undefined;
-
-
 
 export async function findAndSelectMakefileUri() {
 	let choice: Uri = undefined;
@@ -133,12 +145,15 @@ async function onDidSaveTextDocument(textDocument: any) {
 }
 
 
-const tads3CompileErrorParser = new Tads3CompileErrorParser();
-let allFilesBeenProcessed = false;
-
 async function diagnosePreprocessAndParse(textDocument: any) {
 	await diagnose(textDocument);
-	if(!allFilesBeenProcessed) {
+	if (errorDiagnostics.length > 0) {
+		//throw new Error('Could not assemble outliner symbols since there\'s an error. ');
+		//window.showWarningMessage(`Could not assemble outliner symbols since there\'s an error. `);
+		return;
+	}
+
+	if (!allFilesBeenProcessed) {
 		allFilesBeenProcessed = true;
 		preprocessAndParseDocument();
 		return;
@@ -155,16 +170,9 @@ async function diagnose(textDocument: TextDocument) {
 	parseDiagnostics(resultOfCompilation.toString(), textDocument);
 }
 
-let errorDiagnostics;
-let collection;
-
 async function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocument) {
 	errorDiagnostics = tads3CompileErrorParser.parse(resultOfCompilation, textDocument);
 	collection.set(textDocument.uri, errorDiagnostics);
-	if (errorDiagnostics.length === 0) {
-		return;
-	}
-	throw new Error('Could not assemble outliner symbols since there\'s an error. ');
 }
 
 
