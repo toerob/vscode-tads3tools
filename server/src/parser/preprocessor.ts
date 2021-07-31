@@ -1,6 +1,12 @@
 import { URI } from 'vscode-languageserver';
 import { exec } from 'child_process';
 
+
+let longProcessing = true;
+
+const rowsMap = new Map<string, number>();
+
+
 export function runCommand(command: string) {
 	return new Promise( (resolve, reject) => {
 		let result = '';
@@ -25,11 +31,12 @@ export function runCommand(command: string) {
  * once it is fixed. Right now the padding is incorrect
  * @returns 
  */
- async function preprocessAllFiles(chosenMakefilePath: string) {
+ export async function preprocessAllFiles(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>) {
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
-	const result: any = await runCommand(`t3make -P -q -f ${chosenMakefilePath}`);
-	processPreprocessedResult(result);
+	const commandLine = `t3make -P -q -f "${chosenMakefilePath}"`;
+	const result: any = await runCommand(commandLine);
+	processPreprocessedResult(result, preprocessedFilesCacheMap);
 
 	/*return window.withProgress({
 		location: ProgressLocation.Window,
@@ -50,13 +57,7 @@ export function runCommand(command: string) {
 	});*/
 }
 
-let longProcessing = true;
-
-
-const preprocessedFilesCacheMap = new Map<string, string>();
-const rowsMap = new Map<string, number>();
-
-function storeCurrentBufferAndRows(currentFile: string, currentBuffer: string, currentCounter: number) {
+function storeCurrentBufferAndRows(currentFile: string, currentBuffer: string, currentCounter: number, preprocessedFilesCacheMap: Map<string, string>) {
 	try {
 		const previouslyCountedRows = rowsMap.get(currentFile);
 		if (previouslyCountedRows !== undefined) {
@@ -79,7 +80,7 @@ function storeCurrentBufferAndRows(currentFile: string, currentBuffer: string, c
 	}
 }
 
-function processPreprocessedResult(result: any) {
+function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<string, string>) {
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
 	const pathRegexp = new RegExp("^#line ([0-9]+) \"(.*)\"");
@@ -95,7 +96,7 @@ function processPreprocessedResult(result: any) {
 			const match = pathRegexp.exec(line);
 			if (match) {
 				if (currentFile) {
-					storeCurrentBufferAndRows(currentFile, currentBuffer, currentCounter - 1);
+					storeCurrentBufferAndRows(currentFile, currentBuffer, currentCounter - 1, preprocessedFilesCacheMap);
 				}
 				currentBuffer = '';
 				currentCounter = 0;
@@ -117,7 +118,7 @@ function processPreprocessedResult(result: any) {
 					if(lastStored) {
 						const lastCharacter = lastStored[lastStored.length - 1];
 						if (lastCharacter === '\n') {
-							console.error(`Salvaging negative diff in ${currentFile} ${diff} last line: ${lastLine}`);
+							//console.error(`Salvaging negative diff in ${currentFile} ${diff} last line: ${lastLine}`);
 							const removedLastLine = lastStored.slice(0, lastStored.length - 1);
 							preprocessedFilesCacheMap.set(currentFile, removedLastLine);
 							currentCounter--;

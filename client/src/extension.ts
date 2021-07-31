@@ -4,9 +4,11 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource } from 'vscode';
+import { basename } from 'path';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri } from 'vscode';
 
 import {
+	ConnectionError,
 	LanguageClient,
 	LanguageClientOptions,
 	ServerOptions,
@@ -41,11 +43,17 @@ export function activate(context: ExtensionContext) {
 	client = new LanguageClient('languageServerExample', 'Language Server Example', serverOptions, clientOptions);
 	client.start();
 
-	// push to collection
-	context.subscriptions.push(commands.registerCommand(
-		'extension.parseTads3', parseTads3
+	
+	context.subscriptions.push(commands.registerCommand('extension.parseTads3', parseTads3));
+	
+	client.onReady().then(()=> {
+		
+		client.onNotification('symbolparsing/success', (path)=> {
+			window.showInformationMessage(`${basename(path)} has been parsed successfully`);
+		});
 
-	));
+	});
+
 }
 
 export function deactivate(): Thenable<void> | undefined {
@@ -56,11 +64,11 @@ export function deactivate(): Thenable<void> | undefined {
 }
 
 
-
-
 let source: CancellationTokenSource;
 
-function parseTads3() {
+async function parseTads3() {
+	const makefileLocation = await findAndSelectMakefileUri();
+	const filePaths = [window.activeTextEditor.document.uri.fsPath];
 	return new Promise((resolve) => {
 		window.withProgress({
 			location: ProgressLocation.Notification,
@@ -71,17 +79,26 @@ function parseTads3() {
 				await cancelParse();
 				return resolve(false);
 			});
-			await executeParse(['fil1','fil2']);
+			await executeParse(makefileLocation.fsPath, filePaths);
 			return resolve(true);
 		});
 	});
+
+	//await executeParse(makefileLocation.fsPath, filePaths);
 }
 
 
-export async function executeParse(filePaths): Promise<any> {
+
+
+export async function executeParse(makefileLocation:string, filePaths): Promise<any> {
+	
 	return client.onReady().then(() => {
 		source = new CancellationTokenSource();
-		return client.sendRequest('executeParse', {filePaths: filePaths, token: source.token});
+		return client.sendRequest('executeParse', {
+			makefileLocation: makefileLocation, 
+			filePaths: filePaths, 
+			token: source.token
+		});
 	});
 }
 
@@ -93,3 +110,39 @@ export async function cancelParse(): Promise<any> {
 }
 
 
+
+
+
+
+
+export async function findAndSelectMakefileUri() {
+	let choice: Uri = undefined;
+	const files = await workspace.findFiles(`**/*.t3m`);
+	if (files.length > 1) {
+		window.showInformationMessage(`Select which Makefile the project uses`);
+		const qpItemMap = new Map();
+		files.forEach(x => qpItemMap.set(basename(x.path), x));
+		const entriesStr: string[] = Array.from(qpItemMap.keys());
+		const pick = await window.showQuickPick(entriesStr);
+		choice = qpItemMap.get(pick);
+	} else if (files.length == 1) {
+		choice = files[0];
+	} else {
+		if (!choice) {
+			const file = await window.showOpenDialog({
+				title: `Select which folder the project's makefile (*.t3m) is located within`,
+				filters: { 'Makefiles': ['t3m'] },
+				openLabel: `Choose  makefile (*.t3m)`,
+				canSelectFolders: false,
+				canSelectFiles: true,
+			});
+			if (file.length > 0 && file[0] !== undefined) {
+				choice = files[0];
+			}
+		}
+	}
+	if (choice === undefined) {
+		console.error(`No Makefile.t3m found, source code could not be processed.`);
+	}
+	return Promise.resolve(choice);
+}

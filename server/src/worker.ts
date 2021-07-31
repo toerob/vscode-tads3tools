@@ -10,8 +10,31 @@ import { ParseTree } from 'antlr4ts/tree/ParseTree';
 import { TerminalNode } from 'antlr4ts/tree/TerminalNode';
 import { PredictionMode } from 'antlr4ts/atn/PredictionMode';
 import Tads3SymbolListener from './parser/Tads3SymbolListener';
+import { expose } from 'threads';
+import { DocumentSymbol } from 'vscode-languageserver';
 
 
+expose(function parseFunc(path: string, text: string) {
+  const symbols: DocumentSymbol[] = [];
+
+  const input = CharStreams.fromString(text);
+  const lexer = new T3ParserLexer(input);
+  const tokenStream = new CommonTokenStream(lexer);
+  const parser = new T3ParserParser(tokenStream);
+  const parseTreeWalker = new ParseTreeWalker();
+  const listener = new Tads3SymbolListener();
+  const parseTree = parser.program();
+  try {
+    parseTreeWalker.walk<T3ParserListener>(listener, parseTree);
+  } catch (err) {
+    console.error(`parseTreeWalker failed ${err}`);
+  }
+  return listener?.symbols ?? symbols;
+});
+
+
+
+/*
 type WorkerResult = any;
 type WorkerError = string | null;
 
@@ -19,21 +42,15 @@ const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-// The long-running operation
-const executeParse = async (test: any): Promise<[WorkerError, WorkerResult?]> => {
-  // The `test` variable from the main thread is accessible here
+const executeParse = async (path: string, text: string): Promise<[WorkerError, WorkerResult?]> => {
   try {
-    return [null, await parseFunc('hej', `object: Room 'hello world';`)];
+
+    return [null, await parseFunc(path, text)];
+
   } catch (error) {
     return [error];
   }
 };
-
-// parentPort allows communication with the parent thread
-(async () => {
-  parentPort?.postMessage(await executeParse(workerData.test));
-})();
-
 
 async function parseFunc(path: string, text: string) {
   const input = CharStreams.fromString(text);
@@ -45,8 +62,12 @@ async function parseFunc(path: string, text: string) {
   const parseTree = parser.program();
   try {
     parseTreeWalker.walk<T3ParserListener>(listener, parseTree);
-  } catch(err) {
+  } catch (err) {
     console.error(`parseTreeWalker failed ${err}`);
   }
   return listener.symbols;
 }
+
+(async () => parentPort?.postMessage(await executeParse(workerData.path, workerData.text)))();
+
+*/

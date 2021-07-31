@@ -25,10 +25,20 @@ import {
 	TextDocument
 } from 'vscode-languageserver-textdocument';
 
-import { Worker as WorkerThreads } from 'worker_threads';
+//import { threadId, Worker as WorkerThreads } from 'worker_threads';
 import path = require('path');
 import { connect } from 'http2';
-
+import { CharStreams, CommonTokenStream, ConsoleErrorListener } from 'antlr4ts';
+import { preprocessAllFiles } from './parser/preprocessor';
+import { fstat } from 'fs';
+import { URI, Utils } from 'vscode-uri';
+import { cargoQueue } from 'async';
+import { ParseTreeWalker } from 'antlr4ts/tree/ParseTreeWalker';
+import { T3ParserLexer } from './parser/T3ParserLexer';
+import { T3ParserListener } from './parser/T3ParserListener';
+import { T3ParserParser } from './parser/T3ParserParser';
+import Tads3SymbolListener from './parser/Tads3SymbolListener';
+import { spawn, expose, Pool, Worker, Thread } from 'threads';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -240,45 +250,150 @@ class Tads3SymbolManager {
 
 const symbolManager = new Tads3SymbolManager();
 
-connection.onDocumentSymbol((handler: DocumentSymbolParams)=> {
+connection.onDocumentSymbol((handler: DocumentSymbolParams) => {
+
 	const symbols = symbolManager.symbols.get(handler.textDocument.uri);
+	return symbols;
+});
 
 
-	if(symbols) {
-		return symbols;
+
+const preprocessedFilesCacheMap = new Map<string, string>();
+
+function parseJob(filePath: string) {
+	console.log(filePath);
+	/*const input = CharStreams.fromString(preprocessedFilesCacheMap.get(filePath) ?? '');
+	const lexer = new T3ParserLexer(input);
+	const tokenStream = new CommonTokenStream(lexer);
+	const parser = new T3ParserParser(tokenStream);
+	const parseTreeWalker = new ParseTreeWalker();
+	const listener = new Tads3SymbolListener();
+	const parseTree = parser.program();
+	try {
+		parseTreeWalker.walk<T3ParserListener>(listener, parseTree);
+	} catch (err) {
+		console.error(`parseTreeWalker failed ${err}`);
 	}
-	
-	return [...symbolManager.symbols.values()][0];
-});
+	connection.sendNotification('symbolparsing/success', filePath);
+	connection.console.log(`${filePath} parsed successfully`);
+	symbolManager.symbols.set(filePath, listener.symbols);	*/
+}
 
-connection.onRequest('executeParse', (filePaths, token) => {
+connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {
+	await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
+	const allFilePaths = [...preprocessedFilesCacheMap.keys()]; //.splice(0, 16);
 
-	// Process all files here
-	const filePath = filePaths[0];
+	const workerPool = Pool(() => spawn(new Worker('./worker')), 8);
 
-	return new Promise((resolve) => {
-		const worker = new WorkerThreads(path.resolve(__dirname, 'worker.js'), {workerData: { text: `room: Room 'rum1';` }});
-		worker.on('message', ([error, symbols]) => {
-			if (error) {
-				connection.console.error(error.message);
-			}
-			symbolManager.symbols.set(filePath, symbols);
-			connection.sendNotification('symbolparsing/success', path);
-			worker.terminate();
-			return resolve(symbols);
-		});
-		token.onCancellationRequested(async () => {
-			connection.console.log('Cancellation requested');
-			worker.terminate().then((status) => {
-				connection.console.log(`Canceled with status: ${status}`);
+	try {
+		const startTime = Date.now();
+
+		for (const filePath of allFilePaths) {
+			workerPool.queue(async parseJob => {
+				const text = preprocessedFilesCacheMap.get(filePath) ?? '';
+				const symbols = await parseJob(filePath, text);
+				console.log(symbols);
+				symbolManager.symbols.set(filePath, symbols);
 			});
-		});
-	}).catch(err => {
+		}
+		await workerPool.completed();
+		await workerPool.terminate();
+		const elapsedTime = Date.now() - startTime;
+		console.log(`All files parsed within ${elapsedTime} ms`);
+
+	} catch (err) {
 		console.error(err);
-	});
+	}
+
+	/*if(!token) {
+		connection.console.error(`No cancellableToken received, this action will not be cancellable`);
+	} else {
+		token?.onCancellationRequested(async () => {
+			connection.console.log('Cancellation requested');
+			worker?.terminate().then((status) => {
+				connection.console.log(`Canceled with status: ${status}`);
+				throw new Error(`Canceled`);
+			});
+		});	
+	}*/
+
+	/*
+	const cq = cargoQueue(() => async (tasks: any, callback: any) => {
+		for(let i=0;i<tasks.length;i++) {
+			const p = tasks[i].path;
+			const text = tasks[i].text;
+			console.log(`Parsing ${p}`);
+			callback();
+		}
+
+		const input = CharStreams.fromString(text);
+		const lexer = new T3ParserLexer(input);
+		const tokenStream = new CommonTokenStream(lexer);
+		const parser = new T3ParserParser(tokenStream);
+		const parseTreeWalker = new ParseTreeWalker();
+		const listener = new Tads3SymbolListener();
+		const parseTree = parser.program();
+		try {
+			parseTreeWalker.walk<T3ParserListener>(listener, parseTree);
+		} catch (err) {
+			console.error(`parseTreeWalker failed ${err}`);
+		}
+		connection.sendNotification('symbolparsing/success', p);
+		connection.console.log(`${p} parsed successfully`);
+		symbolManager.symbols.set(p, listener.symbols);
+		callback();
+	});**/
+
+	/*for (const filePath of allFilePaths) {
+		const text = preprocessedFilesCacheMap.get(filePath);
+		const filePathUriStr = URI.parse(filePath).toString();
+		try {
+			cq.push({ path: filePathUriStr, text: text });
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	await cq.drain(() => {
+		console.log('All done!');
+	}); */
+
+
+
+
+
+	/*let worker: WorkerThreads;
+	//return new Promise((resolve) => {
+	for(const filePath of allFilePaths) {
+		try {
+			const uri  = URI.parse(filePath).toString();
+			connection.console.log(`Begin parsing of ${filePath}`);
+			const text = preprocessedFilesCacheMap.get(filePath);
+			const worker = new WorkerThreads(path.resolve(__dirname, 'worker.js'), {workerData: { path: uri, text: text }});
+			worker.on('message', ([error, symbols]) => {
+				if (error) {
+					connection.console.error(error.message);
+					throw new Error(error.message);
+				}
+				symbolManager.symbols.set(uri, symbols);
+
+				connection.sendNotification('symbolparsing/success', filePath);
+				connection.console.log(`${uri} parsed successfully`);
+				worker.terminate();
+				//return symbols;
+				//return resolve(symbols);
+			});
+	
+		} catch(err) {
+			console.error(err);
+		}
+	}*/
+	return 'OK!';
+
+	/*}).catch(err => {
+		console.error(err);
+	});*/
 });
-
-
 
 
 // Make the text document manager listen on the connection
@@ -287,3 +402,5 @@ documents.listen(connection);
 
 // Listen on the connection
 connection.listen();
+
+

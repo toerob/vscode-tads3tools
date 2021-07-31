@@ -94,5 +94,9 @@
 		"eslint": "^7.31.0",
 		"mocha": "^9.0.3",
 		"typescript": "^4.3.5"
+	},
+	"dependencies": {
+		"node-worker-threads-pool": "^1.5.0",
+		"threads": "^1.6.5"
 	}
 }
