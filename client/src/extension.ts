@@ -26,6 +26,7 @@ let allFilesBeenProcessed = false;
 
 
 let client: LanguageClient;
+
 export function activate(context: ExtensionContext) {
 	const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
 
@@ -59,12 +60,20 @@ export function activate(context: ExtensionContext) {
 	client.onReady().then(()=> {
 		
 		client.onNotification('symbolparsing/success', (path)=> {
-			//window.showInformationMessage(`${basename(path)} has been parsed successfully`);
-
+			//window.showInformationMessage(`${basename(path)} has been parsed successfully`);			
 			if (window.activeTextEditor.document.uri.fsPath === path) {
+				const uri = window.activeTextEditor.document.uri;
 				//TODO: refresh the outliner somehow
 				//workspace.onDidChangeTextDocument(window.activeTextEditor.document.uri);
-				workspace.openTextDocument(window.activeTextEditor.document.uri);
+				/*workspace.openTextDocument(window.activeTextEditor.document.uri).then(doc => {
+
+				})*/
+				//window.activeTerminal.
+				/*runCommand("workbench.action.closeActiveEditor").then(() => {
+					workspace.openTextDocument(window.activeTextEditor.document.uri);
+					//window.showTextDocument(uri);
+				});*/
+
 
 			}
 		});

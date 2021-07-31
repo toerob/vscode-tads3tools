@@ -19,7 +19,9 @@ import {
 	DocumentSymbolParams,
 	DocumentSymbolRequest,
 	CancellationToken,
-	CancellationTokenSource
+	CancellationTokenSource,
+	DocumentSymbol,
+	ServerRequestHandler
 } from 'vscode-languageserver/node';
 
 import {
@@ -41,11 +43,14 @@ import { T3ParserParser } from './parser/T3ParserParser';
 import Tads3SymbolListener from './parser/Tads3SymbolListener';
 import { spawn, expose, Pool, Worker, Thread } from 'threads';
 import { Tads3SymbolManager } from './Tads3SymbolManager';
+import { promisify } from 'util';
+import { WorkspaceChange } from 'atom-languageclient/build/lib/languageclient';
 
 
 
 const symbolManager = new Tads3SymbolManager();
 const preprocessedFilesCacheMap = new Map<string, string>();
+const hasSymbolsToFetch = new Map<string, boolean>();
 
 
 // Create a connection for the server, using Node's IPC as a transport.
@@ -177,10 +182,24 @@ connection.onDidChangeWatchedFiles(_change => {
 	connection.console.log('We received an file change event');
 });
 
-connection.onDocumentSymbol((handler: DocumentSymbolParams) => {
+const asyncSetTimeout = promisify(setTimeout);
+async function asyncSleep(ms: number) {
+	await asyncSetTimeout(ms);
+	/*return new Promise( (resolve, reject) => {
+		setTimeout(() => resolve(undefined), ms);
+	});*/
+}
+
+
+connection.onDocumentSymbol(async (handler): Promise<DocumentSymbol[]> => {
 	const fsPath = URI.parse(handler.textDocument.uri).fsPath;
-	const symbols = symbolManager.symbols.get(fsPath);
-	return symbols;
+	if (fsPath.endsWith('.t') || fsPath.endsWith('.h')) {
+		while (!symbolManager.symbols.has(fsPath)) {
+			connection.console.log(`${fsPath} is waiting for symbols`);
+			await asyncSetTimeout(2000);
+		}			
+	}
+	return symbolManager.symbols.get(fsPath) ?? [];
 });
 
 
