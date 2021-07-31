@@ -99,6 +99,7 @@ connection.onInitialize((params: InitializeParams) => {
 	return result;
 });
 
+
 connection.onInitialized(() => {
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
@@ -182,34 +183,44 @@ connection.onDocumentSymbol((handler: DocumentSymbolParams) => {
 	return symbols;
 });
 
+
+
 connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {
+	await preprocessAndParseAllFiles(makefileLocation, filePaths); 
+});
+
+
+// Make the text document manager listen on the connection
+// for open, change and close text document events
+documents.listen(connection);
+
+// Listen on the connection
+connection.listen();
+
+
+async function preprocessAndParseAllFiles(makefileLocation: any, filePaths: any) {
 	await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
-	const allFilePaths = [...preprocessedFilesCacheMap.keys()];
+
+	const allFilePaths = filePaths ?? [...preprocessedFilesCacheMap.keys()];
+
 	const workerPool = Pool(() => spawn(new Worker('./worker')), 4);
-	const cancelled = false;
-	/*if (token) {
-		token?.onCancellationRequested(async () => {
-			connection.console.log('Cancellation requested');
-			cancelled = true;
-		});
-	}*/
 	try {
 		const startTime = Date.now();
 		for (const filePath of allFilePaths) {
-			workerPool.queue(async parseJob => {
-				if (cancelled) {
-					console.log(`Skipping ${filePath}`);
-					return;
-				}
+
+			//if (token !== undefined && token._isCancelled) {
+			//token.onCancellationRequested(async () => {
+			//connection.console.log('Cancellation requested');
+			//});
+			//throw new Error(`Parsing cancelled`);
+			//}
+			workerPool.queue(async (parseJob) => {
 				const text = preprocessedFilesCacheMap.get(filePath) ?? '';
 				const symbols = await parseJob(filePath, text);
 				connection.sendNotification('symbolparsing/success', filePath);
 				connection.console.log(`${filePath} parsed successfully`);
 				symbolManager.symbols.set(filePath, symbols);
 			});
-			if (cancelled) {
-				throw new Error(`Parsing cancelled`);
-			}
 		}
 		await workerPool.completed();
 		await workerPool.terminate();
@@ -221,14 +232,5 @@ connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token
 		console.error(err);
 		connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
 	}
-});
-
-
-// Make the text document manager listen on the connection
-// for open, change and close text document events
-documents.listen(connection);
-
-// Listen on the connection
-connection.listen();
-
+}
 

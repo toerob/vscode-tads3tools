@@ -3,9 +3,11 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
+import { exec } from 'child_process';
+import { existsSync } from 'fs';
 import * as path from 'path';
-import { basename } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri } from 'vscode';
+import { basename, dirname } from 'path';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument } from 'vscode';
 
 import {
 	ConnectionError,
@@ -14,9 +16,9 @@ import {
 	ServerOptions,
 	TransportKind
 } from 'vscode-languageclient/node';
+import { Tads3CompileErrorParser } from './tads3-error-parser';
 
 let client: LanguageClient;
-
 export function activate(context: ExtensionContext) {
 	const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
 
@@ -35,8 +37,8 @@ export function activate(context: ExtensionContext) {
 			{ scheme: 'untitled', language: 'tads3' },
 			{ scheme: 'file', language: 'tads3' }],
 		synchronize: {
-			// Notify the server about file changes to '.clientrc files contained in the workspace
-			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+			// Notify the server about file changes to '.t, .h, and .clientrc files contained in the workspace
+			fileEvents: workspace.createFileSystemWatcher('**/.{t,h,clientrc}')
 		}
 	};
 
@@ -44,8 +46,9 @@ export function activate(context: ExtensionContext) {
 	client.start();
 
 	
-	context.subscriptions.push(commands.registerCommand('extension.parseTads3', parseTads3));
-	
+	//context.subscriptions.push(commands.registerCommand('extension.parseTads3', parseTads3));
+	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
+
 	client.onReady().then(()=> {
 		
 		client.onNotification('symbolparsing/success', (path)=> {
@@ -53,11 +56,11 @@ export function activate(context: ExtensionContext) {
 		});
 		client.onNotification("symbolparsing/allfiles/success", ({elapsedTime}) => {
 			window.showInformationMessage(`All project/library files parsed in ${elapsedTime} ms`);
-		});	
-
+		});
 	});
 
 }
+
 
 export function deactivate(): Thenable<void> | undefined {
 	if (!client) {
@@ -68,55 +71,7 @@ export function deactivate(): Thenable<void> | undefined {
 
 
 let source: CancellationTokenSource;
-
-async function parseTads3() {
-	
-	
-	const makefileLocation = await findAndSelectMakefileUri();
-	const filePaths = [window.activeTextEditor.document.uri.fsPath];
-	return new Promise((resolve) => {
-		window.withProgress({
-			location: ProgressLocation.Notification,
-			title: 'Parsing source code...',
-			cancellable: true
-		}, async (progress, token) => {
-			/*token.onCancellationRequested(async () => {
-				await cancelParse();
-				return resolve(false);
-			});*/
-			await executeParse(makefileLocation.fsPath, filePaths);
-			return resolve(true);
-		});
-	});
-
-	//return executeParse(makefileLocation.fsPath, filePaths);
-}
-
-
-
-
-export async function executeParse(makefileLocation:string, filePaths): Promise<any> {
-	
-	return client.onReady().then(() => {
-		source = new CancellationTokenSource();
-		return client.sendRequest('executeParse', {
-			makefileLocation: makefileLocation, 
-			filePaths: filePaths, 
-			token: source.token
-		});
-	});
-}
-
-export async function cancelParse(): Promise<any> {
-	return new Promise((resolve) => {
-		source?.cancel();
-		return resolve(true);
-	});
-}
-
-
-
-
+let chosenMakefileUri: Uri|undefined;
 
 
 
@@ -150,4 +105,125 @@ export async function findAndSelectMakefileUri() {
 		console.error(`No Makefile.t3m found, source code could not be processed.`);
 	}
 	return Promise.resolve(choice);
+}
+
+
+let currentTextDocument: TextDocument | undefined;
+
+async function onDidSaveTextDocument(textDocument: any) {
+	currentTextDocument = textDocument;
+
+	if (chosenMakefileUri && !existsSync(chosenMakefileUri.path)) {
+		chosenMakefileUri = undefined;
+	}
+
+	if (chosenMakefileUri === undefined) {
+		chosenMakefileUri = await findAndSelectMakefileUri();
+	}
+
+	if (chosenMakefileUri === undefined) {
+		return;
+	}
+	
+	if (chosenMakefileUri === undefined) {
+		console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
+		return;
+	}
+	await diagnosePreprocessAndParse(textDocument);
+}
+
+
+const tads3CompileErrorParser = new Tads3CompileErrorParser();
+let allFilesBeenProcessed = false;
+
+async function diagnosePreprocessAndParse(textDocument: any) {
+	await diagnose(textDocument);
+	if(!allFilesBeenProcessed) {
+		allFilesBeenProcessed = true;
+		preprocessAndParseDocument();
+		return;
+	} else {
+		preprocessAndParseDocument([textDocument]);
+	}
+}
+
+
+async function diagnose(textDocument: TextDocument) {
+	const tads3ExtensionConfig = workspace.getConfiguration('tads3');
+	const compilerPath = tads3ExtensionConfig?.compiler?.path ?? 't3make';
+	const resultOfCompilation = await runCommand(`${compilerPath} -nobanner -q -f "${chosenMakefileUri.path}"`);
+	parseDiagnostics(resultOfCompilation.toString(), textDocument);
+}
+
+let errorDiagnostics;
+let collection;
+
+async function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocument) {
+	errorDiagnostics = tads3CompileErrorParser.parse(resultOfCompilation, textDocument);
+	collection.set(textDocument.uri, errorDiagnostics);
+	if (errorDiagnostics.length === 0) {
+		return;
+	}
+	throw new Error('Could not assemble outliner symbols since there\'s an error. ');
+}
+
+
+
+export function runCommand(command: string) {
+	return new Promise( (resolve, reject) => {
+		let result = '';
+		const childProcess = exec(command, /*{maxBuffer: 1024 * 50000 }*/ ); 	//TODO: make configurable
+		try {
+			childProcess.stdout.on('data', (data: any) => {
+				result += data;
+			});
+			childProcess.on('close', function () {
+				resolve(result);
+			});
+		} catch (error) {
+			reject(error);
+		}
+		return result;
+	});
+}
+
+//----------------------------
+
+
+async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefined = undefined) {
+	const filePaths = textDocuments?.map(x=>x.uri.fsPath) ?? undefined;  //[window.activeTextEditor.document.uri.fsPath];
+	return new Promise((resolve) => {
+		window.withProgress({
+			location: ProgressLocation.Notification,
+			title: 'Parsing source code...',
+			cancellable: true
+		}, async (progress, token) => {
+			token.onCancellationRequested(async () => {
+				await cancelParse();
+				return resolve(false);
+			});
+			executeParse(chosenMakefileUri.fsPath, filePaths);
+			return resolve(true);
+		});
+	});
+	//await executeParse(chosenMakefileUri.fsPath, filePaths);
+}
+
+
+export async function executeParse(makefileLocation:string, filePaths): Promise<any> {
+	return client.onReady().then(() => {
+		source = new CancellationTokenSource();
+		return client.sendRequest('executeParse', {
+			makefileLocation: makefileLocation, 
+			filePaths: filePaths, 
+			token: source.token
+		});
+	});
+}
+
+export async function cancelParse(): Promise<any> {
+	return new Promise((resolve) => {
+		source?.cancel();
+		return resolve(true);
+	});
 }
