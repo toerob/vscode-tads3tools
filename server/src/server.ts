@@ -16,9 +16,10 @@ import {
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
-	DocumentSymbol,
 	DocumentSymbolParams,
-	DocumentSymbolRequest
+	DocumentSymbolRequest,
+	CancellationToken,
+	CancellationTokenSource
 } from 'vscode-languageserver/node';
 
 import {
@@ -39,6 +40,13 @@ import { T3ParserListener } from './parser/T3ParserListener';
 import { T3ParserParser } from './parser/T3ParserParser';
 import Tads3SymbolListener from './parser/Tads3SymbolListener';
 import { spawn, expose, Pool, Worker, Thread } from 'threads';
+import { Tads3SymbolManager } from './Tads3SymbolManager';
+
+
+
+const symbolManager = new Tads3SymbolManager();
+const preprocessedFilesCacheMap = new Map<string, string>();
+
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -158,241 +166,61 @@ documents.onDidChangeContent(change => {
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-	// In this simple example we get the settings for every validate run.
-	const settings = await getDocumentSettings(textDocument.uri);
-
-	// The validator creates diagnostics for all uppercase words length 2 and more
-	const text = textDocument.getText();
-	const pattern = /\b[A-Z]{2,}\b/g;
-	let m: RegExpExecArray | null;
-
-	const problems = 0;
+	//const settings = await getDocumentSettings(textDocument.uri);
 	const diagnostics: Diagnostic[] = [];
-	/*while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
-		problems++;
-		const diagnostic: Diagnostic = {
-			severity: DiagnosticSeverity.Warning,
-			range: {
-				start: textDocument.positionAt(m.index),
-				end: textDocument.positionAt(m.index + m[0].length)
-			},
-			message: `${m[0]} is all uppercase.`,
-			source: 'ex'
-		};
-		if (hasDiagnosticRelatedInformationCapability) {
-			diagnostic.relatedInformation = [
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Spelling matters'
-				},
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Particularly for names'
-				}
-			];
-		}
-		diagnostics.push(diagnostic);
-	}*/
-
-	// Send the computed diagnostics to VSCode.
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
+
 connection.onDidChangeWatchedFiles(_change => {
-	// Monitored files have change in VSCode
 	connection.console.log('We received an file change event');
 });
 
-// This handler provides the initial list of the completion items.
-connection.onCompletion(
-	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-		// The pass parameter contains the position of the text document in
-		// which code complete got requested. For the example we ignore this
-		// info and always provide the same completion items.
-		return [
-			{
-				label: 'TypeScript',
-				kind: CompletionItemKind.Text,
-				data: 1
-			},
-			{
-				label: 'JavaScript',
-				kind: CompletionItemKind.Text,
-				data: 2
-			}
-		];
-	}
-);
-
-// This handler resolves additional information for the item selected in
-// the completion list.
-connection.onCompletionResolve(
-	(item: CompletionItem): CompletionItem => {
-		if (item.data === 1) {
-			item.detail = 'TypeScript details';
-			item.documentation = 'TypeScript documentation';
-		} else if (item.data === 2) {
-			item.detail = 'JavaScript details';
-			item.documentation = 'JavaScript documentation';
-		}
-		return item;
-	}
-);
-class Tads3SymbolManager {
-	symbols: Map<string, DocumentSymbol[]> = new Map();
-}
-
-const symbolManager = new Tads3SymbolManager();
-
 connection.onDocumentSymbol((handler: DocumentSymbolParams) => {
-
-	const symbols = symbolManager.symbols.get(handler.textDocument.uri);
+	const fsPath = URI.parse(handler.textDocument.uri).fsPath;
+	const symbols = symbolManager.symbols.get(fsPath);
 	return symbols;
 });
 
-
-
-const preprocessedFilesCacheMap = new Map<string, string>();
-
-function parseJob(filePath: string) {
-	console.log(filePath);
-	/*const input = CharStreams.fromString(preprocessedFilesCacheMap.get(filePath) ?? '');
-	const lexer = new T3ParserLexer(input);
-	const tokenStream = new CommonTokenStream(lexer);
-	const parser = new T3ParserParser(tokenStream);
-	const parseTreeWalker = new ParseTreeWalker();
-	const listener = new Tads3SymbolListener();
-	const parseTree = parser.program();
-	try {
-		parseTreeWalker.walk<T3ParserListener>(listener, parseTree);
-	} catch (err) {
-		console.error(`parseTreeWalker failed ${err}`);
-	}
-	connection.sendNotification('symbolparsing/success', filePath);
-	connection.console.log(`${filePath} parsed successfully`);
-	symbolManager.symbols.set(filePath, listener.symbols);	*/
-}
-
 connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {
 	await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
-	const allFilePaths = [...preprocessedFilesCacheMap.keys()]; //.splice(0, 16);
-
-	const workerPool = Pool(() => spawn(new Worker('./worker')), 8);
-
+	const allFilePaths = [...preprocessedFilesCacheMap.keys()];
+	const workerPool = Pool(() => spawn(new Worker('./worker')), 4);
+	const cancelled = false;
+	/*if (token) {
+		token?.onCancellationRequested(async () => {
+			connection.console.log('Cancellation requested');
+			cancelled = true;
+		});
+	}*/
 	try {
 		const startTime = Date.now();
-
 		for (const filePath of allFilePaths) {
 			workerPool.queue(async parseJob => {
+				if (cancelled) {
+					console.log(`Skipping ${filePath}`);
+					return;
+				}
 				const text = preprocessedFilesCacheMap.get(filePath) ?? '';
 				const symbols = await parseJob(filePath, text);
-				console.log(symbols);
+				connection.sendNotification('symbolparsing/success', filePath);
+				connection.console.log(`${filePath} parsed successfully`);
 				symbolManager.symbols.set(filePath, symbols);
 			});
+			if (cancelled) {
+				throw new Error(`Parsing cancelled`);
+			}
 		}
 		await workerPool.completed();
 		await workerPool.terminate();
 		const elapsedTime = Date.now() - startTime;
 		console.log(`All files parsed within ${elapsedTime} ms`);
-
+		connection.sendNotification('symbolparsing/allfiles/success', { allFilePaths, elapsedTime });
 	} catch (err) {
+		await workerPool.terminate();
 		console.error(err);
+		connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
 	}
-
-	/*if(!token) {
-		connection.console.error(`No cancellableToken received, this action will not be cancellable`);
-	} else {
-		token?.onCancellationRequested(async () => {
-			connection.console.log('Cancellation requested');
-			worker?.terminate().then((status) => {
-				connection.console.log(`Canceled with status: ${status}`);
-				throw new Error(`Canceled`);
-			});
-		});	
-	}*/
-
-	/*
-	const cq = cargoQueue(() => async (tasks: any, callback: any) => {
-		for(let i=0;i<tasks.length;i++) {
-			const p = tasks[i].path;
-			const text = tasks[i].text;
-			console.log(`Parsing ${p}`);
-			callback();
-		}
-
-		const input = CharStreams.fromString(text);
-		const lexer = new T3ParserLexer(input);
-		const tokenStream = new CommonTokenStream(lexer);
-		const parser = new T3ParserParser(tokenStream);
-		const parseTreeWalker = new ParseTreeWalker();
-		const listener = new Tads3SymbolListener();
-		const parseTree = parser.program();
-		try {
-			parseTreeWalker.walk<T3ParserListener>(listener, parseTree);
-		} catch (err) {
-			console.error(`parseTreeWalker failed ${err}`);
-		}
-		connection.sendNotification('symbolparsing/success', p);
-		connection.console.log(`${p} parsed successfully`);
-		symbolManager.symbols.set(p, listener.symbols);
-		callback();
-	});**/
-
-	/*for (const filePath of allFilePaths) {
-		const text = preprocessedFilesCacheMap.get(filePath);
-		const filePathUriStr = URI.parse(filePath).toString();
-		try {
-			cq.push({ path: filePathUriStr, text: text });
-		} catch (err) {
-			console.error(err);
-		}
-	}
-
-	await cq.drain(() => {
-		console.log('All done!');
-	}); */
-
-
-
-
-
-	/*let worker: WorkerThreads;
-	//return new Promise((resolve) => {
-	for(const filePath of allFilePaths) {
-		try {
-			const uri  = URI.parse(filePath).toString();
-			connection.console.log(`Begin parsing of ${filePath}`);
-			const text = preprocessedFilesCacheMap.get(filePath);
-			const worker = new WorkerThreads(path.resolve(__dirname, 'worker.js'), {workerData: { path: uri, text: text }});
-			worker.on('message', ([error, symbols]) => {
-				if (error) {
-					connection.console.error(error.message);
-					throw new Error(error.message);
-				}
-				symbolManager.symbols.set(uri, symbols);
-
-				connection.sendNotification('symbolparsing/success', filePath);
-				connection.console.log(`${uri} parsed successfully`);
-				worker.terminate();
-				//return symbols;
-				//return resolve(symbols);
-			});
-	
-		} catch(err) {
-			console.error(err);
-		}
-	}*/
-	return 'OK!';
-
-	/*}).catch(err => {
-		console.error(err);
-	});*/
 });
 
 

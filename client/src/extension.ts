@@ -51,6 +51,9 @@ export function activate(context: ExtensionContext) {
 		client.onNotification('symbolparsing/success', (path)=> {
 			window.showInformationMessage(`${basename(path)} has been parsed successfully`);
 		});
+		client.onNotification("symbolparsing/allfiles/success", ({elapsedTime}) => {
+			window.showInformationMessage(`All project/library files parsed in ${elapsedTime} ms`);
+		});	
 
 	});
 
@@ -67,6 +70,8 @@ export function deactivate(): Thenable<void> | undefined {
 let source: CancellationTokenSource;
 
 async function parseTads3() {
+	
+	
 	const makefileLocation = await findAndSelectMakefileUri();
 	const filePaths = [window.activeTextEditor.document.uri.fsPath];
 	return new Promise((resolve) => {
@@ -75,16 +80,16 @@ async function parseTads3() {
 			title: 'Parsing source code...',
 			cancellable: true
 		}, async (progress, token) => {
-			token.onCancellationRequested(async () => {
+			/*token.onCancellationRequested(async () => {
 				await cancelParse();
 				return resolve(false);
-			});
+			});*/
 			await executeParse(makefileLocation.fsPath, filePaths);
 			return resolve(true);
 		});
 	});
 
-	//await executeParse(makefileLocation.fsPath, filePaths);
+	//return executeParse(makefileLocation.fsPath, filePaths);
 }
 
 
