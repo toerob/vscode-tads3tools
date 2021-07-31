@@ -4,7 +4,7 @@ import { ParseTreeWalker } from 'antlr4ts/tree/ParseTreeWalker';
 import { Tads3Lexer } from './parser/Tads3Lexer';
 import { Tads3Listener } from './parser/Tads3Listener';
 import { Tads3Parser } from './parser/Tads3Parser';
-import Tads3SymbolListener from './parser/Tads3SymbolListener';
+import { Tads3SymbolListener } from './parser/Tads3SymbolListener';
 import { expose } from 'threads';
 import { DocumentSymbol } from 'vscode-languageserver';
 

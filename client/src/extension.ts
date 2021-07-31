@@ -161,6 +161,7 @@ async function diagnosePreprocessAndParse(textDocument: any) {
 		//window.showWarningMessage(`Could not assemble outliner symbols since there\'s an error. `);
 		return;
 	}
+	//allFilesBeenProcessed = true;
 
 	if (!allFilesBeenProcessed) {
 		allFilesBeenProcessed = true;

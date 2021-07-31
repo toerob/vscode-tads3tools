@@ -40,7 +40,7 @@ import { ParseTreeWalker } from 'antlr4ts/tree/ParseTreeWalker';
 import { Tads3Lexer } from './parser/Tads3Lexer';
 import { Tads3Listener } from './parser/Tads3Listener';
 import { Tads3Parser } from './parser/Tads3Parser';
-import Tads3SymbolListener from './parser/Tads3SymbolListener';
+import { Tads3SymbolListener } from './parser/Tads3SymbolListener';
 import { spawn, expose, Pool, Worker, Thread } from 'threads';
 import { Tads3SymbolManager } from './Tads3SymbolManager';
 import { promisify } from 'util';
@@ -254,8 +254,10 @@ async function preprocessAndParseAllFiles(makefileLocation: any, filePaths: any)
 	/*const smallestFileFirst = sortedByUtility.sort(function(a, b) {
 	  return statSync(a).size - statSync(b).size;
 	});*/
-	
-	const workerPool = Pool(() => spawn(new Worker('./worker')), 4);
+	const poolMaxSize = 4;
+	const poolSize = allFilePaths.length >= poolMaxSize? poolMaxSize : 1;
+
+	const workerPool = Pool(() => spawn(new Worker('./worker')), poolSize);
 	try {
 		const startTime = Date.now();
 		for (const filePath of allFilePaths) {
@@ -269,6 +271,7 @@ async function preprocessAndParseAllFiles(makefileLocation: any, filePaths: any)
 			workerPool.queue(async (parseJob) => {
 				const text = preprocessedFilesCacheMap.get(filePath) ?? '';
 				const symbols = await parseJob(filePath, text);
+				//connection.console.log(symbols);
 				connection.sendNotification('symbolparsing/success', filePath);
 				connection.console.log(`${filePath} parsed successfully`);
 				symbolManager.symbols.set(filePath, symbols);
