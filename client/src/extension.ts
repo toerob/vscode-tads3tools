@@ -7,7 +7,7 @@ import { exec } from 'child_process';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken } from 'vscode';
 
 import {
 	ConnectionError,
@@ -24,6 +24,8 @@ const collection = languages.createDiagnosticCollection('tads3diagnostics');
 const tads3CompileErrorParser = new Tads3CompileErrorParser();
 let allFilesBeenProcessed = false;
 
+let serverProcessCancelTokenSource: CancellationTokenSource;
+let chosenMakefileUri: Uri|undefined;
 
 let client: LanguageClient;
 
@@ -93,8 +95,6 @@ export function deactivate(): Thenable<void> | undefined {
 }
 
 
-let source: CancellationTokenSource;
-let chosenMakefileUri: Uri|undefined;
 
 export async function findAndSelectMakefileUri() {
 	let choice: Uri = undefined;
@@ -210,38 +210,40 @@ export function runCommand(command: string) {
 
 async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefined = undefined) {
 	const filePaths = textDocuments?.map(x=>x.uri.fsPath) ?? undefined;  //[window.activeTextEditor.document.uri.fsPath];
-	return new Promise((resolve) => {
-		window.withProgress({
-			location: ProgressLocation.Notification,
-			title: 'Parsing source code...',
-			cancellable: true
-		}, async (progress, token) => {
-			token.onCancellationRequested(async () => {
-				await cancelParse();
-				return resolve(false);
-			});
-			executeParse(chosenMakefileUri.fsPath, filePaths);
-			return resolve(true);
+	
+	await window.withProgress({
+		location: ProgressLocation.Window,
+		title: 'Parsing symbols',
+		cancellable: false
+	}, async (progress, withProgressToken) => {
+		withProgressToken.onCancellationRequested(async () => {
+			await cancelParse();
+			return false;
 		});
+		client.onNotification('symbolparsing/success',(filePath) => {
+			const filename = basename(Uri.parse(filePath).path);
+			progress.report({message: ` ${filename} done`});
+		});
+
+		await executeParse(chosenMakefileUri.fsPath, filePaths);
+		return true;
 	});
-	//await executeParse(chosenMakefileUri.fsPath, filePaths);
 }
 
-
 export async function executeParse(makefileLocation:string, filePaths): Promise<any> {
-	return client.onReady().then(() => {
-		source = new CancellationTokenSource();
-		return client.sendRequest('executeParse', {
-			makefileLocation: makefileLocation, 
-			filePaths: filePaths, 
-			token: source.token
-		});
+	await client.onReady();
+	serverProcessCancelTokenSource = new CancellationTokenSource();
+	await client.sendRequest('executeParse', {
+		makefileLocation: makefileLocation, 
+		filePaths: filePaths, 
+		token: serverProcessCancelTokenSource.token
 	});
 }
 
 export async function cancelParse(): Promise<any> {
 	return new Promise((resolve) => {
-		source?.cancel();
+		client.sendNotification('symbolparsing/abort');
+		serverProcessCancelTokenSource?.cancel();
 		return resolve(true);
 	});
 }
