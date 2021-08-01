@@ -1,11 +1,8 @@
 import { URI } from 'vscode-languageserver';
 import { exec } from 'child_process';
-
-
-let longProcessing = true;
+import { connection } from '../server';
 
 const rowsMap = new Map<string, number>();
-
 
 export function runCommand(command: string) {
 	return new Promise( (resolve, reject) => {
@@ -26,58 +23,12 @@ export function runCommand(command: string) {
 }
 
 
-/**
- * This method is fast, use this instead of streams
- * once it is fixed. Right now the padding is incorrect
- * @returns 
- */
- export async function preprocessAllFiles(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>) {
+export async function preprocessAllFiles(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>) {
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
 	const commandLine = `t3make -P -q -f "${chosenMakefilePath}"`;
 	const result: any = await runCommand(commandLine);
 	processPreprocessedResult(result, preprocessedFilesCacheMap);
-
-	/*return window.withProgress({
-		location: ProgressLocation.Window,
-		title: `Tads3 symbol processing`,
-		cancellable: true
-	}, (progress, token) => {
-		return new Promise<void>(async (totalProgressResolver) => {
-			try {
-				progress.report({ message: `Preprocessing all project/library files.` });
-				const result: any = await runCommand(`t3make -P -q -f ${chosenMakefileUri.path}`);
-				processPreprocessedResult(result);
-			} catch (error) {
-				window.showInformationMessage(`Failure: ${error}`);
-			} finally {
-				totalProgressResolver();
-			}
-		});
-	});*/
-}
-
-function storeCurrentBufferAndRows(currentFile: string, currentBuffer: string, currentCounter: number, preprocessedFilesCacheMap: Map<string, string>) {
-	try {
-		const previouslyCountedRows = rowsMap.get(currentFile);
-		if (previouslyCountedRows !== undefined) {
-			rowsMap.set(currentFile, previouslyCountedRows + currentCounter);
-		} else {
-			rowsMap.set(currentFile, 0);
-		}
-		const previousContent = preprocessedFilesCacheMap.get(currentFile);
-		if (previousContent) {
-			preprocessedFilesCacheMap.set(currentFile, previousContent.concat(currentBuffer));
-		} else {
-			if (currentBuffer) {
-				preprocessedFilesCacheMap.set(currentFile, currentBuffer);		// Can't do this
-			} else {
-				preprocessedFilesCacheMap.set(currentFile, '');		// Can't do this
-			}
-		}
-	} catch (err) {
-		console.error(err);
-	}
 }
 
 function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<string, string>) {
@@ -146,8 +97,29 @@ function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<s
 		preprocessedFilesCacheMap.set(currentFile, newString);
 	}
 
-	longProcessing = false;
 	const elapsedTime = Date.now() - startTime;
-	console.log(`${totalLineCount - 1} number of lines processed in ${elapsedTime} ms`);
+	connection.console.log(`${totalLineCount - 1} number of lines processed in ${elapsedTime} ms`);
 }
 
+function storeCurrentBufferAndRows(currentFile: string, currentBuffer: string, currentCounter: number, preprocessedFilesCacheMap: Map<string, string>) {
+	try {
+		const previouslyCountedRows = rowsMap.get(currentFile);
+		if (previouslyCountedRows !== undefined) {
+			rowsMap.set(currentFile, previouslyCountedRows + currentCounter);
+		} else {
+			rowsMap.set(currentFile, 0);
+		}
+		const previousContent = preprocessedFilesCacheMap.get(currentFile);
+		if (previousContent) {
+			preprocessedFilesCacheMap.set(currentFile, previousContent.concat(currentBuffer));
+		} else {
+			if (currentBuffer) {
+				preprocessedFilesCacheMap.set(currentFile, currentBuffer);		// Can't do this
+			} else {
+				preprocessedFilesCacheMap.set(currentFile, '');		// Can't do this
+			}
+		}
+	} catch (err) {
+		console.error(err);
+	}
+}

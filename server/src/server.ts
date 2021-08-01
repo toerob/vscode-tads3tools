@@ -32,29 +32,31 @@ import {
 import path = require('path');
 import { connect } from 'http2';
 import { CharStreams, CommonTokenStream, ConsoleErrorListener, Token } from 'antlr4ts';
-import { preprocessAllFiles } from './parser/preprocessor';
-import { fstat, statSync } from 'fs';
-import { URI, Utils } from 'vscode-uri';
+import { fstat } from 'fs';
 import { cargoQueue } from 'async';
 import { ParseTreeWalker } from 'antlr4ts/tree/ParseTreeWalker';
 import { Tads3Lexer } from './parser/Tads3Lexer';
 import { Tads3Listener } from './parser/Tads3Listener';
 import { Tads3Parser } from './parser/Tads3Parser';
 import { Tads3SymbolListener } from './parser/Tads3SymbolListener';
-import { spawn, expose, Pool, Worker, Thread } from 'threads';
+import { expose, Thread } from 'threads';
 import { Tads3SymbolManager } from './Tads3SymbolManager';
 import { promisify } from 'util';
+import { onDocumentSymbol } from './modules/symbols';
+import { onReferences } from './modules/references';
+import { onDefinition } from './modules/definitions';
+import { preprocessAndParseAllFiles } from './parseworkersmanager';
 
 
 
-const symbolManager = new Tads3SymbolManager();
-const preprocessedFilesCacheMap = new Map<string, string>();
+export const symbolManager = new Tads3SymbolManager();
+export const preprocessedFilesCacheMap = new Map<string, string>();
 const hasSymbolsToFetch = new Map<string, boolean>();
 
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
-const connection = createConnection(ProposedFeatures.all);
+export const connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager.
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -103,7 +105,7 @@ connection.onInitialize((params: InitializeParams) => {
 	return result;
 });
 
-let abortParsingProcess: CancellationTokenSource| undefined;
+export let abortParsingProcess: CancellationTokenSource| undefined;
 
 connection.onInitialized(() => {
 	if (hasConfigurationCapability) {
@@ -188,35 +190,12 @@ connection.onDidChangeWatchedFiles(_change => {
 	connection.console.log('We received an file change event');
 });
 
-const asyncSetTimeout = promisify(setTimeout);
-async function asyncSleep(ms: number) {
-	await asyncSetTimeout(ms);
-	/*return new Promise( (resolve, reject) => {
-		setTimeout(() => resolve(undefined), ms);
-	});*/
-}
-
-
-connection.onDocumentSymbol(async (handler): Promise<DocumentSymbol[]> => {
-	const fsPath = URI.parse(handler.textDocument.uri).fsPath;
-	if (fsPath.endsWith('.t') || fsPath.endsWith('.h')) {
-		while (!symbolManager.symbols.has(fsPath)) {
-			connection.console.log(`${fsPath} is waiting for symbols`);
-			await asyncSetTimeout(2000);
-		}			
-	}
-	return symbolManager.symbols.get(fsPath) ?? [];
-});
-
+connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, symbolManager));
+connection.onReferences(async (handler) => onReferences(handler,symbolManager));
+connection.onDefinition(async (handler) => onDefinition(handler,symbolManager));
 
 
 connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {
-	/*token?.onCancellationRequested(()=> {
-		connection.console.log('Cancellation requested');
-		//cancelled = true;
-		//throw new Error(`Parsing cancelled`);
-	});*/
-
 	await preprocessAndParseAllFiles(makefileLocation, filePaths, token); 
 });
 
@@ -224,98 +203,8 @@ connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);
-
-// Listen on the connection
 connection.listen();
 
 
-async function preprocessAndParseAllFiles(makefileLocation: any, filePaths: any, token: any) {
-	abortParsingProcess = new CancellationTokenSource();
 
-	await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
-
-	let allFilePaths = filePaths;
-
-	
-	// Parse project files close to the makefile first:
-	if (filePaths === undefined) {
-		const baseDir = Utils.dirname(URI.parse(makefileLocation)).fsPath;
-		allFilePaths = [...preprocessedFilesCacheMap.keys()];
-
-		// Sort by size, size ordering, the largest files goes first:
-		allFilePaths = allFilePaths.sort((a:string, b:string) => statSync(b).size - statSync(a).size);
-
-		// Then sort out all files in the project directory first:
-		allFilePaths = allFilePaths.sort((a:string, b:string) => {
-			if (a.startsWith(baseDir)) {
-				return -1;
-			}
-			return 0;
-		});
-
-	}
-	//const preferredFilesfirst = ['misc.t', 'action.t', 'actor.t', 'travel.t'];
-
-	// TODO: possibly make the project libraries be parsed before the std library:
-	/*const smallestFileFirst = sortedByUtility.sort(function(a, b) {
-	  return statSync(a).size - statSync(b).size;
-	});*/
-	const poolMaxSize = 6; //8; 
-	const poolSize = allFilePaths.length >= poolMaxSize? poolMaxSize : 1;
-
-	const workerPool = Pool(() => spawn(new Worker('./worker')), poolSize);
-	//let cancelled = false;
-	try {
-		const startTime = Date.now();
-
-		
-
-		for (const filePath of allFilePaths) {
-			
-			//if (token !== undefined && token._isCancelled) {
-			//token.onCancellationRequested(async () => {
-			//connection.console.log('Cancellation requested');
-			//});
-			//throw new Error(`Parsing cancelled`);
-			//}
-			connection.console.log(`Queuing parsing job ${filePath}`);
-			workerPool.queue(async (parseJob) => {
-				
-				const text = preprocessedFilesCacheMap.get(filePath) ?? '';
-				const symbols = await parseJob(filePath, text);
-				//connection.console.log(symbols);
-				connection.sendNotification('symbolparsing/success', filePath);
-				connection.console.log(`${filePath} parsed successfully`);
-				symbolManager.symbols.set(filePath, symbols);
-			});
-		}
-
-		abortParsingProcess.token.onCancellationRequested(async ()=> {
-			connection.console.log('Cancellation requested');
-			//cancelled = true;
-			//throw new Error(`Parsing cancelled`);
-			await workerPool.terminate(true);
-			
-			abortParsingProcess?.dispose();
-			throw new Error(`Up`);
-		});
-
-		/*token.onCancellationRequested( async()=> {
-			connection.console.log('Cancellation requested');
-			//cancelled = true;
-			//throw new Error(`Parsing cancelled`);
-			await workerPool.terminate();
-		});*/
-
-		await workerPool.completed();
-		await workerPool.terminate();
-		const elapsedTime = Date.now() - startTime;
-		console.log(`All files parsed within ${elapsedTime} ms`);
-		connection.sendNotification('symbolparsing/allfiles/success', { allFilePaths, elapsedTime });
-	} catch (err) {
-		await workerPool.terminate();
-		console.error(err);
-		connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
-	}
-}
 

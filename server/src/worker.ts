@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { CharStreams, CommonTokenStream } from 'antlr4ts';
+import { BailErrorStrategy, CharStreams, CommonTokenStream } from 'antlr4ts';
 import { ParseTreeWalker } from 'antlr4ts/tree/ParseTreeWalker';
 import { Tads3Lexer } from './parser/Tads3Lexer';
 import { Tads3Listener } from './parser/Tads3Listener';
@@ -7,16 +7,38 @@ import { Tads3Parser } from './parser/Tads3Parser';
 import { Tads3SymbolListener } from './parser/Tads3SymbolListener';
 import { expose } from 'threads';
 import { DocumentSymbol } from 'vscode-languageserver';
+import { PredictionMode } from 'antlr4ts/atn/PredictionMode';
 
 expose(function parseFunc(path: string, text: string) {
   const symbols: DocumentSymbol[] = [];
   const input = CharStreams.fromString(text);
   const lexer = new Tads3Lexer(input);
   const tokenStream = new CommonTokenStream(lexer);
-  const parser = new Tads3Parser(tokenStream);
+  let parser = new Tads3Parser(tokenStream);
   const parseTreeWalker = new ParseTreeWalker();
   const listener = new Tads3SymbolListener();
-  const parseTree = parser.program();
+  let parseTree;
+  if (path.endsWith('.h')) {
+    parser.interpreter.setPredictionMode(PredictionMode.SLL);
+    parser.removeErrorListeners();
+    parser.errorHandler = new BailErrorStrategy();
+    try {
+      parseTree = parser.program();
+      console.error(`SLL parsing succeeded for. ${path}`);
+    } catch (err) {
+      // Silently fail in case SLL fails, error is thrown by BailErrorStrategy
+      console.error(`Failing with (faster) SLL parsing for ${path}. Switching predicition mode to LL and retries`);
+      lexer.reset();
+      const tokenStream = new CommonTokenStream(lexer);
+      parser = new Tads3Parser(tokenStream);
+      parser.interpreter.setPredictionMode(PredictionMode.LL);
+      parseTree = parser.program();
+    }
+  } else {
+    // If file is not a header file, use LL directly to save time:			
+    parseTree = parser.program();
+  }
+
   try {
     parseTreeWalker.walk<Tads3Listener>(listener, parseTree);
   } catch (err) {

@@ -1,14 +1,14 @@
 {
-	"name": "lsp-sample",
-	"description": "A language server example",
-	"author": "Microsoft Corporation",
+	"name": "vscode-tads3tools",
+	"description": "Language server for Tads3",
+	"author": "Tomas Öberg",
 	"license": "MIT",
 	"version": "1.0.0",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Microsoft/vscode-extension-samples"
+		"url": "https://github.com/toerob/vscode-tads3tools.git"
 	},
-	"publisher": "vscode-samples",
+	"publisher": "toerob",
 	"categories": [],
 	"keywords": [
 		"multi-root ready"
@@ -20,20 +20,7 @@
 		"onLanguage:tads3"
 	],
 	"main": "./client/out/extension",
-	"grammars": [
-		{
-			"language": "tads3",
-			"scopeName": "source.tads3",
-			"path": "./syntaxes/tads3.tmLanguage"
-		}
-	],
 	"contributes": {
-		"commands": [
-			{
-				"command": "extension.parseTads3",
-				"title": "Parse Tads3 source code"
-			}
-		],
 		"snippets": [
 			{
 				"language": "tads3",
@@ -55,17 +42,106 @@
 				"configuration": "./language-configuration.json"
 			}
 		],
+		"grammars": [
+			{
+				"language": "tads3",
+				"scopeName": "source.tads3",
+				"path": "./syntaxes/tads3.tmLanguage"
+			}
+		],
+		"customEditors": [
+			{
+				"viewType": "tads3.visualEdit",
+				"displayName": "Tads3 Visual Editor",
+				"selector": [
+					{
+						"filenamePattern": "*.{t,h}"
+					}
+				],
+				"priority": "option"
+			}
+		],
+		"commands": [
+			{
+				"command": "tads3.parseTads3",
+				"title": "Parse Tads3 source code"
+			},
+			{
+				"command": "tads3.addNode",
+				"title": "Connect node (TEST)",
+				"category": "Editor",
+				"enablement": "true"
+			},
+			{
+				"command": "tads3.openInVisualEditor",
+				"title": "Open current tads3 source code *.{t,h} in Tads3 Visual Editor ",
+				"category": "Editor",
+				"enablement": "true"
+			},
+			{
+				"command": "tads3.setMakefile",
+				"title": "Set which makefile (.t3m) to use for this project (in case there are several)",
+				"category": "Compilation"
+			},
+			{
+				"command": "tads3.restartGameRunnerOnT3ImageChanges",
+				"title": "Toggles on/off if the game should restarted as soon as the t3 image game file changes",
+				"category": "Running"
+			},
+			{
+				"command": "tads3.showPreprocessedTextAction",
+				"title": "Show preprocessed text for the current file",
+				"category": "Preprocessing"
+			},
+			{
+				"command": "tads3.showPreprocessedFileQuickPick",
+				"title": "Choose a preprocessed file to show in a separate window",
+				"category": "Preprocessing"
+			},
+			{
+				"command": "tads3.enablePreprocessorCodeLens",
+				"title": "Toggle CodeLens for preprocessed text of the current file",
+				"category": "Preprocessing"
+			},
+			{
+				"command": "tads3.insertDirectionProperty",
+				"title": "CodeLens for inserting a direction property to a known object",
+				"category": "Edits"
+			},
+			{
+				"command": "tads3.addGameTracker",
+				"title": "Add a game tracker to the game.",
+				"category": "Edits"
+			},
+			{
+				"command": "tads3.createProject",
+				"title": "Create a new Tads3 template project",
+				"category": "Edits"
+			},
+			{
+				"command": "tads3.createObject",
+				"title": "Create a new Tads3 object via menu",
+				"category": "Edits"
+			}
+		],
 		"configuration": {
 			"type": "object",
-			"title": "Example configuration",
+			"title": "Tads3",
 			"properties": {
-				"languageServerExample.maxNumberOfProblems": {
+				"tads3.restartGameRunnerOnT3ImageChanges": {
+					"scope": "window",
+					"type": "boolean",
+					"runner": "frob",
+					"default": true,
+					"description": "Restarts the t3 game image in the interpreter whenever it is recompiled."
+				},
+				"tads3.maxNumberOfProblems": {
 					"scope": "resource",
 					"type": "number",
 					"default": 100,
 					"description": "Controls the maximum number of problems produced by the server."
 				},
-				"languageServerExample.trace.server": {
+				"tads3.trace.server": {
 					"scope": "window",
 					"type": "string",
 					"enum": [
@@ -75,6 +151,42 @@
 					],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
+				},
+				"tads3.compiler.path": {
+					"scope": "window",
+					"type": "string",
+					"default": "t3make",
+					"description": "Path the tads3 compiler (t3make). "
+				},
+				"tads3.adv3.library": {
+					"scope": "window",
+					"type": "string",
+					"default": "/usr/local/share/frobtads/tads3/lib/adv3/",
+					"description": "Path to adv3 library files. "
+				},
+				"tads3.adv3Lite.library": {
+					"scope": "window",
+					"type": "string",
+					"default": "/usr/local/share/frobtads/tads3/lib/adv3Lite/",
+					"description": "Path to adv3Lite library files. "
+				},
+				"tads3.lib": {
+					"scope": "window",
+					"type": "string",
+					"default": "/usr/local/share/frobtads/tads3/lib/",
+					"description": "Path the tads3 compiler (t3make). "
+				},
+				"tads3.include": {
+					"scope": "window",
+					"type": "string",
+					"default": "/usr/local/share/frobtads/tads3/include/",
+					"description": "Path the tads3 compiler (t3make). "
+				},
+				"tads3.enablePreprocessorCodeLens": {
+					"scope": "window",
+					"type": "boolean",
+					"default": false,
+					"description": "Shows preprocessed rows above as CodeLens when they differ from original source code."
 				}
 			}
 		}
@@ -97,8 +209,11 @@
 		"typescript": "^4.3.5"
 	},
 	"dependencies": {
+		"antlr4-c3": "^1.1.16",
 		"antlr4ts": "^0.5.0-alpha.4",
 		"antlr4ts-cli": "^0.5.0-alpha.4",
+		"litegraph.js": "^0.7.10",
+		"markdown-it": "^12.1.0",
 		"node-worker-threads-pool": "^1.5.0",
 		"threads": "^1.6.5"
 	}
