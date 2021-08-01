@@ -6,8 +6,9 @@ import { Tads3Listener } from './parser/Tads3Listener';
 import { Tads3Parser } from './parser/Tads3Parser';
 import { Tads3SymbolListener } from './parser/Tads3SymbolListener';
 import { expose } from 'threads';
-import { DocumentSymbol } from 'vscode-languageserver';
 import { PredictionMode } from 'antlr4ts/atn/PredictionMode';
+import { Range, DefinitionParams, Location, DocumentSymbol  } from 'vscode-languageserver';
+
 
 expose(function parseFunc(path: string, text: string) {
   const symbols: DocumentSymbol[] = [];
@@ -44,5 +45,10 @@ expose(function parseFunc(path: string, text: string) {
   } catch (err) {
     console.error(`parseTreeWalker failed ${err}`);
   }
-  return listener?.symbols ?? symbols;
+
+  
+  return {
+    keywords: listener.localKeywords ?? [],
+    symbols: listener?.symbols ?? symbols
+  };
 });

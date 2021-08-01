@@ -28,7 +28,7 @@ export async function preprocessAndParseAllFiles(makefileLocation: any, filePath
 		});
 
 	}
-	const poolMaxSize = 6;
+	const poolMaxSize = 4; //6;
 	const poolSize = allFilePaths.length >= poolMaxSize ? poolMaxSize : 1;
 	const workerPool = Pool(() => spawn(new Worker('./worker')), poolSize);
 	try {
@@ -38,11 +38,12 @@ export async function preprocessAndParseAllFiles(makefileLocation: any, filePath
 			workerPool.queue(async (parseJob) => {
 
 				const text = preprocessedFilesCacheMap.get(filePath) ?? '';
-				const symbols = await parseJob(filePath, text);
+				const { symbols, keywords} = await parseJob(filePath, text);
 				//connection.console.log(symbols);
 				connection.sendNotification('symbolparsing/success', filePath);
 				connection.console.log(`${filePath} parsed successfully`);
 				symbolManager.symbols.set(filePath, symbols);
+				symbolManager.keywords.set(filePath, keywords);
 			});
 		}
 		await workerPool.completed();

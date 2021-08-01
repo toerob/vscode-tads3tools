@@ -1,16 +1,39 @@
-import { promisify } from 'util';
-import { DocumentSymbol, DocumentSymbolParams, ReferenceParams, ResponseError, _, _Connection } from 'vscode-languageserver';
+
+import { TextDocuments } from 'vscode-languageserver';
+
+import { Location, ReferenceParams } from 'vscode-languageserver';
+import { Position, TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { connection } from '../server';
-import { Tads3SymbolManager } from '../Tads3SymbolManager';
+import { flattenTreeToArray, Tads3SymbolManager } from '../Tads3SymbolManager';
+import { getWordAtPosition } from './text-utils';
 
 const memberCallRegExp = new RegExp(/\s*(?:(.*)[.])(.*)\(\);/);
 
 
-export async function onReferences(handler: ReferenceParams, symbolManager: Tads3SymbolManager) {
-	const {position, textDocument} = handler;
-	const locations: [] = [];
+// TODO: the keywords are using the preprocessed file, this causes some findings be slightly off a line or two.
+// Find a way to patch/sync the original by whitespace? 
+// - keeping track of lines that where skipped in each an every file?
 
+export async function onReferences(handler: ReferenceParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager) {
+	const {position, textDocument} = handler;
+	const locations: Location[] = [];
+
+	const currentDocument = documents.get(textDocument.uri);
+	if (currentDocument) {
+		const symbolName = getWordAtPosition(currentDocument, position);
+		if (symbolName) {
+			for(const pathKey of symbolManager.keywords.keys()) {
+				for(const range of symbolManager.keywords.get(pathKey)?.get(symbolName) ?? []) {
+					locations.push(Location.create(pathKey, range));
+				}
+			}
+		}
+	}
+
+	//const word = document.getText(document.getWordRangeAtPosition(position));
+
+	
 	/*
 	const word = document.getText(document.getWordRangeAtPosition(position));
 	const currentLine = document.lineAt(position.line).text;

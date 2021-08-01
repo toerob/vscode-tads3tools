@@ -1,7 +1,9 @@
 import { Tads3Listener } from './Tads3Listener';
 import { ObjectDeclarationContext, PropertySetContext, PropertyContext, FunctionHeadContext, IdAtomContext, AssignmentStatementContext, FunctionDeclarationContext, CurlyObjectBodyContext, CodeBlockContext, MemberExprContext } from './Tads3Parser';
 import { ScopedEnvironment } from './ScopedEnvironment';
-import { CompletionItem, DocumentSymbol, Range, SymbolKind } from 'vscode-languageserver';
+import { CompletionItem, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
+import { Location, Range } from 'vscode-languageserver';
+
 
 export class ExtendedDocumentSymbolProperties {
 	arrowConnection: string | undefined;
@@ -58,7 +60,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 
 	scopedEnvironments: any;
 
-	localKeywords: any;
+	localKeywords: Map<string, Range[]> = new Map();
 
 	memberCallChains = new Map();
 	
@@ -77,9 +79,9 @@ export class Tads3SymbolListener implements Tads3Listener {
 				try {
 					const range = Range.create(start, 0, stop, 0);
 					if (!this.localKeywords.has(name)) {
-						this.localKeywords.set(name, new Set([range]));
+						this.localKeywords.set(name, [range]);
 					} else {
-						this.localKeywords.get(name).add(range);
+						this.localKeywords.get(name)?.push(range);
 					}
 				} catch (err) {
 					console.error(`enterIdAtom ${err}`);

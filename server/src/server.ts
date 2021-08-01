@@ -7,45 +7,24 @@ import {
 	createConnection,
 	TextDocuments,
 	Diagnostic,
-	DiagnosticSeverity,
 	ProposedFeatures,
 	InitializeParams,
 	DidChangeConfigurationNotification,
-	CompletionItem,
-	CompletionItemKind,
-	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
-	DocumentSymbolParams,
-	DocumentSymbolRequest,
-	CancellationToken,
-	CancellationTokenSource,
-	DocumentSymbol,
-	ServerRequestHandler
-} from 'vscode-languageserver/node';
+	CancellationTokenSource} from 'vscode-languageserver/node';
 
-import {
-	TextDocument
-} from 'vscode-languageserver-textdocument';
+
 
 //import { threadId, Worker as WorkerThreads } from 'worker_threads';
 import path = require('path');
-import { connect } from 'http2';
-import { CharStreams, CommonTokenStream, ConsoleErrorListener, Token } from 'antlr4ts';
-import { fstat } from 'fs';
-import { cargoQueue } from 'async';
-import { ParseTreeWalker } from 'antlr4ts/tree/ParseTreeWalker';
-import { Tads3Lexer } from './parser/Tads3Lexer';
-import { Tads3Listener } from './parser/Tads3Listener';
-import { Tads3Parser } from './parser/Tads3Parser';
-import { Tads3SymbolListener } from './parser/Tads3SymbolListener';
-import { expose, Thread } from 'threads';
 import { Tads3SymbolManager } from './Tads3SymbolManager';
-import { promisify } from 'util';
 import { onDocumentSymbol } from './modules/symbols';
 import { onReferences } from './modules/references';
 import { onDefinition } from './modules/definitions';
 import { preprocessAndParseAllFiles } from './parseworkersmanager';
+import { workspace } from 'vscode';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
 
 
@@ -58,8 +37,12 @@ const hasSymbolsToFetch = new Map<string, boolean>();
 // Also include all preview / proposed LSP features.
 export const connection = createConnection(ProposedFeatures.all);
 
+/*export function getCurrentDocument() {
+	return currentDocument;
+}*/
+
 // Create a simple text document manager.
-const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+export const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
@@ -85,6 +68,8 @@ connection.onInitialize((params: InitializeParams) => {
 	const result: InitializeResult = {
 		capabilities: {
 			documentSymbolProvider: true,
+			referencesProvider: true,
+			definitionProvider: true,
 			textDocumentSync: {
 				openClose: true,
 				change: TextDocumentSyncKind.Full,
@@ -175,9 +160,10 @@ documents.onDidClose(e => {
 
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
-documents.onDidChangeContent(change => {
-	validateTextDocument(change.document);
+documents.onDidChangeContent(params => {
+	validateTextDocument(params.document);
 });
+
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	//const settings = await getDocumentSettings(textDocument.uri);
@@ -190,9 +176,9 @@ connection.onDidChangeWatchedFiles(_change => {
 	connection.console.log('We received an file change event');
 });
 
-connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, symbolManager));
-connection.onReferences(async (handler) => onReferences(handler,symbolManager));
-connection.onDefinition(async (handler) => onDefinition(handler,symbolManager));
+connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, documents, symbolManager));
+connection.onReferences(async (handler) => onReferences(handler,documents, symbolManager));
+connection.onDefinition(async (handler) => onDefinition(handler,documents, symbolManager));
 
 
 connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {
@@ -203,6 +189,7 @@ connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);
+
 connection.listen();
 
 

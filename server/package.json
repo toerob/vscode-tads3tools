@@ -12,7 +12,10 @@
 		"url": "https://github.com/Microsoft/vscode-extension-samples"
 	},
 	"dependencies": {
+		"@types/underscore": "^1.11.3",
 		"async": "^3.2.0",
+		"magic-string": "^0.25.7",
+		"underscore": "^1.13.1",
 		"vscode-languageserver": "^7.0.0",
 		"vscode-languageserver-textdocument": "^1.0.1",
 		"vscode-uri": "^3.0.2"

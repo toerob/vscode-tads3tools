@@ -154,7 +154,8 @@ async function onDidSaveTextDocument(textDocument: any) {
 }
 
 
-async function diagnosePreprocessAndParse(textDocument: any) {
+async function diagnosePreprocessAndParse(textDocument: TextDocument) {
+	
 	await diagnose(textDocument);
 	if (errorDiagnostics.length > 0) {
 		//throw new Error('Could not assemble outliner symbols since there\'s an error. ');

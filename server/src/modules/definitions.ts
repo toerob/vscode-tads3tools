@@ -1,16 +1,46 @@
-import { promisify } from 'util';
-import { DefinitionParams, DocumentSymbolParams, ReferenceParams, _, _Connection } from 'vscode-languageserver';
+import { TextDocuments } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
-import { connection } from '../server';
-import { Tads3SymbolManager } from '../Tads3SymbolManager';
+import { connection, documents } from '../server';
+import { flattenTreeToArray, Tads3SymbolManager } from '../Tads3SymbolManager';
+import { getWordAtPosition } from './text-utils';
+import { DefinitionParams, Location  } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
-export async function onDefinition({textDocument,position}: DefinitionParams, symbolManager: Tads3SymbolManager) {
+
+
+export async function onDefinition({textDocument,position}: DefinitionParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager) {
+	const locations: Location[] = [];
+	const currentDoc = documents.get(textDocument.uri);
+	if(currentDoc) {
+		const symbolName = getWordAtPosition(currentDoc, position);
+		for(const filePathKey of symbolManager.symbols.keys()) {
+			const localSymbols = symbolManager.symbols.get(filePathKey);
+			if(localSymbols) {
+				const symbol = flattenTreeToArray(localSymbols).find(x=>x.name === symbolName);
+				if(symbol !== undefined) {
+					connection.console.log(`Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`);
+					locations.push(Location.create(filePathKey, symbol.range));
+				}
+			}
+		}
+	}
+
+
 	
-	/*
-	const wordRange = textDocument.getWordRangeAtPosition(position);
-		const symbolName = textDocument.getText(wordRange);
+	return locations;
 
-		for(const key of this.outlinerManager.getAllSymbols().keys()) {
+
+			/*setOfRanges?.forEach( (link) => {
+				Location.create(fsPath, link.cloneR);
+			});*/
+
+			/*//const symbol = localSymbols?.find(x => x.name === symbolName);
+			if (link) {
+				return [Location.create(fsPath, link.range)];
+			}*/	
+		}
+
+		/*for(const key of symbolManager.get.getAllSymbols().keys()) {
 			//this.allSymbolsFlattened.push(flattenTreeToArray(this.outlinerManager.getAllSymbols().get(key)));
 			const symbol = flattenTreeToArray(this.outlinerManager.getAllSymbols().get(key))
 							.find(x=>x.name === symbolName);
@@ -18,10 +48,10 @@ export async function onDefinition({textDocument,position}: DefinitionParams, sy
 			if(symbol !== undefined) {
 				return [new vscode.Location(Uri.parse(key), symbol.range)];
 			}	
-		}
+		}*/
 
 		// TODO: Clean up this mess
-		for(const filePath of this.outlinerManager.getAllSymbols().keys()) {
+		/*for(const filePath of this.outlinerManager.getAllSymbols().keys()) {
 			// TODO: get current object from location
 			const containingObject = this.outlinerManager.getAllSymbols().get(filePath)
 				.find(x => x.range.contains(position));
@@ -64,10 +94,11 @@ export async function onDefinition({textDocument,position}: DefinitionParams, sy
 			}
 
 
-		}*/
+		}
+
 
 		//let firstFoundSymbol = this.outlinerManager.getSymbols(textDocument.uri.path).find(x => x.name === symbolName);
 		//return [new vscode.Location(textDocument.uri, firstFoundSymbol.range)];
-		return [];
 
-}
+	}*/
+
