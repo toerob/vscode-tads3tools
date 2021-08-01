@@ -28,8 +28,8 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 
 
 
-export const symbolManager = new Tads3SymbolManager();
 export const preprocessedFilesCacheMap = new Map<string, string>();
+export const symbolManager = new Tads3SymbolManager();
 const hasSymbolsToFetch = new Map<string, boolean>();
 
 

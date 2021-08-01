@@ -1,14 +1,13 @@
 import { TextDocument, Position } from 'vscode-languageserver-textdocument';
 import { connection } from '../server';
-import { indexOf } from 'underscore';
 const wordRegExp = new RegExp(/([a-zA-Z0-9-]+)/);
 
 
-// TODO: missbehaves slightly when it comes to ., etc... 
+// TODO: missbehaves slightly when it comes to ".," etc...
 /**
  * 
  * @param currentDocument 
- * @param position 
+ * @param position 5
  * @returns 
  */
 export function getWordAtPosition(currentDocument: TextDocument, position: Position) {

@@ -19,11 +19,14 @@ export async function onDefinition({textDocument,position}: DefinitionParams, do
 				const symbol = flattenTreeToArray(localSymbols).find(x=>x.name === symbolName);
 				if(symbol !== undefined) {
 					connection.console.log(`Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`);
+					// TODO: syncPreprocessedWithDocument();
 					locations.push(Location.create(filePathKey, symbol.range));
 				}
 			}
 		}
 	}
+
+	
 
 
 	
