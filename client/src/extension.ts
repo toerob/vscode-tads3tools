@@ -16,6 +16,7 @@ import {
 	ServerOptions,
 	TransportKind
 } from 'vscode-languageclient/node';
+import { Tads3VisualEditorProvider } from './providers/visual-provider';
 import { Tads3CompileErrorParser } from './tads3-error-parser';
 
 let errorDiagnostics = [];
@@ -59,6 +60,18 @@ export function activate(context: ExtensionContext) {
 	//context.subscriptions.push(commands.registerCommand('extension.parseTads3', parseTads3));
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 
+	const tads3VisualEditorProvider = new Tads3VisualEditorProvider(context);
+
+	//Preprocess view - CustomReadonlyEditorProvider https://code.visualstudio.com/api/extension-guides/custom-editors
+	//context.subscriptions.push(Tads3VisualEditorProvider.register(context));
+
+	context.subscriptions.push(window.registerCustomEditorProvider('tads3.visualEdit', tads3VisualEditorProvider, {
+		supportsMultipleEditorsPerDocument: true
+	}));
+
+
+	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', openInVisualEditor));
+
 	client.onReady().then(()=> {
 		
 		client.onNotification('symbolparsing/success', (path)=> {
@@ -84,6 +97,10 @@ export function activate(context: ExtensionContext) {
 		});
 	});
 
+}
+
+async function openInVisualEditor() {
+	commands.executeCommand("vscode.openWith", window.activeTextEditor.document.uri, 'tads3.visualEdit');
 }
 
 
