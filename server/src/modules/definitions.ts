@@ -1,7 +1,7 @@
 import { TextDocuments } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 import { connection, documents } from '../server';
-import { flattenTreeToArray, Tads3SymbolManager } from '../Tads3SymbolManager';
+import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
 import { getWordAtPosition } from './text-utils';
 import { DefinitionParams, Location  } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';

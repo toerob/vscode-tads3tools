@@ -49,6 +49,7 @@ expose(function parseFunc(path: string, text: string) {
   
   return {
     keywords: listener.localKeywords ?? [],
-    symbols: listener?.symbols ?? symbols
+    symbols: listener.symbols ?? symbols,
+    additionalProperties: listener.additionalProperties
   };
 });

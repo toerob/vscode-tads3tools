@@ -28,7 +28,7 @@ let allFilesBeenProcessed = false;
 let serverProcessCancelTokenSource: CancellationTokenSource;
 let chosenMakefileUri: Uri|undefined;
 
-let client: LanguageClient;
+export let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
 	const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
@@ -72,7 +72,16 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', openInVisualEditor));
 
-	client.onReady().then(()=> {
+	client.onReady().then(() => {
+		
+		client.onNotification('response/mapsymbols', symbols => {
+			
+			console.log(symbols);
+			
+			console.log('****');
+		});
+
+
 		
 		client.onNotification('symbolparsing/success', (path)=> {
 			//window.showInformationMessage(`${basename(path)} has been parsed successfully`);			
@@ -100,7 +109,9 @@ export function activate(context: ExtensionContext) {
 }
 
 async function openInVisualEditor() {
+	client.sendNotification('request/mapsymbols');
 	commands.executeCommand("vscode.openWith", window.activeTextEditor.document.uri, 'tads3.visualEdit');
+
 }
 
 

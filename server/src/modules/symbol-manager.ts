@@ -1,9 +1,12 @@
 
 import { Range, DefinitionParams, Location, DocumentSymbol  } from 'vscode-languageserver';
+import { ExtendedDocumentSymbolProperties } from '../parser/Tads3SymbolListener';
 
 export class Tads3SymbolManager {
 	symbols: Map<string, DocumentSymbol[]> = new Map();
 	keywords: Map<string, Map<string, Range[]>> = new Map();
+	additionalProperties: Map<string, Map<string, ExtendedDocumentSymbolProperties>> = new Map();
+	inheritanceMap: Map<string, string> = new Map(); // TODO:
 }
 
 export function flattenTreeToArray(localSymbols: DocumentSymbol[]) {

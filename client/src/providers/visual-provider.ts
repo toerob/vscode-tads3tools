@@ -8,6 +8,7 @@ import { workspace, CancellationToken, WebviewPanel, Webview } from 'vscode';
 import { CustomReadonlyEditorProvider } from 'vscode';
 import { WebviewOptions } from 'vscode';
 import { TextEditor } from 'vscode';
+import { client } from '../extension';
 
 interface AssetManifest {
 	files: {
@@ -33,6 +34,7 @@ export class Tads3VisualEditorProvider implements CustomReadonlyEditorProvider {
 	constructor(
 		private context: ExtensionContext,
 	) {
+
 	}
 
 	updateWebview(webviewPanel: WebviewPanel, document) {
@@ -41,6 +43,8 @@ export class Tads3VisualEditorProvider implements CustomReadonlyEditorProvider {
 			text: document.getText(),
 		});
 		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, document);
+
+
 	}
 
 	openCustomDocument(uri: Uri, openContext: CustomDocumentOpenContext, token: CancellationToken): CustomDocument | Thenable<CustomDocument> {

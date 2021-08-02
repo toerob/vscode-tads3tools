@@ -18,18 +18,27 @@ import {
 
 //import { threadId, Worker as WorkerThreads } from 'worker_threads';
 import path = require('path');
-import { Tads3SymbolManager } from './Tads3SymbolManager';
+import { Tads3SymbolManager } from './modules/symbol-manager';
 import { onDocumentSymbol } from './modules/symbols';
 import { onReferences } from './modules/references';
 import { onDefinition } from './modules/definitions';
-import { preprocessAndParseAllFiles } from './parseworkersmanager';
+import { preprocessAndParseAllFiles } from './parse-workers-manager';
 import { workspace } from 'vscode';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { DefaultMapObject } from './modules/mapcrawling/DefaultMapObject';
+import MapObjectManager from './modules/mapcrawling/map-mapping';
 
 
 
 export const preprocessedFilesCacheMap = new Map<string, string>();
 export const symbolManager = new Tads3SymbolManager();
+export const mapper = new MapObjectManager(symbolManager);
+
+export default function processMapSymbols(symbolManager: Tads3SymbolManager, callback: any) {
+	const symbols = mapper.mapGameObjectsToMapObjects();
+	callback(symbols);
+}
+
 const hasSymbolsToFetch = new Map<string, boolean>();
 
 
@@ -105,6 +114,13 @@ connection.onInitialized(() => {
 
 	connection.onNotification('symbolparsing/abort', ()=> {
 		abortParsingProcess?.cancel();
+	});
+
+	connection.onNotification('request/mapsymbols', () => {
+		processMapSymbols(symbolManager, (symbols: DefaultMapObject[]) => {
+			// TODO: doesn't show up in the client
+			connection.sendNotification('response/mapsymbols', symbols);
+		});
 	});
 
 
@@ -191,7 +207,5 @@ connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token
 documents.listen(connection);
 
 connection.listen();
-
-
 
 

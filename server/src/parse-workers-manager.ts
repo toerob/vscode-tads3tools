@@ -38,12 +38,14 @@ export async function preprocessAndParseAllFiles(makefileLocation: any, filePath
 			workerPool.queue(async (parseJob) => {
 
 				const text = preprocessedFilesCacheMap.get(filePath) ?? '';
-				const { symbols, keywords} = await parseJob(filePath, text);
+				const { symbols, keywords, additionalProperties} = await parseJob(filePath, text);
 				//connection.console.log(symbols);
+				
 				connection.sendNotification('symbolparsing/success', filePath);
 				connection.console.log(`${filePath} parsed successfully`);
 				symbolManager.symbols.set(filePath, symbols);
 				symbolManager.keywords.set(filePath, keywords);
+				symbolManager.additionalProperties.set(filePath, additionalProperties);
 			});
 		}
 		await workerPool.completed();

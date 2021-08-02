@@ -1,5 +1,7 @@
-import { DocumentSymbol, SymbolKind } from 'vscode';
+import { DocumentSymbol, SymbolKind } from 'vscode-languageserver';
+import { Tads3SymbolManager } from '../symbol-manager';
 import { DefaultMapObject } from './DefaultMapObject';
+import MapObjectManager from './map-mapping';
 
 export const possibleExits = ['north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest', 'up', 'down', 'in', 'out', 'fore', 'aft', 'port', 'starboard'];
 // TODO: use possibleExits in extension.ts instead
@@ -32,6 +34,15 @@ const dirCoordsMap: any = {
 	//in: [0, 0, -1],
 	//out: [0, 0, 1]
 };
+
+
+
+function mapSymbolsToMapSymbols(symbolManager: Tads3SymbolManager) {
+	return [];
+}
+
+
+
 
 
 function getDirectionCoords(dir: string): [] {
@@ -73,10 +84,10 @@ export function crawlRooms(mapObjects: DefaultMapObject[], objectsAsArray: Docum
 	return crawledRooms;
 }
 
-export function flattenArrayByType(objects: any[], kind: SymbolKind): DocumentSymbol[] {
+export function flattenArrayByType(objects: DocumentSymbol[], kind: SymbolKind): DocumentSymbol[] {
 	const objectArray: DocumentSymbol[] = [...objects];
 	for (const o of objectArray) {
-		objectArray.push(...flattenArrayByType(o.children, kind));
+		objectArray.push(...flattenArrayByType(o.children as DocumentSymbol[], kind));
 	}
 	return objectArray;
 }

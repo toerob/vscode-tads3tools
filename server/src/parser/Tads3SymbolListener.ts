@@ -4,7 +4,7 @@ import { ScopedEnvironment } from './ScopedEnvironment';
 import { CompletionItem, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { Location, Range } from 'vscode-languageserver';
 
-
+// TODO: Maybe much easier to just keep a map instead of an object like this?
 export class ExtendedDocumentSymbolProperties {
 	arrowConnection: string | undefined;
 	at: string|undefined = undefined;
@@ -13,18 +13,22 @@ export class ExtendedDocumentSymbolProperties {
 	symbol: any| undefined;
 	isAssignment: boolean| undefined;
 	shortName: string| undefined;
-	parent: DocumentSymbol| undefined;
+	parent: DocumentSymbol | undefined;
+	superClassRoot: string | undefined;
 	travelConnectorMap = new Map();
 	constructor(public documentSymbolName: string) {
 		
 	}
 }
 
-const additionalProperties = new Map<string, ExtendedDocumentSymbolProperties>();
+//const additionalProperties = new Map<string, ExtendedDocumentSymbolProperties>();
 
 export class Tads3SymbolListener implements Tads3Listener {
 
 	symbols: DocumentSymbol[] = [];
+
+	additionalProperties: Map<string, ExtendedDocumentSymbolProperties> = new Map();
+
 
 	currentObjectSymbol: DocumentSymbol | undefined;
 
@@ -126,7 +130,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 			const additionalProps = new ExtendedDocumentSymbolProperties(name);
 			additionalProps.objectScope = this.currentObjectSymbol;
 			additionalProps.functionScope = this.currentFunctionSymbol;
-			additionalProperties.set(this.currentUri, additionalProps);
+			this.additionalProperties.set(this.currentUri, additionalProps);
 
 			this.assignmentStatements.push(symbol);
 		}
@@ -210,7 +214,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 		if (!ctx._isClass) {
 			this.lastObjectLevelMap.set(level, symbol);
 		}
-		additionalProperties.set(this.currentUri, additionalProps);
+		this.additionalProperties.set(this.currentUri, additionalProps);
 	}
 
 
@@ -319,7 +323,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 				// directly whenever a travelConnector is in use
 
 				if (this.currentObjectSymbol?.name) {
-					additionalProperties
+					this.additionalProperties
 						.get(this.currentObjectSymbol?.name)?.travelConnectorMap
 						.set(symbol.name, destination);
 				}
@@ -341,7 +345,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 		if (this.currentObjectSymbol && (name === 'otherSide' || name === 'masterObject')) {
 			if (this.currentObjectSymbol?.name) {
 				//this.currentObjectSymbol.arrowConnection = detail;
-				const prop = additionalProperties.get(this.currentObjectSymbol.name);
+				const prop = this.additionalProperties.get(this.currentObjectSymbol.name);
 				if (prop?.arrowConnection) {
 					prop.arrowConnection = detail;
 				}
@@ -353,7 +357,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 		} else if (this.currentObjectSymbol) {
 			const props = new ExtendedDocumentSymbolProperties(name);
 			props.parent = this.currentObjectSymbol;
-			additionalProperties.set(this.currentUri, props);
+			this.additionalProperties.set(this.currentUri, props);
 
 			this.currentObjectSymbol.children?.push(symbol);
 		}
@@ -377,7 +381,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 
 				const props = new ExtendedDocumentSymbolProperties(name);
 				props.parent = this.currentObjectSymbol;
-				additionalProperties.set(this.currentUri, props);
+				this.additionalProperties.set(this.currentUri, props);
 
 				this.currentObjectSymbol.children?.push(symbol);
 				this.currentFunctionSymbol = symbol;

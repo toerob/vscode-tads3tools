@@ -5,7 +5,7 @@ import { Location, ReferenceParams } from 'vscode-languageserver';
 import { Position, TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { connection } from '../server';
-import { flattenTreeToArray, Tads3SymbolManager } from '../Tads3SymbolManager';
+import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
 import { getWordAtPosition } from './text-utils';
 
 const memberCallRegExp = new RegExp(/\s*(?:(.*)[.])(.*)\(\);/);
