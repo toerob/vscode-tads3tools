@@ -7,7 +7,7 @@ import { exec } from 'child_process';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn } from 'vscode';
 
 import {
 	ConnectionError,
@@ -27,6 +27,10 @@ let allFilesBeenProcessed = false;
 
 let serverProcessCancelTokenSource: CancellationTokenSource;
 let chosenMakefileUri: Uri|undefined;
+
+ // A string array of preprocessed files available for retrieval from the server
+ // via request: 'request/preprocessed/file'
+let preprocessedList: string[];
 
 export let client: LanguageClient;
 
@@ -70,6 +74,11 @@ export function activate(context: ExtensionContext) {
 	}));
 
 
+	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
+	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (range: Range, uri: Uri) => showPreprocessedTextAction(range, uri)));
+	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
+
+
 	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', openInVisualEditor));
 
 	client.onReady().then(() => {
@@ -77,15 +86,30 @@ export function activate(context: ExtensionContext) {
 		client.onNotification('response/mapsymbols', symbols => {
 			tads3VisualEditorProvider.drawSymbols(symbols);
 			//webviewPanel.webview
-			
+		});
+
+		client.onNotification('response/preprocessed/file', ({ path, text }) => {
+			console.log(`Server response for ${path}: ` +text);
+			workspace.openTextDocument({ language: 'tads3', content: text })
+			.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
+		});
 	
+
+		client.onNotification('response/preprocessed/list', (filesNames: string[]) => {
+			//console.log(fileNames.join(', '));
+			preprocessedList = filesNames;
 		});
 
 
+
 		
-		client.onNotification('symbolparsing/success', (path)=> {
+		client.onNotification('symbolparsing/success', async (path) => {
+			
+
 			//window.showInformationMessage(`${basename(path)} has been parsed successfully`);			
 			if (window.activeTextEditor.document.uri.fsPath === path) {
+
+				
 				const uri = window.activeTextEditor.document.uri;
 				//TODO: refresh the outliner somehow
 				//workspace.onDidChangeTextDocument(window.activeTextEditor.document.uri);
@@ -101,9 +125,11 @@ export function activate(context: ExtensionContext) {
 
 			}
 		});
-		client.onNotification("symbolparsing/allfiles/success", ({elapsedTime}) => {
+
+		client.onNotification("symbolparsing/allfiles/success", ({ elapsedTime }) => {
 			window.showInformationMessage(`All project/library files parsed in ${elapsedTime} ms`);
 		});
+
 	});
 
 }
@@ -158,6 +184,7 @@ export async function findAndSelectMakefileUri() {
 
 
 let currentTextDocument: TextDocument | undefined;
+
 
 async function onDidSaveTextDocument(textDocument: any) {
 	currentTextDocument = textDocument;
@@ -276,3 +303,50 @@ export async function cancelParse(): Promise<any> {
 		return resolve(true);
 	});
 }
+
+
+
+function enablePreprocessorCodeLens(arg0: string, enablePreprocessorCodeLens: any) {
+	const configuration = workspace.getConfiguration("tads3");
+	const oldValue = configuration.get("enablePreprocessorCodeLens");
+	configuration.update("enablePreprocessorCodeLens", !oldValue);
+}
+
+
+function showPreprocessedTextAction(range: Range, uri: Uri) {
+
+	const filepath = window.activeTextEditor.document.uri.fsPath;
+	//const line = window.activeTextEditor.document..lineAt;
+	//new Range(line,0,line,0);
+	client.sendRequest('request/preprocessed/file', ({
+		path: filepath,
+		range: range // TODO: this should be connected to codelens, otherwise if undefined, skip the  showAndScrollToRange part
+		
+	}));
+
+	/*
+	const text = t3SymbolManager.getPreprocessedText(uri.path);
+	if (preprocessDocument) {
+		window.visibleTextEditors
+			.find(editor => editor.document.uri.path === preprocessDocument.uri.path)
+			.edit(prepDoc => {
+				const wholeRange = preprocessDocument.validateRange(new Range(0, 0, preprocessDocument.lineCount, 0));
+				prepDoc.replace(wholeRange, text);
+			}).then(() => {
+				showAndScrollToRange(preprocessDocument, range);
+			});
+	} else {
+		workspace.openTextDocument({ language: 'tads3', content: text })
+			.then(doc => {
+				preprocessDocument = doc;
+				showAndScrollToRange(doc, range);
+			});
+	}*/
+}
+
+function showPreprocessedFileQuickPick() {
+	window.showQuickPick(preprocessedList)
+	.then(choice => client.sendRequest('request/preprocessed/file', {path: choice}));
+
+}
+

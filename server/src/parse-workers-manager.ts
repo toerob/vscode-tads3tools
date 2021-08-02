@@ -14,6 +14,8 @@ import { abortParsingProcess, preprocessedFilesCacheMap, connection, symbolManag
 export async function preprocessAndParseFiles(makefileLocation: string, filePaths: string[]|undefined, token: any) {
 
 	await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
+	connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);
+
 
 	let allFilePaths = filePaths;
 

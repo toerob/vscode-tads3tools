@@ -197,6 +197,12 @@ connection.onReferences(async (handler) => onReferences(handler,documents, symbo
 connection.onDefinition(async (handler) => onDefinition(handler,documents, symbolManager));
 
 
+connection.onRequest('request/preprocessed/file', async (params) => {
+	const { path, range } = params;
+	const text = preprocessedFilesCacheMap.get(path);
+	connection.sendNotification('response/preprocessed/file', ({ path, text }) );
+});
+	
 connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {
 	await preprocessAndParseFiles(makefileLocation, filePaths, token); 
 });
