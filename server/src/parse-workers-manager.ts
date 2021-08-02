@@ -60,7 +60,12 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 				symbolManager.keywords.set(filePath, keywords);
 				symbolManager.additionalProperties.set(filePath, additionalProperties);
 
+		
+				//client.onNotification('symbolparsing/success', (filePath) => {
+				
+				// TODO: this doesn't work anymore: check connection
 				connection.sendNotification('symbolparsing/success', filePath);
+
 				connection.console.log(`${filePath} parsed successfully`);
 			});
 		}
@@ -69,6 +74,7 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 		const elapsedTime = Date.now() - startTime;
 		console.log(`All files parsed within ${elapsedTime} ms`);
 		connection.sendNotification('symbolparsing/allfiles/success', { allFilePaths, elapsedTime });
+		
 	} catch (err) {
 		await workerPool.terminate();
 		console.error(err);

@@ -94,6 +94,11 @@
 				"category": "Preprocessing"
 			},
 			{
+				"command": "tads3.showPreprocessedTextActionWithRange",
+				"title": "Show preprocessed text for the current file",
+				"category": "Preprocessing"
+			},
+			{
 				"command": "tads3.showPreprocessedFileQuickPick",
 				"title": "Choose a preprocessed file to show in a separate window",
 				"category": "Preprocessing"

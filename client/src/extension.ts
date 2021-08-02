@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/adjacent-overload-signatures */
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
@@ -16,6 +17,7 @@ import {
 	ServerOptions,
 	TransportKind
 } from 'vscode-languageclient/node';
+import { CodelensProvider } from './providers/code-lens';
 import { Tads3VisualEditorProvider } from './providers/visual-provider';
 import { Tads3CompileErrorParser } from './tads3-error-parser';
 
@@ -31,6 +33,8 @@ let chosenMakefileUri: Uri|undefined;
  // A string array of preprocessed files available for retrieval from the server
  // via request: 'request/preprocessed/file'
 let preprocessedList: string[];
+
+const preprocessedFilesMap: Map<string,string> = new Map();
 
 export let client: LanguageClient;
 
@@ -73,11 +77,14 @@ export function activate(context: ExtensionContext) {
 		supportsMultipleEditorsPerDocument: true
 	}));
 
+	context.subscriptions.push(languages.registerCodeLensProvider({ language: "tads3" }, new CodelensProvider(preprocessedFilesMap)));
 
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (range: Range, uri: Uri) => showPreprocessedTextAction(range, uri)));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
+	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextActionWithRange', (range: Range, uri: Uri) => showPreprocessedTextActionWithRange(range, uri)));
 
+	
 
 	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', openInVisualEditor));
 
@@ -89,9 +96,20 @@ export function activate(context: ExtensionContext) {
 		});
 
 		client.onNotification('response/preprocessed/file', ({ path, text }) => {
+			preprocessedFilesMap.set(path, text);
+			
 			console.log(`Server response for ${path}: ` +text);
-			workspace.openTextDocument({ language: 'tads3', content: text })
-			.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
+			
+			workspace
+				.openTextDocument({ language: 'tads3', content: text })
+				.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
+				
+				
+
+
+
+			
+
 		});
 	
 
@@ -103,11 +121,11 @@ export function activate(context: ExtensionContext) {
 
 
 		
-		client.onNotification('symbolparsing/success', async (path) => {
+		client.onNotification('symbolparsing/success', (filePath) => {
 			
-
-			//window.showInformationMessage(`${basename(path)} has been parsed successfully`);			
-			if (window.activeTextEditor.document.uri.fsPath === path) {
+			//preprocessedDocument
+			window.showInformationMessage(`${basename(filePath)} has been parsed successfully`);			
+			if (window.activeTextEditor.document.uri.fsPath === filePath) {
 
 				
 				const uri = window.activeTextEditor.document.uri;
@@ -306,7 +324,7 @@ export async function cancelParse(): Promise<any> {
 
 
 
-function enablePreprocessorCodeLens(arg0: string, enablePreprocessorCodeLens: any) {
+function enablePreprocessorCodeLens() {
 	const configuration = workspace.getConfiguration("tads3");
 	const oldValue = configuration.get("enablePreprocessorCodeLens");
 	configuration.update("enablePreprocessorCodeLens", !oldValue);
@@ -324,8 +342,21 @@ function showPreprocessedTextAction(range: Range, uri: Uri) {
 		
 	}));
 
-	/*
-	const text = t3SymbolManager.getPreprocessedText(uri.path);
+}
+
+function showPreprocessedFileQuickPick() {
+	window.showQuickPick(preprocessedList)
+	.then(choice => client.sendRequest('request/preprocessed/file', {path: choice}));
+
+}
+
+
+
+
+let preprocessDocument;
+
+function showPreprocessedTextActionWithRange(range: Range, uri: Uri) {
+	const text = preprocessedFilesMap.get(uri.path);
 	if (preprocessDocument) {
 		window.visibleTextEditors
 			.find(editor => editor.document.uri.path === preprocessDocument.uri.path)
@@ -341,12 +372,18 @@ function showPreprocessedTextAction(range: Range, uri: Uri) {
 				preprocessDocument = doc;
 				showAndScrollToRange(doc, range);
 			});
-	}*/
+	}
 }
 
-function showPreprocessedFileQuickPick() {
-	window.showQuickPick(preprocessedList)
-	.then(choice => client.sendRequest('request/preprocessed/file', {path: choice}));
-
+function showAndScrollToRange(document: TextDocument, range: Range) {
+	const activeEditor = window.activeTextEditor;
+	window.showTextDocument(document, {
+		viewColumn: ViewColumn.Beside,
+		preserveFocus: true,
+		preview: true,
+		selection: range,
+	}).then(shownDoc => {
+		shownDoc.revealRange(range);
+		activeEditor.revealRange(range);
+	});
 }
-

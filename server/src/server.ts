@@ -27,6 +27,7 @@ import { workspace } from 'vscode';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DefaultMapObject } from './modules/mapcrawling/DefaultMapObject';
 import MapObjectManager from './modules/mapcrawling/map-mapping';
+//import { onCodeLens } from './modules/codelens';
 
 
 
@@ -79,6 +80,9 @@ connection.onInitialize((params: InitializeParams) => {
 			documentSymbolProvider: true,
 			referencesProvider: true,
 			definitionProvider: true,
+			/*codeLensProvider: {
+				resolveProvider: true,
+			},*/
 			textDocumentSync: {
 				openClose: true,
 				change: TextDocumentSyncKind.Full,
@@ -196,11 +200,13 @@ connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, documen
 connection.onReferences(async (handler) => onReferences(handler,documents, symbolManager));
 connection.onDefinition(async (handler) => onDefinition(handler,documents, symbolManager));
 
+//connection.onCodeLens(async (handler) => onCodeLens(handler,documents, symbolManager));
+
 
 connection.onRequest('request/preprocessed/file', async (params) => {
 	const { path, range } = params;
 	const text = preprocessedFilesCacheMap.get(path);
-	connection.sendNotification('response/preprocessed/file', ({ path, text }) );
+	connection.sendNotification('response/preprocessed/file', { path, text } );
 });
 	
 connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {
