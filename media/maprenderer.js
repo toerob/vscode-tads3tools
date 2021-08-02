@@ -1,3 +1,5 @@
+/* eslint-disable no-mixed-spaces-and-tabs */
+/* eslint-disable no-undef */
 //import ProjectstormReactDiagrams from "https://cdn.skypack.dev/@projectstorm/react-diagrams@6.5.2";
 
 //const h1 = React.createElement('h1', null, 'REACT')
@@ -9,6 +11,7 @@ const levelLabelRef = document.getElementById('levelLabel');
 const editorSelector = document.getElementById('editorSelector');
 let el = document.getElementById('inputDialog');
 el.style.visibility = "hidden";
+
 
 
 
@@ -25,7 +28,7 @@ const MAX_LENGTH = 19;
 let selectedEditor = 0;  // 0: map editor, 1: conversation editor
 let persistedObjectPositions = new Map();  // Keep track of object positions within this map
 let lastMessage;
-let currentLevel = 0
+let currentLevel = 0;
 
 mapCanvas.connections_width = 2;
 mapCanvas.render_collapsed_slots = false;
@@ -37,8 +40,8 @@ mapCanvas.align_to_grid = true;
  */
 
 mapCanvas.onNodeMoved = function (node) {
-	vscode.postMessage({command: 'updatepos', text: { name: node.properties.name, pos: node.pos}});
-}
+	vscode.postMessage({ command: 'updatepos', payload: { name: node.properties.name, pos: node.pos } });
+};
 
 //canvas.links_render_mode = LiteGraph.LINEAR_LINK;
 //canvas.show_info = false;
@@ -48,37 +51,37 @@ mapCanvas.onNodeMoved = function (node) {
 levelUp = function () {
 	currentLevel++;
 	refresh(lastMessage);
-}
+};
 
 levelDown = function () {
 	currentLevel--;
 	refresh(lastMessage);
-}
+};
 
 let config = {
 	collapsed: false,
 	showAll: true,
 	showUnmappedRooms: false
-}
+};
 
 toggleCollapse = function () {
 	config.collapsed = !config.collapsed;
 	refresh(lastMessage);
-}
+};
 
 toggleShowAll = function () {
 	config.showAll = !config.showAll;
 	vscode.postMessage({
 		command: 'showall',
 		text: config.showAll
-	})
+	});
 	refresh(lastMessage);
-}
+};
 
 toggleShowUnmapped = function () {
 	config.showUnmappedRooms = !config.showUnmappedRooms;
 	refresh(lastMessage);
-}
+};
 
 
 const portId = {
@@ -116,11 +119,11 @@ function splitIntoListByWhitespacesAndMaxlengthPerRow(str, maxLength) {
 	let splittedWordsByWS = str.split(' ');
 	let rows = [];
 	let rowString = '';
-	for(let word=0; word<splittedWordsByWS.length; word++) {
-		while(rowString.length<maxLength) {
+	for (let word = 0; word < splittedWordsByWS.length; word++) {
+		while (rowString.length < maxLength) {
 			rowString += ' ' + splittedWordsByWS[word];
 			rows.push(rowString);
-			if(word < splittedWordsByWS) {
+			if (word < splittedWordsByWS) {
 				word++;
 			}
 		}
@@ -132,7 +135,7 @@ function splitIntoListByWhitespacesAndMaxlengthPerRow(str, maxLength) {
 class NPCNode {
 	title = "NPC";
 	constructor() {
-		this.properties = { title: this.title, name: "", desc: ""};
+		this.properties = { title: this.title, name: "", desc: "" };
 	}
 }
 
@@ -155,7 +158,7 @@ class RoomNode {
 
 	northeast_out = undefined;
 	northeast_in = undefined;
-	
+
 	northwest_out = undefined;
 	northwest_in = undefined;
 
@@ -167,50 +170,50 @@ class RoomNode {
 
 	setupTwinPair(name, options, direction) {
 		let dir_out = this.addOutput(name + '_out', "number", options);
-		let dir_in  = this.addInput(name +'_in', "number", options);
-		dir_out.dir = direction
-		dir_in.dir = direction
+		let dir_in = this.addInput(name + '_in', "number", options);
+		dir_out.dir = direction;
+		dir_in.dir = direction;
 		dir_out.label = '';
 		dir_in.label = '';
 		return [
 			dir_out,
 			dir_in
-		]
+		];
 	}
 
 	constructor() {
 		this.properties = { title: this.title, name: "", desc: "", shortName: "" };
 
-		[ this.north_out, this.north_in ] = this.setupTwinPair("n", { pos: [70, -LiteGraph.NODE_TITLE_HEIGHT] }, LiteGraph.UP);
-		[ this.south_out, this.south_in ] = this.setupTwinPair("s", { pos: [70, 85] }, LiteGraph.DOWN);
-		[ this.west_out, this.west_in ] = this.setupTwinPair("w", { pos: [0, 45] }, LiteGraph.LEFT);
-		[ this.east_out, this.east_in ] = this.setupTwinPair("e", { pos: [141, 45] }, LiteGraph.RIGHT);
-		[ this.northeast_out, this.northeast_in ] = this.setupTwinPair("ne", { pos: [140, -LiteGraph.NODE_TITLE_HEIGHT] }, LiteGraph.RIGHT);
-		[ this.northwest_out, this.northwest_in ] = this.setupTwinPair("nw", { pos: [0, -LiteGraph.NODE_TITLE_HEIGHT] }, LiteGraph.LEFT);
-		[ this.southeast_out, this.southeast_in ] = this.setupTwinPair("se", { pos: [140, 85] }, LiteGraph.RIGHT);
-		[ this.southwest_out, this.southwest_in ] = this.setupTwinPair("sw", { pos: [0, 85] }, LiteGraph.LEFT);
+		[this.north_out, this.north_in] = this.setupTwinPair("n", { pos: [70, -LiteGraph.NODE_TITLE_HEIGHT] }, LiteGraph.UP);
+		[this.south_out, this.south_in] = this.setupTwinPair("s", { pos: [70, 85] }, LiteGraph.DOWN);
+		[this.west_out, this.west_in] = this.setupTwinPair("w", { pos: [0, 45] }, LiteGraph.LEFT);
+		[this.east_out, this.east_in] = this.setupTwinPair("e", { pos: [141, 45] }, LiteGraph.RIGHT);
+		[this.northeast_out, this.northeast_in] = this.setupTwinPair("ne", { pos: [140, -LiteGraph.NODE_TITLE_HEIGHT] }, LiteGraph.RIGHT);
+		[this.northwest_out, this.northwest_in] = this.setupTwinPair("nw", { pos: [0, -LiteGraph.NODE_TITLE_HEIGHT] }, LiteGraph.LEFT);
+		[this.southeast_out, this.southeast_in] = this.setupTwinPair("se", { pos: [140, 85] }, LiteGraph.RIGHT);
+		[this.southwest_out, this.southwest_in] = this.setupTwinPair("sw", { pos: [0, 85] }, LiteGraph.LEFT);
 
 		//this.size[0] = 160
-		this.size[1] = 85
+		this.size[1] = 85;
 		this.flags = {
 			horizontal: false,
 			collapsed: config.collapsed,
-		}
+		};
 		this.resizable = false;
 		this.serialize_widgets = true;
 
-		this.title_mode = LiteGraph.TRANSPARENT_TITLE
+		this.title_mode = LiteGraph.TRANSPARENT_TITLE;
 
 	}
 
-	getTitle = function() {
-		let title = this.title.length>MAX_TITLE_LENGTH? (this.title.substr(0, MAX_TITLE_LENGTH-3) + '...') : this.title;
-        return title;
-    };
+	getTitle = function () {
+		let title = this.title.length > MAX_TITLE_LENGTH ? (this.title.substr(0, MAX_TITLE_LENGTH - 3) + '...') : this.title;
+		return title;
+	};
 
-	onDrawForeground = function(ctx, graphCanvas) {
+	onDrawForeground = function (ctx, graphCanvas) {
 		if (this.flags.collapsed) return;
-		
+
 		ctx.save();
 		ctx.fillColor = "green";
 		//let splittedWord = splitIntoListByNthCharacterFunc(this.properties.name, 17);
@@ -251,26 +254,26 @@ class RoomNode {
 		output
 	);
 */
-	
-	onConnectionsChange(directionType, slot, someBooleanState, linkInfo, inputOutput) {
-		vscode.postMessage({ command: 'log', text: 'name: ' + directionType });
-		vscode.postMessage({ command: 'log', text: 'name: ' + this.properties.name  });
-		var target_node = graph.getNodeById(linkInfo.target_id);
-		vscode.postMessage({ command: 'log', text: 'target name: '+target_node.properties.name });
 
-		/*vscode.postMessage({command: 'log', text: 'directionType' +  directionType });
-		vscode.postMessage({command: 'log', text: 'slot' + slot });
-		vscode.postMessage({command: 'log', text: 'linkInfo.id:' + linkInfo.id });
-		vscode.postMessage({command: 'log', text: 'linkInfo.origin_id:' + linkInfo.origin_id });
+	onConnectionsChange(directionType, slot, someBooleanState, linkInfo, inputOutput) {
+		vscode.postMessage({ command: 'log', payload: 'name: ' + directionType });
+		vscode.postMessage({ command: 'log', payload: 'name: ' + this.properties.name });
+		var target_node = graph.getNodeById(linkInfo.target_id);
+		vscode.postMessage({ command: 'log', payload: 'target name: ' + target_node.properties.name });
+
+		/*vscode.postMessage({command: 'log', payload: 'directionType' +  directionType });
+		vscode.postMessage({command: 'log', payload: 'slot' + slot });
+		vscode.postMessage({command: 'log', payload: 'linkInfo.id:' + linkInfo.id });
+		vscode.postMessage({command: 'log', payload: 'linkInfo.origin_id:' + linkInfo.origin_id });
 		
-		vscode.postMessage({ command: 'log', text: 'linkInfo.target_id:' + linkInfo.target_id });
+		vscode.postMessage({ command: 'log', payload: 'linkInfo.target_id:' + linkInfo.target_id });
 		*/
 
-		//vscode.postMessage({ command: 'log', text: 'target_node:' + target_node });
-		
-		//vscode.postMessage({command: 'log', text: 'linkInfo.origin_slot:' + linkInfo.origin_slot });
-		//vscode.postMessage({command: 'log', text: 'linkInfo.target_slot:' + linkInfo.target_slot });
-		//vscode.postMessage({command: 'log', text: slot + inputOutput });
+		//vscode.postMessage({ command: 'log', payload: 'target_node:' + target_node });
+
+		//vscode.postMessage({command: 'log', payload: 'linkInfo.origin_slot:' + linkInfo.origin_slot });
+		//vscode.postMessage({command: 'log', payload: 'linkInfo.target_slot:' + linkInfo.target_slot });
+		//vscode.postMessage({command: 'log', payload: slot + inputOutput });
 	}
 
 	onExecute() {
@@ -317,8 +320,8 @@ class RoomNode {
 		this.setOutputData( 0, A + B );
 		*/
 	}
-		
-};
+
+}
 
 LiteGraph.registerNodeType("basic/room", RoomNode);
 LiteGraph.registerNodeType("basic/npc", NPCNode);
@@ -327,7 +330,7 @@ LiteGraph.registerNodeType("basic/npc", NPCNode);
 
 window.addEventListener('message', event => {
 	lastMessage = event.data;
-	//vscode.postMessage({command: 'log', text: event.data });
+	//vscode.postMessage({command: 'log', payload: event.data });
 	refresh(event.data);
 });
 
@@ -335,8 +338,8 @@ let currentStartRoom;
 
 roomSelector.addEventListener('change', event => {
 	currentStartRoom = event.target.value;
-	vscode.postMessage({command: 'changestartroom', text: event.target.value });
-})
+	vscode.postMessage({ command: 'changestartroom', payload: event.target.value });
+});
 
 
 editorSelector.addEventListener('change', event => {
@@ -346,12 +349,12 @@ editorSelector.addEventListener('change', event => {
 	vscode.postMessage({
 		command: 'editor',
 		text: event.target.value
-	})
+	});
 });
 
 
 function handleConversationNodes(payload) {
-	if(payload.command === 'tads3.addNode' && payload.objects !== undefined) {
+	if (payload.command === 'tads3.addNode' && payload.objects !== undefined) {
 		for (let i = 0; i < payload.objects.length; i++) {
 			let npc = payload.objects[i];
 			createConversationNode(npc);
@@ -374,7 +377,7 @@ function handleConversationNodes(payload) {
 
 function refresh(payload) {
 	graph.clear();
-	if(selectedEditor === '1') {
+	if (selectedEditor === '1') {
 		handleConversationNodes(payload);
 	} else {
 		handleRoomNodes(payload);
@@ -386,7 +389,7 @@ function setupDirection(currentRoomNode, objectDir, port1, port2) {
 	if (objectDir) {
 		let connectedNode = graph._nodes.find(x => x.title === objectDir);
 		if (connectedNode) {
-			currentRoomNode.connect(port1, connectedNode, port2)
+			currentRoomNode.connect(port1, connectedNode, port2);
 		}
 	}
 }
@@ -394,11 +397,11 @@ function setupDirection(currentRoomNode, objectDir, port1, port2) {
 function removeOptions(selectElement) {
 	//while(selectEl.options.length) selectEl.options.remove(0)
 	var i, L = selectElement.options.length - 1;
-	for(i = L; i >= 0; i--) {
-	   selectElement.remove(i);
+	for (i = L; i >= 0; i--) {
+		selectElement.remove(i);
 	}
- }
- 
+}
+
 
 // Clear previous options
 function clearRoomSelector() {
@@ -409,11 +412,11 @@ function clearRoomSelector() {
 			roomSelector.remove(idx);
 		}*/
 		//roomSelector.options = [];
-		vscode.postMessage({command: 'log', text: `Clearing old values in roomSelector: ${roomSelector.options.length} `})
+		vscode.postMessage({ command: 'log', payload: `Clearing old values in roomSelector: ${roomSelector.options.length} ` });
 
 	} catch (err) {
-		vscode.postMessage({command: 'log', text: 'error during roomSelector clear: ' + err})
-	 }
+		vscode.postMessage({ command: 'log', payload: 'error during roomSelector clear: ' + err });
+	}
 }
 
 function handleRoomNodes(payload) {
@@ -422,8 +425,10 @@ function handleRoomNodes(payload) {
 
 	switch (payload.command) {
 		case 'tads3.addNode':
+
+			vscode.postMessage({ command: 'log', payload: 'You reached me!' });
 			if (payload.objects !== undefined) {
-				
+
 				clearRoomSelector();
 				// Add option to selector
 				let sortedNames = payload.objects.map(x => x.name).sort(function (a, b) {
@@ -440,12 +445,12 @@ function handleRoomNodes(payload) {
 							optionNode.selected = true;
 						}
 						roomSelector.appendChild(optionNode);
-					} catch(err) {
-
+					} catch (err) {
+						//
 					}
 				}
-				
-				
+
+
 				let handleLater = [];
 				let maximumY = 0;
 				for (let i = 0; i < payload.objects.length; i++) {
@@ -468,18 +473,18 @@ function handleRoomNodes(payload) {
 				const COLS = 10;
 
 				const xInc = 150;
-				
-				if (config.showUnmappedRooms && handleLater.length > 0) {					
+
+				if (config.showUnmappedRooms && handleLater.length > 0) {
 					let group = new LGraphGroup();
 
 					let totalRows = Math.ceil(handleLater.length / COLS);
 					let totalLength = xInc * Math.min(handleLater.length, COLS);
-					
+
 					const yPadding = 80;
 					group.configure({
 						title: 'Unmapped rooms',
-						bounding: [0,maximumY-yPadding, totalLength, (totalRows*yInc)]
-					})
+						bounding: [0, maximumY - yPadding, totalLength, (totalRows * yInc)]
+					});
 					graph.add(group);
 
 					//TODO: make a grid of the remaining objects
@@ -537,7 +542,7 @@ function handleRoomNodes(payload) {
 function createConversationNode(convObject) {
 
 	//vscode.postMessage({command: 'log',text: 'conv node: ' + convObject.name})
-	
+
 	var node = LiteGraph.createNode("basic/npc");
 	if (convObject.name !== undefined) {
 		node.properties.varname = convObject.name ?? 'unnamed node';
@@ -559,13 +564,13 @@ function createConversationNode(convObject) {
 	}
 	node.pos = [x, y];
 
-	node.onMouseDown = () => vscode.postMessage({ command: 'select', text: node.title });
+	node.onMouseDown = () => vscode.postMessage({ command: 'select', payload: node.title });
 
 	graph.add(node);
 
 
 }
-	
+
 
 
 function createNodeFromRoomObject(roomObject) {
@@ -591,7 +596,7 @@ function createNodeFromRoomObject(roomObject) {
 		if (roomObject.y !== undefined) {
 			y = roomObject.y * scaleFactorY + offsetY;
 		}
-	} 
+	}
 	node.pos = [x, y];
 
 	if (roomObject.name !== undefined) {
@@ -614,21 +619,21 @@ function createNodeFromRoomObject(roomObject) {
 }
 
 function applyCallbacksOnRoomNode(node) {
-	
+
 
 	/*node.onKeyDown = function(key) {
-		vscode.postMessage({ command: 'log', text: key });
+		vscode.postMessage({ command: 'log', payload: key });
 	};*/
 
-	node.onMouseDown = () => vscode.postMessage({ command: 'select', text: node.title });
+	node.onMouseDown = () => vscode.postMessage({ command: 'select', payload: node.title });
 	node.onPropertyChanged = function () {
 		node.title = node.properties.name;
 		vscode.postMessage({
 			command: 'change',
 			text: `Property change for object: ${node.properties.name}`
-		})
+		});
 		//return true; //return true is the event was used by your node, to block other behaviours
-	}
+	};
 
 
 	//TODO: add applyCallbacksOnRoomNode for del-key to remove it
@@ -639,7 +644,7 @@ function applyCallbacksOnRoomNode(node) {
 	});*/
 
 
-	
+
 }
 
 // TODO: convert node to Room
@@ -649,9 +654,9 @@ const createRoomNode = function (node) {
 		pos: node.pos,
 		directions: {
 		}
-	}
+	};
 	return room;
-}
+};
 
 
 // TODO: Trigger this programmatically 
@@ -659,7 +664,7 @@ const createRoomNode = function (node) {
 
 const createRoomGUI = (value, event, mouseEvent, contextMenu) => {
 
-	
+
 
 	var first_event = contextMenu.getFirstEvent();
 
@@ -668,21 +673,21 @@ const createRoomGUI = (value, event, mouseEvent, contextMenu) => {
 
 		var node = LiteGraph.createNode("basic/room");
 		node.pos = mapCanvas.convertEventToCanvasOffset(first_event);
-		
+
 		modal.style.left = node.pos[0] + "px";
 		modal.style.top = node.pos[1] + "px";
 
-		setTimeout(function() {
-            input.focus();
-        }, 10);
+		setTimeout(function () {
+			input.focus();
+		}, 10);
 
 
 		applyCallbacksOnRoomNode(node);
 		node.properties.name = name;
 		node.title = name;
 		graph.add(node);
-		vscode.postMessage({command: 'addroom',text: createRoomNode(node)})
-		vscode.postMessage({command: 'select', text: node.title})				
+		vscode.postMessage({ command: 'addroom', payload: createRoomNode(node) });
+		vscode.postMessage({ command: 'select', payload: node.title });
 
 
 		/*graph.beforeChange();
@@ -695,7 +700,7 @@ const createRoomGUI = (value, event, mouseEvent, contextMenu) => {
 			node.title = name 
 			graph.add(node);
 			vscode.postMessage({command: 'addroom',text: createRoomNode(node)})
-			vscode.postMessage({command: 'select', text: node.title})				
+			vscode.postMessage({command: 'select', payload: node.title})				
 
 		}
 		if (callback) {
@@ -708,8 +713,8 @@ const createRoomGUI = (value, event, mouseEvent, contextMenu) => {
 
 	}, first_event, false);
 
-	
-}
+
+};
 
 mapCanvas.getMenuOptions = () => {
 	return [
@@ -718,7 +723,7 @@ mapCanvas.getMenuOptions = () => {
 			has_submenu: false,
 			callback: createRoomGUI
 		}
-	]
+	];
 };
-  
-graph.start()
+
+graph.start();

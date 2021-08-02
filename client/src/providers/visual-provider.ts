@@ -30,22 +30,37 @@ export class Tads3VisualEditorProvider implements CustomReadonlyEditorProvider {
 
 	newlyCreatedRoomsSet = new Set();
 	startRoom = undefined;
+	
+	private webviewPanel: WebviewPanel;
 
-	constructor(
-		private context: ExtensionContext,
-	) {
+	constructor(private context: ExtensionContext) {}
+
+
+	public drawSymbols(symbols) {
+		console.log(`Getting new symbols. Updating webview`);
+		console.log(symbols);
+		this.updateWebview(this.webviewPanel, this.lastSelectedTextDocument, symbols);
 
 	}
 
-	updateWebview(webviewPanel: WebviewPanel, document) {
+	updateWebview(webviewPanel: WebviewPanel, document: any , symbols = undefined) {
 		webviewPanel.webview.postMessage({
 			type: 'update',
-			text: document.getText(),
+			payload: document.getText(),
 		});
 		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, document);
 
+		if(symbols) {
+			try {
+				webviewPanel.webview.postMessage({ command: 'tads3.addNode', objects: symbols  });
+			} catch(err) {
+				console.error(err);
+			}
+		}
 
 	}
+
+
 
 	openCustomDocument(uri: Uri, openContext: CustomDocumentOpenContext, token: CancellationToken): CustomDocument | Thenable<CustomDocument> {
 		return { uri, dispose: () => { } };
@@ -53,6 +68,8 @@ export class Tads3VisualEditorProvider implements CustomReadonlyEditorProvider {
 
 	resolveCustomEditor(document: CustomDocument, webviewPanel: WebviewPanel, token: CancellationToken): void | Thenable<void> {
 		//resolveCustomTextEditor(document: TextDocument, webviewPanel: WebviewPanel, token: CancellationToken): void | Thenable<void> {
+
+		this.webviewPanel = webviewPanel;
 		const options: WebviewOptions = { enableScripts: true };
 		webviewPanel.webview.options = options;
 		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, document);
@@ -217,18 +234,11 @@ export class Tads3VisualEditorProvider implements CustomReadonlyEditorProvider {
 		// TODO: needs to fetch via server
 	}
 
-
 	getHtmlForWebview(webview: Webview, document: CustomDocument): string {
 		this.webview = webview;
 		const litegraphScriptUri = webview.asWebviewUri(Uri.joinPath(this.context.extensionUri, 'media', 'litegraph.min.js'));
 		const litegraphCssUri = webview.asWebviewUri(Uri.joinPath(this.context.extensionUri, 'media', 'litegraph.css'));
-		//const d3ScriptUri = webview.asWebviewUri(Uri.joinPath(this.context.extensionUri, 'media', 'd3.min.js'));
 		const mapLogicUri = webview.asWebviewUri(Uri.joinPath(this.context.extensionUri, 'media', 'maprenderer.js'));
-		//const reactUri = webview.asWebviewUri(Uri.joinPath(this.context.extensionUri, 'media', 'maprenderer.js'));
-		//const reactDomUri = webview.asWebviewUri(Uri.joinPath(this.context.extensionUri, 'media', 'maprenderer.js'));
-		//<!--script type="text/javascript" src="${reactUri}"></script>
-		//<script type="text/javascript" src="${reactDomUri}"></script-->
-
 		return `
 			<html>
 				<head>

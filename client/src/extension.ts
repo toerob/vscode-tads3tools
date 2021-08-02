@@ -75,8 +75,10 @@ export function activate(context: ExtensionContext) {
 	client.onReady().then(() => {
 		
 		client.onNotification('response/mapsymbols', symbols => {
-			console.log(symbols);
-			console.log('****');
+			tads3VisualEditorProvider.drawSymbols(symbols);
+			//webviewPanel.webview
+			
+	
 		});
 
 
