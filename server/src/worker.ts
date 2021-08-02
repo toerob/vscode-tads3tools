@@ -40,6 +40,7 @@ expose(function parseFunc(path: string, text: string) {
     parseTree = parser.program();
   }
 
+  listener.currentUri = path;
   try {
     parseTreeWalker.walk<Tads3Listener>(listener, parseTree);
   } catch (err) {

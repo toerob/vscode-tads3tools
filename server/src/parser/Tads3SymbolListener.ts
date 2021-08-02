@@ -1,5 +1,5 @@
 import { Tads3Listener } from './Tads3Listener';
-import { ObjectDeclarationContext, PropertySetContext, PropertyContext, FunctionHeadContext, IdAtomContext, AssignmentStatementContext, FunctionDeclarationContext, CurlyObjectBodyContext, CodeBlockContext, MemberExprContext } from './Tads3Parser';
+import { ObjectDeclarationContext, PropertySetContext, PropertyContext, FunctionHeadContext, IdAtomContext, AssignmentStatementContext, FunctionDeclarationContext, CurlyObjectBodyContext, CodeBlockContext, MemberExprContext, ThrowStatementContext } from './Tads3Parser';
 import { ScopedEnvironment } from './ScopedEnvironment';
 import { CompletionItem, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { Location, Range } from 'vscode-languageserver';
@@ -16,9 +16,6 @@ export class ExtendedDocumentSymbolProperties {
 	parent: DocumentSymbol | undefined;
 	superClassRoot: string | undefined;
 	travelConnectorMap = new Map();
-	constructor(public documentSymbolName: string) {
-		
-	}
 }
 
 //const additionalProperties = new Map<string, ExtendedDocumentSymbolProperties>();
@@ -27,7 +24,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 
 	symbols: DocumentSymbol[] = [];
 
-	additionalProperties: Map<string, ExtendedDocumentSymbolProperties> = new Map();
+	additionalProperties: Map<DocumentSymbol, ExtendedDocumentSymbolProperties> = new Map();
 
 
 	currentObjectSymbol: DocumentSymbol | undefined;
@@ -127,11 +124,10 @@ export class Tads3SymbolListener implements Tads3Listener {
 		if (name !== undefined) {
 			const symbol = DocumentSymbol.create(name, detail, SymbolKind.Variable, range, range, []);
 
-			const additionalProps = new ExtendedDocumentSymbolProperties(name);
+			const additionalProps = new ExtendedDocumentSymbolProperties();
 			additionalProps.objectScope = this.currentObjectSymbol;
 			additionalProps.functionScope = this.currentFunctionSymbol;
-			this.additionalProperties.set(this.currentUri, additionalProps);
-
+			this.additionalProperties.set(symbol, additionalProps);
 			this.assignmentStatements.push(symbol);
 		}
 
@@ -166,7 +162,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 		const symbol = DocumentSymbol.create(name, detail, ctx._isClass ? SymbolKind.Class : SymbolKind.Object, range, range, []);
 		this.currentObjectSymbol = symbol;
 
-		const additionalProps = new ExtendedDocumentSymbolProperties(name);
+		const additionalProps = new ExtendedDocumentSymbolProperties();
 
 
 		try {
@@ -214,7 +210,9 @@ export class Tads3SymbolListener implements Tads3Listener {
 		if (!ctx._isClass) {
 			this.lastObjectLevelMap.set(level, symbol);
 		}
-		this.additionalProperties.set(this.currentUri, additionalProps);
+		if (name) {
+			this.additionalProperties.set(symbol, additionalProps);			
+		}
 	}
 
 
@@ -301,7 +299,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 		const stopCharacter = (ctx.stop?.charPositionInLine) ?? 0;
 		const range = Range.create(start, startCharacter, stop, stopCharacter); // TODO: stop character here.
 
-		const additionalProps = new ExtendedDocumentSymbolProperties(name);
+		const additionalProps = new ExtendedDocumentSymbolProperties();
 		const symbol = DocumentSymbol.create(name, detail, isInnerObject ? SymbolKind.Object : SymbolKind.Property, range, range, []);
 		additionalProps.isAssignment = isAssignment;
 
@@ -322,10 +320,10 @@ export class Tads3SymbolListener implements Tads3Listener {
 				// We keep track of a travellerConnectorMap inside each object, so we can use that value 
 				// directly whenever a travelConnector is in use
 
-				if (this.currentObjectSymbol?.name) {
+				if (this.currentObjectSymbol) {
 					this.additionalProperties
-						.get(this.currentObjectSymbol?.name)?.travelConnectorMap
-						.set(symbol.name, destination);
+						.get(this.currentObjectSymbol)
+						?.travelConnectorMap.set(symbol, destination);
 				}
 				//console.error(`Fetching destination for ${this.symbolToTweak.name}'s TravelConnector: ${destination}`);
 			};
@@ -343,9 +341,9 @@ export class Tads3SymbolListener implements Tads3Listener {
 		// TODO: arrowConnection should be renamed
 		// ------------------------------------------
 		if (this.currentObjectSymbol && (name === 'otherSide' || name === 'masterObject')) {
-			if (this.currentObjectSymbol?.name) {
+			if (this.currentObjectSymbol) {
 				//this.currentObjectSymbol.arrowConnection = detail;
-				const prop = this.additionalProperties.get(this.currentObjectSymbol.name);
+				const prop = this.additionalProperties.get(this.currentObjectSymbol);
 				if (prop?.arrowConnection) {
 					prop.arrowConnection = detail;
 				}
@@ -355,14 +353,16 @@ export class Tads3SymbolListener implements Tads3Listener {
 		if (this.currentInnerObjectSymbol) {
 			this.currentInnerObjectSymbol.children?.push(symbol);
 		} else if (this.currentObjectSymbol) {
-			const props = new ExtendedDocumentSymbolProperties(name);
-			props.parent = this.currentObjectSymbol;
-			this.additionalProperties.set(this.currentUri, props);
+			additionalProps.parent = this.currentObjectSymbol;
 
 			this.currentObjectSymbol.children?.push(symbol);
 		}
 		if (isInnerObject) {
 			this.currentInnerObjectSymbol = symbol;
+		}
+
+		if (name && additionalProps.parent) {
+			this.additionalProperties.set(symbol, additionalProps);			
 		}
 	}
 	
@@ -372,6 +372,9 @@ export class Tads3SymbolListener implements Tads3Listener {
 			let name: string = ctx.identifierAtom()?.ID()?.text.toString() ?? "anonymous function";
 			const start = ctx.start.line - 1;
 			const range = Range.create(start, 0, start, 0);
+
+			const props = new ExtendedDocumentSymbolProperties();
+
 			if (this.currentObjectSymbol) {
 				const detail = "method";
 				if (this.currentPropertySetName) {
@@ -379,18 +382,22 @@ export class Tads3SymbolListener implements Tads3Listener {
 				}
 				const symbol = DocumentSymbol.create(name, detail, SymbolKind.Method, range, range, []);
 
-				const props = new ExtendedDocumentSymbolProperties(name);
 				props.parent = this.currentObjectSymbol;
-				this.additionalProperties.set(this.currentUri, props);
 
 				this.currentObjectSymbol.children?.push(symbol);
 				this.currentFunctionSymbol = symbol;
+				this.additionalProperties.set(symbol, props);
+
+
 			} else {
 				const detail = "function";
 				const symbol = DocumentSymbol.create(name, detail, SymbolKind.Function, range, range, []);
 				this.symbols.push(symbol);
 				this.currentFunctionSymbol = symbol;
+				this.additionalProperties.set(symbol, props);
+
 			}
+
 		} catch(err) {
 			console.error(err);
 		}

@@ -22,7 +22,7 @@ import { Tads3SymbolManager } from './modules/symbol-manager';
 import { onDocumentSymbol } from './modules/symbols';
 import { onReferences } from './modules/references';
 import { onDefinition } from './modules/definitions';
-import { preprocessAndParseAllFiles } from './parse-workers-manager';
+import { preprocessAndParseFiles } from './parse-workers-manager';
 import { workspace } from 'vscode';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DefaultMapObject } from './modules/mapcrawling/DefaultMapObject';
@@ -198,7 +198,7 @@ connection.onDefinition(async (handler) => onDefinition(handler,documents, symbo
 
 
 connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {
-	await preprocessAndParseAllFiles(makefileLocation, filePaths, token); 
+	await preprocessAndParseFiles(makefileLocation, filePaths, token); 
 });
 
 

@@ -33,20 +33,21 @@ export default class MapObjectManager {
 		let mappedSymbols: DocumentSymbol[] = [];
 		
 		// Hold a temporary map structure of additionalProperties where the symbol name acts as key
-		const additionalProps: Map<string,ExtendedDocumentSymbolProperties> = new Map();
+		//const additionalProps: Map<string,ExtendedDocumentSymbolProperties> = new Map();
 		
 		if (this.showAllRooms || this.selectedEditor === EditorMode.NPC) {
 			for (const fileNameKey of this.t3SymbolManager.symbols.keys()) {
 				const localFileSymbols = this.t3SymbolManager.symbols.get(fileNameKey)  ?? [];
 				for (const localSymbol of localFileSymbols) {
 					mappedSymbols.push(localSymbol);
-					this.addAdditionalPropsToMap(localSymbol, fileNameKey, additionalProps);
+					//this.addAdditionalPropsToMap(localSymbol, fileNameKey, additionalProps);
 				}
 			}
 		} else if (fsPath) {
 			mappedSymbols = this.t3SymbolManager.symbols.get(fsPath) ?? [];
 		}
 		// OR only the one that's in the current file:
+
 
 
 		const classInheritanceMap = this.t3SymbolManager.inheritanceMap;
@@ -98,7 +99,7 @@ export default class MapObjectManager {
 			const objectsAsArray = Array.from(mappedSymbols);
 
 			// Filter out rooms and doors:
-			const roomsWithConnections = objectsAsArray.filter(x => this.isRoomOrDoor(x, additionalProps));
+			const roomsWithConnections = objectsAsArray.filter(x => this.isRoomOrDoor(x));
 
 			// And the first level of children of each:
 			const childrenMap: DocumentSymbol[] = [];
@@ -111,7 +112,7 @@ export default class MapObjectManager {
 
 			// Map them all to DefaultMapObjects:
 			mapObjects = flattenedMap.map(x => {
-				return createMapObject(x, additionalProps, false, [SymbolKind.Object]);
+				return this.createMapObject(x, false, [SymbolKind.Object]);
 			});
 			
 			for (const mapObject of mapObjects) {
@@ -175,17 +176,16 @@ export default class MapObjectManager {
 		return sortedMapObjects;*/
 	}
 
-
-	private addAdditionalPropsToMap(symbol: DocumentSymbol, fileNameKey: string, additionalProps: Map<string, ExtendedDocumentSymbolProperties>) {
-		if (symbol.name) {
-			const localPropsMap = this.t3SymbolManager.additionalProperties.get(fileNameKey);
-			if (localPropsMap) {
-				const symbolAdditionalProps = localPropsMap.get(symbol.name);
+	private findAdditionalProps(symbol: DocumentSymbol): ExtendedDocumentSymbolProperties|undefined {
+		if (symbol) {
+			for(const eachFileKey of this.t3SymbolManager.additionalProperties.keys()) {
+				const symbolAdditionalProps = this.t3SymbolManager.additionalProperties.get(eachFileKey)?.get(symbol);
 				if (symbolAdditionalProps) {
-					additionalProps.set(symbol.name, symbolAdditionalProps);
+					return symbolAdditionalProps;
 				}
 			}
 		}
+		return undefined;
 	}
 
 	craftClassInheritanceArrayFromCommaDelimDetail(commaDelimitedClassList: string) {
@@ -245,33 +245,24 @@ export default class MapObjectManager {
 
 
 
-	isRoomOrDoor(o: DocumentSymbol, a: Map<string, ExtendedDocumentSymbolProperties>) {
+	isRoomOrDoor(o: DocumentSymbol) {
 		//TODO: minor "hack" until all library files are being processed
 		// Should be removed once that is working perfectly
+		const a = this.findAdditionalProps(o);
 		try {
 			if (o.detail) {
 				if (o.detail.includes('Door') 
 					|| o.detail.includes('Stairway')
 					|| o.detail.includes('Passage')) {
-					
-					if (a.get(o.name)?.superClassRoot) {
-						a.get(o.name)!.superClassRoot = 'Door';						
-					}
-					//a.superClassRoot = 'Door';
+					if (a) { a.superClassRoot ??= 'Door'; }
 					return true;
 				}
-
 				if (this.inheritesFromAny(o.detail, 'Door')) {
-					if (a.get(o.name)?.superClassRoot) {
-						a.get(o.name)!.superClassRoot = 'Door';						
-					}
+					if (a) { a.superClassRoot ??= 'Door'; }
 					return true;
 				}
 				if (this.inheritesFromAny(o.detail, 'Room')) {
-					if (a.get(o.name)?.superClassRoot) {
-						a.get(o.name)!.superClassRoot = 'Room';						
-					}
-
+					if (a) { a.superClassRoot ??= 'Room'; }
 					return true;
 				}		
 			} 
@@ -285,73 +276,97 @@ export default class MapObjectManager {
 	isDir(str: string) {
 		return str.match(/north|south|east|west|northeast|northwest|southeast|southwest|up|down|in|out|fore|port|aft|starboard/);
 	}
+
+
+	/**
+	 * 
+	 * @param symbol - The documentSymbol
+	 * @param skipChildren 
+	 * @param childrenKinds - only create children of the types defined in childrenKinds
+	 * @returns 
+	 */
+	createMapObject(symbol: DocumentSymbol, skipChildren = true, childrenKinds:SymbolKind[] = []): DefaultMapObject {
+		const mapObj = new DefaultMapObject(symbol.name);
+		if (!skipChildren) {
+			const children: DocumentSymbol[] = symbol.children ?? [];
+			for (const child of children) {
+				if (childrenKinds === undefined || childrenKinds.includes(child.kind)) {
+					try {
+						mapObj.children.push(this.createMapObject(child as DocumentSymbol, false, childrenKinds));
+					} catch (err) {
+						console.error(err);
+					}
+				}
+			}
+		}
+		if (symbol.name === 'mountainGate') {
+			console.log('h');
+		}
+		const props = this.findAdditionalProps(symbol);
+		
+		mapObj.parent = props?.parent?.name;
+
+		mapObj.shortName = props?.shortName;
+		mapObj.arrowConnection = props?.arrowConnection;
+		mapObj.kind = symbol.kind;
+		mapObj.detail = symbol.detail;
+
+
+		// TODO: check if property isAssignment somehow safe:
+		// additionalProps.get(x.name)?.isAssignment didn't work
+		
+		const isAssignment = (obj: DocumentSymbol) => {
+			const isAssignment = this.findAdditionalProps(obj)?.isAssignment;
+			return isAssignment;
+		};
+
+		if(mapObj.name === 'mountainGate') {
+			console.log(`Stop`);
+		}
+
+		mapObj.north = symbol.children?.find(x => isAssignment(x) && x.name === 'north')?.detail;
+		mapObj.northeast = symbol.children?.find(x => isAssignment(x) && x.name === 'northeast')?.detail;
+		mapObj.northwest = symbol.children?.find(x => isAssignment(x) && x.name === 'northwest')?.detail;
+
+		mapObj.south = symbol.children?.find(x => isAssignment(x) && x.name === 'south')?.detail;
+		mapObj.southeast = symbol.children?.find(x => isAssignment(x) && x.name === 'southeast')?.detail;
+		mapObj.southwest = symbol.children?.find(x => isAssignment(x) && x.name === 'southwest')?.detail;
+
+		mapObj.east = symbol.children?.find(x => isAssignment(x) && x.name === 'east')?.detail;
+		mapObj.west = symbol.children?.find(x => isAssignment(x) && x.name === 'west')?.detail;
+
+		mapObj.up = symbol.children?.find(x => isAssignment(x) && x.name === 'up')?.detail;
+		mapObj.down = symbol.children?.find(x => isAssignment(x) && x.name === 'down')?.detail;
+
+		mapObj.in = symbol.children?.find(x => isAssignment(x) && x.name === 'in')?.detail;
+		mapObj.out = symbol.children?.find(x => isAssignment(x) && x.name === 'out')?.detail;
+
+		// Sets north to fore if north is not already set, etc...
+		mapObj.north =  mapObj.north? mapObj.north:symbol.children?.find(x => isAssignment(x) && x.name === 'fore')?.detail;
+		mapObj.south = mapObj.south? mapObj.south: symbol.children?.find(x => isAssignment(x) && x.name === 'aft')?.detail;
+		mapObj.west = mapObj.west? mapObj.west: symbol.children?.find(x => isAssignment(x) && x.name === 'port')?.detail;
+		mapObj.east = mapObj.east? mapObj.east: symbol.children?.find(x => isAssignment(x) && x.name === 'starboard')?.detail;
+
+
+		// Go through each travelConnector's destination value and assign it:
+		const possibleExits = ['north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest', 'up', 'down', 'in', 'out', 'fore', 'port', 'aft', 'starboard'];
+		for (const dir of possibleExits) {
+			if (!hasExit(mapObj, dir)) {
+				const room = props?.travelConnectorMap.get(dir);
+				if (room) {
+					setExit(mapObj, dir, room);
+				}
+			}
+		}
+		return mapObj;
+	}
+	
 }
 
 
 
-/**
- * 
- * @param x - The documentSymbol
- * @param skipChildren 
- * @param childrenKinds - only create children of the types defined in childrenKinds
- * @returns 
- */
- function createMapObject(x: DocumentSymbol, additionalProps: Map<string, ExtendedDocumentSymbolProperties>, skipChildren = true, childrenKinds:SymbolKind[] = []): DefaultMapObject {
-	const o = new DefaultMapObject(x.name);
-	if (!skipChildren) {
-		const children: DocumentSymbol[] = x.children ?? [];
-		for (const child of children) {
-			if (childrenKinds === undefined || childrenKinds.includes(child.kind)) {
-				o.children.push(createMapObject(child as DocumentSymbol, additionalProps, false, childrenKinds));				
-			}
-		}
-	}
-	const props = additionalProps.get(x.name);
-	
-	o.parent = props?.parent?.name;
-
-	o.shortName = props?.shortName;
-	o.arrowConnection = props?.arrowConnection;
-	o.kind = x.kind;
-	o.detail = x.detail;
 
 
-	o.north = x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'north')?.detail;
-	o.northeast = x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'northeast')?.detail;
-	o.northwest = x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'northwest')?.detail;
-
-	o.south = x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'south')?.detail;
-	o.southeast = x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'southeast')?.detail;
-	o.southwest = x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'southwest')?.detail;
-
-	o.east = x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'east')?.detail;
-	o.west = x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'west')?.detail;
-
-	o.up = x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'up')?.detail;
-	o.down = x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'down')?.detail;
-
-	o.in = x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'in')?.detail;
-	o.out = x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'out')?.detail;
-
-	// Sets north to fore if north is not already set, etc...
-	o.north =  o.north? o.north:x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'fore')?.detail;
-	o.south = o.south? o.south: x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'aft')?.detail;
-	o.west = o.west? o.west: x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'port')?.detail;
-	o.east = o.east? o.east: x.children?.find(x => additionalProps.get(x.name)?.isAssignment && x.name === 'starboard')?.detail;
-
-
-	// Go through each travelConnector's destination value and assign it:
-	const possibleExits = ['north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest', 'up', 'down', 'in', 'out', 'fore', 'port', 'aft', 'starboard'];
-	for (const dir of possibleExits) {
-		if (!hasExit(o, dir)) {
-			const room = props?.travelConnectorMap.get(dir);
-			if (room) {
-				setExit(o, dir, room);
-			}
-		}
-	}
-	return o;
- }
 
 function hasExit(obj:any, dir:any) {
 	return obj[dir];

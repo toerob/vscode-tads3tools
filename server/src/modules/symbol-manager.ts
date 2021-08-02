@@ -5,8 +5,12 @@ import { ExtendedDocumentSymbolProperties } from '../parser/Tads3SymbolListener'
 export class Tads3SymbolManager {
 	symbols: Map<string, DocumentSymbol[]> = new Map();
 	keywords: Map<string, Map<string, Range[]>> = new Map();
-	additionalProperties: Map<string, Map<string, ExtendedDocumentSymbolProperties>> = new Map();
+	additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
 	inheritanceMap: Map<string, string> = new Map(); // TODO:
+
+	public check() {
+		console.log(`Check!`);
+	}
 }
 
 export function flattenTreeToArray(localSymbols: DocumentSymbol[]) {
