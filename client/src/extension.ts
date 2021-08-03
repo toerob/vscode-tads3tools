@@ -77,10 +77,10 @@ export function activate(context: ExtensionContext) {
 		supportsMultipleEditorsPerDocument: true
 	}));
 
-	context.subscriptions.push(languages.registerCodeLensProvider({ language: "tads3" }, new CodelensProvider(preprocessedFilesMap)));
+	//context.subscriptions.push(languages.registerCodeLensProvider({ language: "tads3" }, new CodelensProvider(preprocessedFilesMap)));
 
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
-	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (range: Range, uri: Uri) => showPreprocessedTextAction(range, uri)));
+	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params)));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextActionWithRange', (range: Range, uri: Uri) => showPreprocessedTextActionWithRange(range, uri)));
 
@@ -97,24 +97,14 @@ export function activate(context: ExtensionContext) {
 
 		client.onNotification('response/preprocessed/file', ({ path, text }) => {
 			preprocessedFilesMap.set(path, text);
-			
 			console.log(`Server response for ${path}: ` +text);
-			
 			workspace
 				.openTextDocument({ language: 'tads3', content: text })
 				.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
-				
-				
-
-
-
-			
-
 		});
 	
 
 		client.onNotification('response/preprocessed/list', (filesNames: string[]) => {
-			//console.log(fileNames.join(', '));
 			preprocessedList = filesNames;
 		});
 
@@ -331,18 +321,31 @@ function enablePreprocessorCodeLens() {
 }
 
 
-function showPreprocessedTextAction(range: Range, uri: Uri) {
+let preprocessDocument;
 
-	const filepath = window.activeTextEditor.document.uri.fsPath;
-	//const line = window.activeTextEditor.document..lineAt;
-	//new Range(line,0,line,0);
-	client.sendRequest('request/preprocessed/file', ({
-		path: filepath,
-		range: range // TODO: this should be connected to codelens, otherwise if undefined, skip the  showAndScrollToRange part
-		
-	}));
+function showPreprocessedTextAction(params) {
+	const [ range, uri, preprocessedText ] = params;
+	if (preprocessDocument) {
+		window.visibleTextEditors
+			.find(editor => editor.document.uri.path === preprocessDocument.uri.path)
+			.edit(prepDoc => {
+				const wholeRange = preprocessDocument.validateRange(new Range(0, 0, preprocessDocument.lineCount, 0));
+				prepDoc.replace(wholeRange, preprocessedText);
+			}).then(() => {
+				showAndScrollToRange(preprocessDocument, range);
+			});
+	} else {
+		workspace.openTextDocument({ language: 'tads3', content: preprocessedText })
+			.then(doc => {
+				preprocessDocument = doc;
+				showAndScrollToRange(doc, range);
+			});
+	}
+
 
 }
+
+
 
 function showPreprocessedFileQuickPick() {
 	window.showQuickPick(preprocessedList)
@@ -352,8 +355,6 @@ function showPreprocessedFileQuickPick() {
 
 
 
-
-let preprocessDocument;
 
 function showPreprocessedTextActionWithRange(range: Range, uri: Uri) {
 	const text = preprocessedFilesMap.get(uri.path);

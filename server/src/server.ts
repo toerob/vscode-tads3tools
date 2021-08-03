@@ -12,7 +12,10 @@ import {
 	DidChangeConfigurationNotification,
 	TextDocumentSyncKind,
 	InitializeResult,
-	CancellationTokenSource} from 'vscode-languageserver/node';
+	Range,
+	CancellationTokenSource,
+	CodeLensRequest,
+	CodeLensResolveRequest} from 'vscode-languageserver/node';
 
 
 
@@ -27,7 +30,8 @@ import { workspace } from 'vscode';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DefaultMapObject } from './modules/mapcrawling/DefaultMapObject';
 import MapObjectManager from './modules/mapcrawling/map-mapping';
-//import { onCodeLens } from './modules/codelens';
+import { onCodeLens } from './modules/codelens';
+import { Command } from 'atom-languageclient/build/lib/languageclient';
 
 
 
@@ -80,9 +84,9 @@ connection.onInitialize((params: InitializeParams) => {
 			documentSymbolProvider: true,
 			referencesProvider: true,
 			definitionProvider: true,
-			/*codeLensProvider: {
+			codeLensProvider: {
 				resolveProvider: true,
-			},*/
+			},
 			textDocumentSync: {
 				openClose: true,
 				change: TextDocumentSyncKind.Full,
@@ -106,6 +110,7 @@ connection.onInitialize((params: InitializeParams) => {
 export let abortParsingProcess: CancellationTokenSource| undefined;
 
 connection.onInitialized(() => {
+	
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
@@ -200,7 +205,9 @@ connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, documen
 connection.onReferences(async (handler) => onReferences(handler,documents, symbolManager));
 connection.onDefinition(async (handler) => onDefinition(handler,documents, symbolManager));
 
-//connection.onCodeLens(async (handler) => onCodeLens(handler,documents, symbolManager));
+connection.onCodeLens(async (handler) => {
+	return onCodeLens(handler, documents, symbolManager);
+});
 
 
 connection.onRequest('request/preprocessed/file', async (params) => {

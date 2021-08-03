@@ -1,4 +1,4 @@
-import { CodeLens, DefinitionParams, TextDocuments , Range, CodeLensParams} from 'vscode-languageserver';
+import { CodeLens, DefinitionParams, TextDocuments , Range, CodeLensParams, Command, CodeAction, CodeActionKind} from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { preprocessAndParseFiles } from '../parse-workers-manager';
@@ -16,12 +16,20 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
 	const fsPath = URI.parse(textDocument.uri).fsPath;
 	const currentDoc = documents.get(textDocument.uri);
 	
-	const preprocessedDocumentArray = preprocessedFilesCacheMap.get(fsPath)?.split(/\r?\n/);
+    
+    const preprocessedDocument = preprocessedFilesCacheMap.get(fsPath);
+	const preprocessedDocumentArray = preprocessedDocument?.split(/\r?\n/);
 
 	if(!currentDoc || !preprocessedDocumentArray) {
 		return [];
-	}
+    }
+    
 	const currentDocArray = currentDoc?.getText().split(/\r?\n/);
+
+    // If the files have diverged don't send any CodeLenses since they'll be out of sync
+    if (currentDocArray.length !== preprocessedDocumentArray.length-1) {
+        return [];
+    }
 
 
 	for(let row=0; row<currentDoc.lineCount; row++) {
@@ -50,17 +58,15 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
 		if(preprocessedLine !== '' && preprocessedLine !== ';' ) {
 			const range = Range.create(row,0,row,t.length);
 			if (range) {
-				const command = {
-					title: `preprocessed to: ${preprocessedLine}`,
-					/*tooltip: "Preprocessed tads3 source code",
-					
-					command: "tads3.showPreprocessedTextAction",
-					arguments: [range, currentDoc.uri]*/
-
-					command: "tads3.showPreprocessedTextAction",
-					range: range
-				};
-				codeLenses.push(CodeLens.create(range, command));
+                codeLenses.push({
+                    range: range,
+                    command:
+                        Command.create(
+                            `preprocessed to: ${preprocessedLine}`,
+                            'tads3.showPreprocessedTextAction',
+                            [range, currentDoc.uri,preprocessedDocument]
+                        )
+                });
 			}
 		}
 	}
