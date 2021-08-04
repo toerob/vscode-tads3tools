@@ -55,15 +55,10 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 
 				const text = preprocessedFilesCacheMap.get(filePath) ?? '';
 				const { symbols, keywords, additionalProperties} = await parseJob(filePath, text);
-				//connection.console.log(symbols);
+
 				symbolManager.symbols.set(filePath, symbols);
 				symbolManager.keywords.set(filePath, keywords);
 				symbolManager.additionalProperties.set(filePath, additionalProperties);
-
-		
-				//client.onNotification('symbolparsing/success', (filePath) => {
-				
-				// TODO: this doesn't work anymore: check connection
 				connection.sendNotification('symbolparsing/success', filePath);
 				connection.console.log(`${filePath} parsed successfully`);
 			});

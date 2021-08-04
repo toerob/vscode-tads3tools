@@ -69,15 +69,16 @@ export function activate(context: ExtensionContext) {
 		}
 	};
 
-	client = new LanguageClient('languageServerExample', 'Language Server Example', serverOptions, clientOptions);
+	client = new LanguageClient('Tads3languageServer', 'Tads3 Language Server', serverOptions, clientOptions);
 	client.start();
 
 	
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
-	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params)));
+	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
+	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextForCurrentFile', showPreprocessedTextForCurrentFile));
+
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
-	//context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextActionWithRange', (range: Range, uri: Uri) => showPreprocessedTextActionWithRange(range, uri)));
 	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', () => openInVisualEditor(context)));
 
 	/*workspace.onDidChangeTextDocument((event: TextDocumentChangeEvent) => {
@@ -125,6 +126,7 @@ export function activate(context: ExtensionContext) {
 					//const lastSelectedTextDocument = textDocument;
 					if (lastChosenTextDocument) {
 						window.showTextDocument(textDocument, {
+							preserveFocus: true,
 							selection: selectedObject.range,
 						});
 					}
@@ -356,40 +358,18 @@ function showPreprocessedTextAction(params) {
 				showAndScrollToRange(doc, range);
 			});
 	}
-
-
 }
 
 
+function showPreprocessedTextForCurrentFile() {
+	const fsPath = window.activeTextEditor.document.uri.fsPath;
+	client.sendRequest('request/preprocessed/file', {path: fsPath});
+}
 
 function showPreprocessedFileQuickPick() {
 	window.showQuickPick(preprocessedList)
 	.then(choice => client.sendRequest('request/preprocessed/file', {path: choice}));
-
 }
-
-
-
-/*
-function showPreprocessedTextActionWithRange(range: Range, uri: Uri) {
-	const text = preprocessedFilesMap.get(uri.path);
-	if (preprocessDocument) {
-		window.visibleTextEditors
-			.find(editor => editor.document.uri.path === preprocessDocument.uri.path)
-			.edit(prepDoc => {
-				const wholeRange = preprocessDocument.validateRange(new Range(0, 0, preprocessDocument.lineCount, 0));
-				prepDoc.replace(wholeRange, text);
-			}).then(() => {
-				showAndScrollToRange(preprocessDocument, range);
-			});
-	} else {
-		workspace.openTextDocument({ language: 'tads3', content: text })
-			.then(doc => {
-				preprocessDocument = doc;
-				showAndScrollToRange(doc, range);
-			});
-	}
-}*/
 
 function showAndScrollToRange(document: TextDocument, range: Range) {
 	const activeEditor = window.activeTextEditor;

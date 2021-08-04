@@ -90,14 +90,15 @@
 			},
 			{
 				"command": "tads3.showPreprocessedTextAction",
-				"title": "Show preprocessed text for the current file",
-				"category": "Preprocessing"
+				"title": "Show preprocessed text and focus on range",
+				"category": "Preprocessing",
+				"enablement": "false"
 			},
 			{
-				"command": "tads3.showPreprocessedTextActionWithRange",
+				"command": "tads3.showPreprocessedTextForCurrentFile",
 				"title": "Show preprocessed text for the current file",
 				"category": "Preprocessing"
-			},
+			},			
 			{
 				"command": "tads3.showPreprocessedFileQuickPick",
 				"title": "Choose a preprocessed file to show in a separate window",

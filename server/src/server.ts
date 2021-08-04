@@ -31,7 +31,6 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DefaultMapObject } from './modules/mapcrawling/DefaultMapObject';
 import MapObjectManager from './modules/mapcrawling/map-mapping';
 import { onCodeLens } from './modules/codelens';
-import { Command } from 'atom-languageclient/build/lib/languageclient';
 
 
 
