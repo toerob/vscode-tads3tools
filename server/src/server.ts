@@ -43,9 +43,6 @@ export default function processMapSymbols(symbolManager: Tads3SymbolManager, cal
 	callback(symbols);
 }
 
-const hasSymbolsToFetch = new Map<string, boolean>();
-
-
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 export const connection = createConnection(ProposedFeatures.all);
@@ -143,35 +140,44 @@ connection.onInitialized(() => {
 
 });
 
-// The example settings
-interface ExampleSettings {
+// The tads3 global settings
+interface Tads3Settings {
 	maxNumberOfProblems: number;
-}
+	enablePreprocessorCodeLens: boolean;
+	include: string;
+	lib: string;
+} 
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
-const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
-let globalSettings: ExampleSettings = defaultSettings;
+const defaultSettings: Tads3Settings = { 
+	maxNumberOfProblems: 1000, 
+	enablePreprocessorCodeLens: false, 
+	include: "/usr/local/share/frobtads/tads3/include/",
+	lib: "/usr/local/share/frobtads/tads3/lib/",
+};
+
+let globalSettings: Tads3Settings = defaultSettings;
 
 // Cache the settings of all open documents
-const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
+const documentSettings: Map<string, Thenable<Tads3Settings>> = new Map();
 
 connection.onDidChangeConfiguration(change => {
 	if (hasConfigurationCapability) {
-		// Reset all cached document settings
-		documentSettings.clear();
+		documentSettings.clear();		// Reset all cached document settings
 	} else {
-		globalSettings = <ExampleSettings>(
-			(change.settings.languageServerExample || defaultSettings)
-		);
+		globalSettings = <Tads3Settings>((change.settings.tads3 || defaultSettings));
 	}
 
 	// Revalidate all open text documents
 	documents.all().forEach(validateTextDocument);
+
+
 });
 
-function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
+/*
+function getDocumentSettings(resource: string): Thenable<Tads3Settings> {
 	if (!hasConfigurationCapability) {
 		return Promise.resolve(globalSettings);
 	}
@@ -179,12 +185,12 @@ function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
 	if (!result) {
 		result = connection.workspace.getConfiguration({
 			scopeUri: resource,
-			section: 'Tads3LanguageServer'
+			section: 'tads3'
 		});
 		documentSettings.set(resource, result);
 	}
 	return result;
-}
+}*/
 
 // Only keep settings for open documents
 documents.onDidClose(e => {
@@ -193,13 +199,13 @@ documents.onDidClose(e => {
 
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
-documents.onDidChangeContent(params => {
+documents.onDidChangeContent(async params => {
 	validateTextDocument(params.document);
+
 });
 
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-	//const settings = await getDocumentSettings(textDocument.uri);
 	const diagnostics: Diagnostic[] = [];
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }

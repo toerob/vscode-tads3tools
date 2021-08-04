@@ -19,6 +19,7 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 
 	let allFilePaths = filePaths;
 
+
 	// Parse project files close to the makefile first:
 	if (filePaths === undefined) {
 		const baseDir = Utils.dirname(URI.parse(makefileLocation)).fsPath;
@@ -43,6 +44,8 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 
 	// Temporary, just the first files to speed up
 	//allFilePaths = allFilePaths.splice(0,3);
+	const totalFiles = allFilePaths?.length;
+	let tracker = 0;
 
 	const poolMaxSize = 4; //6;
 	const poolSize = allFilePaths.length >= poolMaxSize ? poolMaxSize : 1;
@@ -59,7 +62,8 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 				symbolManager.symbols.set(filePath, symbols);
 				symbolManager.keywords.set(filePath, keywords);
 				symbolManager.additionalProperties.set(filePath, additionalProperties);
-				connection.sendNotification('symbolparsing/success', filePath);
+				tracker++;
+				connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles]);
 				connection.console.log(`${filePath} parsed successfully`);
 			});
 		}

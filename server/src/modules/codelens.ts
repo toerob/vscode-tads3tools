@@ -1,17 +1,19 @@
-import { CodeLens, DefinitionParams, TextDocuments , Range, CodeLensParams, Command, CodeAction, CodeActionKind} from 'vscode-languageserver';
+import { CodeLens, TextDocuments , Range, CodeLensParams, Command} from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
-import { preprocessAndParseFiles } from '../parse-workers-manager';
-import { preprocessAllFiles } from '../parser/preprocessor';
 import { connection, preprocessedFilesCacheMap } from '../server';
 import { Tads3SymbolManager } from './symbol-manager';
 
 export async function onCodeLens({textDocument}: CodeLensParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager) {
 	const codeLenses: CodeLens[] = [];
+    const enablePreprocessorCodeLens = await connection.workspace.getConfiguration("tads3.enablePreprocessorCodeLens");
+    
+    connection.console.log(`Code Lens enabled? ${enablePreprocessorCodeLens?'yes':'no'}`);
+    if(!enablePreprocessorCodeLens) {
 
-	/*if (connection.workspace.getConfiguration("tads3").then(config=> {
-		const config.get("enablePreprocessorCodeLens", true);
-	}*/
+        return codeLenses;
+    }
+    
 
 	const fsPath = URI.parse(textDocument.uri).fsPath;
 	const currentDoc = documents.get(textDocument.uri);
@@ -26,11 +28,15 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
     
 	const currentDocArray = currentDoc?.getText().split(/\r?\n/);
 
-    // If the files have diverged don't send any CodeLenses since they'll be out of sync
+    // If the files has diverged more than the last line in length
+    // (happens during preprocessing)
+    // then don't send any CodeLenses since the two documents will
+    // be out of sync, and the codelens will be seen at incorrect 
+    // positions
+
     if (currentDocArray.length !== preprocessedDocumentArray.length-1) {
         return [];
     }
-
 
 	for(let row=0; row<currentDoc.lineCount; row++) {
 		const preprocessedLine = preprocessedDocumentArray[row];

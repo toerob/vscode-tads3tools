@@ -8,7 +8,7 @@ import { exec } from 'child_process';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextDocumentChangeEvent, TextEditor } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextDocumentChangeEvent, TextEditor, FileSystemWatcher, RelativePattern, Terminal } from 'vscode';
 
 import {
 	ConnectionError,
@@ -19,6 +19,7 @@ import {
 } from 'vscode-languageclient/node';
 import { setupVisualEditorResponseHandler, visualEditorResponseHandlerMap, getHtmlForWebview } from './visual-editor';
 import { Tads3CompileErrorParser } from './tads3-error-parser';
+import { Subject, debounceTime } from 'rxjs';
 
 let errorDiagnostics = [];
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -80,12 +81,7 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', () => openInVisualEditor(context)));
-
-	/*workspace.onDidChangeTextDocument((event: TextDocumentChangeEvent) => {
-		lastChosenTextEditor = event.document;
-		console.log(`LAst chosen editor changed to: ${lastChosenTextEditor.uri}`);
-	});*/
-
+	
 	window.onDidChangeTextEditorSelection(e => {
 		lastChosenTextEditor = e.textEditor;
 	});
@@ -111,9 +107,6 @@ export function activate(context: ExtensionContext) {
 				}
 			}
 		});
-
-
-
 
 		// This is used by the map handler:
 		// If the client has asked the server to locate a symbol,
@@ -222,6 +215,9 @@ async function onDidSaveTextDocument(textDocument: any) {
 		console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
 		return;
 	}
+	if(!t3FileSystemWatcher) {
+		setupAndMonitorBinaryGamefileChanges(); // Client specific feature
+	}
 	await diagnosePreprocessAndParse(textDocument);
 }
 
@@ -243,6 +239,56 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 	} else {
 		preprocessAndParseDocument([textDocument]);
 	}
+}
+
+
+
+let t3FileSystemWatcher: FileSystemWatcher = undefined;
+
+let gameRunnerTerminal: Terminal = undefined;
+
+const runGameInTerminalSubject = new Subject();
+
+function setupAndMonitorBinaryGamefileChanges() {
+	const workspaceFolder = dirname(chosenMakefileUri.fsPath);
+	t3FileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, "*.t3"));
+	runGameInTerminalSubject.pipe(debounceTime(300)).subscribe((event: any) => {
+		const configuration = workspace.getConfiguration("tads3");
+		if (!configuration.get("restartGameRunnerOnT3ImageChanges")) {
+			return;
+		}
+		const fileBaseName = basename(event.fsPath);
+		if (gameRunnerTerminal) {
+			gameRunnerTerminal.sendText(`quit`);
+			gameRunnerTerminal.sendText(`y`);
+			gameRunnerTerminal.sendText(``);
+			gameRunnerTerminal.dispose();
+		}
+		gameRunnerTerminal = window.createTerminal('Game runner terminal');
+		console.log(`${event.fsPath} changed, restarting ${fileBaseName}`);
+		gameRunnerTerminal.show(true);
+		gameRunnerTerminal.sendText(`frob ${fileBaseName}`);
+		window.showTextDocument(window.activeTextEditor.document);
+	});
+	t3FileSystemWatcher.onDidChange(event => runGameInTerminalSubject.next(event));
+}
+
+
+
+
+// Commands
+
+async function restartGameRunnerOnT3ImageChanges() {
+	const configuration = workspace.getConfiguration("tads3");
+	const oldValue = configuration.get("restartGameRunnerOnT3ImageChanges");
+	configuration.update("restartGameRunnerOnT3ImageChanges", !oldValue, true);
+}
+
+
+function enablePreprocessorCodeLens(arg0: string, enablePreprocessorCodeLens: any) {
+	const configuration = workspace.getConfiguration("tads3");
+	const oldValue = configuration.get("enablePreprocessorCodeLens");
+	configuration.update("enablePreprocessorCodeLens", !oldValue);
 }
 
 
@@ -283,7 +329,6 @@ export function runCommand(command: string) {
 
 async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefined = undefined) {
 	const filePaths = textDocuments?.map(x=>x.uri.fsPath) ?? undefined;  //[window.activeTextEditor.document.uri.fsPath];
-	
 	await window.withProgress({
 		location: ProgressLocation.Window,
 		title: 'Parsing symbols',
@@ -293,9 +338,9 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 			await cancelParse();
 			return false;
 		});
-		client.onNotification('symbolparsing/success',(filePath) => {
+		client.onNotification('symbolparsing/success',([filePath, tracker, totalFiles]) => {
 			const filename = basename(Uri.parse(filePath).path);
-			progress.report({ message: ` ${filename} done` });
+			progress.report({ message: ` ${tracker}/${totalFiles}: ${filename} done ` });
 			
 			// TODO: maybe show "stale data" indicator instead
 			/*if (tads3VisualEditorPanel) {
@@ -329,13 +374,6 @@ export async function cancelParse(): Promise<any> {
 	});
 }
 
-
-
-function enablePreprocessorCodeLens() {
-	const configuration = workspace.getConfiguration("tads3");
-	const oldValue = configuration.get("enablePreprocessorCodeLens");
-	configuration.update("enablePreprocessorCodeLens", !oldValue);
-}
 
 
 let preprocessDocument;
@@ -401,7 +439,10 @@ async function openInVisualEditor(context: ExtensionContext) {
 	tads3VisualEditorPanel = window.createWebviewPanel(
 		'tads3VisualEditor',
 		'Tads3 visual editor',
-		ViewColumn.Beside
+		{
+			viewColumn: ViewColumn.Beside,
+			preserveFocus: true
+		}
 	);
 
 	const options: WebviewOptions = { enableScripts: true };

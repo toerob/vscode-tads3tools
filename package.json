@@ -98,7 +98,7 @@
 				"command": "tads3.showPreprocessedTextForCurrentFile",
 				"title": "Show preprocessed text for the current file",
 				"category": "Preprocessing"
-			},			
+			},
 			{
 				"command": "tads3.showPreprocessedFileQuickPick",
 				"title": "Choose a preprocessed file to show in a separate window",
@@ -189,7 +189,7 @@
 					"description": "Path the tads3 compiler (t3make). "
 				},
 				"tads3.enablePreprocessorCodeLens": {
-					"scope": "window",
+					"scope": "resource",
 					"type": "boolean",
 					"default": false,
 					"description": "Shows preprocessed rows above as CodeLens when they differ from original source code."
@@ -222,6 +222,7 @@
 		"litegraph.js": "^0.7.10",
 		"markdown-it": "^12.1.0",
 		"node-worker-threads-pool": "^1.5.0",
+		"rxjs": "^7.2.0",
 		"threads": "^1.6.5"
 	}
 }
