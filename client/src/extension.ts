@@ -82,6 +82,10 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', () => openInVisualEditor(context)));
 	
+	context.subscriptions.push(commands.registerCommand('tads3.restartGameRunnerOnT3ImageChanges', () => toggleGameRunnerOnT3ImageChanges()));
+
+
+	
 	window.onDidChangeTextEditorSelection(e => {
 		lastChosenTextEditor = e.textEditor;
 	});
@@ -141,7 +145,7 @@ export function activate(context: ExtensionContext) {
 		});
 
 		client.onNotification("symbolparsing/allfiles/success", ({ elapsedTime }) => {
-			window.showInformationMessage(`All project/library files parsed in ${elapsedTime} ms`);
+			window.showInformationMessage(`File(s) parsed in ${elapsedTime} ms`);
 			client.sendNotification('request/mapsymbols');				
 		});
 
@@ -278,7 +282,7 @@ function setupAndMonitorBinaryGamefileChanges() {
 
 // Commands
 
-async function restartGameRunnerOnT3ImageChanges() {
+async function toggleGameRunnerOnT3ImageChanges() {
 	const configuration = workspace.getConfiguration("tads3");
 	const oldValue = configuration.get("restartGameRunnerOnT3ImageChanges");
 	configuration.update("restartGameRunnerOnT3ImageChanges", !oldValue, true);
