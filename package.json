@@ -199,7 +199,7 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
-		"antlr4ts": "antlr4ts server/src/parser/Tads3.g4",
+		"antlr4ts": "antlr4ts -visitor server/src/parser/Tads3.g4",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",

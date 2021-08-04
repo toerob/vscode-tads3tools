@@ -45,8 +45,24 @@ export function onDidShowAll(payload) {
 	console.log(payload);
 }
 
-export function onDidUpdatePosition(payload) {
+export function onDidUpdatePosition(payload, persistedObjectPositions) {
 	console.log('did update position: ');
+
+	//console.log(`Persisting new position (${payload.pos[0]}/${payload.pos[1]}) for node: ${payload.name}`);
+	persistedObjectPositions.set(payload.name, payload.pos);
+
+	/*
+	TODO:
+		
+		let persistedMapObjectPositions = this.storeManager.getValue('persistedMapObjectPositions');
+		let mapObject = persistedMapObjectPositions.find(x=>x.name===payload.name);
+		if (mapObject) {
+			mapObject.x = payload.pos[0];
+			mapObject.y = payload.pos[1];
+			persistedMapObjectPositions.set(persistedMapObjectPositions);
+		}
+	}*/
+
 	console.log(payload);
 }
 
@@ -108,8 +124,8 @@ export function onDidAddRoom(payload) {
 				}
 			}).then(() => {
 				// TODO: Persist in server or here?
-				//this.newlyCreatedRoomsSet.add(payload.name);
-				//this.persistedObjectPositions.set(payload.name, payload.pos);
+				this.newlyCreatedRoomsSet.add(payload.name);
+				this.persistedObjectPositions.set(payload.name, payload.pos);
 			});
 
 		});

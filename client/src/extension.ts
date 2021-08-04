@@ -20,6 +20,7 @@ import {
 import { setupVisualEditorResponseHandler, visualEditorResponseHandlerMap, getHtmlForWebview } from './visual-editor';
 import { Tads3CompileErrorParser } from './tads3-error-parser';
 import { Subject, debounceTime } from 'rxjs';
+import { LocalStorageService } from './local-storage-service';
 
 let errorDiagnostics = [];
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -40,6 +41,10 @@ export let tads3VisualEditorPanel: WebviewPanel|undefined = undefined;
 const preprocessedFilesMap: Map<string,string> = new Map();
 
 export let client: LanguageClient;
+
+let storageManager;
+
+const persistedObjectPositions = new Map();
 
 let selectedObject: DocumentSymbol | undefined;
 let lastChosenTextDocument: TextDocument | undefined;
@@ -74,6 +79,13 @@ export function activate(context: ExtensionContext) {
 	client.start();
 
 	
+	storageManager = new LocalStorageService(context.workspaceState);
+	/*const result = storageManager.getValue("SomeObject");
+	storageManager.setValue("SomeObject", undefined);
+	*/
+
+	
+	
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
@@ -105,6 +117,7 @@ export function activate(context: ExtensionContext) {
 			if(tads3VisualEditorPanel && symbols && symbols.length>0) {
 				console.log(`Updating webview with new symbols`);
 				try {
+					overridePositionWithPersistedCoordinates(symbols);
 					tads3VisualEditorPanel.webview.postMessage({ command: 'tads3.addNode', objects: symbols  });
 				} catch(err) {
 					console.error(err);
@@ -459,12 +472,46 @@ async function openInVisualEditor(context: ExtensionContext) {
 	console.log(`Opening up the webview and ask server for map symbols`);
 	client.sendNotification('request/mapsymbols');
 
+
+	// TODO:	
+	/*let result = storeManager.getValue('persistedMapObjectPositions');
+	if (result) {
+		//console.error(`Found persisted MapObject positions: `);
+		//console.error(result);
+		for (let entry of result) {
+			persistedObjectPositions.set(entry.name, [entry.x, entry.y]);
+		}
+	}*/
+
+
 	tads3VisualEditorPanel.webview.onDidReceiveMessage(event => {
 		const routine = visualEditorResponseHandlerMap.get(event.command);
 		if (!routine) {
 			console.error(`No handler installed for: ${event.command}`);
 			return;
 		}
-		routine(event.payload);
+		routine(event.payload, persistedObjectPositions);
 	});
+}
+
+
+// TODO: this functionality probably need to go to the server side this time
+function overridePositionWithPersistedCoordinates(mapObjects: any[] /*DefaultMapObject[]*/) {
+	const itemsToPersist = [];
+	for (const node of mapObjects) {
+		const persistedPosition = persistedObjectPositions.get(node.name);
+		if (persistedPosition && persistedPosition.length === 2) {
+			const x = persistedPosition[0];
+			const y = persistedPosition[1];
+			if (x && y) {
+				node.x = x;
+				node.y = y;
+				node.hasAbsolutePosition = true;
+				itemsToPersist.push(node);
+			}
+		}
+	}
+	if (itemsToPersist.length > 0) {
+		this.storeManager.setValue('persistedMapObjectPositions', itemsToPersist);
+	}
 }

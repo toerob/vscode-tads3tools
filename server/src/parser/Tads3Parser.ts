@@ -24,6 +24,8 @@ import { VocabularyImpl } from "antlr4ts/VocabularyImpl";
 import * as Utils from "antlr4ts/misc/Utils";
 
 import { Tads3Listener } from "./Tads3Listener";
+import { Tads3Visitor } from "./Tads3Visitor";
+
 
 export class Tads3Parser extends Parser {
 	public static readonly GRAMMAR = 1;
@@ -5042,6 +5044,14 @@ export class ProgramContext extends ParserRuleContext {
 			listener.exitProgram(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitProgram) {
+			return visitor.visitProgram(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -5088,6 +5098,14 @@ export class DirectiveContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitDirective) {
 			listener.exitDirective(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitDirective) {
+			return visitor.visitDirective(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5150,6 +5168,14 @@ export class GrammarDeclarationContext extends ParserRuleContext {
 			listener.exitGrammarDeclaration(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitGrammarDeclaration) {
+			return visitor.visitGrammarDeclaration(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -5189,6 +5215,14 @@ export class GrammarRulesContext extends ParserRuleContext {
 			listener.exitGrammarRules(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitGrammarRules) {
+			return visitor.visitGrammarRules(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -5222,6 +5256,14 @@ export class ItemListContext extends ParserRuleContext {
 			listener.exitItemList(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitItemList) {
+			return visitor.visitItemList(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -5247,6 +5289,14 @@ export class QualifiersContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitQualifiers) {
 			listener.exitQualifiers(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitQualifiers) {
+			return visitor.visitQualifiers(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5284,6 +5334,14 @@ export class ItemContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitItem) {
 			listener.exitItem(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitItem) {
+			return visitor.visitItem(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5352,6 +5410,14 @@ export class TemplateDeclarationContext extends ParserRuleContext {
 			listener.exitTemplateDeclaration(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitTemplateDeclaration) {
+			return visitor.visitTemplateDeclaration(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -5393,6 +5459,14 @@ export class EnumDeclarationContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitEnumDeclaration) {
 			listener.exitEnumDeclaration(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitEnumDeclaration) {
+			return visitor.visitEnumDeclaration(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5447,6 +5521,14 @@ export class PropertyDeclarationContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitPropertyDeclaration) {
 			listener.exitPropertyDeclaration(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitPropertyDeclaration) {
+			return visitor.visitPropertyDeclaration(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5504,6 +5586,14 @@ export class DictionaryDeclarationContext extends ParserRuleContext {
 			listener.exitDictionaryDeclaration(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitDictionaryDeclaration) {
+			return visitor.visitDictionaryDeclaration(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -5529,6 +5619,14 @@ export class ExportDeclarationContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitExportDeclaration) {
 			listener.exitExportDeclaration(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitExportDeclaration) {
+			return visitor.visitExportDeclaration(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5577,6 +5675,14 @@ export class IntrinsicDeclarationContext extends ParserRuleContext {
 			listener.exitIntrinsicDeclaration(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitIntrinsicDeclaration) {
+			return visitor.visitIntrinsicDeclaration(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -5606,6 +5712,14 @@ export class IntrinsicMethodDeclarationContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitIntrinsicMethodDeclaration) {
 			listener.exitIntrinsicMethodDeclaration(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitIntrinsicMethodDeclaration) {
+			return visitor.visitIntrinsicMethodDeclaration(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5662,6 +5776,14 @@ export class ObjectDeclarationContext extends ParserRuleContext {
 			listener.exitObjectDeclaration(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitObjectDeclaration) {
+			return visitor.visitObjectDeclaration(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -5708,6 +5830,14 @@ export class TemplateExprContext extends ParserRuleContext {
 			listener.exitTemplateExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitTemplateExpr) {
+			return visitor.visitTemplateExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -5750,6 +5880,14 @@ export class ArrayContext extends ParserRuleContext {
 			listener.exitArray(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitArray) {
+			return visitor.visitArray(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -5776,6 +5914,14 @@ export class CurlyObjectBodyContext extends ParserRuleContext {
 			listener.exitCurlyObjectBody(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitCurlyObjectBody) {
+			return visitor.visitCurlyObjectBody(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -5799,6 +5945,14 @@ export class SemiColonEndedObjectBodyContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitSemiColonEndedObjectBody) {
 			listener.exitSemiColonEndedObjectBody(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitSemiColonEndedObjectBody) {
+			return visitor.visitSemiColonEndedObjectBody(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5843,6 +5997,14 @@ export class SuperTypesContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitSuperTypes) {
 			listener.exitSuperTypes(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitSuperTypes) {
+			return visitor.visitSuperTypes(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -5910,6 +6072,14 @@ export class ObjectBodyContext extends ParserRuleContext {
 			listener.exitObjectBody(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitObjectBody) {
+			return visitor.visitObjectBody(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -5973,6 +6143,14 @@ export class PropertyContext extends ParserRuleContext {
 			listener.exitProperty(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitProperty) {
+			return visitor.visitProperty(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6003,6 +6181,14 @@ export class DictionaryPropertyContext extends ParserRuleContext {
 			listener.exitDictionaryProperty(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitDictionaryProperty) {
+			return visitor.visitDictionaryProperty(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6031,6 +6217,14 @@ export class PropertySetContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitPropertySet) {
 			listener.exitPropertySet(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitPropertySet) {
+			return visitor.visitPropertySet(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6078,6 +6272,14 @@ export class ParamsWithWildcardContext extends ParserRuleContext {
 			listener.exitParamsWithWildcard(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitParamsWithWildcard) {
+			return visitor.visitParamsWithWildcard(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6103,6 +6305,14 @@ export class FunctionDeclarationContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitFunctionDeclaration) {
 			listener.exitFunctionDeclaration(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitFunctionDeclaration) {
+			return visitor.visitFunctionDeclaration(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6139,6 +6349,14 @@ export class FunctionHeadContext extends ParserRuleContext {
 			listener.exitFunctionHead(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitFunctionHead) {
+			return visitor.visitFunctionHead(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6169,6 +6387,14 @@ export class CodeBlockContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitCodeBlock) {
 			listener.exitCodeBlock(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitCodeBlock) {
+			return visitor.visitCodeBlock(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6243,6 +6469,14 @@ export class StatsContext extends ParserRuleContext {
 			listener.exitStats(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitStats) {
+			return visitor.visitStats(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6268,6 +6502,14 @@ export class GotoStatementContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitGotoStatement) {
 			listener.exitGotoStatement(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitGotoStatement) {
+			return visitor.visitGotoStatement(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6297,6 +6539,14 @@ export class BreakStatementContext extends ParserRuleContext {
 			listener.exitBreakStatement(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitBreakStatement) {
+			return visitor.visitBreakStatement(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6324,6 +6574,14 @@ export class ContinueStatementContext extends ParserRuleContext {
 			listener.exitContinueStatement(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitContinueStatement) {
+			return visitor.visitContinueStatement(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6347,6 +6605,14 @@ export class LabelStatementContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitLabelStatement) {
 			listener.exitLabelStatement(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitLabelStatement) {
+			return visitor.visitLabelStatement(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6424,6 +6690,14 @@ export class SwitchStatementContext extends ParserRuleContext {
 			listener.exitSwitchStatement(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitSwitchStatement) {
+			return visitor.visitSwitchStatement(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6447,6 +6721,14 @@ export class ThrowStatementContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitThrowStatement) {
 			listener.exitThrowStatement(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitThrowStatement) {
+			return visitor.visitThrowStatement(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6480,6 +6762,14 @@ export class ForInStatementContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitForInStatement) {
 			listener.exitForInStatement(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitForInStatement) {
+			return visitor.visitForInStatement(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6519,6 +6809,14 @@ export class ForEachStatementContext extends ParserRuleContext {
 			listener.exitForEachStatement(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitForEachStatement) {
+			return visitor.visitForEachStatement(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6543,6 +6841,14 @@ export class ReturnStatementContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitReturnStatement) {
 			listener.exitReturnStatement(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitReturnStatement) {
+			return visitor.visitReturnStatement(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6576,6 +6882,14 @@ export class DoWhileStatementContext extends ParserRuleContext {
 			listener.exitDoWhileStatement(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitDoWhileStatement) {
+			return visitor.visitDoWhileStatement(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6604,6 +6918,14 @@ export class WhileStatementContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitWhileStatement) {
 			listener.exitWhileStatement(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitWhileStatement) {
+			return visitor.visitWhileStatement(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6649,6 +6971,14 @@ export class ForStatementContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitForStatement) {
 			listener.exitForStatement(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitForStatement) {
+			return visitor.visitForStatement(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6719,6 +7049,14 @@ export class TryCatchStatementContext extends ParserRuleContext {
 			listener.exitTryCatchStatement(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitTryCatchStatement) {
+			return visitor.visitTryCatchStatement(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6747,6 +7085,14 @@ export class CallStatementContext extends ParserRuleContext {
 			listener.exitCallStatement(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitCallStatement) {
+			return visitor.visitCallStatement(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6772,6 +7118,14 @@ export class EmptyStatementContext extends ParserRuleContext {
 			listener.exitEmptyStatement(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitEmptyStatement) {
+			return visitor.visitEmptyStatement(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6793,6 +7147,14 @@ export class SayStatementContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitSayStatement) {
 			listener.exitSayStatement(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitSayStatement) {
+			return visitor.visitSayStatement(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6823,6 +7185,14 @@ export class AssignmentStatementContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitAssignmentStatement) {
 			listener.exitAssignmentStatement(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitAssignmentStatement) {
+			return visitor.visitAssignmentStatement(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6879,6 +7249,14 @@ export class IfStatementContext extends ParserRuleContext {
 			listener.exitIfStatement(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitIfStatement) {
+			return visitor.visitIfStatement(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -6907,6 +7285,14 @@ export class EnclosedExprCodeBlockContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitEnclosedExprCodeBlock) {
 			listener.exitEnclosedExprCodeBlock(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitEnclosedExprCodeBlock) {
+			return visitor.visitEnclosedExprCodeBlock(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -6944,6 +7330,14 @@ export class ArrayExprContext extends ExprContext {
 			listener.exitArrayExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitArrayExpr) {
+			return visitor.visitArrayExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class MemberExprContext extends ExprContext {
 	public _prev!: ExprContext;
@@ -6972,6 +7366,14 @@ export class MemberExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitMemberExpr) {
 			listener.exitMemberExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitMemberExpr) {
+			return visitor.visitMemberExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7003,6 +7405,14 @@ export class IndexExprContext extends ExprContext {
 			listener.exitIndexExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitIndexExpr) {
+			return visitor.visitIndexExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class CommaExprContext extends ExprContext {
 	public expr(): ExprContext[];
@@ -7029,6 +7439,14 @@ export class CommaExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitCommaExpr) {
 			listener.exitCommaExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitCommaExpr) {
+			return visitor.visitCommaExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7061,6 +7479,14 @@ export class RangeExprContext extends ExprContext {
 			listener.exitRangeExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitRangeExpr) {
+			return visitor.visitRangeExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class DelegatedExpressionContext extends ExprContext {
 	public DELEGATED(): TerminalNode { return this.getToken(Tads3Parser.DELEGATED, 0); }
@@ -7081,6 +7507,14 @@ export class DelegatedExpressionContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitDelegatedExpression) {
 			listener.exitDelegatedExpression(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitDelegatedExpression) {
+			return visitor.visitDelegatedExpression(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7105,6 +7539,14 @@ export class InheritedExpressionContext extends ExprContext {
 			listener.exitInheritedExpression(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitInheritedExpression) {
+			return visitor.visitInheritedExpression(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class TransientExpressionContext extends ExprContext {
 	public TRANSIENT(): TerminalNode { return this.getToken(Tads3Parser.TRANSIENT, 0); }
@@ -7127,6 +7569,14 @@ export class TransientExpressionContext extends ExprContext {
 			listener.exitTransientExpression(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitTransientExpression) {
+			return visitor.visitTransientExpression(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class PrimaryExprContext extends ExprContext {
 	public primary(): PrimaryContext {
@@ -7146,6 +7596,14 @@ export class PrimaryExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitPrimaryExpr) {
 			listener.exitPrimaryExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitPrimaryExpr) {
+			return visitor.visitPrimaryExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7180,6 +7638,14 @@ export class CallWithParamsExprContext extends ExprContext {
 			listener.exitCallWithParamsExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitCallWithParamsExpr) {
+			return visitor.visitCallWithParamsExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class ExprWithParenExprContext extends ExprContext {
 	public expr(): ExprContext[];
@@ -7207,6 +7673,14 @@ export class ExprWithParenExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitExprWithParenExpr) {
 			listener.exitExprWithParenExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitExprWithParenExpr) {
+			return visitor.visitExprWithParenExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7242,6 +7716,14 @@ export class ExprWithAnonymousObjectExprContext extends ExprContext {
 			listener.exitExprWithAnonymousObjectExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitExprWithAnonymousObjectExpr) {
+			return visitor.visitExprWithAnonymousObjectExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class ParenExpr2Context extends ExprContext {
 	public LEFT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.LEFT_PAREN, 0); }
@@ -7263,6 +7745,14 @@ export class ParenExpr2Context extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitParenExpr2) {
 			listener.exitParenExpr2(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitParenExpr2) {
+			return visitor.visitParenExpr2(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7287,6 +7777,14 @@ export class LocalExprContext extends ExprContext {
 			listener.exitLocalExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitLocalExpr) {
+			return visitor.visitLocalExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class StaticExprContext extends ExprContext {
 	public STATIC(): TerminalNode { return this.getToken(Tads3Parser.STATIC, 0); }
@@ -7309,6 +7807,14 @@ export class StaticExprContext extends ExprContext {
 			listener.exitStaticExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitStaticExpr) {
+			return visitor.visitStaticExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class NewExprContext extends ExprContext {
 	public NEW(): TerminalNode { return this.getToken(Tads3Parser.NEW, 0); }
@@ -7329,6 +7835,14 @@ export class NewExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitNewExpr) {
 			listener.exitNewExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitNewExpr) {
+			return visitor.visitNewExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7357,6 +7871,14 @@ export class ReferenceExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitReferenceExpr) {
 			listener.exitReferenceExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitReferenceExpr) {
+			return visitor.visitReferenceExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7388,6 +7910,14 @@ export class NotInExprContext extends ExprContext {
 			listener.exitNotInExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitNotInExpr) {
+			return visitor.visitNotInExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class IsExprContext extends ExprContext {
 	public expr(): ExprContext[];
@@ -7415,6 +7945,14 @@ export class IsExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitIsExpr) {
 			listener.exitIsExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitIsExpr) {
+			return visitor.visitIsExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7445,6 +7983,14 @@ export class InExprContext extends ExprContext {
 			listener.exitInExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitInExpr) {
+			return visitor.visitInExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class AssignmentExprContext extends ExprContext {
 	public expr(): ExprContext[];
@@ -7471,6 +8017,14 @@ export class AssignmentExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitAssignmentExpr) {
 			listener.exitAssignmentExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitAssignmentExpr) {
+			return visitor.visitAssignmentExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7501,6 +8055,14 @@ export class IfNilExprContext extends ExprContext {
 			listener.exitIfNilExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitIfNilExpr) {
+			return visitor.visitIfNilExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class AnonymousObjectExprContext extends ExprContext {
 	public LEFT_CURLY(): TerminalNode { return this.getToken(Tads3Parser.LEFT_CURLY, 0); }
@@ -7526,6 +8088,14 @@ export class AnonymousObjectExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitAnonymousObjectExpr) {
 			listener.exitAnonymousObjectExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitAnonymousObjectExpr) {
+			return visitor.visitAnonymousObjectExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7563,6 +8133,14 @@ export class BitwiseExprContext extends ExprContext {
 			listener.exitBitwiseExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitBitwiseExpr) {
+			return visitor.visitBitwiseExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class AndOrExprContext extends ExprContext {
 	public _op!: Token;
@@ -7593,6 +8171,14 @@ export class AndOrExprContext extends ExprContext {
 			listener.exitAndOrExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitAndOrExpr) {
+			return visitor.visitAndOrExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class PowerOfExprContext extends ExprContext {
 	public _isInc!: Token;
@@ -7621,6 +8207,14 @@ export class PowerOfExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitPowerOfExpr) {
 			listener.exitPowerOfExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitPowerOfExpr) {
+			return visitor.visitPowerOfExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7656,6 +8250,14 @@ export class MultiplicationExprContext extends ExprContext {
 			listener.exitMultiplicationExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitMultiplicationExpr) {
+			return visitor.visitMultiplicationExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class AdditiveExprContext extends ExprContext {
 	public _op!: Token;
@@ -7686,6 +8288,14 @@ export class AdditiveExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitAdditiveExpr) {
 			listener.exitAdditiveExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitAdditiveExpr) {
+			return visitor.visitAdditiveExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7720,6 +8330,14 @@ export class RelationalExprContext extends ExprContext {
 			listener.exitRelationalExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitRelationalExpr) {
+			return visitor.visitRelationalExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class EqualityExprContext extends ExprContext {
 	public _op!: Token;
@@ -7750,6 +8368,14 @@ export class EqualityExprContext extends ExprContext {
 			listener.exitEqualityExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitEqualityExpr) {
+			return visitor.visitEqualityExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class ArrowExprContext extends ExprContext {
 	public expr(): ExprContext[];
@@ -7778,6 +8404,14 @@ export class ArrowExprContext extends ExprContext {
 			listener.exitArrowExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitArrowExpr) {
+			return visitor.visitArrowExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class ArrowExpr2Context extends ExprContext {
 	public expr(): ExprContext {
@@ -7798,6 +8432,14 @@ export class ArrowExpr2Context extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitArrowExpr2) {
 			listener.exitArrowExpr2(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitArrowExpr2) {
+			return visitor.visitArrowExpr2(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7821,6 +8463,14 @@ export class ArrowExpr3Context extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitArrowExpr3) {
 			listener.exitArrowExpr3(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitArrowExpr3) {
+			return visitor.visitArrowExpr3(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7848,6 +8498,14 @@ export class UnaryExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitUnaryExpr) {
 			listener.exitUnaryExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitUnaryExpr) {
+			return visitor.visitUnaryExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7889,6 +8547,14 @@ export class PostFixExprContext extends ExprContext {
 			listener.exitPostFixExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitPostFixExpr) {
+			return visitor.visitPostFixExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class TernaryExprContext extends ExprContext {
 	public expr(): ExprContext[];
@@ -7918,6 +8584,14 @@ export class TernaryExprContext extends ExprContext {
 			listener.exitTernaryExpr(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitTernaryExpr) {
+			return visitor.visitTernaryExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class AnonymousFunctionExprContext extends ExprContext {
 	public functionDeclaration(): FunctionDeclarationContext {
@@ -7937,6 +8611,14 @@ export class AnonymousFunctionExprContext extends ExprContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitAnonymousFunctionExpr) {
 			listener.exitAnonymousFunctionExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitAnonymousFunctionExpr) {
+			return visitor.visitAnonymousFunctionExpr(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -7970,6 +8652,14 @@ export class InheritedAtomContext extends PrimaryContext {
 			listener.exitInheritedAtom(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitInheritedAtom) {
+			return visitor.visitInheritedAtom(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class HexAtomContext extends PrimaryContext {
 	public HEX(): TerminalNode { return this.getToken(Tads3Parser.HEX, 0); }
@@ -7989,6 +8679,14 @@ export class HexAtomContext extends PrimaryContext {
 			listener.exitHexAtom(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitHexAtom) {
+			return visitor.visitHexAtom(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class NumberAtomContext extends PrimaryContext {
 	public NR(): TerminalNode { return this.getToken(Tads3Parser.NR, 0); }
@@ -8006,6 +8704,14 @@ export class NumberAtomContext extends PrimaryContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitNumberAtom) {
 			listener.exitNumberAtom(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitNumberAtom) {
+			return visitor.visitNumberAtom(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8030,6 +8736,14 @@ export class ReferenceAtomContext extends PrimaryContext {
 			listener.exitReferenceAtom(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitReferenceAtom) {
+			return visitor.visitReferenceAtom(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class IdAtomContext extends PrimaryContext {
 	public identifierAtom(): IdentifierAtomContext {
@@ -8051,6 +8765,14 @@ export class IdAtomContext extends PrimaryContext {
 			listener.exitIdAtom(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitIdAtom) {
+			return visitor.visitIdAtom(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class DoubleQuotestringAtomContext extends PrimaryContext {
 	public SSTR(): TerminalNode { return this.getToken(Tads3Parser.SSTR, 0); }
@@ -8068,6 +8790,14 @@ export class DoubleQuotestringAtomContext extends PrimaryContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitDoubleQuotestringAtom) {
 			listener.exitDoubleQuotestringAtom(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitDoubleQuotestringAtom) {
+			return visitor.visitDoubleQuotestringAtom(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8089,6 +8819,14 @@ export class SingleQuotestringAtomContext extends PrimaryContext {
 			listener.exitSingleQuotestringAtom(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitSingleQuotestringAtom) {
+			return visitor.visitSingleQuotestringAtom(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class RegexpStringAtomContext extends PrimaryContext {
 	public RSTR(): TerminalNode { return this.getToken(Tads3Parser.RSTR, 0); }
@@ -8106,6 +8844,14 @@ export class RegexpStringAtomContext extends PrimaryContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitRegexpStringAtom) {
 			listener.exitRegexpStringAtom(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitRegexpStringAtom) {
+			return visitor.visitRegexpStringAtom(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8127,6 +8873,14 @@ export class BooleanAtomContext extends PrimaryContext {
 			listener.exitBooleanAtom(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitBooleanAtom) {
+			return visitor.visitBooleanAtom(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 export class NilAtomContext extends PrimaryContext {
 	public NIL(): TerminalNode { return this.getToken(Tads3Parser.NIL, 0); }
@@ -8144,6 +8898,14 @@ export class NilAtomContext extends PrimaryContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitNilAtom) {
 			listener.exitNilAtom(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitNilAtom) {
+			return visitor.visitNilAtom(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8168,6 +8930,14 @@ export class IdentifierAtomContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitIdentifierAtom) {
 			listener.exitIdentifierAtom(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitIdentifierAtom) {
+			return visitor.visitIdentifierAtom(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
@@ -8216,6 +8986,14 @@ export class ParamsContext extends ParserRuleContext {
 			listener.exitParams(this);
 		}
 	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitParams) {
+			return visitor.visitParams(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
 }
 
 
@@ -8251,6 +9029,14 @@ export class OptionallyTypedOptionalIdContext extends ParserRuleContext {
 	public exitRule(listener: Tads3Listener): void {
 		if (listener.exitOptionallyTypedOptionalId) {
 			listener.exitOptionallyTypedOptionalId(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitOptionallyTypedOptionalId) {
+			return visitor.visitOptionallyTypedOptionalId(this);
+		} else {
+			return visitor.visitChildren(this);
 		}
 	}
 }
