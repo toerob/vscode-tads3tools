@@ -6,6 +6,7 @@
 //ReactDOM.render(h1, document.getElementById('content'))
 
 const vscode = acquireVsCodeApi();
+const refreshButton = document.getElementById('refreshButton');
 const roomSelector = document.getElementById('roomSelector');
 const levelLabelRef = document.getElementById('levelLabel');
 const editorSelector = document.getElementById('editorSelector');
@@ -327,6 +328,14 @@ LiteGraph.registerNodeType("basic/room", RoomNode);
 LiteGraph.registerNodeType("basic/npc", NPCNode);
 
 
+refreshButton.addEventListener('click', () => {
+	//debugger;
+	/*if (lastMessage) {
+		refresh(lastMessage);		
+	}*/
+	vscode.postMessage({command: 'refresh' });
+
+});
 
 window.addEventListener('message', event => {
 	lastMessage = event.data;

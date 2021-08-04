@@ -61,6 +61,8 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
                 codeLenses.push({
                     range: range,
                     command:
+                        // TODO: find another solution so the preprocessed text
+                        // doesn't need to be sent until the player clicks the CodeLens
                         Command.create(
                             `preprocessed to: ${preprocessedLine}`,
                             'tads3.showPreprocessedTextAction',

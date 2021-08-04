@@ -8,9 +8,18 @@ export class Tads3SymbolManager {
 	additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
 	inheritanceMap: Map<string, string> = new Map(); // TODO:
 
-	public check() {
-		console.log(`Check!`);
+	findSymbol(name: any) {
+		for (const filePath of this.symbols.keys()) {
+			const fileLocalSymbols = this.symbols.get(filePath);
+			const symbol = fileLocalSymbols?.find(s => s.name === name);
+			if (symbol) {
+				return { symbol, filePath };
+			}
+		}
+		return {};
 	}
+
+
 }
 
 export function flattenTreeToArray(localSymbols: DocumentSymbol[]) {

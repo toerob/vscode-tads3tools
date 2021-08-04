@@ -65,7 +65,6 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 				
 				// TODO: this doesn't work anymore: check connection
 				connection.sendNotification('symbolparsing/success', filePath);
-
 				connection.console.log(`${filePath} parsed successfully`);
 			});
 		}

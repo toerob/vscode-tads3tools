@@ -8,7 +8,7 @@ import { exec } from 'child_process';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextDocumentChangeEvent, TextEditor } from 'vscode';
 
 import {
 	ConnectionError,
@@ -17,8 +17,7 @@ import {
 	ServerOptions,
 	TransportKind
 } from 'vscode-languageclient/node';
-import { CodelensProvider } from './providers/code-lens';
-import { Tads3VisualEditorProvider } from './providers/visual-provider';
+import { setupVisualEditorResponseHandler, visualEditorResponseHandlerMap, getHtmlForWebview } from './visual-editor';
 import { Tads3CompileErrorParser } from './tads3-error-parser';
 
 let errorDiagnostics = [];
@@ -34,9 +33,18 @@ let chosenMakefileUri: Uri|undefined;
  // via request: 'request/preprocessed/file'
 let preprocessedList: string[];
 
+export let tads3VisualEditorPanel: WebviewPanel|undefined = undefined;
+
+
 const preprocessedFilesMap: Map<string,string> = new Map();
 
 export let client: LanguageClient;
+
+let selectedObject: DocumentSymbol | undefined;
+let lastChosenTextDocument: TextDocument | undefined;
+let lastChosenTextEditor;
+
+export function getLastChosenTextEditor() { return lastChosenTextEditor; }
 
 export function activate(context: ExtensionContext) {
 	const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
@@ -65,35 +73,65 @@ export function activate(context: ExtensionContext) {
 	client.start();
 
 	
-	//context.subscriptions.push(commands.registerCommand('extension.parseTads3', parseTads3));
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
-
-	const tads3VisualEditorProvider = new Tads3VisualEditorProvider(context);
-
-	//Preprocess view - CustomReadonlyEditorProvider https://code.visualstudio.com/api/extension-guides/custom-editors
-	//context.subscriptions.push(Tads3VisualEditorProvider.register(context));
-
-	context.subscriptions.push(window.registerCustomEditorProvider('tads3.visualEdit', tads3VisualEditorProvider, {
-		supportsMultipleEditorsPerDocument: true
-	}));
-
-	//context.subscriptions.push(languages.registerCodeLensProvider({ language: "tads3" }, new CodelensProvider(preprocessedFilesMap)));
-
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params)));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
-	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextActionWithRange', (range: Range, uri: Uri) => showPreprocessedTextActionWithRange(range, uri)));
+	//context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextActionWithRange', (range: Range, uri: Uri) => showPreprocessedTextActionWithRange(range, uri)));
+	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', () => openInVisualEditor(context)));
 
+	/*workspace.onDidChangeTextDocument((event: TextDocumentChangeEvent) => {
+		lastChosenTextEditor = event.document;
+		console.log(`LAst chosen editor changed to: ${lastChosenTextEditor.uri}`);
+	});*/
+
+	window.onDidChangeTextEditorSelection(e => {
+		lastChosenTextEditor = e.textEditor;
+	});
 	
+	window.onDidChangeActiveTextEditor((event: any) => {
+		lastChosenTextDocument ??= event.document;
+		if (lastChosenTextDocument) {
+			console.log(`Last chosen editor changed to: ${lastChosenTextDocument.uri}`);			
+		}
+	});
 
-	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', openInVisualEditor));
+	setupVisualEditorResponseHandler();
 
 	client.onReady().then(() => {
 		
 		client.onNotification('response/mapsymbols', symbols => {
-			tads3VisualEditorProvider.drawSymbols(symbols);
-			//webviewPanel.webview
+			if(tads3VisualEditorPanel && symbols && symbols.length>0) {
+				console.log(`Updating webview with new symbols`);
+				try {
+					tads3VisualEditorPanel.webview.postMessage({ command: 'tads3.addNode', objects: symbols  });
+				} catch(err) {
+					console.error(err);
+				}
+			}
 		});
+
+
+
+
+		// This is used by the map handler:
+		// If the client has asked the server to locate a symbol,
+		// The server responds by sending the client the symbol and filepath back
+		// if it finds anything, therefore "found" 
+		client.onNotification('response/foundsymbol', ({ symbol, filePath }): void => {
+			if (symbol && filePath) {
+				selectedObject = symbol as DocumentSymbol; // keep track of the last selected object
+				workspace.openTextDocument(filePath).then(textDocument => {
+					//const lastSelectedTextDocument = textDocument;
+					if (lastChosenTextDocument) {
+						window.showTextDocument(textDocument, {
+							selection: selectedObject.range,
+						});
+					}
+				});
+			}
+		});
+
 
 		client.onNotification('response/preprocessed/file', ({ path, text }) => {
 			preprocessedFilesMap.set(path, text);
@@ -103,50 +141,19 @@ export function activate(context: ExtensionContext) {
 				.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
 		});
 	
-
 		client.onNotification('response/preprocessed/list', (filesNames: string[]) => {
 			preprocessedList = filesNames;
 		});
 
-
-
-		
-		client.onNotification('symbolparsing/success', (filePath) => {
-			
-			//preprocessedDocument
-			window.showInformationMessage(`${basename(filePath)} has been parsed successfully`);			
-			if (window.activeTextEditor.document.uri.fsPath === filePath) {
-
-				
-				const uri = window.activeTextEditor.document.uri;
-				//TODO: refresh the outliner somehow
-				//workspace.onDidChangeTextDocument(window.activeTextEditor.document.uri);
-				/*workspace.openTextDocument(window.activeTextEditor.document.uri).then(doc => {
-
-				})*/
-				//window.activeTerminal.
-				/*runCommand("workbench.action.closeActiveEditor").then(() => {
-					workspace.openTextDocument(window.activeTextEditor.document.uri);
-					//window.showTextDocument(uri);
-				});*/
-
-
-			}
-		});
-
 		client.onNotification("symbolparsing/allfiles/success", ({ elapsedTime }) => {
 			window.showInformationMessage(`All project/library files parsed in ${elapsedTime} ms`);
+			client.sendNotification('request/mapsymbols');				
 		});
 
 	});
 
 }
 
-async function openInVisualEditor() {
-	client.sendNotification('request/mapsymbols');
-	commands.executeCommand("vscode.openWith", window.activeTextEditor.document.uri, 'tads3.visualEdit');
-
-}
 
 
 export function deactivate(): Thenable<void> | undefined {
@@ -286,7 +293,15 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 		});
 		client.onNotification('symbolparsing/success',(filePath) => {
 			const filename = basename(Uri.parse(filePath).path);
-			progress.report({message: ` ${filename} done`});
+			progress.report({ message: ` ${filename} done` });
+			
+			// TODO: maybe show "stale data" indicator instead
+			/*if (tads3VisualEditorPanel) {
+			
+				console.log(`Since new symbols have been parsed and the webviewpanel is open, ask for new mapsymbols `);
+				client.sendNotification('request/mapsymbols');			
+			}*/
+
 		});
 
 		await executeParse(chosenMakefileUri.fsPath, filePaths);
@@ -355,7 +370,7 @@ function showPreprocessedFileQuickPick() {
 
 
 
-
+/*
 function showPreprocessedTextActionWithRange(range: Range, uri: Uri) {
 	const text = preprocessedFilesMap.get(uri.path);
 	if (preprocessDocument) {
@@ -374,7 +389,7 @@ function showPreprocessedTextActionWithRange(range: Range, uri: Uri) {
 				showAndScrollToRange(doc, range);
 			});
 	}
-}
+}*/
 
 function showAndScrollToRange(document: TextDocument, range: Range) {
 	const activeEditor = window.activeTextEditor;
@@ -386,5 +401,45 @@ function showAndScrollToRange(document: TextDocument, range: Range) {
 	}).then(shownDoc => {
 		shownDoc.revealRange(range);
 		activeEditor.revealRange(range);
+	});
+}
+
+
+
+/**
+ * Visual editor webview for the project. Draws a map or npc details
+ * @param context 
+ * @returns 
+ */
+async function openInVisualEditor(context: ExtensionContext) {
+	if (tads3VisualEditorPanel) {
+		tads3VisualEditorPanel.reveal();
+		client.sendNotification('request/mapsymbols');
+		return;
+	}
+
+	tads3VisualEditorPanel = window.createWebviewPanel(
+		'tads3VisualEditor',
+		'Tads3 visual editor',
+		ViewColumn.Beside
+	);
+
+	const options: WebviewOptions = { enableScripts: true };
+	tads3VisualEditorPanel.webview.options = options;
+	tads3VisualEditorPanel.webview.html = getHtmlForWebview(tads3VisualEditorPanel.webview, context.extensionUri);
+	tads3VisualEditorPanel.onDidDispose(() => {
+		tads3VisualEditorPanel = undefined;
+	}, null, context.subscriptions);
+	
+	console.log(`Opening up the webview and ask server for map symbols`);
+	client.sendNotification('request/mapsymbols');
+
+	tads3VisualEditorPanel.webview.onDidReceiveMessage(event => {
+		const routine = visualEditorResponseHandlerMap.get(event.command);
+		if (!routine) {
+			console.error(`No handler installed for: ${event.command}`);
+			return;
+		}
+		routine(event.payload);
 	});
 }

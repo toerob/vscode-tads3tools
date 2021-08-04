@@ -19,6 +19,9 @@ interface AssetManifest {
 	};
 }
 
+// TODO: remove as soon as everything is moved to visual-editor.ts
+// We only need a webview for this
+
 export class Tads3VisualEditorProvider implements CustomReadonlyEditorProvider {
 	lastSelectedTextDocument: TextDocument = undefined;
 	selectedObject = undefined;
@@ -275,3 +278,17 @@ export class Tads3VisualEditorProvider implements CustomReadonlyEditorProvider {
 			</html>`;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

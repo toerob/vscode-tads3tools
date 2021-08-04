@@ -82,7 +82,7 @@ connection.onInitialize((params: InitializeParams) => {
 	const result: InitializeResult = {
 		capabilities: {
 			documentSymbolProvider: true,
-			referencesProvider: true,
+			referencesProvider: false, // TODO: need to fix the row synchronization issue
 			definitionProvider: true,
 			codeLensProvider: {
 				resolveProvider: true,
@@ -92,9 +92,9 @@ connection.onInitialize((params: InitializeParams) => {
 				change: TextDocumentSyncKind.Full,
 			},
 			// Tell the client that this server supports code completion.
-			completionProvider: {
+			/*completionProvider: {
 				resolveProvider: true
-			}
+			}*/
 		}
 	};
 	if (hasWorkspaceFolderCapability) {
@@ -130,6 +130,15 @@ connection.onInitialized(() => {
 			// TODO: doesn't show up in the client
 			connection.sendNotification('response/mapsymbols', symbols);
 		});
+	});
+
+	// In case the client asks for a symbol, locate it and send it back
+	connection.onRequest('request/findsymbol', ({ name }) => {
+		const symbol = symbolManager.findSymbol(name);
+		if (symbol) {
+			connection.console.log(`Found symbol: ${name}`);
+			connection.sendNotification('response/foundsymbol', symbolManager.findSymbol(name));
+		}
 	});
 
 
