@@ -1,5 +1,5 @@
 
-import { Range, DefinitionParams, Location, DocumentSymbol  } from 'vscode-languageserver';
+import { Range, DefinitionParams, Location, DocumentSymbol, Position, SymbolKind  } from 'vscode-languageserver';
 import { ExtendedDocumentSymbolProperties } from '../parser/Tads3SymbolListener';
 
 export class Tads3SymbolManager {
@@ -12,6 +12,20 @@ export class Tads3SymbolManager {
 		for (const filePath of this.symbols.keys()) {
 			const fileLocalSymbols = this.symbols.get(filePath);
 			const symbol = fileLocalSymbols?.find(s => s.name === name);
+			if (symbol) {
+				return { symbol, filePath };
+			}
+		}
+		return {};
+	}
+	findClosestSymbolKindByPosition(kind: SymbolKind, position: Position): any {
+		for (const filePath of this.symbols.keys()) {
+			const fileLocalSymbols = this.symbols.get(filePath);
+			const symbol = fileLocalSymbols?.find(s => {
+				return s.kind === kind
+					&& position.line >= s.range.start.line
+					&& position.line <= s.range.end.line;
+			} );
 			if (symbol) {
 				return { symbol, filePath };
 			}

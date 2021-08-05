@@ -15,18 +15,16 @@ import {
 	Range,
 	CancellationTokenSource,
 	CodeLensRequest,
-	CodeLensResolveRequest} from 'vscode-languageserver/node';
+	CodeLensResolveRequest,
+	SymbolKind} from 'vscode-languageserver/node';
 
 
 
-//import { threadId, Worker as WorkerThreads } from 'worker_threads';
-import path = require('path');
 import { Tads3SymbolManager } from './modules/symbol-manager';
 import { onDocumentSymbol } from './modules/symbols';
 import { onReferences } from './modules/references';
 import { onDefinition } from './modules/definitions';
 import { preprocessAndParseFiles } from './parse-workers-manager';
-import { workspace } from 'vscode';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DefaultMapObject } from './modules/mapcrawling/DefaultMapObject';
 import MapObjectManager from './modules/mapcrawling/map-mapping';
@@ -232,14 +230,20 @@ connection.onRequest('request/preprocessed/file', async (params) => {
 
 
 connection.onRequest('request/analyzeText/findNouns', async (params) => {
-	const { text, path, range } = params;
+	const { path, position } = params;
 	
-	// TODO: get the range instead and use the preprocessed text 
-	//const text = preprocessedFilesCacheMap.get(path);
-	
-	const tree = analyzeText(text);
+	// TODO: get the position instead and use the preprocessed text 
+	const preprocessedText = preprocessedFilesCacheMap.get(path);
+	const array = preprocessedText?.split(/\r?\n/) ?? [];
+	const line = array[position.line];
+	connection.console.log(`Analyzing: ${line}`);
+	const tree = analyzeText(line);
 
-	connection.sendNotification('response/analyzeText/findNouns', { tree } );
+	// TODO: Calculate where to best put the suggestions
+	const { symbol } = symbolManager.findClosestSymbolKindByPosition(SymbolKind.Object, position);
+	connection.console.log(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
+
+	connection.sendNotification('response/analyzeText/findNouns', { tree: tree, range: symbol.range } );
 });
 
 connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {
@@ -256,7 +260,6 @@ connection.listen();
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
-
 
 function analyzeText(text: string) {
 	const tagger = posTagger();

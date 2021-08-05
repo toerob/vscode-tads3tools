@@ -8,7 +8,7 @@ import { exec } from 'child_process';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextDocumentChangeEvent, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextDocumentChangeEvent, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem, Position } from 'vscode';
 
 import {
 	ConnectionError,
@@ -82,11 +82,6 @@ export function activate(context: ExtensionContext) {
 
 	
 	storageManager = new LocalStorageService(context.workspaceState);
-	/*const result = storageManager.getValue("SomeObject");
-	storageManager.setValue("SomeObject", undefined);
-	*/
-
-	
 	
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
@@ -118,7 +113,7 @@ export function activate(context: ExtensionContext) {
 
 	client.onReady().then(() => {
 		
-		client.onNotification('response/analyzeText/findNouns', async ({ tree }) => {
+		client.onNotification('response/analyzeText/findNouns', async ({ tree, range }) => {
 			//
 			console.log(tree);
 			//window.showInformationMessage(tree);
@@ -130,9 +125,21 @@ export function activate(context: ExtensionContext) {
 				canPickMany: true,
 			});
 
-			result.forEach((noun) => {
-				//
-			});
+			for(const noun of result) {
+				await window.activeTextEditor.edit(editor => {
+					
+					// Insert a line after the closing range of the current object
+					const pos = new Position(range.end.line + 1, 0);
+					const text = `+ ${noun} : Decoration '${noun}';\n`;
+					editor.insert(pos, text);
+
+
+					/*const lastLine = window.activeTextEditor.document.lineCount - 1;
+					const pos = new Position(lastLine, 0);
+					const text = `+ ${noun} : Decoration '${noun}';`;
+					editor.insert(pos, text);*/
+				});
+			}
 
 		});
 
@@ -445,11 +452,14 @@ function showPreprocessedTextForCurrentFile() {
 }
 
 function analyzeTextAtPosition() {
-	const fsPath = window.activeTextEditor.document.uri.fsPath;
-	//window.activeTextEditor.document.
+	if (window.activeTextEditor.selection.isEmpty) {
+		// the Position object gives you the line and character where the cursor is
+		const fsPath = window.activeTextEditor.document.uri.fsPath;
+		const position = window.activeTextEditor.selection.active;
+		client.sendRequest('request/analyzeText/findNouns', {path: fsPath, position: position});
+
+	}
 	
-	const text = "There's a twig on the ground";
-	client.sendRequest('request/analyzeText/findNouns', {path: fsPath, text: text});
 }
 
 
