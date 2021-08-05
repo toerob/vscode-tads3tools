@@ -229,7 +229,19 @@ connection.onRequest('request/preprocessed/file', async (params) => {
 	const text = preprocessedFilesCacheMap.get(path);
 	connection.sendNotification('response/preprocessed/file', { path, text } );
 });
+
+
+connection.onRequest('request/analyzeText/findNouns', async (params) => {
+	const { text, path, range } = params;
 	
+	// TODO: get the range instead and use the preprocessed text 
+	//const text = preprocessedFilesCacheMap.get(path);
+	
+	const tree = analyzeText(text);
+
+	connection.sendNotification('response/analyzeText/findNouns', { tree } );
+});
+
 connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {
 	await preprocessAndParseFiles(makefileLocation, filePaths, token); 
 });
@@ -242,3 +254,13 @@ documents.listen(connection);
 connection.listen();
 
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const posTagger = require('wink-pos-tagger');
+
+
+function analyzeText(text: string) {
+	const tagger = posTagger();
+	const tagged = tagger.tagSentence(text);
+	const nnTagged = tagged.filter((x:any) => x.pos === 'NN');
+	return nnTagged;
+}

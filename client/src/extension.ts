@@ -8,7 +8,7 @@ import { exec } from 'child_process';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextDocumentChangeEvent, TextEditor, FileSystemWatcher, RelativePattern, Terminal } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextDocumentChangeEvent, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem } from 'vscode';
 
 import {
 	ConnectionError,
@@ -21,6 +21,7 @@ import { setupVisualEditorResponseHandler, visualEditorResponseHandlerMap, getHt
 import { Tads3CompileErrorParser } from './tads3-error-parser';
 import { Subject, debounceTime } from 'rxjs';
 import { LocalStorageService } from './local-storage-service';
+import { zip } from 'rxjs/operators';
 
 let errorDiagnostics = [];
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -53,8 +54,9 @@ let lastChosenTextEditor;
 export function getLastChosenTextEditor() { return lastChosenTextEditor; }
 
 export function activate(context: ExtensionContext) {
-	const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
 
+
+	const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
 	const debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
 	const serverOptions: ServerOptions = {
 		run: { module: serverModule, transport: TransportKind.ipc },
@@ -96,6 +98,9 @@ export function activate(context: ExtensionContext) {
 	
 	context.subscriptions.push(commands.registerCommand('tads3.restartGameRunnerOnT3ImageChanges', () => toggleGameRunnerOnT3ImageChanges()));
 
+	context.subscriptions.push(commands.registerCommand('tads3.analyzeTextAtPosition', () => analyzeTextAtPosition()));
+
+	
 
 	
 	window.onDidChangeTextEditorSelection(e => {
@@ -113,6 +118,24 @@ export function activate(context: ExtensionContext) {
 
 	client.onReady().then(() => {
 		
+		client.onNotification('response/analyzeText/findNouns', async ({ tree }) => {
+			//
+			console.log(tree);
+			//window.showInformationMessage(tree);
+			const options = tree.map(x => ( x.value ));
+			/*const i: MessageItem = {
+				title: ''
+			};*/
+			const result = await window.showQuickPick(options, {
+				canPickMany: true,
+			});
+
+			result.forEach((noun) => {
+				//
+			});
+
+		});
+
 		client.onNotification('response/mapsymbols', symbols => {
 			if(tads3VisualEditorPanel && symbols && symbols.length>0) {
 				console.log(`Updating webview with new symbols`);
@@ -421,10 +444,21 @@ function showPreprocessedTextForCurrentFile() {
 	client.sendRequest('request/preprocessed/file', {path: fsPath});
 }
 
+function analyzeTextAtPosition() {
+	const fsPath = window.activeTextEditor.document.uri.fsPath;
+	//window.activeTextEditor.document.
+	
+	const text = "There's a twig on the ground";
+	client.sendRequest('request/analyzeText/findNouns', {path: fsPath, text: text});
+}
+
+
+
 function showPreprocessedFileQuickPick() {
 	window.showQuickPick(preprocessedList)
 	.then(choice => client.sendRequest('request/preprocessed/file', {path: choice}));
 }
+
 
 function showAndScrollToRange(document: TextDocument, range: Range) {
 	const activeEditor = window.activeTextEditor;

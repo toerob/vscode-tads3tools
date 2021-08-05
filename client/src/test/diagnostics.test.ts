@@ -10,6 +10,11 @@ import { getDocUri, activate } from './helper';
 suite('Should get diagnostics', () => {
 	const docUri = getDocUri('diagnostics.txt');
 
+	test('abc', () => {
+		//
+		//SubjectPredicate
+	});
+
 	test('Diagnoses uppercase texts', async () => {
 		await testDiagnostics(docUri, [
 			{ message: 'ANY is all uppercase.', range: toRange(0, 0, 0, 3), severity: vscode.DiagnosticSeverity.Warning, source: 'ex' },
