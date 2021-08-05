@@ -232,18 +232,22 @@ connection.onRequest('request/preprocessed/file', async (params) => {
 connection.onRequest('request/analyzeText/findNouns', async (params) => {
 	const { path, position } = params;
 	
-	// TODO: get the position instead and use the preprocessed text 
 	const preprocessedText = preprocessedFilesCacheMap.get(path);
 	const array = preprocessedText?.split(/\r?\n/) ?? [];
 	const line = array[position.line];
 	connection.console.log(`Analyzing: ${line}`);
 	const tree = analyzeText(line);
 
-	// TODO: Calculate where to best put the suggestions
-	const { symbol } = symbolManager.findClosestSymbolKindByPosition(SymbolKind.Object, position);
+	// Calculate where to best put the suggestions
+	const { symbol } = symbolManager.findClosestSymbolKindByPosition(path, SymbolKind.Object, position);
+	
+	const level = symbolManager.additionalProperties
+		.get(path)?.get(symbol)?.level;
+
+	
 	connection.console.log(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
 
-	connection.sendNotification('response/analyzeText/findNouns', { tree: tree, range: symbol.range } );
+	connection.sendNotification('response/analyzeText/findNouns', { tree, range: symbol.range, level } );
 });
 
 connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {

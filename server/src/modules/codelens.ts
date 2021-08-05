@@ -10,7 +10,6 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
     
     connection.console.log(`Code Lens enabled? ${enablePreprocessorCodeLens?'yes':'no'}`);
     if(!enablePreprocessorCodeLens) {
-
         return codeLenses;
     }
     

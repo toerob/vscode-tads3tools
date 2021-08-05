@@ -13,7 +13,8 @@ enum MapResponse {
 	CHANGE_START_ROOM = 'changestartroom',
 	LOG = 'log',
 	EDITOR = 'editor',
-	ADD_ROOM = 'addroom'
+	ADD_ROOM = 'addroom',
+	CHANGE_PORT = 'changeport'
 }
 
 export function setupVisualEditorResponseHandler() {
@@ -26,6 +27,7 @@ export function setupVisualEditorResponseHandler() {
 	visualEditorResponseHandlerMap.set(MapResponse.LOG, onDidLog);
 	visualEditorResponseHandlerMap.set(MapResponse.EDITOR, onDidSelectEditor);
 	visualEditorResponseHandlerMap.set(MapResponse.ADD_ROOM, onDidAddRoom);
+	visualEditorResponseHandlerMap.set(MapResponse.CHANGE_PORT, onDidChangePort);
 }
 
 
@@ -86,6 +88,10 @@ export function onDidSelectEditor(payload) {
 	console.log(payload);
 }
 
+export function onDidChangePort(payload) {
+	console.log('did change port: ');
+	console.log(payload);
+}
 
 export function onDidAddRoom(payload) {
 	const editorOfChoice = getLastChosenTextEditor();

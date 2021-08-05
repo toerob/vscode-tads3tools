@@ -257,18 +257,40 @@ class RoomNode {
 */
 
 	onConnectionsChange(directionType, slot, someBooleanState, linkInfo, inputOutput) {
-		vscode.postMessage({ command: 'log', payload: 'name: ' + directionType });
-		vscode.postMessage({ command: 'log', payload: 'name: ' + this.properties.name });
+		//vscode.postMessage({ command: 'log', payload: 'name: ' + directionType });
+		/*vscode.postMessage({ command: 'log', payload: 'name: ' + this.properties.name });
 		var target_node = graph.getNodeById(linkInfo.target_id);
 		vscode.postMessage({ command: 'log', payload: 'target name: ' + target_node.properties.name });
+		*/
+
+		var target_node = graph.getNodeById(linkInfo.target_id);
+
+		const from = this.properties?.name;
+		const to = target_node?.properties?.name;
+		const originId = linkInfo?.origin_id;
+		const targetId = linkInfo?.target_id;
+
+
+		//vscode.postMessage({ command: 'log', payload: 'YO!' });
+		vscode.postMessage({
+			command: 'changeport',
+			payload: {
+				from,
+				to,
+				directionType,
+				originId,
+				targetId
+			}
+		});
 
 		/*vscode.postMessage({command: 'log', payload: 'directionType' +  directionType });
 		vscode.postMessage({command: 'log', payload: 'slot' + slot });
 		vscode.postMessage({command: 'log', payload: 'linkInfo.id:' + linkInfo.id });
 		vscode.postMessage({command: 'log', payload: 'linkInfo.origin_id:' + linkInfo.origin_id });
-		
 		vscode.postMessage({ command: 'log', payload: 'linkInfo.target_id:' + linkInfo.target_id });
 		*/
+		
+		
 
 		//vscode.postMessage({ command: 'log', payload: 'target_node:' + target_node });
 
@@ -434,8 +456,6 @@ function handleRoomNodes(payload) {
 
 	switch (payload.command) {
 		case 'tads3.addNode':
-
-			vscode.postMessage({ command: 'log', payload: 'You reached me!' });
 			if (payload.objects !== undefined) {
 
 				clearRoomSelector();

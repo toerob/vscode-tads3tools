@@ -18,8 +18,8 @@ export class Tads3SymbolManager {
 		}
 		return {};
 	}
-	findClosestSymbolKindByPosition(kind: SymbolKind, position: Position): any {
-		for (const filePath of this.symbols.keys()) {
+	findClosestSymbolKindByPosition(filePath: string, kind: SymbolKind, position: Position): any {
+		//for (const filePath of this.symbols.keys()) {
 			const fileLocalSymbols = this.symbols.get(filePath);
 			const symbol = fileLocalSymbols?.find(s => {
 				return s.kind === kind
@@ -29,7 +29,7 @@ export class Tads3SymbolManager {
 			if (symbol) {
 				return { symbol, filePath };
 			}
-		}
+		//}
 		return {};
 	}
 

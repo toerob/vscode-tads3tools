@@ -84,6 +84,31 @@ export function activate(context: ExtensionContext) {
 	storageManager = new LocalStorageService(context.workspaceState);
 	
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
+
+	let isFirstDocument = true;
+	context.subscriptions.push(workspace.onDidOpenTextDocument(async (textDocument) => {
+		// Initial document
+		if (isFirstDocument) {
+			console.log(`Opens the first document in the workspace. Trying to locating a default makefile`);
+			if (chosenMakefileUri === undefined) {
+				chosenMakefileUri = await findAndSelectMakefileUri(false);
+			}
+			isFirstDocument = false;
+
+			if (chosenMakefileUri === undefined) {
+				console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
+				return;
+			}
+			console.log(`Found one: ${chosenMakefileUri.fsPath}`);
+			if(!t3FileSystemWatcher) {
+				console.log(`Setting up t3 image monitor `);
+				setupAndMonitorBinaryGamefileChanges(); // Client specific feature
+			}
+			await diagnosePreprocessAndParse(textDocument);
+		
+		}
+	}));
+
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextForCurrentFile', showPreprocessedTextForCurrentFile));
@@ -95,7 +120,6 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(commands.registerCommand('tads3.analyzeTextAtPosition', () => analyzeTextAtPosition()));
 
-	
 
 	
 	window.onDidChangeTextEditorSelection(e => {
@@ -113,7 +137,7 @@ export function activate(context: ExtensionContext) {
 
 	client.onReady().then(() => {
 		
-		client.onNotification('response/analyzeText/findNouns', async ({ tree, range }) => {
+		client.onNotification('response/analyzeText/findNouns', async ({ tree, range, level }) => {
 			//
 			console.log(tree);
 			//window.showInformationMessage(tree);
@@ -127,17 +151,15 @@ export function activate(context: ExtensionContext) {
 
 			for(const noun of result) {
 				await window.activeTextEditor.edit(editor => {
-					
-					// Insert a line after the closing range of the current object
+					// Insert the line after the closing range of the current object
 					const pos = new Position(range.end.line + 1, 0);
-					const text = `+ ${noun} : Decoration '${noun}';\n`;
+					
+					// FIXME: Level isn't working:
+					let levelAsString = '+';
+					for (let i = 0; i++; i < level) { levelAsString += '+'; }
+					
+					const text = `${levelAsString} ${noun} : Decoration '${noun}' '${noun}';\n`;
 					editor.insert(pos, text);
-
-
-					/*const lastLine = window.activeTextEditor.document.lineCount - 1;
-					const pos = new Position(lastLine, 0);
-					const text = `+ ${noun} : Decoration '${noun}';`;
-					editor.insert(pos, text);*/
 				});
 			}
 
@@ -207,20 +229,25 @@ export function deactivate(): Thenable<void> | undefined {
 
 
 
-export async function findAndSelectMakefileUri() {
+export async function findAndSelectMakefileUri(askIfNotFound = true) {
 	let choice: Uri = undefined;
 	const files = await workspace.findFiles(`**/*.t3m`);
 	if (files.length > 1) {
-		window.showInformationMessage(`Select which Makefile the project uses`);
-		const qpItemMap = new Map();
-		files.forEach(x => qpItemMap.set(basename(x.path), x));
-		const entriesStr: string[] = Array.from(qpItemMap.keys());
-		const pick = await window.showQuickPick(entriesStr);
-		choice = qpItemMap.get(pick);
+		if (askIfNotFound) {
+			window.showInformationMessage(`Select which Makefile the project uses`);
+			const qpItemMap = new Map();
+			files.forEach(x => qpItemMap.set(basename(x.path), x));
+			const entriesStr: string[] = Array.from(qpItemMap.keys());
+			const pick = await window.showQuickPick(entriesStr);
+			choice = qpItemMap.get(pick);
+		} else {
+			choice = files[0];
+			window.showInformationMessage(`Using first found makefile in project`);
+		}
 	} else if (files.length == 1) {
 		choice = files[0];
 	} else {
-		if (!choice) {
+		if (!choice && askIfNotFound) {
 			const file = await window.showOpenDialog({
 				title: `Select which folder the project's makefile (*.t3m) is located within`,
 				filters: { 'Makefiles': ['t3m'] },
@@ -255,10 +282,6 @@ async function onDidSaveTextDocument(textDocument: any) {
 	}
 
 	if (chosenMakefileUri === undefined) {
-		return;
-	}
-	
-	if (chosenMakefileUri === undefined) {
 		console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
 		return;
 	}
@@ -271,6 +294,7 @@ async function onDidSaveTextDocument(textDocument: any) {
 
 async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 	
+	console.log(`Diagnosing`);
 	await diagnose(textDocument);
 	if (errorDiagnostics.length > 0) {
 		//throw new Error('Could not assemble outliner symbols since there\'s an error. ');
@@ -278,12 +302,15 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 		return;
 	}
 	//allFilesBeenProcessed = true;
+	console.log(`Diagnosing went by with no errors`);
 
 	if (!allFilesBeenProcessed) {
 		allFilesBeenProcessed = true;
+		console.log(`Preprocess and parse all documents`);
 		preprocessAndParseDocument();
 		return;
 	} else {
+		console.log(`Preprocess and parse ${textDocument}`);
 		preprocessAndParseDocument([textDocument]);
 	}
 }

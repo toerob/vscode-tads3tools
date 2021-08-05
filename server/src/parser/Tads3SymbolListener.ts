@@ -6,6 +6,7 @@ import { Location, Range } from 'vscode-languageserver';
 
 // TODO: Maybe much easier to just keep a map instead of an object like this?
 export class ExtendedDocumentSymbolProperties {
+	level: number | undefined;
 	arrowConnection: string | undefined;
 	at: string|undefined = undefined;
 	objectScope: any | undefined;
@@ -163,7 +164,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 		this.currentObjectSymbol = symbol;
 
 		const additionalProps = new ExtendedDocumentSymbolProperties();
-
+		additionalProps.level = level;
 
 		try {
 
