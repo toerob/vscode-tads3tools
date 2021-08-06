@@ -136,17 +136,27 @@ connection.onInitialized(() => {
 	});
 
 	connection.onRequest('request/connectrooms', ({currentPayload, previousPayload }) => {
-		const { from, to, directionName } = previousPayload;
-		const { from2, to2, directionName2 } = currentPayload;
+		const fromObject = {
+			roomName: previousPayload.from,
+			directionName: previousPayload.directionName
 
-		const fromRoom = symbolManager.findSymbol(from);
-		const toRoom = symbolManager.findSymbol(to);
-		const validDirection = parseDirection(directionName);
-		if (fromRoom && toRoom && validDirection) {
-			const response = { fromRoom, toRoom, validDirection };
+		};
+		const toObject = {
+			roomName: currentPayload.from,
+			directionName: currentPayload.directionName
+		};
+
+		const fromRoom = symbolManager.findSymbol(fromObject.roomName);
+		const toRoom = symbolManager.findSymbol(toObject.roomName);
+
+		const validDirection1 = parseDirection(fromObject.directionName);
+		const validDirection2 = parseDirection(toObject.directionName);
+
+		if (fromRoom.symbol?.name && toRoom.symbol?.name && validDirection1 && validDirection2) {
+			const response = { fromRoom, toRoom, validDirection1, validDirection2 };
 			connection.sendNotification('response/connectrooms', response);
 		} else {
-			connection.console.error(`Cannot connect rooms: ${from} with ${to} via ${directionName} (details => from: ${fromRoom} target: ${toRoom} ${validDirection})`);
+			connection.console.error(`Cannot connect rooms: ${fromRoom.symbol?.name} with ${toRoom.symbol?.name} via ${validDirection1}/${validDirection2}`);
 		}
 	});
 
@@ -244,24 +254,28 @@ connection.onRequest('request/preprocessed/file', async (params) => {
 
 
 connection.onRequest('request/analyzeText/findNouns', async (params) => {
-	const { path, position } = params;
+	const { path, position, text } = params;
 	
 	const preprocessedText = preprocessedFilesCacheMap.get(path);
 	const array = preprocessedText?.split(/\r?\n/) ?? [];
 	const line = array[position.line];
-	connection.console.log(`Analyzing: ${line}`);
-	const tree = analyzeText(line);
+	connection.console.log(`Analyzing: ${line} / ${text}`);
 
-	// Calculate where to best put the suggestions
-	const { symbol } = symbolManager.findClosestSymbolKindByPosition(path, SymbolKind.Object, position);
-	
-	const level = symbolManager.additionalProperties
-		.get(path)?.get(symbol)?.level;
+	if(line) {
+		const tree = analyzeText(line);
+		// Calculate where to best put the suggestions
+		const { symbol } = symbolManager.findClosestSymbolKindByPosition(path, SymbolKind.Object, position);
+		
+		if(symbol) {
+			const level = symbolManager.additionalProperties
+			.get(path)?.get(symbol)?.level;
+			connection.console.log(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
+			connection.sendNotification('response/analyzeText/findNouns', { tree, range: symbol.range, level } );
+		}
+	} else {
+		//
+	}
 
-	
-	connection.console.log(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
-
-	connection.sendNotification('response/analyzeText/findNouns', { tree, range: symbol.range, level } );
 });
 
 connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {
@@ -285,7 +299,7 @@ function analyzeText(text: string) {
 	const nnTagged = tagged.filter((x:any) => x.pos === 'NN');
 	return nnTagged;
 }
-const regExp = /^(.*)_in|out$/;
+const regExp = /^(.*)_(in|out)$/;
 	
 function parseDirection(directionName: any): string|undefined {
 	const result = regExp.exec(directionName);

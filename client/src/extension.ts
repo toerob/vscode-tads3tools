@@ -5,13 +5,12 @@
  * ------------------------------------------------------------------------------------------ */
 
 import { exec } from 'child_process';
-import { existsSync } from 'fs';
+import { existsSync, fstat, read, readFile, readFileSync, readSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
 import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextDocumentChangeEvent, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem, Position } from 'vscode';
 
 import {
-	ConnectionError,
 	LanguageClient,
 	LanguageClientOptions,
 	ServerOptions,
@@ -21,7 +20,6 @@ import { setupVisualEditorResponseHandler, visualEditorResponseHandlerMap, getHt
 import { Tads3CompileErrorParser } from './tads3-error-parser';
 import { Subject, debounceTime } from 'rxjs';
 import { LocalStorageService } from './local-storage-service';
-import { zip } from 'rxjs/operators';
 
 let errorDiagnostics = [];
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -85,9 +83,9 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 
 
-	context.subscriptions.push(workspace.onDidOpenTextDocument(async (textDocument) => {
+	/*context.subscriptions.push(workspace.onDidOpenTextDocument(async (textDocument) => {
 		//
-	}));
+	}));*/
 
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
@@ -118,37 +116,26 @@ export function activate(context: ExtensionContext) {
 
 	client.onReady().then(async () => {
 		
-		client.onNotification('response/connectrooms', async ({fromRoom, toRoom, validDirection}) => {
-			console.log(fromRoom);
-
-			const userQuestion = `Connect via ${validDirection} to ${toRoom.symbol.name} (${toRoom.filePath})?`;
-			console.log(userQuestion);
-			// await window.showInputBox({prompt: userQuestion});
-
-			await window.activeTextEditor.edit(editor => {
-				// Insert the line after the closing range of the current object
-				const pos = new Position(toRoom.range.end.line + 1, 0);
-				const text = `${validDirection} = ${toRoom}\n`;
-				editor.insert(pos, text);
-			});
-
-
-			/*const overwriteDirection = (fromRoom as DocumentSymbol)?.children?.find(validDirection);
-			if (overwriteDirection) {
-				const userQuestion = `Overwrite direction ${overwriteDirection.name} (${fromRoom.filePath}) to ${overwriteDirection.detail} with ${toRoom.symbol.name} (${toRoom.filePath}) instead?`;
-				console.log(userQuestion);
-				await window.showInputBox({
-					prompt: userQuestion
-					
+		client.onNotification('response/connectrooms', async ({fromRoom, toRoom, validDirection1, validDirection2}) => {
+			console.log(`Connect from  ${fromRoom.symbol.name}  (${fromRoom.filePath}) to ${toRoom.symbol.name} (${toRoom.filePath}) via ${validDirection1/validDirection2} to (${toRoom.filePath})?`);
+			await workspace.openTextDocument(fromRoom.filePath)
+				.then(window.showTextDocument)
+				.then(editor=> {
+					editor.edit(editor => {
+						const pos = new Position(fromRoom.symbol.range.end.line, 0);
+						const text = `\t${validDirection1} = ${toRoom.symbol.name}\n`;
+						editor.insert(pos, text);
+					});
 				});
-			} else {
-				const userQuestion = `Add direction to ${toRoom.symbol.name} (${toRoom.filePath}) via ${validDirection}?`;
-				console.log(userQuestion);
-				await window.showInputBox({
-					prompt: userQuestion
-					
+			await workspace.openTextDocument(toRoom.filePath)
+				.then(window.showTextDocument)
+				.then(editor=> {
+					editor.edit(editor => {
+						const pos = new Position(toRoom.symbol.range.end.line, 0);
+						const text = `\t${validDirection2} = ${fromRoom.symbol.name}\n`;
+						editor.insert(pos, text);
+					});
 				});
-			}*/
 		});
 
 		
@@ -160,6 +147,10 @@ export function activate(context: ExtensionContext) {
 			/*const i: MessageItem = {
 				title: ''
 			};*/
+			if(options.length === 0) {
+				window.showInformationMessage(`No suggestions for that line`);
+				return;
+			}
 			const result = await window.showQuickPick(options, {
 				canPickMany: true,
 			});
@@ -314,6 +305,7 @@ async function onDidSaveTextDocument(textDocument: any) {
 
 	if (chosenMakefileUri === undefined) {
 		chosenMakefileUri = await findAndSelectMakefileUri();
+		analyzeMakefile(chosenMakefileUri);
 	}
 
 	if (chosenMakefileUri === undefined) {
@@ -518,7 +510,11 @@ function analyzeTextAtPosition() {
 		// the Position object gives you the line and character where the cursor is
 		const fsPath = window.activeTextEditor.document.uri.fsPath;
 		const position = window.activeTextEditor.selection.active;
-		client.sendRequest('request/analyzeText/findNouns', {path: fsPath, position: position});
+		const text = window.activeTextEditor.document.lineAt(position.line).text;
+		//console.log(`Analyzing ${text}`);
+		window.showInformationMessage(`Analyzing ${text}`);
+
+		client.sendRequest('request/analyzeText/findNouns', {path: fsPath, position, text});
 
 	}
 	
@@ -586,7 +582,7 @@ async function openInVisualEditor(context: ExtensionContext) {
 
 
 	// TODO:	
-	/*let result = storeManager.getValue('persistedMapObjectPositions');
+	/*let result = storageManager.getValue('persistedMapObjectPositions');
 	if (result) {
 		//console.error(`Found persisted MapObject positions: `);
 		//console.error(result);
@@ -624,6 +620,18 @@ function overridePositionWithPersistedCoordinates(mapObjects: any[] /*DefaultMap
 		}
 	}
 	if (itemsToPersist.length > 0) {
-		this.storeManager.setValue('persistedMapObjectPositions', itemsToPersist);
+		this.storageManager?.setValue('persistedMapObjectPositions', itemsToPersist);
 	}
+}
+
+/**
+ * Reads and parses the makefile to get additional information
+ * such as which library it uses, paths, flags etc..
+ * @param chosenMakefileUri 
+ */
+function analyzeMakefile(chosenMakefileUri: Uri) {
+	const makefileString = readFileSync(chosenMakefileUri.fsPath).toString();
+	// Tads3MakefileManager.parse(makefileString);
+	//console.log(makefileString);
+
 }
