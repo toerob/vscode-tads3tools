@@ -105,6 +105,11 @@
 				"category": "Preprocessing"
 			},
 			{
+				"command": "tads3.openProjectFileQuickPick",
+				"title": "Open any project file in a separate window",
+				"category": "Preprocessing"
+			},
+			{
 				"command": "tads3.enablePreprocessorCodeLens",
 				"title": "Toggle CodeLens for preprocessed text of the current file",
 				"category": "Preprocessing"

@@ -114,6 +114,7 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextForCurrentFile', showPreprocessedTextForCurrentFile));
 
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
+	context.subscriptions.push(commands.registerCommand('tads3.openProjectFileQuickPick', openProjectFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', () => openInVisualEditor(context)));
 	
 	context.subscriptions.push(commands.registerCommand('tads3.restartGameRunnerOnT3ImageChanges', () => toggleGameRunnerOnT3ImageChanges()));
@@ -494,6 +495,12 @@ function analyzeTextAtPosition() {
 function showPreprocessedFileQuickPick() {
 	window.showQuickPick(preprocessedList)
 	.then(choice => client.sendRequest('request/preprocessed/file', {path: choice}));
+}
+
+function openProjectFileQuickPick() {
+	window.showQuickPick(preprocessedList)
+		.then(p => p && workspace.openTextDocument(p))
+		.then(window.showTextDocument);
 }
 
 
