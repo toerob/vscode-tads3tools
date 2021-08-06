@@ -79,34 +79,14 @@ export function activate(context: ExtensionContext) {
 
 	client = new LanguageClient('Tads3languageServer', 'Tads3 Language Server', serverOptions, clientOptions);
 	client.start();
-
 	
 	storageManager = new LocalStorageService(context.workspaceState);
 	
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 
-	let isFirstDocument = true;
-	context.subscriptions.push(workspace.onDidOpenTextDocument(async (textDocument) => {
-		// Initial document
-		if (isFirstDocument) {
-			console.log(`Opens the first document in the workspace. Trying to locating a default makefile`);
-			if (chosenMakefileUri === undefined) {
-				chosenMakefileUri = await findAndSelectMakefileUri(false);
-			}
-			isFirstDocument = false;
 
-			if (chosenMakefileUri === undefined) {
-				console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
-				return;
-			}
-			console.log(`Found one: ${chosenMakefileUri.fsPath}`);
-			if(!t3FileSystemWatcher) {
-				console.log(`Setting up t3 image monitor `);
-				setupAndMonitorBinaryGamefileChanges(); // Client specific feature
-			}
-			await diagnosePreprocessAndParse(textDocument);
-		
-		}
+	context.subscriptions.push(workspace.onDidOpenTextDocument(async (textDocument) => {
+		//
 	}));
 
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
@@ -136,7 +116,41 @@ export function activate(context: ExtensionContext) {
 
 	setupVisualEditorResponseHandler();
 
-	client.onReady().then(() => {
+	client.onReady().then(async () => {
+		
+		client.onNotification('response/connectrooms', async ({fromRoom, toRoom, validDirection}) => {
+			console.log(fromRoom);
+
+			const userQuestion = `Connect via ${validDirection} to ${toRoom.symbol.name} (${toRoom.filePath})?`;
+			console.log(userQuestion);
+			// await window.showInputBox({prompt: userQuestion});
+
+			await window.activeTextEditor.edit(editor => {
+				// Insert the line after the closing range of the current object
+				const pos = new Position(toRoom.range.end.line + 1, 0);
+				const text = `${validDirection} = ${toRoom}\n`;
+				editor.insert(pos, text);
+			});
+
+
+			/*const overwriteDirection = (fromRoom as DocumentSymbol)?.children?.find(validDirection);
+			if (overwriteDirection) {
+				const userQuestion = `Overwrite direction ${overwriteDirection.name} (${fromRoom.filePath}) to ${overwriteDirection.detail} with ${toRoom.symbol.name} (${toRoom.filePath}) instead?`;
+				console.log(userQuestion);
+				await window.showInputBox({
+					prompt: userQuestion
+					
+				});
+			} else {
+				const userQuestion = `Add direction to ${toRoom.symbol.name} (${toRoom.filePath}) via ${validDirection}?`;
+				console.log(userQuestion);
+				await window.showInputBox({
+					prompt: userQuestion
+					
+				});
+			}*/
+		});
+
 		
 		client.onNotification('response/analyzeText/findNouns', async ({ tree, range, level }) => {
 			//
@@ -214,6 +228,26 @@ export function activate(context: ExtensionContext) {
 			window.showInformationMessage(`File(s) parsed in ${elapsedTime} ms`);
 			client.sendNotification('request/mapsymbols');				
 		});
+
+
+
+		/*
+		console.log(`Opens the first document in the workspace. Trying to locating a default makefile`);
+		if (chosenMakefileUri === undefined) {
+			chosenMakefileUri = await findAndSelectMakefileUri(false);
+		}
+
+		if (chosenMakefileUri === undefined) {
+			console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
+			return;
+		}
+		console.log(`Found one: ${chosenMakefileUri.fsPath}`);
+		if(!t3FileSystemWatcher) {
+			console.log(`Setting up t3 image monitor `);
+			setupAndMonitorBinaryGamefileChanges(); // Client specific feature
+		}
+		await diagnosePreprocessAndParse(textDocument);
+		*/	
 
 	});
 

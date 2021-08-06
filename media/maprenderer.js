@@ -12,7 +12,7 @@ const levelLabelRef = document.getElementById('levelLabel');
 const editorSelector = document.getElementById('editorSelector');
 let el = document.getElementById('inputDialog');
 el.style.visibility = "hidden";
-
+let isPopulatingMap = true;
 
 
 
@@ -256,32 +256,25 @@ class RoomNode {
 	);
 */
 
-	onConnectionsChange(directionType, slot, someBooleanState, linkInfo, inputOutput) {
-		//vscode.postMessage({ command: 'log', payload: 'name: ' + directionType });
-		/*vscode.postMessage({ command: 'log', payload: 'name: ' + this.properties.name });
-		var target_node = graph.getNodeById(linkInfo.target_id);
-		vscode.postMessage({ command: 'log', payload: 'target name: ' + target_node.properties.name });
-		*/
-
-		var target_node = graph.getNodeById(linkInfo.target_id);
-
-		const from = this.properties?.name;
-		const to = target_node?.properties?.name;
-		const originId = linkInfo?.origin_id;
-		const targetId = linkInfo?.target_id;
-
-
-		//vscode.postMessage({ command: 'log', payload: 'YO!' });
-		vscode.postMessage({
-			command: 'changeport',
-			payload: {
-				from,
-				to,
-				directionType,
-				originId,
-				targetId
-			}
-		});
+	onConnectionsChange(directionType, slot, connected, linkInfo, inputInfo) {
+		if (connected && !isPopulatingMap) {
+			var target_node = graph.getNodeById(linkInfo.target_id);
+			const from = this.properties?.name;
+			const to = target_node?.properties?.name;
+			const directionName = inputInfo.name;
+			vscode.postMessage({
+				command: 'changeport',
+				payload: {
+					from,
+					to,
+					directionName,
+					/*directionType,
+					originId,
+					targetId*/
+					
+				}
+			});
+		}
 
 		/*vscode.postMessage({command: 'log', payload: 'directionType' +  directionType });
 		vscode.postMessage({command: 'log', payload: 'slot' + slot });
@@ -407,11 +400,19 @@ function handleConversationNodes(payload) {
 
 
 function refresh(payload) {
-	graph.clear();
-	if (selectedEditor === '1') {
-		handleConversationNodes(payload);
-	} else {
-		handleRoomNodes(payload);
+	isPopulatingMap = true;
+	try {
+		graph.clear();
+		if (selectedEditor === '1') {
+			handleConversationNodes(payload);
+		} else {
+			handleRoomNodes(payload);
+		}
+	} catch (error) {
+		console.error(error);
+		vscode.postMessage({ command: 'log', payload: `Error during addnode:  ${error}` });
+	} finally {
+		isPopulatingMap = false;		
 	}
 }
 rooms = new Set();
@@ -476,6 +477,7 @@ function handleRoomNodes(payload) {
 						roomSelector.appendChild(optionNode);
 					} catch (err) {
 						//
+						vscode.postMessage({ command: 'log', payload: `Error during addnode:  ${err}` });
 					}
 				}
 

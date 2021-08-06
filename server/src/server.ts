@@ -135,6 +135,20 @@ connection.onInitialized(() => {
 		}
 	});
 
+	connection.onRequest('request/connectrooms', ({currentPayload, previousPayload }) => {
+		const { from, to, directionName } = previousPayload;
+		const { from2, to2, directionName2 } = currentPayload;
+
+		const fromRoom = symbolManager.findSymbol(from);
+		const toRoom = symbolManager.findSymbol(to);
+		const validDirection = parseDirection(directionName);
+		if (fromRoom && toRoom && validDirection) {
+			const response = { fromRoom, toRoom, validDirection };
+			connection.sendNotification('response/connectrooms', response);
+		} else {
+			connection.console.error(`Cannot connect rooms: ${from} with ${to} via ${directionName} (details => from: ${fromRoom} target: ${toRoom} ${validDirection})`);
+		}
+	});
 
 });
 
@@ -271,3 +285,23 @@ function analyzeText(text: string) {
 	const nnTagged = tagged.filter((x:any) => x.pos === 'NN');
 	return nnTagged;
 }
+const regExp = /^(.*)_in|out$/;
+	
+function parseDirection(directionName: any): string|undefined {
+	const result = regExp.exec(directionName);
+	if (result) {
+		switch (result[1]) {
+			case 'n': return 'north';
+			case 's': return 'south';
+			case 'e': return 'east';
+			case 'w': return 'west';
+			case 'ne': return 'northeast';
+			case 'nw': return 'northwest';
+			case 'se': return 'southeast';
+			case 'sw': return 'southwest';
+		}
+	}
+	return undefined;
+	//throw new Error(`Not a valid direction`);
+}
+

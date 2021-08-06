@@ -88,9 +88,19 @@ export function onDidSelectEditor(payload) {
 	console.log(payload);
 }
 
+const connectingPairStack = [];
+
 export function onDidChangePort(payload) {
-	console.log('did change port: ');
-	console.log(payload);
+	if (connectingPairStack.length === 0) {
+		connectingPairStack.push(payload);		
+	} else {
+		const previousPayload = connectingPairStack.pop();
+		console.log('did change port: ');
+		console.log(payload);
+
+		// TODO: save the current document before if dirty
+		client.sendRequest('request/connectrooms', ({ currentPayload: payload, previousPayload}));
+	}
 }
 
 export function onDidAddRoom(payload) {
