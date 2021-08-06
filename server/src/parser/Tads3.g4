@@ -19,6 +19,7 @@ directive:
     | SEMICOLON
 ;
 
+
 pragmaDirective:
     HASH PRAGMA ID LEFT_PAREN (expr) RIGHT_PAREN
 ;
@@ -115,6 +116,8 @@ objectBody:
     )*
 ;
 
+
+
 property:
     (identifierAtom|IN) ASSIGN STATIC? (expr|dictionaryProperty) SEMICOLON?
     | (identifierAtom|IN) COLON objectName=identifierAtom? (COMMA superTypes)*  curlyObjectBody SEMICOLON?
@@ -149,9 +152,16 @@ function moveFloatingObjects(loc)
 */
 
 functionDeclaration:
-   functionHead
-   codeBlock
+   (functionHead codeBlock)
+   | operatorOverride
 ;
+
+operatorOverride:
+    OPERATOR
+       ((PLUS|MINUS|STAR|DIV|MOD|POW|ARITHMETIC_LEFT|LOGICAL_RIGHT_SHIFT|ARITHMETIC_RIGHT|TILDE|BITWISE_OR|AMP)
+       |(LEFT_BRACKET RIGHT_BRACKET ASSIGN?))
+           (LEFT_PAREN params RIGHT_PAREN)
+               LEFT_CURLY stats* RIGHT_CURLY;
 
 functionHead:
      isExtern=EXTERN? isStatic=STATIC? FUNCTION? identifierAtom (LEFT_PAREN params? RIGHT_PAREN)?
@@ -331,6 +341,7 @@ identifierAtom:
     | IN
     | STEP
     | STRING
+    | OPERATOR
 ;
 
 params:
@@ -391,6 +402,7 @@ CONTINUE: 'continue';
 GOTO  : 'goto';
 TOKEN: 'token';
 PRAGMA: 'pragma';
+OPERATOR : 'operator';
 
 AT: '@';
 AMP: '&';
@@ -473,6 +485,7 @@ fragment DoubleStringCharacter:
 fragment LineContinuation: '\\' [\r\n\u2028\u2029];
 
 fragment ESCAPED_CHAR: '\\' ('"'|'\''|'n'|'t'|'r'|'b'|'\\');
+
 
 
 

@@ -78,6 +78,7 @@ import { DictionaryPropertyContext } from "./Tads3Parser";
 import { PropertySetContext } from "./Tads3Parser";
 import { ParamsWithWildcardContext } from "./Tads3Parser";
 import { FunctionDeclarationContext } from "./Tads3Parser";
+import { OperatorOverrideContext } from "./Tads3Parser";
 import { FunctionHeadContext } from "./Tads3Parser";
 import { CodeBlockContext } from "./Tads3Parser";
 import { StatsContext } from "./Tads3Parser";
@@ -1033,6 +1034,17 @@ export interface Tads3Listener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitFunctionDeclaration?: (ctx: FunctionDeclarationContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `Tads3Parser.operatorOverride`.
+	 * @param ctx the parse tree
+	 */
+	enterOperatorOverride?: (ctx: OperatorOverrideContext) => void;
+	/**
+	 * Exit a parse tree produced by `Tads3Parser.operatorOverride`.
+	 * @param ctx the parse tree
+	 */
+	exitOperatorOverride?: (ctx: OperatorOverrideContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `Tads3Parser.functionHead`.
