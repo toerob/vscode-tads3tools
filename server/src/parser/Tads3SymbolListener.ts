@@ -3,6 +3,7 @@ import { ObjectDeclarationContext, PropertySetContext, PropertyContext, Function
 import { ScopedEnvironment } from './ScopedEnvironment';
 import { CompletionItem, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { Location, Range } from 'vscode-languageserver';
+import { connection } from '../server';
 
 // TODO: Maybe much easier to just keep a map instead of an object like this?
 export class ExtendedDocumentSymbolProperties {
@@ -255,7 +256,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 	}
 
 	visitErrorNode(ctx: any) {
-		console.error('*** ERROR NODE ***');
+		console.error(`*** ERROR NODE in (${this.currentUri})***`);
 	}
 
 	exitCurlyObjectBody(ctx: CurlyObjectBodyContext) {

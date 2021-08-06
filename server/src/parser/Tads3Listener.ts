@@ -25,6 +25,7 @@ import { PrimaryExprContext } from "./Tads3Parser";
 import { CallWithParamsExprContext } from "./Tads3Parser";
 import { ExprWithParenExprContext } from "./Tads3Parser";
 import { ExprWithAnonymousObjectExprContext } from "./Tads3Parser";
+import { ExprWithAnonymousObjectUsingMultipleSuperTypesExprContext } from "./Tads3Parser";
 import { ParenExpr2Context } from "./Tads3Parser";
 import { LocalExprContext } from "./Tads3Parser";
 import { StaticExprContext } from "./Tads3Parser";
@@ -52,6 +53,7 @@ import { TernaryExprContext } from "./Tads3Parser";
 import { AnonymousFunctionExprContext } from "./Tads3Parser";
 import { ProgramContext } from "./Tads3Parser";
 import { DirectiveContext } from "./Tads3Parser";
+import { PragmaDirectiveContext } from "./Tads3Parser";
 import { GrammarDeclarationContext } from "./Tads3Parser";
 import { GrammarRulesContext } from "./Tads3Parser";
 import { ItemListContext } from "./Tads3Parser";
@@ -395,6 +397,19 @@ export interface Tads3Listener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitExprWithAnonymousObjectExpr?: (ctx: ExprWithAnonymousObjectExprContext) => void;
+
+	/**
+	 * Enter a parse tree produced by the `exprWithAnonymousObjectUsingMultipleSuperTypesExpr`
+	 * labeled alternative in `Tads3Parser.expr`.
+	 * @param ctx the parse tree
+	 */
+	enterExprWithAnonymousObjectUsingMultipleSuperTypesExpr?: (ctx: ExprWithAnonymousObjectUsingMultipleSuperTypesExprContext) => void;
+	/**
+	 * Exit a parse tree produced by the `exprWithAnonymousObjectUsingMultipleSuperTypesExpr`
+	 * labeled alternative in `Tads3Parser.expr`.
+	 * @param ctx the parse tree
+	 */
+	exitExprWithAnonymousObjectUsingMultipleSuperTypesExpr?: (ctx: ExprWithAnonymousObjectUsingMultipleSuperTypesExprContext) => void;
 
 	/**
 	 * Enter a parse tree produced by the `parenExpr2`
@@ -742,6 +757,17 @@ export interface Tads3Listener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitDirective?: (ctx: DirectiveContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `Tads3Parser.pragmaDirective`.
+	 * @param ctx the parse tree
+	 */
+	enterPragmaDirective?: (ctx: PragmaDirectiveContext) => void;
+	/**
+	 * Exit a parse tree produced by `Tads3Parser.pragmaDirective`.
+	 * @param ctx the parse tree
+	 */
+	exitPragmaDirective?: (ctx: PragmaDirectiveContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `Tads3Parser.grammarDeclaration`.

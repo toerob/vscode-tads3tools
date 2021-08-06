@@ -25,6 +25,7 @@ import { PrimaryExprContext } from "./Tads3Parser";
 import { CallWithParamsExprContext } from "./Tads3Parser";
 import { ExprWithParenExprContext } from "./Tads3Parser";
 import { ExprWithAnonymousObjectExprContext } from "./Tads3Parser";
+import { ExprWithAnonymousObjectUsingMultipleSuperTypesExprContext } from "./Tads3Parser";
 import { ParenExpr2Context } from "./Tads3Parser";
 import { LocalExprContext } from "./Tads3Parser";
 import { StaticExprContext } from "./Tads3Parser";
@@ -52,6 +53,7 @@ import { TernaryExprContext } from "./Tads3Parser";
 import { AnonymousFunctionExprContext } from "./Tads3Parser";
 import { ProgramContext } from "./Tads3Parser";
 import { DirectiveContext } from "./Tads3Parser";
+import { PragmaDirectiveContext } from "./Tads3Parser";
 import { GrammarDeclarationContext } from "./Tads3Parser";
 import { GrammarRulesContext } from "./Tads3Parser";
 import { ItemListContext } from "./Tads3Parser";
@@ -290,6 +292,14 @@ export interface Tads3Visitor<Result> extends ParseTreeVisitor<Result> {
 	visitExprWithAnonymousObjectExpr?: (ctx: ExprWithAnonymousObjectExprContext) => Result;
 
 	/**
+	 * Visit a parse tree produced by the `exprWithAnonymousObjectUsingMultipleSuperTypesExpr`
+	 * labeled alternative in `Tads3Parser.expr`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitExprWithAnonymousObjectUsingMultipleSuperTypesExpr?: (ctx: ExprWithAnonymousObjectUsingMultipleSuperTypesExprContext) => Result;
+
+	/**
 	 * Visit a parse tree produced by the `parenExpr2`
 	 * labeled alternative in `Tads3Parser.expr`.
 	 * @param ctx the parse tree
@@ -502,6 +512,13 @@ export interface Tads3Visitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitDirective?: (ctx: DirectiveContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `Tads3Parser.pragmaDirective`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitPragmaDirective?: (ctx: PragmaDirectiveContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `Tads3Parser.grammarDeclaration`.

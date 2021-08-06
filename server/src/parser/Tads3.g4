@@ -15,6 +15,12 @@ directive:
     | dictionaryDeclaration
     | functionDeclaration
     | grammarDeclaration
+    | pragmaDirective
+    | SEMICOLON
+;
+
+pragmaDirective:
+    HASH PRAGMA ID LEFT_PAREN (expr) RIGHT_PAREN
 ;
 
 grammarDeclaration:
@@ -44,7 +50,7 @@ item:
 
 templateDeclaration:
     className=identifierAtom TEMPLATE (properties+=expr OPTIONAL?)+ SEMICOLON
-    | STRING TEMPLATE ARITHMETIC_LEFT (identifierAtom|STAR)* ARITHMETIC_RIGHT templateId=identifierAtom SEMICOLON
+    | STRING TEMPLATE ARITHMETIC_LEFT (identifierAtom|STAR|IS|IN)* ARITHMETIC_RIGHT templateId=identifierAtom SEMICOLON
 
 ;
 
@@ -267,6 +273,7 @@ expr:
  | expr LEFT_PAREN params+ RIGHT_PAREN              #callWithParamsExpr
  | expr LEFT_PAREN expr? RIGHT_PAREN                #exprWithParenExpr
  | expr LEFT_CURLY params? COLON expr? RIGHT_CURLY  #exprWithAnonymousObjectExpr
+ | expr COLON superTypes curlyObjectBody            #exprWithAnonymousObjectUsingMultipleSuperTypesExpr
  | LEFT_PAREN expr? RIGHT_PAREN                     #parenExpr2
  | LOCAL expr                                       #localExpr
  | STATIC expr                                      #staticExpr
@@ -328,6 +335,7 @@ params:
 optionallyTypedOptionalId:
     ((identifier=identifierAtom COLON)? (type=identifierAtom)? (name=identifierAtom) optional=OPTIONAL?)
     | (identifier=identifierAtom emptyColon=COLON optional=OPTIONAL?)
+    | (identifier=identifierAtom emptyColon=COLON hasDefault=ASSIGN defaultValue=expr? )
     ;
 
 //LINE: '#line ' [0-9]+ .~('\n')* ->skip;
@@ -377,6 +385,7 @@ BREAK : 'break';
 CONTINUE: 'continue';
 GOTO  : 'goto';
 TOKEN: 'token';
+PRAGMA: 'pragma';
 
 AT: '@';
 AMP: '&';
