@@ -26,6 +26,7 @@ const collection = languages.createDiagnosticCollection('tads3diagnostics');
 
 const tads3CompileErrorParser = new Tads3CompileErrorParser();
 let allFilesBeenProcessed = false;
+let isLongProcessingInAction = false;
 
 let serverProcessCancelTokenSource: CancellationTokenSource;
 let chosenMakefileUri: Uri|undefined;
@@ -108,7 +109,7 @@ export function activate(context: ExtensionContext) {
 	window.onDidChangeActiveTextEditor((event: any) => {
 		lastChosenTextDocument ??= event.document;
 		if (lastChosenTextDocument) {
-			console.log(`Last chosen editor changed to: ${lastChosenTextDocument.uri}`);			
+			client.info(`Last chosen editor changed to: ${lastChosenTextDocument.uri}`);			
 		}
 	});
 
@@ -117,7 +118,7 @@ export function activate(context: ExtensionContext) {
 	client.onReady().then(async () => {
 		
 		client.onNotification('response/connectrooms', async ({fromRoom, toRoom, validDirection1, validDirection2}) => {
-			console.log(`Connect from  ${fromRoom.symbol.name}  (${fromRoom.filePath}) to ${toRoom.symbol.name} (${toRoom.filePath}) via ${validDirection1/validDirection2} to (${toRoom.filePath})?`);
+			client.info(`Connect from  ${fromRoom.symbol.name}  (${fromRoom.filePath}) to ${toRoom.symbol.name} (${toRoom.filePath}) via ${validDirection1/validDirection2} to (${toRoom.filePath})?`);
 			await workspace.openTextDocument(fromRoom.filePath)
 				.then(window.showTextDocument)
 				.then(editor=> {
@@ -141,7 +142,7 @@ export function activate(context: ExtensionContext) {
 		
 		client.onNotification('response/analyzeText/findNouns', async ({ tree, range, level }) => {
 			//
-			console.log(tree);
+			client.info(tree);
 			//window.showInformationMessage(tree);
 			const options = tree.map(x => ( x.value ));
 			/*const i: MessageItem = {
@@ -173,7 +174,7 @@ export function activate(context: ExtensionContext) {
 
 		client.onNotification('response/mapsymbols', symbols => {
 			if(tads3VisualEditorPanel && symbols && symbols.length>0) {
-				console.log(`Updating webview with new symbols`);
+				client.info(`Updating webview with new symbols`);
 				try {
 					overridePositionWithPersistedCoordinates(symbols);
 					tads3VisualEditorPanel.webview.postMessage({ command: 'tads3.addNode', objects: symbols  });
@@ -205,7 +206,7 @@ export function activate(context: ExtensionContext) {
 
 		client.onNotification('response/preprocessed/file', ({ path, text }) => {
 			preprocessedFilesMap.set(path, text);
-			console.log(`Server response for ${path}: ` +text);
+			client.info(`Server response for ${path}: ` +text);
 			workspace
 				.openTextDocument({ language: 'tads3', content: text })
 				.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
@@ -216,29 +217,16 @@ export function activate(context: ExtensionContext) {
 		});
 
 		client.onNotification("symbolparsing/allfiles/success", ({ elapsedTime }) => {
-			window.showInformationMessage(`File(s) parsed in ${elapsedTime} ms`);
+			if(isLongProcessingInAction) {
+				window.showInformationMessage(`All project and library files are now parsed (elapsed time: ${elapsedTime} ms)`);
+			} else {
+				client.info(`File parsed (elapsed time: ${elapsedTime} ms)`);
+			}
 			client.sendNotification('request/mapsymbols');				
+			isLongProcessingInAction = false;
 		});
 
-
-
-		/*
-		console.log(`Opens the first document in the workspace. Trying to locating a default makefile`);
-		if (chosenMakefileUri === undefined) {
-			chosenMakefileUri = await findAndSelectMakefileUri(false);
-		}
-
-		if (chosenMakefileUri === undefined) {
-			console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
-			return;
-		}
-		console.log(`Found one: ${chosenMakefileUri.fsPath}`);
-		if(!t3FileSystemWatcher) {
-			console.log(`Setting up t3 image monitor `);
-			setupAndMonitorBinaryGamefileChanges(); // Client specific feature
-		}
-		await diagnosePreprocessAndParse(textDocument);
-		*/	
+		initialParse();
 
 	});
 
@@ -321,7 +309,7 @@ async function onDidSaveTextDocument(textDocument: any) {
 
 async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 	
-	console.log(`Diagnosing`);
+	client.info(`Diagnosing`);
 	await diagnose(textDocument);
 	if (errorDiagnostics.length > 0) {
 		//throw new Error('Could not assemble outliner symbols since there\'s an error. ');
@@ -329,16 +317,23 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 		return;
 	}
 	//allFilesBeenProcessed = true;
-	console.log(`Diagnosing went by with no errors`);
-
+	client.info(`Diagnosing went by with no errors`);
 	if (!allFilesBeenProcessed) {
+		isLongProcessingInAction = true;
 		allFilesBeenProcessed = true;
-		console.log(`Preprocess and parse all documents`);
+		client.info(`Preprocess and parse all documents`);
 		preprocessAndParseDocument();
 		return;
 	} else {
-		console.log(`Preprocess and parse ${textDocument}`);
-		preprocessAndParseDocument([textDocument]);
+
+		if(isLongProcessingInAction) {
+			client.info(`Skipping parsing since long processing is in action`);
+		} else {
+			client.info(`Preprocess and parse ${textDocument}`);
+			preprocessAndParseDocument([textDocument]);	
+		}
+	
+
 	}
 }
 
@@ -351,6 +346,10 @@ let gameRunnerTerminal: Terminal = undefined;
 const runGameInTerminalSubject = new Subject();
 
 function setupAndMonitorBinaryGamefileChanges() {
+	if(gameRunnerTerminal) {
+		client.info(`Game runner terminal already set up, skipping`);
+		return;
+	}
 	const workspaceFolder = dirname(chosenMakefileUri.fsPath);
 	t3FileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, "*.t3"));
 	runGameInTerminalSubject.pipe(debounceTime(300)).subscribe((event: any) => {
@@ -366,7 +365,7 @@ function setupAndMonitorBinaryGamefileChanges() {
 			gameRunnerTerminal.dispose();
 		}
 		gameRunnerTerminal = window.createTerminal('Game runner terminal');
-		console.log(`${event.fsPath} changed, restarting ${fileBaseName}`);
+		client.info(`${event.fsPath} changed, restarting ${fileBaseName}`);
 		gameRunnerTerminal.show(true);
 		gameRunnerTerminal.sendText(`frob ${fileBaseName}`);
 		window.showTextDocument(window.activeTextEditor.document);
@@ -446,7 +445,7 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 			// TODO: maybe show "stale data" indicator instead
 			/*if (tads3VisualEditorPanel) {
 			
-				console.log(`Since new symbols have been parsed and the webviewpanel is open, ask for new mapsymbols `);
+				client.info(`Since new symbols have been parsed and the webviewpanel is open, ask for new mapsymbols `);
 				client.sendNotification('request/mapsymbols');			
 			}*/
 
@@ -511,7 +510,7 @@ function analyzeTextAtPosition() {
 		const fsPath = window.activeTextEditor.document.uri.fsPath;
 		const position = window.activeTextEditor.selection.active;
 		const text = window.activeTextEditor.document.lineAt(position.line).text;
-		//console.log(`Analyzing ${text}`);
+		//client.info(`Analyzing ${text}`);
 		window.showInformationMessage(`Analyzing ${text}`);
 
 		client.sendRequest('request/analyzeText/findNouns', {path: fsPath, position, text});
@@ -577,7 +576,7 @@ async function openInVisualEditor(context: ExtensionContext) {
 		tads3VisualEditorPanel = undefined;
 	}, null, context.subscriptions);
 	
-	console.log(`Opening up the webview and ask server for map symbols`);
+	client.info(`Opening up the webview and ask server for map symbols`);
 	client.sendNotification('request/mapsymbols');
 
 
@@ -624,6 +623,32 @@ function overridePositionWithPersistedCoordinates(mapObjects: any[] /*DefaultMap
 	}
 }
 
+async function initialParse() {
+	if(window.activeTextEditor.document) {
+		const textDocument = window.activeTextEditor.document;
+		client.info(`Trying to locate a default makefile`);
+
+		if (chosenMakefileUri === undefined) {
+			chosenMakefileUri = await findAndSelectMakefileUri(false);
+		}
+		if (chosenMakefileUri === undefined) {
+			console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
+			return;
+		}
+
+		client.info(`Found a makefile: ${chosenMakefileUri.fsPath}`);
+		if(!t3FileSystemWatcher) {
+			client.info(`Setting up t3 image monitor `);
+			if(!t3FileSystemWatcher) {
+				setupAndMonitorBinaryGamefileChanges(); // Client specific feature
+			}
+		}
+		await diagnosePreprocessAndParse(textDocument);
+			
+	}
+
+}
+
 /**
  * Reads and parses the makefile to get additional information
  * such as which library it uses, paths, flags etc..
@@ -632,6 +657,7 @@ function overridePositionWithPersistedCoordinates(mapObjects: any[] /*DefaultMap
 function analyzeMakefile(chosenMakefileUri: Uri) {
 	const makefileString = readFileSync(chosenMakefileUri.fsPath).toString();
 	// Tads3MakefileManager.parse(makefileString);
-	//console.log(makefileString);
+	//client.info(makefileString);
 
 }
+

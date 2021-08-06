@@ -8,6 +8,7 @@ import { Tads3SymbolListener } from './parser/Tads3SymbolListener';
 import { expose } from 'threads';
 import { PredictionMode } from 'antlr4ts/atn/PredictionMode';
 import { Range, DefinitionParams, Location, DocumentSymbol  } from 'vscode-languageserver';
+import { connection } from './server';
 
 
 expose(function parseFunc(path: string, text: string) {
@@ -25,7 +26,7 @@ expose(function parseFunc(path: string, text: string) {
     parser.errorHandler = new BailErrorStrategy();
     try {
       parseTree = parser.program();
-      console.error(`SLL parsing succeeded for. ${path}`);
+      console.log(`SLL parsing succeeded for. ${path}`);
     } catch (err) {
       // Silently fail in case SLL fails, error is thrown by BailErrorStrategy
       console.error(`Failing with (faster) SLL parsing for ${path}. Switching predicition mode to LL and retries`);
