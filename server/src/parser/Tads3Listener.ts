@@ -81,6 +81,7 @@ import { FunctionDeclarationContext } from "./Tads3Parser";
 import { FunctionHeadContext } from "./Tads3Parser";
 import { CodeBlockContext } from "./Tads3Parser";
 import { StatsContext } from "./Tads3Parser";
+import { InnerCodeBlockContext } from "./Tads3Parser";
 import { GotoStatementContext } from "./Tads3Parser";
 import { BreakStatementContext } from "./Tads3Parser";
 import { ContinueStatementContext } from "./Tads3Parser";
@@ -1065,6 +1066,17 @@ export interface Tads3Listener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitStats?: (ctx: StatsContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `Tads3Parser.innerCodeBlock`.
+	 * @param ctx the parse tree
+	 */
+	enterInnerCodeBlock?: (ctx: InnerCodeBlockContext) => void;
+	/**
+	 * Exit a parse tree produced by `Tads3Parser.innerCodeBlock`.
+	 * @param ctx the parse tree
+	 */
+	exitInnerCodeBlock?: (ctx: InnerCodeBlockContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `Tads3Parser.gotoStatement`.

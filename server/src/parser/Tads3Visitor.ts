@@ -81,6 +81,7 @@ import { FunctionDeclarationContext } from "./Tads3Parser";
 import { FunctionHeadContext } from "./Tads3Parser";
 import { CodeBlockContext } from "./Tads3Parser";
 import { StatsContext } from "./Tads3Parser";
+import { InnerCodeBlockContext } from "./Tads3Parser";
 import { GotoStatementContext } from "./Tads3Parser";
 import { BreakStatementContext } from "./Tads3Parser";
 import { ContinueStatementContext } from "./Tads3Parser";
@@ -708,6 +709,13 @@ export interface Tads3Visitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitStats?: (ctx: StatsContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `Tads3Parser.innerCodeBlock`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitInnerCodeBlock?: (ctx: InnerCodeBlockContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `Tads3Parser.gotoStatement`.

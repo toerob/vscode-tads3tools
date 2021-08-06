@@ -181,8 +181,12 @@ stats:
     | breakStatement
     | continueStatement
     | gotoStatement
+    | innerCodeBlock
 ;
 
+innerCodeBlock:
+    LEFT_CURLY stats* RIGHT_CURLY
+;
 
 gotoStatement:
     GOTO label=identifierAtom? SEMICOLON;
@@ -265,7 +269,7 @@ expr:
  | prev=expr DOT next=expr                          #memberExpr
  | expr LEFT_BRACKET expr? RIGHT_BRACKET            #indexExpr
  | expr COMMA expr                                  #commaExpr
- | expr RANGE expr (hasStep=STEP expr)?            #rangeExpr
+ | expr RANGE expr (hasStep=STEP expr)?             #rangeExpr
  | DELEGATED expr                                   #delegatedExpression
  | INHERITED expr                                   #inheritedExpression
  | TRANSIENT expr                                   #transientExpression
@@ -325,11 +329,12 @@ primary:
 identifierAtom:
     ID
     | IN
+    | STEP
     | STRING
 ;
 
 params:
-    ( optionallyTypedOptionalId|SPREAD|array) (COMMA params)*
+    ( optionallyTypedOptionalId|SPREAD|array) (COMMA params?)*
 ;
 
 optionallyTypedOptionalId:
@@ -428,7 +433,7 @@ RIGHT_BRACKET: ']';
 
 DSTR : DOUBLE_QUOTED_STRING;
 SSTR : SINGLE_QUOTED_STRING;
-RSTR: 'R' SINGLE_QUOTED_STRING;
+RSTR: 'R' (DOUBLE_QUOTED_STRING|SINGLE_QUOTED_STRING);
 
 fragment SINGLE_QUOTED_STRING: '\'' STRING_STRUCTURE '\'' | '\'\'\'' STRING_STRUCTURE '\'\'\'';
 
