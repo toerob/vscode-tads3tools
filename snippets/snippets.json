@@ -127,6 +127,31 @@
 	},
 
 
+    "Tads3 ActorState class implementation snippet" : { 
+		"prefix": ["ActorState"], 
+		"body": [    
+			"$1: ${2|ActorState,HermitActorState,AccompanyingState,GuidedTourState,ConversationReadyState,InConversationState,ConversationReadyState|} \"$3\"",
+			"\tisInitState = true",
+			";",
+			"$0"
+		],
+		"description": "Tads3 ActorState implementation snippet"
+	},
+	"Tads3 AgendaItem class implementation snippet" : { 
+		"prefix": ["AgendaItem"], 
+		"body": [    
+			"$1: ${2|AgendaItem,DelayedAgendaItem,ConvAgendaItem|}",
+			"\tinitiallyActive = true",
+			"\t//isReady = Q.canSee(gPlayerChar,characterNameHere)",
+			"\tinvokeItem() {",
+			"\t\t$0",
+			"\t}",
+			";"
+		],
+		"description": "Tads3 AgendaItem implementation snippet"
+	},
+
+
 	"Tads3 DefineTAction snippet" : { 
 		"prefix": ["definetaction", "defT"], 
 		"body": [    
