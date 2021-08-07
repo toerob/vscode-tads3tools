@@ -4,6 +4,7 @@ import { statSync, readFileSync } from 'fs';
 import { URI, Utils } from 'vscode-uri';
 import { spawn, Pool, Worker } from 'threads';
 import { abortParsingProcess, preprocessedFilesCacheMap, connection, symbolManager } from './server';
+import { clearCompletionCache } from './onCompletion';
 
 
 /**
@@ -105,6 +106,7 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 
 				symbolManager.symbols.set(filePath, symbols);
 				symbolManager.keywords.set(filePath, keywords);
+				clearCompletionCache();
 				symbolManager.additionalProperties.set(filePath, additionalProperties);
 				tracker++;
 				connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles]);

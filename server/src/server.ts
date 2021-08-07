@@ -29,6 +29,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DefaultMapObject } from './modules/mapcrawling/DefaultMapObject';
 import MapObjectManager from './modules/mapcrawling/map-mapping';
 import { onCodeLens } from './modules/codelens';
+import { onCompletion } from './onCompletion';
 
 
 
@@ -86,9 +87,9 @@ connection.onInitialize((params: InitializeParams) => {
 				change: TextDocumentSyncKind.Full,
 			},
 			// Tell the client that this server supports code completion.
-			/*completionProvider: {
+			completionProvider: {
 				resolveProvider: true
-			}*/
+			}
 		}
 	};
 	if (hasWorkspaceFolderCapability) {
@@ -200,8 +201,6 @@ connection.onDidChangeConfiguration(change => {
 
 	// Revalidate all open text documents
 	documents.all().forEach(validateTextDocument);
-
-
 });
 
 /*
@@ -219,6 +218,8 @@ function getDocumentSettings(resource: string): Thenable<Tads3Settings> {
 	}
 	return result;
 }*/
+
+
 
 // Only keep settings for open documents
 documents.onDidClose(e => {
@@ -243,6 +244,7 @@ connection.onDidChangeWatchedFiles(_change => {
 	connection.console.log('We received an file change event');
 });
 
+connection.onCompletion(async (handler) => onCompletion(handler, documents, symbolManager));
 connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, documents, symbolManager));
 connection.onReferences(async (handler) => onReferences(handler,documents, symbolManager));
 connection.onDefinition(async (handler) => onDefinition(handler,documents, symbolManager));
