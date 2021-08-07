@@ -84,8 +84,9 @@ export class Tads3VisualEditorProvider implements CustomReadonlyEditorProvider {
 				this.lastSelectedTextDocument = e.textEditor.document;
 
 				//console.log(`Change document to ${this.lastSelectedTextDocument}`);
-				this.updateWebview(webviewPanel, this.lastSelectedTextDocument);
+				//this.updateWebview(webviewPanel, this.lastSelectedTextDocument);
 			}
+			this.updateWebview(webviewPanel, this.lastSelectedTextDocument);
 
 			/*const selection: Selection = e.selections[0];
 			this.selectedObject = this.t3SymbolManager.getSymbols(e.textEditor.document.uri.path)
@@ -136,7 +137,7 @@ export class Tads3VisualEditorProvider implements CustomReadonlyEditorProvider {
 				//console.log(`Persisting new position (${payload.pos[0]}/${payload.pos[1]}) for node: ${payload.name}`);
 				//this.persistedObjectPositions.set(payload.name, payload.pos);
 
-				/*const persistedMapObjectPositions = this.storeManager.getValue('persistedMapObjectPositions');
+				/*const persistedMapObjectPositions = this.storageManager.getValue('persistedMapObjectPositions');
 				const mapObject = persistedMapObjectPositions.find(x=>x.name===payload.name);
 				if (mapObject) {
 					mapObject.x = payload.pos[0];

@@ -143,7 +143,9 @@ export function activate(context: ExtensionContext) {
 						const text = `\t${validDirection2} = ${fromRoom.symbol.name}\n`;
 						editor.insert(pos, text);
 					});
-				});
+					return editor;
+				}).then(editor=>editor.document.save)
+				.then(saveResult=>console.log(`${saveResult} saved `));
 		});
 
 
@@ -598,17 +600,7 @@ async function openInVisualEditor(context: ExtensionContext) {
 	client.info(`Opening up the webview and ask server for map symbols`);
 	client.sendNotification('request/mapsymbols');
 
-
-	// TODO:	
-	/*let result = storageManager.getValue('persistedMapObjectPositions');
-	if (result) {
-		//console.error(`Found persisted MapObject positions: `);
-		//console.error(result);
-		for (let entry of result) {
-			persistedObjectPositions.set(entry.name, [entry.x, entry.y]);
-		}
-	}*/
-
+	// TODO: redraw when back into focus
 
 	tads3VisualEditorPanel.webview.onDidReceiveMessage(event => {
 		const routine = visualEditorResponseHandlerMap.get(event.command);
@@ -626,6 +618,9 @@ function overridePositionWithPersistedCoordinates(mapObjects: any[] /*DefaultMap
 	const itemsToPersist = [];
 	for (const node of mapObjects) {
 		const persistedPosition = persistedObjectPositions.get(node.name);
+		if(persistedPosition) {
+			console.log(`${node.name} has persisted position: ${persistedPosition[0]}/${persistedPosition[1]}`);
+		}
 		if (persistedPosition && persistedPosition.length === 2) {
 			const x = persistedPosition[0];
 			const y = persistedPosition[1];
@@ -638,7 +633,7 @@ function overridePositionWithPersistedCoordinates(mapObjects: any[] /*DefaultMap
 		}
 	}
 	if (itemsToPersist.length > 0) {
-		this.storageManager?.setValue('persistedMapObjectPositions', itemsToPersist);
+		storageManager?.setValue('persistedMapObjectPositions', itemsToPersist);
 	}
 }
 

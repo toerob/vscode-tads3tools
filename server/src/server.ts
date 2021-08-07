@@ -134,6 +134,12 @@ connection.onInitialized(() => {
 			connection.sendNotification('response/foundsymbol', symbolManager.findSymbol(name));
 		}
 	});
+	connection.onRequest('request/addroom', ({ room })=> {
+		// Let's the mapping-mapper know it is a new room and render it even if it lacks
+		// connections to other rooms
+		mapper.newlyCreatedRoomsSet.add(room.name);
+		mapper.persistedObjectPositions.set(room.name, room.pos);
+	});
 
 	connection.onRequest('request/connectrooms', ({currentPayload, previousPayload }) => {
 		const fromObject = {

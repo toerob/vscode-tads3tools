@@ -15,7 +15,7 @@ export default class MapObjectManager {
 
 	selectedEditor = EditorMode.MAP;
 	newlyCreatedRoomsSet: Set<string> = new Set();
-	persistedObjectPositions: any;
+	persistedObjectPositions: any = new Map();
 
 	startRoom: string|undefined = undefined;
 

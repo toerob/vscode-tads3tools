@@ -56,7 +56,7 @@ export function onDidUpdatePosition(payload, persistedObjectPositions) {
 	/*
 	TODO:
 		
-		let persistedMapObjectPositions = this.storeManager.getValue('persistedMapObjectPositions');
+		let persistedMapObjectPositions = this.storageManager.getValue('persistedMapObjectPositions');
 		let mapObject = persistedMapObjectPositions.find(x=>x.name===payload.name);
 		if (mapObject) {
 			mapObject.x = payload.pos[0];
@@ -103,7 +103,7 @@ export function onDidChangePort(payload) {
 	}
 }
 
-export function onDidAddRoom(payload) {
+export function onDidAddRoom(payload, persistedObjectPositions) {
 	const editorOfChoice = getLastChosenTextEditor();
 	if (payload && editorOfChoice) {
 		console.error(`Adding a room with name: ${payload.name}`);
@@ -122,26 +122,34 @@ export function onDidAddRoom(payload) {
 			// TODO: Trigger same GUI in maprenderer as when changing title
 			const superTypes = 'Room';
 
-			const str = `\n${payload.name}: ${superTypes} '${payload.name}';`;
+			// TODO: if using adv3Lite
+			const str = `\n${payload.name}: ${superTypes} '${payload.name}'\n;`;
 			builder.insert(lastRange.end, str);
+			
 			//let snippet = new SnippetString("\n${1: " + payload.name + "}: ${1: Room} '${" + payload.name + "}';");
 			//await window.activeTextEditor.insertSnippet(snippet, lastRange)
 
 			// TODO: maybe... doesn't work
 			// Add a temporary symbol in the outliner (will get replaced by the parsed object
 			// On update:
+			persistedObjectPositions.set(payload.name, payload.pos);
 
+			
 
-		}).then((roomName) => {
+		}).then(() => {
 			//this.lastChosenTextEditor = editorOfChoice;
 			editorOfChoice.document.save().then(saveResult => {
 				if (saveResult) {
 					console.error(`Successfully saved with new content`);
 				}
 			}).then(() => {
+				persistedObjectPositions.set(payload.name, payload.pos);
+
 				// TODO: Persist in server or here?
-				this.newlyCreatedRoomsSet.add(payload.name);
-				this.persistedObjectPositions.set(payload.name, payload.pos);
+				//this.newlyCreatedRoomsSet.add(payload.name);
+
+				client.sendRequest('request/addroom', ({ room: payload}));
+
 			});
 
 		});
