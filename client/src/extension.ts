@@ -73,7 +73,7 @@ export function activate(context: ExtensionContext) {
 			{ scheme: 'file', language: 'tads3' }],
 		synchronize: {
 			// Notify the server about file changes to '.t, .h, and .clientrc files contained in the workspace
-			fileEvents: workspace.createFileSystemWatcher('**/.{t,h,clientrc}')
+			fileEvents: workspace.createFileSystemWatcher('**/.{t,h,t3m,clientrc}')
 		}
 	};
 
