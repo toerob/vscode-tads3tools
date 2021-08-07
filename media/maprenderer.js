@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable no-undef */
 //import ProjectstormReactDiagrams from "https://cdn.skypack.dev/@projectstorm/react-diagrams@6.5.2";
@@ -656,7 +657,23 @@ function applyCallbacksOnRoomNode(node) {
 		vscode.postMessage({ command: 'log', payload: key });
 	};*/
 
-	node.onMouseDown = () => vscode.postMessage({ command: 'select', payload: node.title });
+	node.onMouseDown = (mouseEvent) => {
+		//vscode.postMessage({ command: 'select', payload: node.title });
+	};
+
+	node.onKeyDown = (keyEvent) => {
+		// TODO: make this evenet trigger and bind focus to a key instead of clicking it with 
+		// the mouse.
+
+		//console.log(keyEvent);
+		debugger;
+
+
+		//vscode.postMessage({ command: 'select', payload: node.title });
+	};
+
+	
+
 	node.onPropertyChanged = function () {
 		node.title = node.properties.name;
 		vscode.postMessage({
@@ -675,8 +692,22 @@ function applyCallbacksOnRoomNode(node) {
 	});*/
 
 
+	node.getMenuOptions = () => {
+		return [
+			{
+				content: "locate",
+				has_submenu: false,
+				callback: locateRoom
+			}
+		];
+	};
+	
 
 }
+
+const locateRoom = (value, event, mouseEvent, contextMenu) => {
+	vscode.postMessage({ command: 'select', payload: event.extra.title });
+};
 
 // TODO: convert node to Room
 const createRoomNode = function (node) {
