@@ -1,9 +1,46 @@
 import { CancellationTokenSource } from 'vscode-languageserver/node';
 import { preprocessAllFiles } from './parser/preprocessor';
-import { statSync } from 'fs';
+import { statSync, readFileSync } from 'fs';
 import { URI, Utils } from 'vscode-uri';
 import { spawn, Pool, Worker } from 'threads';
 import { abortParsingProcess, preprocessedFilesCacheMap, connection, symbolManager } from './server';
+
+
+/**
+ * Reads and parses the makefile to get additional information
+ * such as which library it uses, paths, flags etc..
+ * @param chosenMakefileUri 
+ */
+ function analyzeMakefile(chosenMakefileUri: string) {
+	const makefileString = readFileSync(chosenMakefileUri).toString();
+	const makeFileArray = makefileString.split(/\r?\n/);
+	const makefileArray = [];
+	for(const row of makeFileArray) {
+		if(row.trimLeft().startsWith('#')) {
+			continue;
+		}
+		const [key,value]= row.replace('  ',' ').split(' ');
+		if(key && value) {
+			makefileArray.push({key,value});
+		}
+	}
+	/*makefileArray.forEach((keyvalue,index)=> {
+		//
+
+	});*/
+
+	console.log(`Done!`);
+	return makefileArray;
+}
+
+let lastMakeFileLocation: string|undefined;
+let makefileStructure;
+let usingAdv3Lite = false;
+
+export function isUsingAdv3Lite(): boolean {
+	return usingAdv3Lite;
+}
+
 
 /**
  * 
@@ -13,14 +50,21 @@ import { abortParsingProcess, preprocessedFilesCacheMap, connection, symbolManag
  */
 export async function preprocessAndParseFiles(makefileLocation: string, filePaths: string[]|undefined, token: any) {
 
+	if(lastMakeFileLocation !== makefileLocation) {
+		lastMakeFileLocation = makefileLocation;
+		makefileStructure = analyzeMakefile(makefileLocation);
+		usingAdv3Lite = !!makefileStructure?.find(keyvalue=> keyvalue.value.includes('adv3lite')) ?? false;
+		connection.sendNotification('response/makefile/keyvaluemap', {makefileStructure, usingAdv3Lite});
+	} 
+
+
 	await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
 	connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);
 
-
 	let allFilePaths = filePaths;
 
-
 	// Parse project files close to the makefile first:
+
 	if (filePaths === undefined) {
 		const baseDir = Utils.dirname(URI.parse(makefileLocation)).fsPath;
 		allFilePaths = [...preprocessedFilesCacheMap.keys()];

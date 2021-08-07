@@ -21,8 +21,8 @@ export class Tads3SymbolManager {
 	findClosestSymbolKindByPosition(filePath: string, kind: SymbolKind, position: Position): any {
 		const fileLocalSymbols = this.symbols.get(filePath);
 		if(fileLocalSymbols) {
-			const x = flattenTreeToArray(fileLocalSymbols);
-			const symbol = fileLocalSymbols?.find(s => s.kind === kind
+			const flattenedLocalSymbols = flattenTreeToArray(fileLocalSymbols);
+			const symbol = flattenedLocalSymbols?.find(s => s.kind === kind
 				&& position.line >= s.range.start.line
 				&& position.line <= s.range.end.line);
 			if (symbol) {

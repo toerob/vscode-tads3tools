@@ -29,16 +29,16 @@ let allFilesBeenProcessed = false;
 let isLongProcessingInAction = false;
 
 let serverProcessCancelTokenSource: CancellationTokenSource;
-let chosenMakefileUri: Uri|undefined;
+let chosenMakefileUri: Uri | undefined;
 
- // A string array of preprocessed files available for retrieval from the server
- // via request: 'request/preprocessed/file'
+// A string array of preprocessed files available for retrieval from the server
+// via request: 'request/preprocessed/file'
 let preprocessedList: string[];
 
-export let tads3VisualEditorPanel: WebviewPanel|undefined = undefined;
+export let tads3VisualEditorPanel: WebviewPanel | undefined = undefined;
 
 
-const preprocessedFilesMap: Map<string,string> = new Map();
+const preprocessedFilesMap: Map<string, string> = new Map();
 
 export let client: LanguageClient;
 
@@ -49,6 +49,7 @@ const persistedObjectPositions = new Map();
 let selectedObject: DocumentSymbol | undefined;
 let lastChosenTextDocument: TextDocument | undefined;
 let lastChosenTextEditor;
+let isUsingAdv3Lite = false;
 
 export function getLastChosenTextEditor() { return lastChosenTextEditor; }
 
@@ -78,9 +79,9 @@ export function activate(context: ExtensionContext) {
 
 	client = new LanguageClient('Tads3languageServer', 'Tads3 Language Server', serverOptions, clientOptions);
 	client.start();
-	
+
 	storageManager = new LocalStorageService(context.workspaceState);
-	
+
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 
 
@@ -95,33 +96,39 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.openProjectFileQuickPick', openProjectFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', () => openInVisualEditor(context)));
-	
+
 	context.subscriptions.push(commands.registerCommand('tads3.restartGameRunnerOnT3ImageChanges', () => toggleGameRunnerOnT3ImageChanges()));
 
 	context.subscriptions.push(commands.registerCommand('tads3.analyzeTextAtPosition', () => analyzeTextAtPosition()));
 
 
-	
+
 	window.onDidChangeTextEditorSelection(e => {
 		lastChosenTextEditor = e.textEditor;
 	});
-	
+
 	window.onDidChangeActiveTextEditor((event: any) => {
 		lastChosenTextDocument ??= event.document;
 		if (lastChosenTextDocument) {
-			client.info(`Last chosen editor changed to: ${lastChosenTextDocument.uri}`);			
+			client.info(`Last chosen editor changed to: ${lastChosenTextDocument.uri}`);
 		}
 	});
 
 	setupVisualEditorResponseHandler();
 
 	client.onReady().then(async () => {
-		
-		client.onNotification('response/connectrooms', async ({fromRoom, toRoom, validDirection1, validDirection2}) => {
-			client.info(`Connect from  ${fromRoom.symbol.name}  (${fromRoom.filePath}) to ${toRoom.symbol.name} (${toRoom.filePath}) via ${validDirection1/validDirection2} to (${toRoom.filePath})?`);
+
+		client.onNotification('response/makefile/keyvaluemap', ({ makefileStructure, usingAdv3Lite }) => {
+			isUsingAdv3Lite = usingAdv3Lite;
+			console.log(usingAdv3Lite);
+			console.log(makefileStructure);
+		});
+
+		client.onNotification('response/connectrooms', async ({ fromRoom, toRoom, validDirection1, validDirection2 }) => {
+			client.info(`Connect from  ${fromRoom.symbol.name}  (${fromRoom.filePath}) to ${toRoom.symbol.name} (${toRoom.filePath}) via ${validDirection1 / validDirection2} to (${toRoom.filePath})?`);
 			await workspace.openTextDocument(fromRoom.filePath)
 				.then(window.showTextDocument)
-				.then(editor=> {
+				.then(editor => {
 					editor.edit(editor => {
 						const pos = new Position(fromRoom.symbol.range.end.line, 0);
 						const text = `\t${validDirection1} = ${toRoom.symbol.name}\n`;
@@ -130,7 +137,7 @@ export function activate(context: ExtensionContext) {
 				});
 			await workspace.openTextDocument(toRoom.filePath)
 				.then(window.showTextDocument)
-				.then(editor=> {
+				.then(editor => {
 					editor.edit(editor => {
 						const pos = new Position(toRoom.symbol.range.end.line, 0);
 						const text = `\t${validDirection2} = ${fromRoom.symbol.name}\n`;
@@ -139,16 +146,16 @@ export function activate(context: ExtensionContext) {
 				});
 		});
 
-		
+
 		client.onNotification('response/analyzeText/findNouns', async ({ tree, range, level }) => {
 			//
 			client.info(tree);
 			//window.showInformationMessage(tree);
-			const options = tree.map(x => ( x.value ));
+			const options = tree; //.map(x => (x.value));
 			/*const i: MessageItem = {
 				title: ''
 			};*/
-			if(options.length === 0) {
+			if (options.length === 0) {
 				window.showInformationMessage(`No suggestions for that line`);
 				return;
 			}
@@ -156,16 +163,22 @@ export function activate(context: ExtensionContext) {
 				canPickMany: true,
 			});
 
-			for(const noun of result) {
+			for (const noun of result) {
 				await window.activeTextEditor.edit(editor => {
 					// Insert the line after the closing range of the current object
 					const pos = new Position(range.end.line + 1, 0);
-					
+
 					// FIXME: Level isn't working:
-					let levelAsString = '+';
-					for (let i = 0; i++; i < level) { levelAsString += '+'; }
 					
-					const text = `${levelAsString} ${noun} : Decoration '${noun}' '${noun}';\n`;
+					const levelArray = [];
+					for (let i = 0; i < level; i++) { 
+						levelArray.push('+');
+					}
+
+					const text = isUsingAdv3Lite ?
+						`${levelArray.join('')} ${noun} : Decoration '${noun}';\n` 				// Adv3Lite style
+						: `${levelArray.join('')} ${noun} : Decoration '${noun}' '${noun}';\n`; 	// Adv3 style
+
 					editor.insert(pos, text);
 				});
 			}
@@ -173,12 +186,12 @@ export function activate(context: ExtensionContext) {
 		});
 
 		client.onNotification('response/mapsymbols', symbols => {
-			if(tads3VisualEditorPanel && symbols && symbols.length>0) {
+			if (tads3VisualEditorPanel && symbols && symbols.length > 0) {
 				client.info(`Updating webview with new symbols`);
 				try {
 					overridePositionWithPersistedCoordinates(symbols);
-					tads3VisualEditorPanel.webview.postMessage({ command: 'tads3.addNode', objects: symbols  });
-				} catch(err) {
+					tads3VisualEditorPanel.webview.postMessage({ command: 'tads3.addNode', objects: symbols });
+				} catch (err) {
 					console.error(err);
 				}
 			}
@@ -206,23 +219,23 @@ export function activate(context: ExtensionContext) {
 
 		client.onNotification('response/preprocessed/file', ({ path, text }) => {
 			preprocessedFilesMap.set(path, text);
-			client.info(`Server response for ${path}: ` +text);
+			client.info(`Server response for ${path}: ` + text);
 			workspace
 				.openTextDocument({ language: 'tads3', content: text })
 				.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
 		});
-	
+
 		client.onNotification('response/preprocessed/list', (filesNames: string[]) => {
 			preprocessedList = filesNames;
 		});
 
 		client.onNotification("symbolparsing/allfiles/success", ({ elapsedTime }) => {
-			if(isLongProcessingInAction) {
+			if (isLongProcessingInAction) {
 				window.showInformationMessage(`All project and library files are now parsed (elapsed time: ${elapsedTime} ms)`);
 			} else {
 				client.info(`File parsed (elapsed time: ${elapsedTime} ms)`);
 			}
-			client.sendNotification('request/mapsymbols');				
+			client.sendNotification('request/mapsymbols');
 			isLongProcessingInAction = false;
 		});
 
@@ -293,14 +306,13 @@ async function onDidSaveTextDocument(textDocument: any) {
 
 	if (chosenMakefileUri === undefined) {
 		chosenMakefileUri = await findAndSelectMakefileUri();
-		analyzeMakefile(chosenMakefileUri);
 	}
 
 	if (chosenMakefileUri === undefined) {
 		console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
 		return;
 	}
-	if(!t3FileSystemWatcher) {
+	if (!t3FileSystemWatcher) {
 		setupAndMonitorBinaryGamefileChanges(); // Client specific feature
 	}
 	await diagnosePreprocessAndParse(textDocument);
@@ -308,7 +320,7 @@ async function onDidSaveTextDocument(textDocument: any) {
 
 
 async function diagnosePreprocessAndParse(textDocument: TextDocument) {
-	
+
 	client.info(`Diagnosing`);
 	await diagnose(textDocument);
 	if (errorDiagnostics.length > 0) {
@@ -326,13 +338,13 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 		return;
 	} else {
 
-		if(isLongProcessingInAction) {
+		if (isLongProcessingInAction) {
 			client.info(`Skipping parsing since long processing is in action`);
 		} else {
 			client.info(`Preprocess and parse ${textDocument}`);
-			preprocessAndParseDocument([textDocument]);	
+			preprocessAndParseDocument([textDocument]);
 		}
-	
+
 
 	}
 }
@@ -346,7 +358,7 @@ let gameRunnerTerminal: Terminal = undefined;
 const runGameInTerminalSubject = new Subject();
 
 function setupAndMonitorBinaryGamefileChanges() {
-	if(gameRunnerTerminal) {
+	if (gameRunnerTerminal) {
 		client.info(`Game runner terminal already set up, skipping`);
 		return;
 	}
@@ -407,9 +419,9 @@ async function parseDiagnostics(resultOfCompilation: string, textDocument: TextD
 
 
 export function runCommand(command: string) {
-	return new Promise( (resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		let result = '';
-		const childProcess = exec(command, /*{maxBuffer: 1024 * 50000 }*/ ); 	//TODO: make configurable
+		const childProcess = exec(command, /*{maxBuffer: 1024 * 50000 }*/); 	//TODO: make configurable
 		try {
 			childProcess.stdout.on('data', (data: any) => {
 				result += data;
@@ -428,7 +440,7 @@ export function runCommand(command: string) {
 
 
 async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefined = undefined) {
-	const filePaths = textDocuments?.map(x=>x.uri.fsPath) ?? undefined;  //[window.activeTextEditor.document.uri.fsPath];
+	const filePaths = textDocuments?.map(x => x.uri.fsPath) ?? undefined;  //[window.activeTextEditor.document.uri.fsPath];
 	await window.withProgress({
 		location: ProgressLocation.Window,
 		title: 'Parsing symbols',
@@ -438,10 +450,10 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 			await cancelParse();
 			return false;
 		});
-		client.onNotification('symbolparsing/success',([filePath, tracker, totalFiles]) => {
+		client.onNotification('symbolparsing/success', ([filePath, tracker, totalFiles]) => {
 			const filename = basename(Uri.parse(filePath).path);
 			progress.report({ message: ` ${tracker}/${totalFiles}: ${filename} done ` });
-			
+
 			// TODO: maybe show "stale data" indicator instead
 			/*if (tads3VisualEditorPanel) {
 			
@@ -456,12 +468,12 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 	});
 }
 
-export async function executeParse(makefileLocation:string, filePaths): Promise<any> {
+export async function executeParse(makefileLocation: string, filePaths): Promise<any> {
 	await client.onReady();
 	serverProcessCancelTokenSource = new CancellationTokenSource();
 	await client.sendRequest('executeParse', {
-		makefileLocation: makefileLocation, 
-		filePaths: filePaths, 
+		makefileLocation: makefileLocation,
+		filePaths: filePaths,
 		token: serverProcessCancelTokenSource.token
 	});
 }
@@ -479,7 +491,7 @@ export async function cancelParse(): Promise<any> {
 let preprocessDocument;
 
 function showPreprocessedTextAction(params) {
-	const [ range, uri, preprocessedText ] = params;
+	const [range, uri, preprocessedText] = params;
 	if (preprocessDocument) {
 		window.visibleTextEditors
 			.find(editor => editor.document.uri.path === preprocessDocument.uri.path)
@@ -501,8 +513,10 @@ function showPreprocessedTextAction(params) {
 
 function showPreprocessedTextForCurrentFile() {
 	const fsPath = window.activeTextEditor.document.uri.fsPath;
-	client.sendRequest('request/preprocessed/file', {path: fsPath});
+	client.sendRequest('request/preprocessed/file', { path: fsPath });
 }
+
+const findQuoteInStringRegExp = new RegExp(/["](.*)["]|['](.*)[']|["]{3}(.*)["]{3}|[']{3}(.*)[']{3}/);
 
 function analyzeTextAtPosition() {
 	if (window.activeTextEditor.selection.isEmpty) {
@@ -510,20 +524,25 @@ function analyzeTextAtPosition() {
 		const fsPath = window.activeTextEditor.document.uri.fsPath;
 		const position = window.activeTextEditor.selection.active;
 		const text = window.activeTextEditor.document.lineAt(position.line).text;
-		//client.info(`Analyzing ${text}`);
-		window.showInformationMessage(`Analyzing ${text}`);
+		const quote = findQuoteInStringRegExp.exec(text);
 
-		client.sendRequest('request/analyzeText/findNouns', {path: fsPath, position, text});
+		if(quote) {
+			const firstQuote = quote[1];
+			window.showInformationMessage(`Analyzing ${firstQuote}`);
+			client.sendRequest('request/analyzeText/findNouns', { path: fsPath, position, firstQuote });
+	
+		}
+
 
 	}
-	
+
 }
 
 
 
 function showPreprocessedFileQuickPick() {
 	window.showQuickPick(preprocessedList)
-	.then(choice => client.sendRequest('request/preprocessed/file', {path: choice}));
+		.then(choice => client.sendRequest('request/preprocessed/file', { path: choice }));
 }
 
 function openProjectFileQuickPick() {
@@ -575,7 +594,7 @@ async function openInVisualEditor(context: ExtensionContext) {
 	tads3VisualEditorPanel.onDidDispose(() => {
 		tads3VisualEditorPanel = undefined;
 	}, null, context.subscriptions);
-	
+
 	client.info(`Opening up the webview and ask server for map symbols`);
 	client.sendNotification('request/mapsymbols');
 
@@ -624,7 +643,7 @@ function overridePositionWithPersistedCoordinates(mapObjects: any[] /*DefaultMap
 }
 
 async function initialParse() {
-	if(window.activeTextEditor.document) {
+	if (window.activeTextEditor.document) {
 		const textDocument = window.activeTextEditor.document;
 		client.info(`Trying to locate a default makefile`);
 
@@ -637,27 +656,14 @@ async function initialParse() {
 		}
 
 		client.info(`Found a makefile: ${chosenMakefileUri.fsPath}`);
-		if(!t3FileSystemWatcher) {
+		if (!t3FileSystemWatcher) {
 			client.info(`Setting up t3 image monitor `);
-			if(!t3FileSystemWatcher) {
+			if (!t3FileSystemWatcher) {
 				setupAndMonitorBinaryGamefileChanges(); // Client specific feature
 			}
 		}
 		await diagnosePreprocessAndParse(textDocument);
-			
+
 	}
 
 }
-
-/**
- * Reads and parses the makefile to get additional information
- * such as which library it uses, paths, flags etc..
- * @param chosenMakefileUri 
- */
-function analyzeMakefile(chosenMakefileUri: Uri) {
-	const makefileString = readFileSync(chosenMakefileUri.fsPath).toString();
-	// Tads3MakefileManager.parse(makefileString);
-	//client.info(makefileString);
-
-}
-

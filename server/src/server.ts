@@ -263,12 +263,12 @@ connection.onRequest('request/analyzeText/findNouns', async (params) => {
 
 	if(line) {
 		const tree = analyzeText(line);
+		
 		// Calculate where to best put the suggestions
 		const { symbol } = symbolManager.findClosestSymbolKindByPosition(path, SymbolKind.Object, position);
 		
-		if(symbol) {
-			const level = symbolManager.additionalProperties
-			.get(path)?.get(symbol)?.level;
+	if(symbol) {
+			const level = symbolManager.additionalProperties.get(path)?.get(symbol)?.level + 1;
 			connection.console.log(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
 			connection.sendNotification('response/analyzeText/findNouns', { tree, range: symbol.range, level } );
 		}
@@ -297,7 +297,8 @@ function analyzeText(text: string) {
 	const tagger = posTagger();
 	const tagged = tagger.tagSentence(text);
 	const nnTagged = tagged.filter((x:any) => x.pos === 'NN');
-	return nnTagged;
+	const uniqueValues = new Set(nnTagged.map((x:any)=>x.value as string));
+	return [...uniqueValues];
 }
 const regExp = /^(.*)_(in|out)$/;
 	
