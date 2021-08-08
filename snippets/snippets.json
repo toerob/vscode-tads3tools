@@ -88,7 +88,6 @@
 		],
 		"description": "Tads3 template game snippet"
 	}, 
-	
 	"gameMain snippet" : { 
 		"prefix": "gameMain", 
 		"body": [    
@@ -100,7 +99,6 @@
 		],
 		"description": "Tads3 gameMain snippet"
 	},
-
 	"Tads3Lite VerbRule snippet" : { 
 		"prefix": ["VerbRule", "vr"], 
 		"body": [    
@@ -114,7 +112,15 @@
 		],
 		"description": "Tads3Lite VerbRule snippet"
 	}, 
-
+    "Tads3 (adv3) Topic class implementation snippet" : { 
+		"prefix": ["Topic (adv3)"], 
+		"body": [    
+			"${1|Topic,AltTopic,AskTopic,TellTopic,AskTellTopic,GiveTopic,ShowTopic,GiveShowTopic,AskForTopic,AskAboutForTopic,AskTellAboutForTopic,AskTellGiveShowTopic,AskTellShowTopic,HelloTopic,ActorHelloTopic,ImpHelloTopic,ByeTopic,ImpByeTopic,BoredByeTopic,LeaveByeTopic,ActorByeTopic,HelloGoodbyeTopic,DefaultAskTellTopic,DefaultAskTopic,DefaultTellTopic,DefaultGiveTopic,DefaultShowTopic,DefaultAskForTopic,DefaultAnyTopic,SuggestedAskTopic,SuggestedTellTopic,SuggestedGiveTopic,SuggestedShowTopic,SuggestedAskForTopic|} \"$2\"",
+			";",
+			"$0"
+		],
+		"description": "Tads3 (adv3) Topic implementation snippet"
+	},
     "Tads3 actor class implementation snippet" : { 
 		"prefix": ["a", "actor"], 
 		"body": [    
