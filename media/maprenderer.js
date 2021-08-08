@@ -3,9 +3,6 @@
 /* eslint-disable no-undef */
 //import ProjectstormReactDiagrams from "https://cdn.skypack.dev/@projectstorm/react-diagrams@6.5.2";
 
-//const h1 = React.createElement('h1', null, 'REACT')
-//ReactDOM.render(h1, document.getElementById('content'))
-
 const vscode = acquireVsCodeApi();
 const refreshButton = document.getElementById('refreshButton');
 const roomSelector = document.getElementById('roomSelector');
@@ -556,14 +553,16 @@ function handleRoomNodes(payload) {
 		for (let i = 0; i < payload.objects.length; i++) {
 			let o = payload.objects[i];
 			let currentRoomNode = graph._nodes.find(x => x.title === o.name);
-			setupDirection(currentRoomNode, o.north, 'n_out', 's_in');
-			setupDirection(currentRoomNode, o.south, 's_out', 'n_in');
-			setupDirection(currentRoomNode, o.west, 'w_out', 'e_in');
-			setupDirection(currentRoomNode, o.east, 'e_out', 'w_in');
-			setupDirection(currentRoomNode, o.northwest, 'nw_out', 'se_in');
-			setupDirection(currentRoomNode, o.southeast, 'se_out', 'nw_in');
-			setupDirection(currentRoomNode, o.northeast, 'ne_out', 'sw_in');
-			setupDirection(currentRoomNode, o.southwest, 'sw_out', 'ne_in');
+			if(currentRoomNode) {
+				setupDirection(currentRoomNode, o.north, 'n_out', 's_in');
+				setupDirection(currentRoomNode, o.south, 's_out', 'n_in');
+				setupDirection(currentRoomNode, o.west, 'w_out', 'e_in');
+				setupDirection(currentRoomNode, o.east, 'e_out', 'w_in');
+				setupDirection(currentRoomNode, o.northwest, 'nw_out', 'se_in');
+				setupDirection(currentRoomNode, o.southeast, 'se_out', 'nw_in');
+				setupDirection(currentRoomNode, o.northeast, 'ne_out', 'sw_in');
+				setupDirection(currentRoomNode, o.southwest, 'sw_out', 'ne_in');	
+			}
 		}
 	}
 
@@ -650,29 +649,12 @@ function createNodeFromRoomObject(roomObject) {
 	return node;
 }
 
+
 function applyCallbacksOnRoomNode(node) {
-
-
-	/*node.onKeyDown = function(key) {
-		vscode.postMessage({ command: 'log', payload: key });
-	};*/
 
 	node.onMouseDown = (mouseEvent) => {
 		//vscode.postMessage({ command: 'select', payload: node.title });
 	};
-
-	node.onKeyDown = (keyEvent) => {
-		// TODO: make this evenet trigger and bind focus to a key instead of clicking it with 
-		// the mouse.
-
-		//console.log(keyEvent);
-		debugger;
-
-
-		//vscode.postMessage({ command: 'select', payload: node.title });
-	};
-
-	
 
 	node.onPropertyChanged = function () {
 		node.title = node.properties.name;
@@ -690,7 +672,6 @@ function applyCallbacksOnRoomNode(node) {
 		if (e.keyCode == 27) {
 		}
 	});*/
-
 
 	node.getMenuOptions = () => {
 		return [

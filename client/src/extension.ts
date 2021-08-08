@@ -208,12 +208,13 @@ export function activate(context: ExtensionContext) {
 				selectedObject = symbol as DocumentSymbol; // keep track of the last selected object
 				workspace.openTextDocument(filePath).then(textDocument => {
 					//const lastSelectedTextDocument = textDocument;
-					if (lastChosenTextDocument) {
+					//if (lastChosenTextDocument) {
 						window.showTextDocument(textDocument, {
 							preserveFocus: true,
 							selection: selectedObject.range,
+							viewColumn: ViewColumn.One,
 						});
-					}
+					//}
 				});
 			}
 		});
