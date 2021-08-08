@@ -20,12 +20,12 @@ export function getWordAtPosition(currentDocument: TextDocument|any, position: P
 
 	// Find the first index that is less or equal to the indexed asked for;
 	// that means it is a candidate for the word at the current position 
-		for(const pos of tokenizedText.keys()) {
+	for(const pos of tokenizedText.keys()) {
 		if(pos <= position.character) {
 			// Check to see if we are within the word's length, 
 			// since we don't want to match delimiters
 			const wordLengthWithOffset = tokenizedText.get(pos).length-1 + pos;
-			if(wordLengthWithOffset >= position.character) {
+			if(position.character <= wordLengthWithOffset) {
 				// Keep replacing the largest possible candidate index until the words runs out.
 				candidate = pos;
 			} 
