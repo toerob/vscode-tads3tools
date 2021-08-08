@@ -45,6 +45,12 @@ export function onDidSelectMapObject(payload) {
 export function onDidShowAll(payload) {
 	console.log('did show all: ');
 	console.log(payload);
+
+	// The old code:
+	//this.showAllRooms = e.payload;
+	//this.updateWebview(webviewPanel, this.lastSelectedTextDocument);
+
+
 }
 
 export function onDidUpdatePosition(payload, persistedObjectPositions) {
@@ -71,12 +77,36 @@ export function onDidUpdatePosition(payload, persistedObjectPositions) {
 export function onDidChange(payload) {
 	console.log('did change: ');
 	console.log(payload);
+
+	/*
+		OLD CODE: (this needs to be sent to the server now)
+		if (this.selectedObject && e.payload && this.lastSelectedTextDocument) {
+			console.error(`Change name of: ${this.selectedObject.name} to: ${e.payload}`);
+			const textAtRange = this.lastSelectedTextDocument.getText(this.selectedObject.range);
+			const newTextAtRange = textAtRange?.replace(this.selectedObject.name, e.payload);
+			if (newTextAtRange && this.lastChosenTextEditor) {
+				this.lastChosenTextEditor.edit(builder => {
+					console.error(`Replace selection to: ${newTextAtRange}`);
+					builder.replace(this.lastChosenTextEditor.selection, newTextAtRange);
+				});
+			}
+		}
+	*/
 }
 
 export function onDidChangeStartRoom(payload) {
 	console.log('did change start room: ');
 	console.log(payload);
+
+	/*
+	OLD CODE: (this needs to be sent to the server now)
+		this.startRoom = e.payload;
+		this.updateWebview(webviewPanel, this.lastSelectedTextDocument);
+	*/
+
 }
+
+
 
 export function onDidLog(payload) {
 	console.log('did Log: ');
@@ -86,7 +116,18 @@ export function onDidLog(payload) {
 export function onDidSelectEditor(payload) {
 	console.log('did select editor: ');
 	console.log(payload);
+
+	/*
+	OLD CODE: (this needs to be sent to the server now)
+	if (e.payload) {
+		this.selectedEditor = Number(e.payload);
+	}
+	this.updateWebview(webviewPanel, this.lastSelectedTextDocument);
+	*/
+
 }
+
+
 
 const connectingPairStack = [];
 
@@ -177,7 +218,7 @@ export function getHtmlForWebview(webview: Webview, extensionUri: Uri): string {
 				<label id="dialogLabel">Editor</label>
 				<select id="editorSelector">
 					<option value="0">Map editor</option>
-					<option value="1">Conversation editor</option>
+					<!--option value="1">Conversation editor</option-->
 				</select>
 				<label id="dialogLabel">Starting room</label>
 				<select id="roomSelector">
@@ -187,8 +228,8 @@ export function getHtmlForWebview(webview: Webview, extensionUri: Uri): string {
 				<label id="levelLabel"></label>
 				<button id="plusButton" onclick="levelUp()">+</button>
 				<label>Collapse nodes:</label><input type="checkbox" onclick="toggleCollapse()" />
-				<label>Show all:</label><input type="checkbox" onclick="toggleShowAll()" checked />
-				<label>Show unmapped:</label><input type="checkbox" onclick="toggleShowUnmapped()" />
+				<!--label>Show all:</label><input type="checkbox" onclick="toggleShowAll()" checked /-->
+				<!--label>Show unmapped:</label><input type="checkbox" onclick="toggleShowUnmapped()" /-->
 				<div id="inputDialog">
 					<label>Room name: <label><input type="text" id='inputDialog'></input>
 				</div>

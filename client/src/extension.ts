@@ -614,6 +614,30 @@ async function openInVisualEditor(context: ExtensionContext) {
 }
 
 
+/*
+TODO: update webview function. 
+
+The old code:
+
+updateWebview(webviewPanel: WebviewPanel, document: any , symbols = undefined) {
+	webviewPanel.webview.postMessage({
+		type: 'update',
+		payload: document.getText(),
+	});
+	webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, document);
+
+	if(symbols) {
+		try {
+			webviewPanel.webview.postMessage({ command: 'tads3.addNode', objects: symbols  });
+		} catch(err) {
+			console.error(err);
+		}
+	}
+
+}*/
+
+
+
 // TODO: this functionality probably need to go to the server side this time
 function overridePositionWithPersistedCoordinates(mapObjects: any[] /*DefaultMapObject[]*/) {
 	const itemsToPersist = [];
