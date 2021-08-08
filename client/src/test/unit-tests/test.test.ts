@@ -1,12 +1,12 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const assert = require('assert');
+import assert = require('assert');
 
-describe('', ()=> {
+describe('client test suite', ()=> {
 
 	//
 	it('should work', ()=> {
 
-		assert.equal(1-1, 1);
+		assert.equal(1-1, 0);
 
 	});
 });

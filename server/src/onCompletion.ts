@@ -50,7 +50,7 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 		cachedKeyWords = suggestions;
 	}
 	const results = fuzzysort.go(lastWord, [...cachedKeyWords], {key: 'label'});
-	return results.map(x=>x.obj);
+	return results.map((x:any)=>x.obj);
 }
 
 // TODO: this function needs to get the last word, taking into account
