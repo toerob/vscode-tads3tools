@@ -268,7 +268,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 		if (ctx.identifierAtom()?.length > 0) {
 			name = (ctx.identifierAtom()[0]?.ID()?.toString()) ?? "unnamed";
 		} else {
-			name = (ctx.IN()?.text) ?? "unnamed";
+			name =  "unnamed";
 		}
 		let detail = "property";
 		//let isDirection = false;

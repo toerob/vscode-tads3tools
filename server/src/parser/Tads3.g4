@@ -119,8 +119,9 @@ objectBody:
 
 
 property:
-    (identifierAtom|IN) ASSIGN STATIC? (expr|dictionaryProperty) SEMICOLON?
-    | (identifierAtom|IN) COLON objectName=identifierAtom? (COMMA superTypes)*  curlyObjectBody SEMICOLON?
+    id=identifierAtom 
+    (ASSIGN STATIC? (expr|dictionaryProperty) SEMICOLON?
+    | COLON objectName=identifierAtom? (COMMA superTypes)*  curlyObjectBody SEMICOLON?)
 ;
 
 dictionaryProperty:

@@ -1,11 +1,6 @@
 import assert = require('assert');
 import { getWordAtPosition, tokenizeWithIndex } from '../../src/modules/text-utils';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { integer, Position, ProposedFeatures } from 'vscode-languageserver';
-import { WSAEPROVIDERFAILEDINIT } from 'constants';
-//import { expect }  from 'chai';
-//import { createConnection } from 'vscode-languageserver/node';
-//import { isModuleBlock } from 'typescript';
+import { Position } from 'vscode-languageserver';
 
 function mocument(content:string) {
 	return {

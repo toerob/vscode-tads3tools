@@ -14,7 +14,7 @@ export async function onDefinition({textDocument,position}: DefinitionParams, do
 	if(currentDoc) {
 		const symbolName = getWordAtPosition(currentDoc, position);
 		if(symbolName) {
-			connection.console.log(`Fimd definition(s) for word: ${symbolName}`);
+			connection.console.log(`Find definition(s) for word: ${symbolName}`);
 			for(const filePathKey of symbolManager.symbols.keys()) {
 				const localSymbols = symbolManager.symbols.get(filePathKey);
 				if(localSymbols) {
