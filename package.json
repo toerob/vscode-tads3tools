@@ -64,79 +64,84 @@
 		"commands": [
 			{
 				"command": "tads3.parseTads3",
-				"title": "Parse Tads3 source code"
+				"title": "Tads3 command: Parse Tads3 source code"
+			},
+			{
+				"command": "tads3.installTracker",
+				"title": "Tads3 command: Install a tracker game file in the project so the game will remember player position between sessions"
+				
 			},
 			{
 				"command": "tads3.addNode",
-				"title": "Connect node (TEST)",
+				"title": "Tads3 command: Connect node (TEST)",
 				"category": "Editor",
 				"enablement": "true"
 			},
 			{
 				"command": "tads3.openInVisualEditor",
-				"title": "Open current tads3 source code *.{t,h} in Tads3 Visual Editor ",
+				"title": "Tads3 command: Open current tads3 source code *.{t,h} in Tads3 Visual Editor ",
 				"category": "Editor",
 				"enablement": "true"
 			},
 			{
 				"command": "tads3.setMakefile",
-				"title": "Set which makefile (.t3m) to use for this project (in case there are several)",
+				"title": "Tads3 command: Set which makefile (.t3m) to use for this project (in case there are several)",
 				"category": "Compilation"
 			},
 			{
 				"command": "tads3.restartGameRunnerOnT3ImageChanges",
-				"title": "Toggles on/off if the game should restarted as soon as the t3 image game file changes",
+				"title": "Tads3 command: Toggles on/off if the game should restarted as soon as the t3 image game file changes",
 				"category": "Running"
 			},
 			{
 				"command": "tads3.showPreprocessedTextAction",
-				"title": "Show preprocessed text and focus on range",
+				"title": "Tads3 command: Show preprocessed text and focus on range",
 				"category": "Preprocessing",
 				"enablement": "false"
 			},
 			{
 				"command": "tads3.showPreprocessedTextForCurrentFile",
-				"title": "Show preprocessed text for the current file",
+				"title": "Tads3 command: Show preprocessed text for the current file",
 				"category": "Preprocessing"
 			},
 			{
 				"command": "tads3.showPreprocessedFileQuickPick",
-				"title": "Choose a preprocessed file to show in a separate window",
+				"title": "Tads3 command: Choose a preprocessed file to show in a separate window",
 				"category": "Preprocessing"
 			},
 			{
 				"command": "tads3.openProjectFileQuickPick",
-				"title": "Open any project file in a separate window",
+				"title": "Tads3 command: Open any project file in a separate window",
 				"category": "Preprocessing"
 			},
 			{
 				"command": "tads3.enablePreprocessorCodeLens",
-				"title": "Toggle CodeLens for preprocessed text of the current file",
+				"title": "Tads3 command: Toggle CodeLens for preprocessed text of the current file",
 				"category": "Preprocessing"
 			},
 			{
 				"command": "tads3.insertDirectionProperty",
-				"title": "CodeLens for inserting a direction property to a known object",
+				"title": "Tads3 command: CodeLens for inserting a direction property to a known object",
 				"category": "Edits"
 			},
 			{
 				"command": "tads3.addGameTracker",
-				"title": "Add a game tracker to the game.",
+				"title": "Tads3 command: Add a game tracker to the game.",
 				"category": "Edits"
 			},
 			{
 				"command": "tads3.createProject",
-				"title": "Create a new Tads3 template project",
+				"title": "Tads3 command: Create a new Tads3 template project",
 				"category": "Edits"
 			},
 			{
 				"command": "tads3.createObject",
-				"title": "Create a new Tads3 object via menu",
+				"title": "Tads3 command: Create a new Tads3 object via menu",
 				"category": "Edits"
 			},
 			{
 				"command": "tads3.analyzeTextAtPosition",
-				"title": "Analyze the text at the current position and offer code actions",
+				"title": "Tads3 command: Analyze the text at the current position and offer code actions",
 				"category": "Editor",
 				"enablement": "true"
 			}
@@ -158,6 +163,20 @@
 					"default": 100,
 					"description": "Controls the maximum number of problems produced by the server."
 				},
+				"tads3.maxNumberOfParseWorkerThreads": {
+					"scope": "resource",
+					"type": "number",
+					"default": 6,
+					"minimum": 1,
+					"maximum": 20,
+					"description": "Set the maximum number of worker threads that takes care of the parsing. An optimal number depends on the hardware. "
+				},
+				"tads3.parseOnlyTheWorkspaceFiles": {
+					"scope": "resource",
+					"type": "boolean",
+					"default": false,
+					"description": "In case working on a slower machine and parsing the library takes way too long time to complete, this option is here to turn off the parsing of library files and only concentrate on the workspace files."
+				},				
 				"tads3.trace.server": {
 					"scope": "window",
 					"type": "string",
@@ -173,7 +192,7 @@
 					"scope": "window",
 					"type": "string",
 					"default": "t3make",
-					"description": "Path the tads3 compiler (t3make). "
+					"description": "Path to the tads3 compiler (t3make). "
 				},
 				"tads3.adv3.library": {
 					"scope": "window",

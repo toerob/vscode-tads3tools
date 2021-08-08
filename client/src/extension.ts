@@ -20,6 +20,7 @@ import { setupVisualEditorResponseHandler, visualEditorResponseHandlerMap, getHt
 import { Tads3CompileErrorParser } from './tads3-error-parser';
 import { Subject, debounceTime } from 'rxjs';
 import { LocalStorageService } from './local-storage-service';
+import { writeFileSync } from 'fs';
 
 let errorDiagnostics = [];
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -98,8 +99,8 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', () => openInVisualEditor(context)));
 
 	context.subscriptions.push(commands.registerCommand('tads3.restartGameRunnerOnT3ImageChanges', () => toggleGameRunnerOnT3ImageChanges()));
-
 	context.subscriptions.push(commands.registerCommand('tads3.analyzeTextAtPosition', () => analyzeTextAtPosition()));
+	context.subscriptions.push(commands.registerCommand('tads3.installTracker', installTracker));
 
 
 
@@ -683,7 +684,35 @@ async function initialParse() {
 			}
 		}
 		await diagnosePreprocessAndParse(textDocument);
-
 	}
-
 }
+
+async function installTracker() {
+	if (chosenMakefileUri) {
+		const workspaceFolder = dirname(chosenMakefileUri.fsPath);
+		if (workspaceFolder) {
+			const gameTrackerFilePath = path.join(workspaceFolder, '_game_tracker.t');
+			// Check if already there...
+			await workspace.openTextDocument(chosenMakefileUri.fsPath)
+				.then(doc => window.showTextDocument(doc, ViewColumn.Beside))
+				.then(doc => doc.edit(ed => {
+					const lastRow = doc.document.lineCount - 1;
+					const rowLength = doc.document.lineAt(lastRow).text.length;
+					const positionAtEndOfDoc = new Position(lastRow,rowLength);
+					ed.insert(positionAtEndOfDoc, '\n-source: _game_tracker.t');
+				}));
+			
+			// TODO: save changes
+			// TODO: make a resource out of tracker.t contents
+
+			await writeFileSync(gameTrackerFilePath, '// tracker.t file content', 'utf-8');
+			await workspace.openTextDocument(gameTrackerFilePath)
+				.then(doc=>window.showTextDocument(doc,ViewColumn.Beside));
+
+				// TODO: save changes
+			window.showInformationMessage(`Tracker installed. `);
+	
+		}
+	}
+}
+
