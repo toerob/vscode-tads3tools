@@ -215,10 +215,10 @@
 		"watch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
 		"e2e-test": "sh ./scripts/e2e.sh",
-		"test": "npm run compile && mocha ./server/out/test/ && mocha ./client/out/test/unit-tests/"
-
+		"test": "cd server; jest"
 	},
 	"devDependencies": {
+		"@types/chai": "^4.2.21",
 		"@types/mocha": "^9.0.0",
 		"@types/node": "^16.4.7",
 		"@typescript-eslint/eslint-plugin": "^4.28.5",

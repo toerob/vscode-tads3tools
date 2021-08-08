@@ -23,6 +23,7 @@ export async function onReferences(handler: ReferenceParams, documents: TextDocu
 	if (currentDocument) {
 		const symbolName = getWordAtPosition(currentDocument, position);
 		if (symbolName) {
+			connection.console.log(`Find reference(s) for word: ${symbolName}`);
 			for(const pathKey of symbolManager.keywords.keys()) {
 				for(const range of symbolManager.keywords.get(pathKey)?.get(symbolName) ?? []) {
 					locations.push(Location.create(pathKey, range));

@@ -13,17 +13,21 @@ export async function onDefinition({textDocument,position}: DefinitionParams, do
 	const currentDoc = documents.get(textDocument.uri);
 	if(currentDoc) {
 		const symbolName = getWordAtPosition(currentDoc, position);
-		for(const filePathKey of symbolManager.symbols.keys()) {
-			const localSymbols = symbolManager.symbols.get(filePathKey);
-			if(localSymbols) {
-				const symbol = flattenTreeToArray(localSymbols).find(x=>x.name === symbolName);
-				if(symbol !== undefined) {
-					connection.console.log(`Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`);
-					// TODO: syncPreprocessedWithDocument();
-					locations.push(Location.create(filePathKey, symbol.range));
+		if(symbolName) {
+			connection.console.log(`Fimd definition(s) for word: ${symbolName}`);
+			for(const filePathKey of symbolManager.symbols.keys()) {
+				const localSymbols = symbolManager.symbols.get(filePathKey);
+				if(localSymbols) {
+					const symbol = flattenTreeToArray(localSymbols).find(x=>x.name === symbolName);
+					if(symbol !== undefined) {
+						connection.console.log(`Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`);
+						// TODO: syncPreprocessedWithDocument();
+						locations.push(Location.create(filePathKey, symbol.range));
+					}
 				}
 			}
 		}
+
 	}
 
 	
