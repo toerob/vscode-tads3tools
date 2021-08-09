@@ -36,3 +36,14 @@ It also includes an End-to-End test.
 - In the [Extension Development Host] instance of VSCode, open a document in 'plain text' language mode.
   - Type `j` or `t` to see `Javascript` and `TypeScript` completion.
   - Enter text content such as `AAA aaa BBB`. The extension will emit diagnostics for all words in all-uppercase.
+
+
+## Attribution
+ - Microsoft
+ - Antlr4
+ - Litegraph
+ - RxJS
+ - Fuzzysort
+ - Wink
+ - Threads
+ - The Tads3 tmLanguage definition was originally created by (repo here:)

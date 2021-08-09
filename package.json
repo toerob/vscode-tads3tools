@@ -68,8 +68,9 @@
 			},
 			{
 				"command": "tads3.installTracker",
-				"title": "Tads3 command: Install a tracker game file in the project so the game will remember player position between sessions"
-				
+				"title": "Tads3 command: Install a tracker game file in the project so the game will remember player position between sessions",
+				"category": "Editor",
+				"enablement": "true"				
 			},
 			{
 				"command": "tads3.addNode",
@@ -122,11 +123,6 @@
 			{
 				"command": "tads3.insertDirectionProperty",
 				"title": "Tads3 command: CodeLens for inserting a direction property to a known object",
-				"category": "Edits"
-			},
-			{
-				"command": "tads3.addGameTracker",
-				"title": "Tads3 command: Add a game tracker to the game.",
 				"category": "Edits"
 			},
 			{
@@ -249,13 +245,10 @@
 	},
 	"dependencies": {
 		"@types/vscode": "^1.58.1",
-		"antlr4-c3": "^1.1.16",
 		"antlr4ts": "^0.5.0-alpha.4",
 		"antlr4ts-cli": "^0.5.0-alpha.4",
-		"english-io": "^1.4.0",
 		"fuzzysort": "^1.1.4",
 		"litegraph.js": "^0.7.10",
-		"markdown-it": "^12.1.0",
 		"node-worker-threads-pool": "^1.5.0",
 		"rxjs": "^7.2.0",
 		"threads": "^1.6.5",

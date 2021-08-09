@@ -5,7 +5,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import { exec } from 'child_process';
-import { existsSync, fstat, read, readFile, readFileSync, readSync } from 'fs';
+import { existsSync, fstat, read, readFile, readFileSync, readSync, statSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
 import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextDocumentChangeEvent, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem, Position } from 'vscode';
@@ -100,7 +100,7 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(commands.registerCommand('tads3.restartGameRunnerOnT3ImageChanges', () => toggleGameRunnerOnT3ImageChanges()));
 	context.subscriptions.push(commands.registerCommand('tads3.analyzeTextAtPosition', () => analyzeTextAtPosition()));
-	context.subscriptions.push(commands.registerCommand('tads3.installTracker', installTracker));
+	context.subscriptions.push(commands.registerCommand('tads3.installTracker', () => installTracker(context)));
 
 
 
@@ -121,8 +121,6 @@ export function activate(context: ExtensionContext) {
 
 		client.onNotification('response/makefile/keyvaluemap', ({ makefileStructure, usingAdv3Lite }) => {
 			isUsingAdv3Lite = usingAdv3Lite;
-			console.log(usingAdv3Lite);
-			console.log(makefileStructure);
 		});
 
 		client.onNotification('response/connectrooms', async ({ fromRoom, toRoom, validDirection1, validDirection2 }) => {
@@ -687,32 +685,49 @@ async function initialParse() {
 	}
 }
 
-async function installTracker() {
+async function installTracker(context: ExtensionContext) {
+
+	const filePath = isUsingAdv3Lite? '_gameTrackerAdv3Lite.t' : '_gameTrackerAdv3.t';
+
+	const trackerFileContents = readFileSync(Uri.joinPath(context.extensionUri, 'resources', filePath).fsPath).toString();
+	
 	if (chosenMakefileUri) {
 		const workspaceFolder = dirname(chosenMakefileUri.fsPath);
 		if (workspaceFolder) {
-			const gameTrackerFilePath = path.join(workspaceFolder, '_game_tracker.t');
-			// Check if already there...
+			const gameTrackerFilePath = path.join(workspaceFolder, filePath);
+			const isATrackerFileAlreadyCreated = existsSync(gameTrackerFilePath);
 			await workspace.openTextDocument(chosenMakefileUri.fsPath)
 				.then(doc => window.showTextDocument(doc, ViewColumn.Beside))
-				.then(doc => doc.edit(ed => {
-					const lastRow = doc.document.lineCount - 1;
-					const rowLength = doc.document.lineAt(lastRow).text.length;
-					const positionAtEndOfDoc = new Position(lastRow,rowLength);
-					ed.insert(positionAtEndOfDoc, '\n-source: _game_tracker.t');
-				}));
-			
-			// TODO: save changes
-			// TODO: make a resource out of tracker.t contents
+				.then(async editor => {
+					await editor.edit((ed) => {
+						const trackerFile = isUsingAdv3Lite? '_gameTrackerAdv3Lite' : '_gameTrackerAdv3';
+						const makefileText = editor.document.getText();
+						const isTrackerFileAlreadyIncluded = makefileText.includes(`-source ${trackerFile}`);
+						if (isTrackerFileAlreadyIncluded) {
+							return window.showWarningMessage(`Tracker file was already included in ${chosenMakefileUri.fsPath}`);
+						}
+						const idx = makefileText.lastIndexOf('-source');
+						const lastSourceRowPosition = editor.document.positionAt(idx);
+						const lineBelow = lastSourceRowPosition.translate(1).with({ character: 0 });
+						ed.insert(lineBelow, `-source ${trackerFile}\n`);
+						const includedFileRange = new Range(lineBelow.line, 0, lineBelow.line, 0);
+						editor.revealRange(includedFileRange);
+						return window.showInformationMessage(`Tracker file was included in ${chosenMakefileUri.fsPath}`);
+					});
+					await editor.document.save();
+				});
 
-			await writeFileSync(gameTrackerFilePath, '// tracker.t file content', 'utf-8');
-			await workspace.openTextDocument(gameTrackerFilePath)
-				.then(doc=>window.showTextDocument(doc,ViewColumn.Beside));
 
-				// TODO: save changes
-			window.showInformationMessage(`Tracker installed. `);
-	
+			if(!isATrackerFileAlreadyCreated) {
+				await writeFileSync(gameTrackerFilePath, trackerFileContents, 'utf-8');
+				await workspace.openTextDocument(gameTrackerFilePath)
+					.then(doc=>window.showTextDocument(doc,ViewColumn.Beside));	
+				window.showInformationMessage(`The tracker file (_game_tracker.t) has been added into the project's folder. `);
+				return;
+			} 
+			window.showWarningMessage(`The tracker file (_game_tracker.t) is already in the project's folder. `);
 		}
 	}
+
 }
 
