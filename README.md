@@ -1,14 +1,24 @@
-# LSP Example
+# vscode-tads3tools
 
-Heavily documented sample code for https://code.visualstudio.com/api/language-extensions/language-server-extension-guide
+A language server/client for the Tads3 programming language and tailored made for Visual Studio Code by Microsoft. 
+
+# version 0.5 - alpha
+[![Demonstration](./screenshots/vscode-tads3tools.png)](./screenshots/vscode-tads3tools.png)
 
 ## Functionality
 
-This Language Server works for plain text file. It has the following language features:
-- Completions
-- Diagnostics regenerated on each file change or configuration change
+It has the following features:
 
-It also includes an End-to-End test.
+- Diagnostics regenerated on each file change 
+- Symbol outliner derived from each file in the tads3 project
+- Symbol definitions (with cross references through the project files)
+- CodeLens for showing preprocessed differences 
+- A webview containing the visual map for visualizing and helping out creating a game world.
+- Word completions (fuzzy searching through defined symbols and keywords in the project)
+- Auto generate decorations based on room descriptions
+- Auto monitoring the tads3 game image and restart the game on any changes
+- Snippets to help out with commonly used classes, such as Room, Thing, Actor, ActorState, AgendaItem, Topic etc...
+- Various commands and more...
 
 ## Structure
 
@@ -21,29 +31,30 @@ It also includes an End-to-End test.
 ├── package.json // The extension manifest.
 └── server // Language Server
     └── src
-        └── server.ts // Language Server entry point
+        └── server.ts // Language Server
 ```
 
-## Running the Sample
-
-- Run `npm install` in this folder. This installs all necessary npm modules in both the client and server folder
-- Open VS Code on this folder.
-- Press Ctrl+Shift+B to compile the client and server.
-- Switch to the Debug viewlet.
-- Select `Launch Client` from the drop down.
-- Run the launch config.
-- If you want to debug the server as well use the launch configuration `Attach to Server`
-- In the [Extension Development Host] instance of VSCode, open a document in 'plain text' language mode.
-  - Type `j` or `t` to see `Javascript` and `TypeScript` completion.
-  - Enter text content such as `AAA aaa BBB`. The extension will emit diagnostics for all words in all-uppercase.
 
 
 ## Attribution
- - Microsoft
- - Antlr4
- - Litegraph
- - RxJS
- - Fuzzysort
- - Wink
- - Threads
- - The Tads3 tmLanguage definition was originally created by (repo here:)
+ - Microsoft - This language server is based on the example found in (https://github.com/microsoft/vscode-extension-samples/tree/main/lsp-sample)  MIT License
+
+ - Antlr4 was used to generate a parser for the Tads3 programming Language (https://github.com/antlr/antlr4) BSD 3-clause license 
+ - Antlr4ts was used to produce a specific typescript target of the antlr4 grammar (https://github.com/tunnelvisionlabs/antlr4ts) BSD 
+ - Litegraph (https://github.com/jagenjo/litegraph.js) MIT License
+ - RxJS (https://github.com/ReactiveX/rxjs) Apache-2.0 License 
+ - Fuzzysort (https://github.com/farzher/fuzzysort) MIT License
+ - Wink pos-tagger (https://github.com/winkjs/wink-pos-tagger) MIT License
+ - Threads (https://github.com/andywer/threads.js) by Andy Wermke(andywer) MIT License
+ - The Tads3 tmLanguage definition (for syntax highlighting) is copied from Sam Win-Mason
+   (repo here: https://github.com/Or4c/vscode-tads3), and originally ported from the Sublime Text plugin by VoidPhantom (https://github.com/VoidPhantom/sublime-tads3) (Both distributed under the UNLICENSE license 
+
+
+## Disclaimer
+This is a work in progress and is considered at the moment an early alpha. It has probably a ton of bugs left to fix. Use at your own risk. 
+
+## License
+
+The vscode-tads3tools is licensed under the MIT License
+
+@Copyright Tomas Öberg 2021
