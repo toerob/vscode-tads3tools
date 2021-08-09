@@ -387,7 +387,7 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 		if (isLongProcessingInAction) {
 			client.info(`Skipping parsing since long processing is in action`);
 		} else {
-			client.info(`Preprocess and parse ${textDocument}`);
+			client.info(`Preprocess and parse ${textDocument.uri.fsPath}`);
 			preprocessAndParseDocument([textDocument]);
 		}
 

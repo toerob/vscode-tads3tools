@@ -91,7 +91,6 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
     connection.console.log(`Preparing to parse a total of ${allFilePaths.length} files`);
 
     const maxNumberOfParseWorkerThreads:number = await connection.workspace.getConfiguration("tads3.maxNumberOfParseWorkerThreads");
-    connection.console.log(`Setting max number of worker threads to: ${maxNumberOfParseWorkerThreads}`); // Default 6 threads
 
 	const parseOnlyTheWorkspaceFiles:boolean = await connection.workspace.getConfiguration("tads3.parseOnlyTheWorkspaceFiles");
 	if(parseOnlyTheWorkspaceFiles) {
@@ -114,6 +113,9 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 	let tracker = 0;
 
 	const poolSize = allFilePaths.length >= maxNumberOfParseWorkerThreads ? maxNumberOfParseWorkerThreads : 1;
+
+	connection.console.log(`Setting worker thread poolsize to: ${poolSize}`); // Default 6 threads
+
 	const workerPool = Pool(() => spawn(new Worker('./worker')), poolSize);
 	try {
 		const startTime = Date.now();
