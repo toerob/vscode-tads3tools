@@ -1,7 +1,7 @@
 import { CompletionParams, TextDocuments, Range, CompletionItem, CompletionList, CompletionItemKind } from 'vscode-languageserver/node';
-import { flattenTreeToArray, Tads3SymbolManager } from './modules/symbol-manager';
+import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { connection } from './server';
+import { connection } from '../server';
 
 import fuzzysort = require('fuzzysort');
 

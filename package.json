@@ -131,11 +131,6 @@
 				"category": "Edits"
 			},
 			{
-				"command": "tads3.createObject",
-				"title": "Tads3 command: Create a new Tads3 object via menu",
-				"category": "Edits"
-			},
-			{
 				"command": "tads3.analyzeTextAtPosition",
 				"title": "Tads3 command: Analyze the text at the current position and offer code actions",
 				"category": "Editor",

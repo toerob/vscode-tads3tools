@@ -125,26 +125,70 @@ export function activate(context: ExtensionContext) {
 
 		client.onNotification('response/connectrooms', async ({ fromRoom, toRoom, validDirection1, validDirection2 }) => {
 			client.info(`Connect from  ${fromRoom.symbol.name}  (${fromRoom.filePath}) to ${toRoom.symbol.name} (${toRoom.filePath}) via ${validDirection1 / validDirection2} to (${toRoom.filePath})?`);
+			
+			
+			// Must begin with the room furthest down in the document,
+			// otherwise the position will be stale and the new direction property
+			// will be placed above the room object
+
+			//TODO: refactor this to be less verbose: lot's of redundancy here
+			if(fromRoom.symbol.range.start.line > toRoom.symbol.range.start.line) {
+				await workspace.openTextDocument(fromRoom.filePath)
+					.then(doc=>window.showTextDocument(doc,ViewColumn.One)
+					.then(editor => {
+						editor.edit(editor => {
+							const pos = new Position(fromRoom.symbol.range.end.line, 0);
+							const text = `\t${validDirection1} = ${toRoom.symbol.name}\n`;
+							editor.insert(pos, text);
+						});
+						return editor;
+					}));
+
+				await workspace.openTextDocument(toRoom.filePath)
+					.then(doc=>window.showTextDocument(doc,ViewColumn.One)
+					.then(editor => {
+						editor.edit(editor => {
+							const pos = new Position(toRoom.symbol.range.end.line, 0);
+							const text = `\t${validDirection2} = ${fromRoom.symbol.name}\n`;
+							editor.insert(pos, text);
+						});
+						return editor;
+					}));
+
+			// Shifted order here:
+			} else {
+					await workspace.openTextDocument(toRoom.filePath)
+					.then(doc=>window.showTextDocument(doc,ViewColumn.One))
+					.then(editor => {
+						editor.edit(editor => {
+							const pos = new Position(toRoom.symbol.range.end.line, 0);
+							const text = `\t${validDirection2} = ${fromRoom.symbol.name}\n`;
+							editor.insert(pos, text);
+						});
+						return editor;
+					});
+					await workspace.openTextDocument(fromRoom.filePath)
+					.then(doc=>window.showTextDocument(doc,ViewColumn.One))
+					.then(editor => {
+						editor.edit(editor => {
+							const pos = new Position(fromRoom.symbol.range.end.line, 0);
+							const text = `\t${validDirection1} = ${toRoom.symbol.name}\n`;
+							editor.insert(pos, text);
+						});
+						return editor;
+					});
+			}
+
 			await workspace.openTextDocument(fromRoom.filePath)
-				.then(window.showTextDocument)
-				.then(editor => {
-					editor.edit(editor => {
-						const pos = new Position(fromRoom.symbol.range.end.line, 0);
-						const text = `\t${validDirection1} = ${toRoom.symbol.name}\n`;
-						editor.insert(pos, text);
-					});
-				});
-			await workspace.openTextDocument(toRoom.filePath)
-				.then(window.showTextDocument)
-				.then(editor => {
-					editor.edit(editor => {
-						const pos = new Position(toRoom.symbol.range.end.line, 0);
-						const text = `\t${validDirection2} = ${fromRoom.symbol.name}\n`;
-						editor.insert(pos, text);
-					});
-					return editor;
-				}).then(editor=>editor.document.save)
+			.then(x=>x.save())
+			.then(saveResult=>console.log(`${saveResult} saved `));
+
+			if(fromRoom.filePath !== toRoom.filePath) {
+				await workspace.openTextDocument(toRoom.filePath)
+				.then(x=>x.save())
 				.then(saveResult=>console.log(`${saveResult} saved `));
+			}
+
 		});
 
 
@@ -452,19 +496,15 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 			await cancelParse();
 			return false;
 		});
-		client.onNotification('symbolparsing/success', ([filePath, tracker, totalFiles]) => {
+		client.onNotification('symbolparsing/success', ([filePath, tracker, totalFiles, poolSize]) => {
 			const filename = basename(Uri.parse(filePath).path);
-			progress.report({ message: ` ${tracker}/${totalFiles}: ${filename} done ` });
-
+			progress.report({ message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}` });
 			// TODO: maybe show "stale data" indicator instead
 			/*if (tads3VisualEditorPanel) {
-			
 				client.info(`Since new symbols have been parsed and the webviewpanel is open, ask for new mapsymbols `);
 				client.sendNotification('request/mapsymbols');			
 			}*/
-
 		});
-
 		await executeParse(chosenMakefileUri.fsPath, filePaths);
 		return true;
 	});

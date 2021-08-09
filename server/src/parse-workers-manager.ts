@@ -3,8 +3,10 @@ import { preprocessAllFiles } from './parser/preprocessor';
 import { statSync, readFileSync } from 'fs';
 import { URI, Utils } from 'vscode-uri';
 import { spawn, Pool, Worker } from 'threads';
-import { abortParsingProcess, preprocessedFilesCacheMap, connection, symbolManager } from './server';
-import { clearCompletionCache } from './onCompletion';
+import { abortParsingProcess, preprocessedFilesCacheMap, connection, symbolManager, documents } from './server';
+import { clearCompletionCache } from './modules/completions';
+import { workspace } from 'vscode';
+import { basename, dirname } from 'path';
 
 
 /**
@@ -87,13 +89,26 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 		return;
 	}
 
+    const maxNumberOfParseWorkerThreads:number = await connection.workspace.getConfiguration("tads3.maxNumberOfParseWorkerThreads");
+    connection.console.log(`Setting max number of worker threads to: ${maxNumberOfParseWorkerThreads}`); // Default 6 threads
+
+	const parseOnlyTheWorkspaceFiles:boolean = await connection.workspace.getConfiguration("tads3.parseOnlyTheWorkspaceFiles");
+	if(parseOnlyTheWorkspaceFiles) {
+		connection.console.log(`TODO: Skips library files during parsing.`); // Default 6 threads
+		console.log(dirname(makefileLocation));
+		const workspaceDirectory = dirname(makefileLocation);
+		allFilePaths = allFilePaths.filter(x=>x.startsWith(workspaceDirectory));
+		connection.console.log(`Only parses files with base directory: ${workspaceDirectory}`); // Default 6 threads
+		connection.console.log(`****\n${allFilePaths.map(x=>basename(x)).join('\n')}****\n`);
+	}
+
+
 	// Temporary, just the first files to speed up
 	//allFilePaths = allFilePaths.splice(0,3);
 	const totalFiles = allFilePaths?.length;
 	let tracker = 0;
 
-	const poolMaxSize = 4; //6;
-	const poolSize = allFilePaths.length >= poolMaxSize ? poolMaxSize : 1;
+	const poolSize = allFilePaths.length >= maxNumberOfParseWorkerThreads ? maxNumberOfParseWorkerThreads : 1;
 	const workerPool = Pool(() => spawn(new Worker('./worker')), poolSize);
 	try {
 		const startTime = Date.now();
@@ -101,6 +116,8 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 			connection.console.log(`Queuing parsing job ${filePath}`);
 			workerPool.queue(async (parseJob) => {
 
+				//TODO consider report file before processing it: 
+				// e.g connection.sendNotification('symbolparsing/processing', [filePath, tracker, totalFiles, poolSize]);
 				const text = preprocessedFilesCacheMap.get(filePath) ?? '';
 				const { symbols, keywords, additionalProperties} = await parseJob(filePath, text);
 
@@ -109,7 +126,7 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 				clearCompletionCache();
 				symbolManager.additionalProperties.set(filePath, additionalProperties);
 				tracker++;
-				connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles]);
+				connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, poolSize]);
 				connection.console.log(`${filePath} parsed successfully`);
 			});
 		}

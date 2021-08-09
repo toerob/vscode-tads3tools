@@ -22,14 +22,15 @@ import {
 
 import { Tads3SymbolManager } from './modules/symbol-manager';
 import { onDocumentSymbol } from './modules/symbols';
-import { onReferences } from './modules/references';
+//import { onReferences } from './modules/references';
 import { onDefinition } from './modules/definitions';
 import { preprocessAndParseFiles } from './parse-workers-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DefaultMapObject } from './modules/mapcrawling/DefaultMapObject';
 import MapObjectManager from './modules/mapcrawling/map-mapping';
 import { onCodeLens } from './modules/codelens';
-import { onCompletion } from './onCompletion';
+import { onCompletion } from './modules/completions';
+import { onDocumentLinks } from './modules/links';
 
 
 
@@ -79,6 +80,9 @@ connection.onInitialize((params: InitializeParams) => {
 			documentSymbolProvider: true,
 			referencesProvider: false, // TODO: need to fix the row synchronization issue
 			definitionProvider: true,
+			/*documentLinkProvider: {
+				resolveProvider: false,
+			},*/
 			codeLensProvider: {
 				resolveProvider: true,
 			},
@@ -175,6 +179,7 @@ interface Tads3Settings {
 	enablePreprocessorCodeLens: boolean;
 	include: string;
 	lib: string;
+	
 } 
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
@@ -203,24 +208,6 @@ connection.onDidChangeConfiguration(change => {
 	documents.all().forEach(validateTextDocument);
 });
 
-/*
-function getDocumentSettings(resource: string): Thenable<Tads3Settings> {
-	if (!hasConfigurationCapability) {
-		return Promise.resolve(globalSettings);
-	}
-	let result = documentSettings.get(resource);
-	if (!result) {
-		result = connection.workspace.getConfiguration({
-			scopeUri: resource,
-			section: 'tads3'
-		});
-		documentSettings.set(resource, result);
-	}
-	return result;
-}*/
-
-
-
 // Only keep settings for open documents
 documents.onDidClose(e => {
 	documentSettings.delete(e.document.uri);
@@ -244,10 +231,11 @@ connection.onDidChangeWatchedFiles(_change => {
 	connection.console.log('We received an file change event');
 });
 
-connection.onCompletion(async (handler) => onCompletion(handler, documents, symbolManager));
 connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, documents, symbolManager));
-connection.onReferences(async (handler) => onReferences(handler,documents, symbolManager));
+//connection.onReferences(async (handler) => onReferences(handler,documents, symbolManager));
 connection.onDefinition(async (handler) => onDefinition(handler,documents, symbolManager));
+connection.onCompletion(async (handler) => onCompletion(handler, documents, symbolManager));
+//connection.onDocumentLinks(async (handler) => onDocumentLinks(handler, documents, symbolManager));
 
 connection.onCodeLens(async (handler) => {
 	return onCodeLens(handler, documents, symbolManager);
