@@ -166,7 +166,7 @@
 					"scope": "resource",
 					"type": "boolean",
 					"default": false,
-					"description": "In case working on a slower machine and parsing the library takes way too long time to complete, this option is here to turn off the parsing of library files and only concentrate on the workspace files."
+					"description": "In case working on a slower machine and parsing the library takes way too long time to complete, this option is here to turn off the parsing of library files and only concentrate on the workspace files. (Requires a restart after change.)"
 				},				
 				"tads3.trace.server": {
 					"scope": "window",

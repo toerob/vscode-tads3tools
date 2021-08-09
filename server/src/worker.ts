@@ -26,7 +26,7 @@ expose(function parseFunc(path: string, text: string) {
     parser.errorHandler = new BailErrorStrategy();
     try {
       parseTree = parser.program();
-      console.log(`SLL parsing succeeded for. ${path}`);
+      console.log(`SLL parsing succeeded for: ${path}`);
     } catch (err) {
       // Silently fail in case SLL fails, error is thrown by BailErrorStrategy
       console.error(`Failing with (faster) SLL parsing for ${path}. Switching predicition mode to LL and retries`);

@@ -98,7 +98,7 @@ function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<s
 	}
 
 	const elapsedTime = Date.now() - startTime;
-	connection.console.log(`${totalLineCount - 1} number of lines processed in ${elapsedTime} ms`);
+	connection.console.log(`${totalLineCount - 1} number of preprocessed lines mapped in ${elapsedTime} ms`);
 }
 
 function storeCurrentBufferAndRows(currentFile: string, currentBuffer: string, currentCounter: number, preprocessedFilesCacheMap: Map<string, string>) {

@@ -126,7 +126,6 @@ connection.onInitialized(() => {
 
 	connection.onNotification('request/mapsymbols', () => {
 		processMapSymbols(symbolManager, (symbols: DefaultMapObject[]) => {
-			// TODO: doesn't show up in the client
 			connection.sendNotification('response/mapsymbols', symbols);
 		});
 	});

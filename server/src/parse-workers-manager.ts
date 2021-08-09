@@ -67,9 +67,9 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 	let allFilePaths = filePaths;
 
 	// Parse project files close to the makefile first:
+	const baseDir = Utils.dirname(URI.parse(makefileLocation)).fsPath;
 
 	if (filePaths === undefined) {
-		const baseDir = Utils.dirname(URI.parse(makefileLocation)).fsPath;
 		allFilePaths = [...preprocessedFilesCacheMap.keys()];
 
 		// Sort by size, size ordering, the largest files goes first:
@@ -88,6 +88,7 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 		connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
 		return;
 	}
+    connection.console.log(`Preparing to parse a total of ${allFilePaths.length} files`);
 
     const maxNumberOfParseWorkerThreads:number = await connection.workspace.getConfiguration("tads3.maxNumberOfParseWorkerThreads");
     connection.console.log(`Setting max number of worker threads to: ${maxNumberOfParseWorkerThreads}`); // Default 6 threads
@@ -96,10 +97,14 @@ export async function preprocessAndParseFiles(makefileLocation: string, filePath
 	if(parseOnlyTheWorkspaceFiles) {
 		connection.console.log(`TODO: Skips library files during parsing.`); // Default 6 threads
 		console.log(dirname(makefileLocation));
-		const workspaceDirectory = dirname(makefileLocation);
-		allFilePaths = allFilePaths.filter(x=>x.startsWith(workspaceDirectory));
-		connection.console.log(`Only parses files with base directory: ${workspaceDirectory}`); // Default 6 threads
+		//const workspaceDirectory = dirname(makefileLocation);
+		allFilePaths = allFilePaths.filter(x=>x.startsWith(baseDir));
+		connection.console.log(`Only parses files with base directory: ${baseDir}`); // Default 6 threads
 		connection.console.log(`****\n${allFilePaths.map(x=>basename(x)).join('\n')}****\n`);
+	}
+	if (allFilePaths.length === 0) {
+		connection.console.log(`No files to parse. Aborting operation`);
+		return;
 	}
 
 

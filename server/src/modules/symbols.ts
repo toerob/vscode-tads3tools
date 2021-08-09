@@ -11,7 +11,7 @@ export async function onDocumentSymbol(handler: DocumentSymbolParams, documents:
 	const fsPath = URI.parse(handler.textDocument.uri).fsPath;
 	if (fsPath.endsWith('.t') || fsPath.endsWith('.h')) {
 		while (!symbolManager.symbols.has(fsPath)) {
-			connection.console.log(`${fsPath} is waiting for symbols`);
+			//connection.console.log(`${fsPath} is waiting for symbols`);
 			await asyncSetTimeout(2000);
 		}
 	}

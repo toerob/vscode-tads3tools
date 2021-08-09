@@ -8,10 +8,10 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
 	const codeLenses: CodeLens[] = [];
     const enablePreprocessorCodeLens = await connection.workspace.getConfiguration("tads3.enablePreprocessorCodeLens");
     
-    connection.console.log(`Code Lens enabled? ${enablePreprocessorCodeLens?'yes':'no'}`);
     if(!enablePreprocessorCodeLens) {
         return codeLenses;
     }
+    //connection.console.log(`Code Lens enabled? ${enablePreprocessorCodeLens?'yes':'no'}`);
     
 
 	const fsPath = URI.parse(textDocument.uri).fsPath;

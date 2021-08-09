@@ -7,7 +7,7 @@ export class Tads3CompileErrorParser {
 
 	jsonLexer: any;
 
-	pattern = /((.*)[(]([0-9]+)[)]:\s*)?(error|warning):\s*(.*)/;
+	pattern = /((.*)[(]([0-9]+)[)]:\s*)?([Ee]rror|[Ww]arning):\s*(.*)/;
 
 	pattern2 = /Errors:\s*([0-9]*)Warnings:\s*([0-9]*)$/g;
 		//let re = this.pattern2.exec(text);
@@ -29,7 +29,7 @@ export class Tads3CompileErrorParser {
 			let issueBody = result[5];
 			issueBody = issueBody.replace(this.pattern2, '');
 			if (result.length >= 4) {
-				const isError = result[4] === 'error' ? true : false;
+				const isError = (result[4].match('[Ee]rror')) ? true : false;
 				const characterLengthOfIssueLine = textDocument.positionAt(line ?? 0).character.valueOf();
 
 				const diagnostic: Diagnostic = {
