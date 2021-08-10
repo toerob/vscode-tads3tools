@@ -1,7 +1,6 @@
 /* eslint-disable no-debugger */
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable no-undef */
-//import ProjectstormReactDiagrams from "https://cdn.skypack.dev/@projectstorm/react-diagrams@6.5.2";
 
 const vscode = acquireVsCodeApi();
 const refreshButton = document.getElementById('refreshButton');
@@ -266,33 +265,12 @@ class RoomNode {
 					from,
 					to,
 					directionName,
-					/*directionType,
-					originId,
-					targetId*/
-					
 				}
 			});
 		}
-
-		/*vscode.postMessage({command: 'log', payload: 'directionType' +  directionType });
-		vscode.postMessage({command: 'log', payload: 'slot' + slot });
-		vscode.postMessage({command: 'log', payload: 'linkInfo.id:' + linkInfo.id });
-		vscode.postMessage({command: 'log', payload: 'linkInfo.origin_id:' + linkInfo.origin_id });
-		vscode.postMessage({ command: 'log', payload: 'linkInfo.target_id:' + linkInfo.target_id });
-		*/
-		
-		
-
-		//vscode.postMessage({ command: 'log', payload: 'target_node:' + target_node });
-
-		//vscode.postMessage({command: 'log', payload: 'linkInfo.origin_slot:' + linkInfo.origin_slot });
-		//vscode.postMessage({command: 'log', payload: 'linkInfo.target_slot:' + linkInfo.target_slot });
-		//vscode.postMessage({command: 'log', payload: slot + inputOutput });
 	}
 
 	onExecute() {
-
-
 		this.size[1] = 85;
 
 		if (this.props.title !== this.title) {
