@@ -14,6 +14,7 @@
 	"dependencies": {
 		"@types/underscore": "^1.11.3",
 		"async": "^3.2.0",
+		"fs-extra": "^10.0.0",
 		"fuzzysort": "^1.1.4",
 		"magic-string": "^0.25.7",
 		"node": "^16.6.1",
@@ -26,6 +27,7 @@
 	"scripts": {},
 	"devDependencies": {
 		"@types/async": "^3.2.7",
+		"@types/fs-extra": "^9.0.12",
 		"@types/jasmine": "^3.8.2",
 		"@types/jest": "^26.0.24",
 		"@types/sinon": "^10.0.2",

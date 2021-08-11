@@ -52,6 +52,8 @@ let lastChosenTextDocument: TextDocument | undefined;
 let lastChosenTextEditor;
 let isUsingAdv3Lite = false;
 
+let globalStoragePath;
+
 export function getLastChosenTextEditor() { return lastChosenTextEditor; }
 
 export function activate(context: ExtensionContext) {
@@ -69,19 +71,25 @@ export function activate(context: ExtensionContext) {
 	};
 
 	const clientOptions: LanguageClientOptions = {
+
 		documentSelector: [
 			{ scheme: 'untitled', language: 'tads3' },
 			{ scheme: 'file', language: 'tads3' }],
 		synchronize: {
 			// Notify the server about file changes to '.t, .h, and .clientrc files contained in the workspace
-			fileEvents: workspace.createFileSystemWatcher('**/.{t,h,t3m,clientrc}')
+			fileEvents: workspace.createFileSystemWatcher('**/.{t,h,t3m,clientrc}'),
+			
 		}
 	};
 
 	client = new LanguageClient('Tads3languageServer', 'Tads3 Language Server', serverOptions, clientOptions);
 	client.start();
 
+	
+
 	storageManager = new LocalStorageService(context.workspaceState);
+	//const globalStateManager = new LocalStorageService(context.globalState);
+
 
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 
@@ -117,7 +125,10 @@ export function activate(context: ExtensionContext) {
 
 	setupVisualEditorResponseHandler();
 
+	globalStoragePath = context.globalStorageUri.fsPath;
+
 	client.onReady().then(async () => {
+
 
 		client.onNotification('response/makefile/keyvaluemap', ({ makefileStructure, usingAdv3Lite }) => {
 			isUsingAdv3Lite = usingAdv3Lite;
@@ -514,6 +525,7 @@ export async function executeParse(makefileLocation: string, filePaths): Promise
 	await client.onReady();
 	serverProcessCancelTokenSource = new CancellationTokenSource();
 	await client.sendRequest('executeParse', {
+		globalStoragePath,
 		makefileLocation: makefileLocation,
 		filePaths: filePaths,
 		token: serverProcessCancelTokenSource.token

@@ -273,8 +273,8 @@ connection.onRequest('request/analyzeText/findNouns', async (params) => {
 
 });
 
-connection.onRequest('executeParse', async ({ makefileLocation, filePaths, token }) => {
-	await preprocessAndParseFiles(makefileLocation, filePaths, token); 
+connection.onRequest('executeParse', async ({ globalStoragePath, makefileLocation, filePaths, token }) => {
+	await preprocessAndParseFiles(globalStoragePath, makefileLocation, filePaths, token); 
 });
 
 
