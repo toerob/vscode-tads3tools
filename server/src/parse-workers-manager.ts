@@ -51,6 +51,12 @@ export function isUsingAdv3Lite(): boolean {
 let initialParsing = true;
 let globalStorageCachePath: string|undefined;
 
+
+const adv3LitePathRegExp = RegExp(/[/]adv3[Ll]ite[/]/);
+
+const adv3PathRegExp = RegExp(/[/]adv3[/]/);
+
+
 /**
  * 
  * @param makefileLocation string holding the file location of the makefile
@@ -62,15 +68,18 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	if(lastMakeFileLocation !== makefileLocation) {
 		lastMakeFileLocation = makefileLocation;
 		makefileStructure = analyzeMakefile(makefileLocation);
-		usingAdv3Lite = !!makefileStructure?.find(keyvalue=> keyvalue.value.includes('adv3lite')) ?? false;
+		usingAdv3Lite = !!makefileStructure?.find(keyvalue => keyvalue.value.match(adv3LitePathRegExp)) ?? false;
+		connection.console.log('Project using ' + usingAdv3Lite?'adv3Lite':'standard adv3 library');
 		connection.sendNotification('response/makefile/keyvaluemap', {makefileStructure, usingAdv3Lite});
 	} 
 
 	if(globalStoragePath) {
-		//ensureDirSync(globalStoragePath);
+		ensureDirSync(globalStoragePath);
+		connection.console.log(`Ensuring "${globalStoragePath}" exists`);
 		globalStorageCachePath = path.join(globalStoragePath,'.cache');
+		connection.console.log(`Ensuring "${globalStorageCachePath}" exists`);
 		ensureDirSync(globalStorageCachePath);
-		//const p = path.join(globalStoragePath,'.cache');
+		//const p = path.join(globalStorageCachePath,'test');
 		//writeFileSync(p, 'some contents');
 	}
 
@@ -122,7 +131,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 
 
 	// Temporary, just the first files to speed up
-	//allFilePaths = allFilePaths.splice(0,3);
+	//allFilePaths = allFilePaths.splice(0,14);
 	const totalFiles = allFilePaths?.length;
 	let tracker = 0;
 
@@ -207,10 +216,6 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	}
 }
 
-const adv3LitePathRegExp = RegExp(/[/]adv3[Ll]ite[/]/);
-
-const adv3PathRegExp = RegExp(/[/]adv3[/]/);
-
 
 function exportLibrarySymbols(symbols: Map<string, DocumentSymbol[]>, usingAdv3Lite: boolean) {
 	const librarySymbolsFilePaths = [...symbols.keys()].filter(x=>x.match(usingAdv3Lite?adv3LitePathRegExp:adv3PathRegExp));
@@ -222,8 +227,12 @@ function exportLibrarySymbols(symbols: Map<string, DocumentSymbol[]>, usingAdv3L
 		const fileNameStr = `${basename(libraryPath)}__symbols.json`;
 		if(globalStorageCachePath) {
 			const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
-			writeFileSync(libraryCacheFilePath, JSON.stringify(value).toString());
-			connection.console.log('Cached symbols exported for' + libraryPath);
+			try {
+				writeFileSync(libraryCacheFilePath, JSON.stringify(value).toString());
+				connection.console.log('Cached symbols exported for' + libraryPath);
+			} catch (err) {
+				connection.console.error(`Caching failed for ${libraryPath}: \n` + err);
+			}
 		}
 	});
 
@@ -242,7 +251,7 @@ function exportLibraryKeywords(keywords: Map<string, Map<string, Range[]>>,using
 				const keywordRangeMapArray = [...keywordRangeMap];
 				try {
 					const fileNameStr = `${basename(libraryKeywordPath)}__keywords.json`;
-					const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
+					const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();					
 					writeFileSync(libraryCacheFilePath, JSON.stringify(keywordRangeMapArray).toString());
 					connection.console.log('Cached keywords exported for' + libraryKeywordPath);
 				} catch(err) {
