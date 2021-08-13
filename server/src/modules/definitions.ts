@@ -14,6 +14,15 @@ export async function onDefinition({textDocument,position}: DefinitionParams, do
 	if(currentDoc) {
 		const symbolName = getWordAtPosition(currentDoc, position);
 		if(symbolName) {
+			if(symbolName === 'object') {
+				return locations;
+			}
+			if(symbolName === 'self') {
+				// TODO: find enclosing object
+				// symbolManager.findClosestSelf();
+				return locations;
+			}
+
 			connection.console.log(`Find definition(s) for word: ${symbolName}`);
 			for(const filePathKey of symbolManager.symbols.keys()) {
 				const localSymbols = symbolManager.symbols.get(filePathKey);
