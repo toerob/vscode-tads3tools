@@ -36,7 +36,7 @@ import { ensureDirSync } from 'fs-extra';
 
 	});*/
 
-	console.log(`Done!`);
+	connection.console.log(`Done analyzing makefile`);
 	return makefileArray;
 }
 
@@ -77,9 +77,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	if(globalStoragePath) {
 		ensureDirSync(globalStoragePath);
 		connection.console.log(`Ensuring "${globalStoragePath}" exists`);
-
 		ensureDirSync(path.join(globalStoragePath,'.cache'));
-
 		const library = usingAdv3Lite?'adv3Lite':'adv3';
 		globalStorageCachePath = path.join(globalStoragePath,'.cache', library );
 
@@ -123,9 +121,6 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 
 	const parseOnlyTheWorkspaceFiles:boolean = await connection.workspace.getConfiguration("tads3.parseOnlyTheWorkspaceFiles");
 	if(parseOnlyTheWorkspaceFiles) {
-		connection.console.log(`TODO: Skips library files during parsing.`); // Default 6 threads
-		console.log(dirname(makefileLocation));
-		//const workspaceDirectory = dirname(makefileLocation);
 		allFilePaths = allFilePaths.filter(x=>x.startsWith(baseDir));
 		connection.console.log(`Only parses files with base directory: ${baseDir}`); // Default 6 threads
 		connection.console.log(`****\n${allFilePaths.map(x=>basename(x)).join('\n')}****\n`);
@@ -220,7 +215,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 				await workerPool.completed();
 				await workerPool.terminate();
 			} catch(err) {
-				connection.console.error(err);
+				connection.console.error(`Error happened during awaiting pool completion/termination: `+ err);
 			}
 	
 			
@@ -241,48 +236,35 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 			
 		} catch (err) {
 			await workerPool.terminate();
-			console.error(err);
+			connection.console.error(`Error happened during parsing of files: ${err}`);
 			connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
 		}
 	//}
 }
 
 function exportLibrarySymbols(symbols: Map<string, DocumentSymbol[]>, usingAdv3Lite: boolean) {
-
-	const librarySymbolsFilePaths = [...symbols.keys()].filter(x=>{
-		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp) 
-			|| x.match(generalHeaderIncludeRegExp);
-	});
-
+	const librarySymbolsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
 	const librarySymbols = new Map();
 	for(const file of librarySymbolsFilePaths) {
 		librarySymbols.set(file, symbols.get(file));
 	}
-	librarySymbols.forEach((value,libraryPath)=> {
+	for (const libraryPath of librarySymbols.keys()) {
+		const value = librarySymbols.get(libraryPath);
 		const fileNameStr = `${basename(libraryPath)}__symbols.json`;
-		if(globalStorageCachePath) {
+		if (globalStorageCachePath) {
 			const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 			try {
 				writeFileSync(libraryCacheFilePath, JSON.stringify(value).toString());
 				connection.console.log(`Cached symbols exported for ${libraryPath} to ${libraryCacheFilePath}`);
-
 			} catch (err) {
 				connection.console.error(`Caching failed for ${libraryPath}: \n` + err);
 			}
 		}
-	});
-
+	}
 }
 
 function exportLibraryKeywords(keywords: Map<string, Map<string, Range[]>>,usingAdv3Lite: boolean) {
-
-	const libraryKeywordsFilePaths = [...keywords.keys()].filter(x=>{
-		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp) 
-			|| x.match(generalHeaderIncludeRegExp);
-	});
-
-	//const libraryKeywordsFilePaths= [...keywords.keys()].filter(x=>x.match(usingAdv3Lite?adv3LitePathRegExp:adv3PathRegExp));
-
+	const libraryKeywordsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
 	const libraryKeywords = new Map();
 	for(const file of libraryKeywordsFilePaths) {
 		libraryKeywords.set(file, keywords.get(file));
@@ -298,7 +280,7 @@ function exportLibraryKeywords(keywords: Map<string, Map<string, Range[]>>,using
 					writeFileSync(libraryCacheFilePath, JSON.stringify(keywordRangeMapArray).toString());
 					connection.console.log(`Cached keywords exported for${libraryKeywordPath} to ${libraryCacheFilePath}`);
 				} catch(err) {
-					connection.console.error(err);
+					connection.console.error(`Error happened during export of keywords: ${err}`);
 				}
 			}
 		}
@@ -306,14 +288,7 @@ function exportLibraryKeywords(keywords: Map<string, Map<string, Range[]>>,using
 }
 
 function importLibrarySymbols(symbolManagerSymbols: Map<string, DocumentSymbol[]>, usingAdv3Lite: boolean) {
-	//const librarySymbolsFilePaths = [...preprocessedFilesCacheMap.keys()].filter(x=>x.match(usingAdv3Lite?adv3LitePathRegExp:adv3PathRegExp));
-
-	const librarySymbolsFilePaths = [...preprocessedFilesCacheMap.keys()].filter(x=>{
-		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp) 
-			|| x.match(generalHeaderIncludeRegExp);
-	});
-
-	//const librarySymbols : Map<string, DocumentSymbol[]> = new Map();
+	const librarySymbolsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
 	const cachedFiles = new Set();
 	if(globalStorageCachePath) {
 		for(const librarySymbolPath of librarySymbolsFilePaths) {
@@ -326,12 +301,20 @@ function importLibrarySymbols(symbolManagerSymbols: Map<string, DocumentSymbol[]
 				symbolManagerSymbols.set(librarySymbolPath, symbols);
 				connection.console.log('Cached symbols filed used for' + librarySymbolPath);
 				cachedFiles.add(librarySymbolPath);
-			} catch(err) {
-				connection.console.error(err);
+			} catch (err) {
+				connection.console.error(`Error happened during import of symbols: ${err}`);
 			}
 		}
 	}
 	return cachedFiles;
+}
+
+
+function filterForLibraryFiles(array: string[]) {
+	return array.filter((x:string)=>{
+		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp) 
+			|| x.match(generalHeaderIncludeRegExp);
+	});
 }
 
 /**
@@ -340,15 +323,7 @@ function importLibrarySymbols(symbolManagerSymbols: Map<string, DocumentSymbol[]
  * @param usingAdv3Lite 
  */
 function importLibraryKeywords(symbolManagerKeywords: Map<string, Map<string, Range[]>>, usingAdv3Lite: boolean) {
-	//const libraryKeywordsFilePaths= [...preprocessedFilesCacheMap.keys()].filter(x=>x.match(usingAdv3Lite?adv3LitePathRegExp:adv3PathRegExp));
-	
-	const libraryKeywordsFilePaths = [...preprocessedFilesCacheMap.keys()].filter(x=>{
-		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp) 
-			|| x.match(generalHeaderIncludeRegExp);
-	});
-
-	
-	//const libraryKeywords:Map<string, Map<string, Range[]>> = new Map();
+	const libraryKeywordsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
 	const cachedFiles = new Set();
 	if(globalStorageCachePath) {
 		for(const libraryKeywordPath of libraryKeywordsFilePaths) {
