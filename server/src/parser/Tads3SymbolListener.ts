@@ -1,5 +1,5 @@
 import { Tads3Listener } from './Tads3Listener';
-import { ObjectDeclarationContext, PropertySetContext, PropertyContext, FunctionHeadContext, IdAtomContext, AssignmentStatementContext, FunctionDeclarationContext, CurlyObjectBodyContext, CodeBlockContext, MemberExprContext, ThrowStatementContext } from './Tads3Parser';
+import { ObjectDeclarationContext, PropertySetContext, PropertyContext, FunctionHeadContext, IdAtomContext, AssignmentStatementContext, FunctionDeclarationContext, CurlyObjectBodyContext, CodeBlockContext, MemberExprContext, ThrowStatementContext, IntrinsicMethodDeclarationContext, IntrinsicDeclarationContext } from './Tads3Parser';
 import { ScopedEnvironment } from './ScopedEnvironment';
 import { CompletionItem, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { Location, Range } from 'vscode-languageserver';
@@ -27,7 +27,10 @@ export class Tads3SymbolListener implements Tads3Listener {
 	symbols: DocumentSymbol[] = [];
 
 	additionalProperties: Map<DocumentSymbol, ExtendedDocumentSymbolProperties> = new Map();
+	
+	intrinsicNamesUsed = new Set();
 
+	currentIntrinsicDeclarationSymbol: DocumentSymbol | undefined = undefined;
 
 	currentObjectSymbol: DocumentSymbol | undefined;
 
@@ -217,7 +220,6 @@ export class Tads3SymbolListener implements Tads3Listener {
 		}
 	}
 
-
 	exitObjectDeclaration(ctx: ObjectDeclarationContext) {
 		this.currentObjectSymbol = undefined;
 		this.callbackToRun = undefined;
@@ -232,7 +234,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 		}
 		this.currentPropertySetName = name;
 	}
-
+	
 	enterMemberExpr(ctx: MemberExprContext) {
 		const memberCallChain = ctx._prev ? ctx._prev.text.split('.') : [];
 		const procedure = ctx._next?.text;
@@ -367,7 +369,47 @@ export class Tads3SymbolListener implements Tads3Listener {
 			this.additionalProperties.set(symbol, additionalProps);			
 		}
 	}
-	
+
+	// TODO: Naturally repeats, make a set instead of array,
+	// then add to symbols afterwards
+	enterIntrinsicDeclaration(ctx: IntrinsicDeclarationContext) {
+		const name = ctx.identifierAtom()?.ID()?.text?.trim() ?? 'unnamed';
+		const start = (ctx.start.line ?? 1) - 1;
+		const stop = (ctx.stop?.line ?? 1) - 1;
+		const range = Range.create(start, 0, stop, 0);
+		const detail = ctx.DSTR()?.text;
+		if (name && !this.intrinsicNamesUsed.has(name)) {
+			this.intrinsicNamesUsed.add(name);
+			const symbol = DocumentSymbol.create(name, detail, SymbolKind.Interface, range, range, []);			
+			this.currentIntrinsicDeclarationSymbol = symbol;
+			if ( !this.symbols.includes(symbol)) {
+				this.symbols.push(symbol);
+			}
+		}		
+	}
+
+	// TODO: Naturally repeats, make a set instead of array,
+	// then add to symbols afterwards
+	exitIntrinsicDeclaration(ctx: IntrinsicDeclarationContext) {
+		this.currentIntrinsicDeclarationSymbol = undefined;
+	}
+
+	enterIntrinsicMethodDeclaration(ctx: IntrinsicMethodDeclarationContext) {
+		const name = ctx.identifierAtom()?.ID()?.text?.trim();
+		const start = (ctx.start.line ?? 1) - 1;
+		const stop = (ctx.stop?.line ?? 1) - 1;
+		const range = Range.create(start, 0, stop, 0);
+		const detail = '';
+		if (name && this.currentIntrinsicDeclarationSymbol) {
+			const symbol = DocumentSymbol.create(name, detail, SymbolKind.Function, range, range, []);
+			this.currentIntrinsicDeclarationSymbol.children ??= [];
+
+			if (!this.currentIntrinsicDeclarationSymbol.children.includes(symbol)) {
+				this.currentIntrinsicDeclarationSymbol.children.push(symbol);				
+			}
+		}
+	}
+
 	enterFunctionHead(ctx: FunctionHeadContext) {
 		try {
 

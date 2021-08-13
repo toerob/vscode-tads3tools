@@ -31,6 +31,8 @@ export async function preprocessAllFiles(chosenMakefilePath: string, preprocesse
 	processPreprocessedResult(result, preprocessedFilesCacheMap);
 }
 
+//TODO: tadsgen.h 747 rows -> 45507 (and keeps repeating)
+
 function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<string, string>) {
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();

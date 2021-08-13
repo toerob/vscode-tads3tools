@@ -58,6 +58,8 @@ const adv3PathRegExp = RegExp(/[/]?adv3[/]/);
 
 const generalHeaderIncludeRegExp  = RegExp(/tads3[/]include[/]/);
 
+const useCachedLibrary = false;
+
 /**
  * 
  * @param makefileLocation string holding the file location of the makefile
@@ -173,7 +175,8 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 		try {
 			const startTime = Date.now();
 			let cachedFiles = new Set();
-			if(initialParsing) {
+
+			if(initialParsing && useCachedLibrary) {
 				cachedFiles = importLibrarySymbols(symbolManager.symbols, usingAdv3Lite);
 				importLibraryKeywords(symbolManager.keywords, usingAdv3Lite);
 				const elapsedCacheReadTime = Date.now() - startTime;
