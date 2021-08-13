@@ -2,7 +2,7 @@ import { CancellationTokenSource, DocumentSymbol,Range } from 'vscode-languagese
 import { preprocessAllFiles } from './parser/preprocessor';
 import { statSync, readFileSync, writeSync, writeFileSync, exists, existsSync } from 'fs';
 import { URI, Utils } from 'vscode-uri';
-import { spawn, Pool, Worker } from 'threads';
+import { spawn, Pool, Worker, Thread } from 'threads';
 import { abortParsingProcess, preprocessedFilesCacheMap, connection, symbolManager, documents } from './server';
 import { clearCompletionCache } from './modules/completions';
 import { basename, dirname } from 'path';
@@ -52,10 +52,11 @@ let initialParsing = true;
 let globalStorageCachePath: string|undefined;
 
 
-const adv3LitePathRegExp = RegExp(/[/]adv3[Ll]ite[/]/);
+const adv3LitePathRegExp = RegExp(/[/]?adv3[Ll]ite[/]/);
 
-const adv3PathRegExp = RegExp(/[/]adv3[/]/);
+const adv3PathRegExp = RegExp(/[/]?adv3[/]/);
 
+const generalHeaderIncludeRegExp  = RegExp(/tads3[/]include[/]/);
 
 /**
  * 
@@ -76,7 +77,12 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	if(globalStoragePath) {
 		ensureDirSync(globalStoragePath);
 		connection.console.log(`Ensuring "${globalStoragePath}" exists`);
-		globalStorageCachePath = path.join(globalStoragePath,'.cache');
+
+		ensureDirSync(path.join(globalStoragePath,'.cache'));
+
+		const library = usingAdv3Lite?'adv3Lite':'adv3';
+		globalStorageCachePath = path.join(globalStoragePath,'.cache', library );
+
 		connection.console.log(`Ensuring "${globalStorageCachePath}" exists`);
 		ensureDirSync(globalStorageCachePath);
 		//const p = path.join(globalStorageCachePath,'test');
@@ -135,90 +141,119 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	const totalFiles = allFilePaths?.length;
 	let tracker = 0;
 
-	const poolSize = allFilePaths.length >= maxNumberOfParseWorkerThreads ? maxNumberOfParseWorkerThreads : 1;
 
-	connection.console.log(`Setting worker thread poolsize to: ${poolSize}`); // Default 6 threads
-
-	const workerPool = Pool(() => spawn(new Worker('./worker')), poolSize);
-	try {
+	
+	// TODO: spawning a single worker instead of a thread pool
+	/*if(allFilePaths.length === 1) {
+		// Spawn a single worker if only one file is to be parsed
+		const filePath = allFilePaths[0];
 		const startTime = Date.now();
+		connection.console.log(`Parsing single file: ${filePath}`);
+		const worker = await spawn(new Worker('./worker'));
+		const text = preprocessedFilesCacheMap.get(filePath) ?? '';
+		const jobResult = await worker['parseFunc'](filePath, text);
 
-
-		// TODO: export and import additionalProperties as well (mash it with symbols on import and then extract on export)
-
-		let cachedFiles = new Set();
-		if(initialParsing) {
-			// TODO: create folder for cache
-			//let createdProjectObjFolder = path.join(createdProjectFolder, '.cache');
-			//ensureDirSync(createdProjectFolder);
-			cachedFiles = importLibrarySymbols(symbolManager.symbols, usingAdv3Lite);
-			importLibraryKeywords(symbolManager.keywords, usingAdv3Lite);
-			const elapsedCacheReadTime = Date.now() - startTime;
-			connection.console.log(`Cached library files took ${elapsedCacheReadTime} ms to read`);
-		}
-
-
-		for (const filePath of allFilePaths) {
-			connection.console.log(`Queuing parsing job ${filePath}`);
-
-			// Only use cached values 
-			if(!cachedFiles.has(filePath)) {
-				workerPool.queue(async (parseJob) => {
-
-					//TODO consider report file before processing it: 
-					// e.g connection.sendNotification('symbolparsing/processing', [filePath, tracker, totalFiles, poolSize]);
-					const text = preprocessedFilesCacheMap.get(filePath) ?? '';
-					const { symbols, keywords, additionalProperties} = await parseJob(filePath, text);
-
-					symbolManager.symbols.set(filePath, symbols);
-					symbolManager.keywords.set(filePath, keywords);
-
-					clearCompletionCache();
-					symbolManager.additionalProperties.set(filePath, additionalProperties);
-					tracker++;
-					connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, poolSize]);
-					connection.console.log(`${filePath} parsed successfully`);
-				});
-			} else {
-				tracker++;
-				connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, poolSize]);
-				connection.console.log(`${filePath} cached restored successfully`);
-			}
-
-
-		}
-
-		try {
-			//workerPool.events.length
-			await workerPool.completed();
-			await workerPool.terminate();
-		} catch(err) {
-			connection.console.error(err);
-		}
-
+		await Thread.terminate(jobResult);
+		const { symbols, keywords, additionalProperties} = jobResult;
+		
+		symbolManager.symbols.set(filePath, symbols ?? []);
+		symbolManager.keywords.set(filePath, keywords ?? []);
+		clearCompletionCache();
+		symbolManager.additionalProperties.set(filePath, additionalProperties);
+		tracker++;
 		const elapsedTime = Date.now() - startTime;
 		console.log(`All files parsed within ${elapsedTime} ms`);
-		connection.sendNotification('symbolparsing/allfiles/success', { allFilePaths, elapsedTime });
+		connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, 1]);
+		connection.console.log(`${filePath} parsed successfully`);
+	} else {
+		*/
 
-		if(initialParsing) {
+		// Setup a WorkerPool if we have a collection of files to parse
+
+		const poolSize = allFilePaths.length >= maxNumberOfParseWorkerThreads ? maxNumberOfParseWorkerThreads : 1;
+		connection.console.log(`Setting worker thread poolsize to: ${poolSize}`); // Default 6 threads
+			
+		const workerPool = Pool(() => spawn(new Worker('./worker')), poolSize);
+	
+		try {
 			const startTime = Date.now();
-			exportLibrarySymbols(symbolManager.symbols, usingAdv3Lite);
-			exportLibraryKeywords(symbolManager.keywords, usingAdv3Lite);
-			const elapsedCacheReadTime = Date.now() - startTime;
-			connection.console.log(`Cached library files export took ${elapsedCacheReadTime} ms to write`);
+			let cachedFiles = new Set();
+			if(initialParsing) {
+				cachedFiles = importLibrarySymbols(symbolManager.symbols, usingAdv3Lite);
+				importLibraryKeywords(symbolManager.keywords, usingAdv3Lite);
+				const elapsedCacheReadTime = Date.now() - startTime;
+				connection.console.log(`Cached library files took ${elapsedCacheReadTime} ms to read`);
+			}
+	
+			for (const filePath of allFilePaths) {
+				connection.console.log(`Queuing parsing job ${filePath}`);
+	
+				// Only use cached values 
+				if(!cachedFiles.has(filePath)) {
+					workerPool.queue(async (parseJob) => {
+	
+						//TODO consider report file before processing it: 
+						// e.g connection.sendNotification('symbolparsing/processing', [filePath, tracker, totalFiles, poolSize]);
+						const text = preprocessedFilesCacheMap.get(filePath) ?? '';
+						const { symbols, keywords, additionalProperties} = await parseJob(filePath, text);
+	
+						symbolManager.symbols.set(filePath, symbols ?? []);
+						symbolManager.keywords.set(filePath, keywords ?? []);
+	
+						clearCompletionCache();
+						symbolManager.additionalProperties.set(filePath, additionalProperties);
+						tracker++;
+						connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, poolSize]);
+						connection.console.log(`${filePath} parsed successfully`);
+					});
+				} else {
+					tracker++;
+					connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, poolSize]);
+					connection.console.log(`${filePath} cached restored successfully`);
+				}
+	
+	
+			}
+	
+			try {
+				//workerPool.events.length
+				await workerPool.completed();
+				await workerPool.terminate();
+			} catch(err) {
+				connection.console.error(err);
+			}
+	
+			
+
+
+			const elapsedTime = Date.now() - startTime;
+			console.log(`All files parsed within ${elapsedTime} ms`);
+			connection.sendNotification('symbolparsing/allfiles/success', { allFilePaths, elapsedTime });
+	
+			if(initialParsing) {
+				const startTime = Date.now();
+				exportLibrarySymbols(symbolManager.symbols, usingAdv3Lite);
+				exportLibraryKeywords(symbolManager.keywords, usingAdv3Lite);
+				const elapsedCacheReadTime = Date.now() - startTime;
+				connection.console.log(`Cached library files export took ${elapsedCacheReadTime} ms to write`);
+			}
+			initialParsing = false;
+			
+		} catch (err) {
+			await workerPool.terminate();
+			console.error(err);
+			connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
 		}
-		initialParsing = false;
-		
-	} catch (err) {
-		await workerPool.terminate();
-		console.error(err);
-		connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
-	}
+	//}
 }
 
-
 function exportLibrarySymbols(symbols: Map<string, DocumentSymbol[]>, usingAdv3Lite: boolean) {
-	const librarySymbolsFilePaths = [...symbols.keys()].filter(x=>x.match(usingAdv3Lite?adv3LitePathRegExp:adv3PathRegExp));
+
+	const librarySymbolsFilePaths = [...symbols.keys()].filter(x=>{
+		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp) 
+			|| x.match(generalHeaderIncludeRegExp);
+	});
+
 	const librarySymbols = new Map();
 	for(const file of librarySymbolsFilePaths) {
 		librarySymbols.set(file, symbols.get(file));
@@ -229,7 +264,8 @@ function exportLibrarySymbols(symbols: Map<string, DocumentSymbol[]>, usingAdv3L
 			const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 			try {
 				writeFileSync(libraryCacheFilePath, JSON.stringify(value).toString());
-				connection.console.log('Cached symbols exported for' + libraryPath);
+				connection.console.log(`Cached symbols exported for ${libraryPath} to ${libraryCacheFilePath}`);
+
 			} catch (err) {
 				connection.console.error(`Caching failed for ${libraryPath}: \n` + err);
 			}
@@ -239,7 +275,14 @@ function exportLibrarySymbols(symbols: Map<string, DocumentSymbol[]>, usingAdv3L
 }
 
 function exportLibraryKeywords(keywords: Map<string, Map<string, Range[]>>,usingAdv3Lite: boolean) {
-	const libraryKeywordsFilePaths= [...keywords.keys()].filter(x=>x.match(usingAdv3Lite?adv3LitePathRegExp:adv3PathRegExp));
+
+	const libraryKeywordsFilePaths = [...keywords.keys()].filter(x=>{
+		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp) 
+			|| x.match(generalHeaderIncludeRegExp);
+	});
+
+	//const libraryKeywordsFilePaths= [...keywords.keys()].filter(x=>x.match(usingAdv3Lite?adv3LitePathRegExp:adv3PathRegExp));
+
 	const libraryKeywords = new Map();
 	for(const file of libraryKeywordsFilePaths) {
 		libraryKeywords.set(file, keywords.get(file));
@@ -253,7 +296,7 @@ function exportLibraryKeywords(keywords: Map<string, Map<string, Range[]>>,using
 					const fileNameStr = `${basename(libraryKeywordPath)}__keywords.json`;
 					const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();					
 					writeFileSync(libraryCacheFilePath, JSON.stringify(keywordRangeMapArray).toString());
-					connection.console.log('Cached keywords exported for' + libraryKeywordPath);
+					connection.console.log(`Cached keywords exported for${libraryKeywordPath} to ${libraryCacheFilePath}`);
 				} catch(err) {
 					connection.console.error(err);
 				}
@@ -263,7 +306,13 @@ function exportLibraryKeywords(keywords: Map<string, Map<string, Range[]>>,using
 }
 
 function importLibrarySymbols(symbolManagerSymbols: Map<string, DocumentSymbol[]>, usingAdv3Lite: boolean) {
-	const librarySymbolsFilePaths = [...preprocessedFilesCacheMap.keys()].filter(x=>x.match(usingAdv3Lite?adv3LitePathRegExp:adv3PathRegExp));
+	//const librarySymbolsFilePaths = [...preprocessedFilesCacheMap.keys()].filter(x=>x.match(usingAdv3Lite?adv3LitePathRegExp:adv3PathRegExp));
+
+	const librarySymbolsFilePaths = [...preprocessedFilesCacheMap.keys()].filter(x=>{
+		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp) 
+			|| x.match(generalHeaderIncludeRegExp);
+	});
+
 	//const librarySymbols : Map<string, DocumentSymbol[]> = new Map();
 	const cachedFiles = new Set();
 	if(globalStorageCachePath) {
@@ -271,7 +320,7 @@ function importLibrarySymbols(symbolManagerSymbols: Map<string, DocumentSymbol[]
 			if(!existsSync(librarySymbolPath)) { continue;}
 			try {
 				const fileNameStr = `${basename(librarySymbolPath)}__symbols.json`;
-				const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
+				const libraryCacheFilePath = path.join(globalStorageCachePath,fileNameStr).toString();
 				const data = readFileSync(libraryCacheFilePath).toString();
 				const symbols:DocumentSymbol[] = JSON.parse(data);
 				symbolManagerSymbols.set(librarySymbolPath, symbols);
@@ -291,7 +340,14 @@ function importLibrarySymbols(symbolManagerSymbols: Map<string, DocumentSymbol[]
  * @param usingAdv3Lite 
  */
 function importLibraryKeywords(symbolManagerKeywords: Map<string, Map<string, Range[]>>, usingAdv3Lite: boolean) {
-	const libraryKeywordsFilePaths= [...preprocessedFilesCacheMap.keys()].filter(x=>x.match(usingAdv3Lite?adv3LitePathRegExp:adv3PathRegExp));
+	//const libraryKeywordsFilePaths= [...preprocessedFilesCacheMap.keys()].filter(x=>x.match(usingAdv3Lite?adv3LitePathRegExp:adv3PathRegExp));
+	
+	const libraryKeywordsFilePaths = [...preprocessedFilesCacheMap.keys()].filter(x=>{
+		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp) 
+			|| x.match(generalHeaderIncludeRegExp);
+	});
+
+	
 	//const libraryKeywords:Map<string, Map<string, Range[]>> = new Map();
 	const cachedFiles = new Set();
 	if(globalStorageCachePath) {
