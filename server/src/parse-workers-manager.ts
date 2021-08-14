@@ -1,15 +1,12 @@
-import { CancellationTokenSource, DocumentSymbol,Range } from 'vscode-languageserver/node';
+import { DocumentSymbol,Range } from 'vscode-languageserver/node';
 import { preprocessAllFiles } from './parser/preprocessor';
-import { statSync, readFileSync, writeSync, writeFileSync, exists, existsSync } from 'fs';
+import { statSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { URI, Utils } from 'vscode-uri';
 import { spawn, Pool, Worker, Thread } from 'threads';
-import { abortParsingProcess, preprocessedFilesCacheMap, connection, symbolManager, documents } from './server';
+import { preprocessedFilesCacheMap, connection, symbolManager } from './server';
 import { clearCompletionCache } from './modules/completions';
-import { basename, dirname } from 'path';
-import { identity } from 'underscore';
-import { Tads3SymbolManager } from './modules/symbol-manager';
+import { basename } from 'path';
 import * as path from 'path';
-import { start } from 'repl';
 import { ensureDirSync } from 'fs-extra';
 
 
@@ -31,11 +28,6 @@ import { ensureDirSync } from 'fs-extra';
 			makefileArray.push({key,value});
 		}
 	}
-	/*makefileArray.forEach((keyvalue,index)=> {
-		//
-
-	});*/
-
 	connection.console.log(`Done analyzing makefile`);
 	return makefileArray;
 }
@@ -49,8 +41,8 @@ export function isUsingAdv3Lite(): boolean {
 }
 
 let initialParsing = true;
-let globalStorageCachePath: string|undefined;
 
+let globalStorageCachePath: string | undefined;
 
 const adv3LitePathRegExp = RegExp(/[/]?adv3[Ll]ite[/]/);
 
@@ -58,7 +50,11 @@ const adv3PathRegExp = RegExp(/[/]?adv3[/]/);
 
 const generalHeaderIncludeRegExp  = RegExp(/tads3[/]include[/]/);
 
-const useCachedLibrary = false;
+const useCachedLibrary = true;
+
+function clearCachedLibrary() {
+	//TODO
+}
 
 /**
  * 
@@ -117,7 +113,6 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 		connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
 		return;
 	}
-    connection.console.log(`Preparing to parse a total of ${allFilePaths.length} files`);
 
     const maxNumberOfParseWorkerThreads:number = await connection.workspace.getConfiguration("tads3.maxNumberOfParseWorkerThreads");
 
@@ -133,40 +128,38 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	}
 
 
-	// Temporary, just the first files to speed up
-	//allFilePaths = allFilePaths.splice(0,14);
+	// Temporary, just the first files to speed up during development
+	// allFilePaths = allFilePaths.splice(0,14);
 	const totalFiles = allFilePaths?.length;
 	let tracker = 0;
-
-
 	
-	// TODO: spawning a single worker instead of a thread pool
-	/*if(allFilePaths.length === 1) {
-		// Spawn a single worker if only one file is to be parsed
+	// Spawn a single worker if only one file is to be parsed
+	if(allFilePaths.length === 1) {
 		const filePath = allFilePaths[0];
 		const startTime = Date.now();
-		connection.console.log(`Parsing single file: ${filePath}`);
+		connection.console.log(`Spawning worker to parse a single file: ${filePath}`);
 		const worker = await spawn(new Worker('./worker'));
 		const text = preprocessedFilesCacheMap.get(filePath) ?? '';
-		const jobResult = await worker['parseFunc'](filePath, text);
-
-		await Thread.terminate(jobResult);
+		const jobResult = await worker(filePath, text);
+		connection.console.log(`Worker finished with result`);
 		const { symbols, keywords, additionalProperties} = jobResult;
-		
 		symbolManager.symbols.set(filePath, symbols ?? []);
 		symbolManager.keywords.set(filePath, keywords ?? []);
 		clearCompletionCache();
 		symbolManager.additionalProperties.set(filePath, additionalProperties);
 		tracker++;
 		const elapsedTime = Date.now() - startTime;
-		console.log(`All files parsed within ${elapsedTime} ms`);
 		connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, 1]);
-		connection.console.log(`${filePath} parsed successfully`);
+		connection.console.log(`${filePath} parsed successfully in ${elapsedTime} ms`);
+		try {
+			await Thread.terminate(worker);
+			connection.console.log(`(worker terminated)`);
+		} catch (err) {
+			connection.console.error(`Error during thread termination: ${err}`);
+		}
+	// Setup a WorkerPool if we have a collection of files to parse
 	} else {
-		*/
-
-		// Setup a WorkerPool if we have a collection of files to parse
-
+		connection.console.log(`Preparing to parse a total of ${allFilePaths.length} files`);
 		const poolSize = allFilePaths.length >= maxNumberOfParseWorkerThreads ? maxNumberOfParseWorkerThreads : 1;
 		connection.console.log(`Setting worker thread poolsize to: ${poolSize}`); // Default 6 threads
 			
@@ -242,7 +235,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 			connection.console.error(`Error happened during parsing of files: ${err}`);
 			connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
 		}
-	//}
+	}
 }
 
 function exportLibrarySymbols(symbols: Map<string, DocumentSymbol[]>, usingAdv3Lite: boolean) {
