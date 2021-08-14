@@ -269,19 +269,29 @@ export function activate(context: ExtensionContext) {
 		// If the client has asked the server to locate a symbol,
 		// The server responds by sending the client the symbol and filepath back
 		// if it finds anything, therefore "found" 
-		client.onNotification('response/foundsymbol', ({ symbol, filePath }): void => {
+		client.onNotification('response/foundsymbol', ({ symbol, filePath, postAction }): void => {
 			if (symbol && filePath) {
 				selectedObject = symbol as DocumentSymbol; // keep track of the last selected object
-				workspace.openTextDocument(filePath).then(textDocument => {
-					//const lastSelectedTextDocument = textDocument;
-					//if (lastChosenTextDocument) {
-						window.showTextDocument(textDocument, {
-							preserveFocus: true,
-							selection: selectedObject.range,
-							viewColumn: ViewColumn.One,
-						});
-					//}
+
+				workspace.openTextDocument(filePath)
+				.then(textDocument => {
+					window.showTextDocument(textDocument, {
+						preserveFocus: true,
+						selection: selectedObject.range,
+						viewColumn: ViewColumn.One,
+					});
 				});
+				// TODO: there's an issue here, due to all items being triggered with onRemoved whenever the map gets updated,
+				// thus all rooms would be deleted in their textdocument's equivalence whenever that happens. 
+				/*.then(()=> {
+					if(postAction === 'remove') {
+						client.info(`Removing via map is not yet implemented. `);
+						//editor.edit(editorBuilder => editorBuilder.delete(selectedObject.range));
+					}	
+				});*/
+				
+
+				
 			}
 		});
 
@@ -476,7 +486,7 @@ async function downloadFile(requestUrl: string, folder: string, fileName: string
 			client.info(`Reusing cached file ${cachedFilePath}`);
 			return;
 		}
-		
+
 		const res = await axios.get(requestUrl, { responseType: "stream" });
 		if (res.status == 200) {
 			res.data.pipe(createWriteStream(pathToStoreExtension));

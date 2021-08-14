@@ -131,11 +131,11 @@ connection.onInitialized(() => {
 	});
 
 	// In case the client asks for a symbol, locate it and send it back
-	connection.onRequest('request/findsymbol', ({ name }) => {
+	connection.onRequest('request/findsymbol', ({ name, postAction }) => {
 		const symbol = symbolManager.findSymbol(name);
 		if (symbol) {
 			connection.console.log(`Found symbol: ${name}`);
-			connection.sendNotification('response/foundsymbol', symbolManager.findSymbol(name));
+			connection.sendNotification('response/foundsymbol', {...symbol, postAction});
 		}
 	});
 	connection.onRequest('request/addroom', ({ room })=> {

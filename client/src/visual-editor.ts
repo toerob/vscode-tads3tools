@@ -4,30 +4,18 @@ import { client, getLastChosenTextEditor } from './extension';
 
 export const visualEditorResponseHandlerMap = new Map();
 
-enum MapResponse {
-	REFRESH = 'refresh',
-	SELECT = 'select',
-	SHOW_ALL = 'showall',
-	UPDATE_POS = 'updatepos',
-	CHANGE = 'change',
-	CHANGE_START_ROOM = 'changestartroom',
-	LOG = 'log',
-	EDITOR = 'editor',
-	ADD_ROOM = 'addroom',
-	CHANGE_PORT = 'changeport'
-}
-
 export function setupVisualEditorResponseHandler() {
-	visualEditorResponseHandlerMap.set(MapResponse.REFRESH, onDidRefresh);
-	visualEditorResponseHandlerMap.set(MapResponse.SELECT, onDidSelectMapObject);
-	visualEditorResponseHandlerMap.set(MapResponse.SHOW_ALL, onDidShowAll);
-	visualEditorResponseHandlerMap.set(MapResponse.UPDATE_POS, onDidUpdatePosition);
-	visualEditorResponseHandlerMap.set(MapResponse.CHANGE, onDidChange);
-	visualEditorResponseHandlerMap.set(MapResponse.CHANGE_START_ROOM, onDidChangeStartRoom);
-	visualEditorResponseHandlerMap.set(MapResponse.LOG, onDidLog);
-	visualEditorResponseHandlerMap.set(MapResponse.EDITOR, onDidSelectEditor);
-	visualEditorResponseHandlerMap.set(MapResponse.ADD_ROOM, onDidAddRoom);
-	visualEditorResponseHandlerMap.set(MapResponse.CHANGE_PORT, onDidChangePort);
+	visualEditorResponseHandlerMap.set('refresh', onDidRefresh);
+	visualEditorResponseHandlerMap.set('select', onDidSelectMapObject);
+	visualEditorResponseHandlerMap.set('showall', onDidShowAll);
+	visualEditorResponseHandlerMap.set('updatepos', onDidUpdatePosition);
+	visualEditorResponseHandlerMap.set('change', onDidChange);
+	visualEditorResponseHandlerMap.set('changestartroom', onDidChangeStartRoom);
+	visualEditorResponseHandlerMap.set('log', onDidLog);
+	visualEditorResponseHandlerMap.set('editor', onDidSelectEditor);
+	visualEditorResponseHandlerMap.set('addroom', onDidAddRoom);
+	visualEditorResponseHandlerMap.set('removeroom', onDidRemoveRoom);
+	visualEditorResponseHandlerMap.set('changeport', onDidChangePort);
 }
 
 
@@ -143,6 +131,14 @@ export function onDidChangePort(payload) {
 		client.sendRequest('request/connectrooms', ({ currentPayload: payload, previousPayload}));
 	}
 }
+export function onDidRemoveRoom(payload, persistedObjectPositions) {
+	if (payload) {
+		console.error(`Removing a room with name: ${payload}`);
+		client.sendRequest('request/findsymbol', ({ name: payload, postAction: 'remove' }));
+	}
+}
+
+
 
 export function onDidAddRoom(payload, persistedObjectPositions) {
 	const editorOfChoice = getLastChosenTextEditor();

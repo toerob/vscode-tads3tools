@@ -19,6 +19,7 @@ const graph = new LGraph();
 //const mapCanvas = editor.canvas;
 const mapCanvas = new LGraphCanvas("#mapCanvas", graph);
 
+
 const MAX_TITLE_LENGTH = 17;
 const MAX_LENGTH = 19;
 
@@ -71,7 +72,7 @@ toggleShowAll = function () {
 	config.showAll = !config.showAll;
 	vscode.postMessage({
 		command: 'showall',
-		text: config.showAll
+		payload: config.showAll
 	});
 	refresh(lastMessage);
 };
@@ -200,6 +201,7 @@ class RoomNode {
 		this.resizable = false;
 		this.serialize_widgets = true;
 
+		this.removable = false;
 		this.title_mode = LiteGraph.TRANSPARENT_TITLE;
 
 	}
@@ -313,6 +315,15 @@ class RoomNode {
 		*/
 	}
 
+
+	onRemoved() {
+		vscode.postMessage({
+			command: 'removeroom',
+			payload: this.title
+		});
+	}
+
+
 }
 
 LiteGraph.registerNodeType("basic/room", RoomNode);
@@ -348,7 +359,7 @@ editorSelector.addEventListener('change', event => {
 	selectedEditor = event.target.value;
 	vscode.postMessage({
 		command: 'editor',
-		text: event.target.value
+		payload: event.target.value
 	});
 });
 
@@ -550,7 +561,7 @@ function handleRoomNodes(payload) {
 
 function createConversationNode(convObject) {
 
-	//vscode.postMessage({command: 'log',text: 'conv node: ' + convObject.name})
+	//vscode.postMessage({command: 'log',payload: 'conv node: ' + convObject.name})
 
 	var node = LiteGraph.createNode("basic/npc");
 	if (convObject.name !== undefined) {
@@ -618,7 +629,7 @@ function createNodeFromRoomObject(roomObject) {
 		node.properties.shortName = roomObject['shortName'].replace('\\\'', '\'');
 		/*vscode.postMessage({
 			command: 'log',
-			text: `Creating ${node.properties.name} x/y: ${node.pos[0]}/${node.pos[0]}`
+			payload: `Creating ${node.properties.name} x/y: ${node.pos[0]}/${node.pos[0]}`
 		})*/
 	}
 
@@ -638,18 +649,11 @@ function applyCallbacksOnRoomNode(node) {
 		node.title = node.properties.name;
 		vscode.postMessage({
 			command: 'change',
-			text: `Property change for object: ${node.properties.name}`
+			payload: `Property change for object: ${node.properties.name}`
 		});
-		//return true; //return true is the event was used by your node, to block other behaviours
 	};
 
-
-	//TODO: add applyCallbacksOnRoomNode for del-key to remove it
-	/*input.addEventListener("keydown", function (e) {
-		modified = true;
-		if (e.keyCode == 27) {
-		}
-	});*/
+	node.clonable = false;
 
 	node.getMenuOptions = () => {
 		return [
@@ -698,9 +702,9 @@ const createRoomGUI = (value, event, mouseEvent, contextMenu) => {
 		modal.style.left = node.pos[0] + "px";
 		modal.style.top = node.pos[1] + "px";
 
-		setTimeout(function () {
+		/*setTimeout(function () {
 			input.focus();
-		}, 10);
+		}, 10);*/ 	
 
 
 		applyCallbacksOnRoomNode(node);
@@ -720,7 +724,7 @@ const createRoomGUI = (value, event, mouseEvent, contextMenu) => {
 			node.properties.name = name;
 			node.title = name 
 			graph.add(node);
-			vscode.postMessage({command: 'addroom',text: createRoomNode(node)})
+			vscode.postMessage({command: 'addroom',payload: createRoomNode(node)})
 			vscode.postMessage({command: 'select', payload: node.title})				
 
 		}
