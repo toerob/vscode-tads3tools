@@ -5,12 +5,12 @@
  * ------------------------------------------------------------------------------------------ */
 
 import { exec } from 'child_process';
-import { existsSync, fstat, read, readFile, readFileSync, readSync, statSync } from 'fs';
+import { copyFileSync, createReadStream, createWriteStream, exists, existsSync, fstat, read, readFile, readFileSync, readSync, statSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
 import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextDocumentChangeEvent, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem, Position } from 'vscode';
-
 import {
+	ConnectionError,
 	LanguageClient,
 	LanguageClientOptions,
 	ServerOptions,
@@ -21,6 +21,11 @@ import { Tads3CompileErrorParser } from './tads3-error-parser';
 import { Subject, debounceTime } from 'rxjs';
 import { LocalStorageService } from './local-storage-service';
 import { writeFileSync } from 'fs';
+import { ensureDirSync } from 'fs-extra';
+import axios from 'axios';
+import { Extract } from 'unzipper';
+
+
 
 let errorDiagnostics = [];
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -43,21 +48,23 @@ const preprocessedFilesMap: Map<string, string> = new Map();
 
 export let client: LanguageClient;
 
-let storageManager;
+let storageManager: LocalStorageService;
 
 const persistedObjectPositions = new Map();
 
 let selectedObject: DocumentSymbol | undefined;
 let lastChosenTextDocument: TextDocument | undefined;
-let lastChosenTextEditor;
+let lastChosenTextEditor: TextEditor;
 let isUsingAdv3Lite = false;
 
-let globalStoragePath;
+let globalStoragePath: string;
+let extensionCacheDirectory: string;
 
 export function getLastChosenTextEditor() { return lastChosenTextEditor; }
 
-export function activate(context: ExtensionContext) {
+let extensionDownloadMap: Map<any, any>;
 
+export function activate(context: ExtensionContext) {
 
 	const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
 	const debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
@@ -98,6 +105,9 @@ export function activate(context: ExtensionContext) {
 		//
 	}));*/
 
+
+	
+	context.subscriptions.push(commands.registerCommand('tads3.downloadAndInstallExtension', downloadAndInstallExtension));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextForCurrentFile', showPreprocessedTextForCurrentFile));
@@ -126,6 +136,8 @@ export function activate(context: ExtensionContext) {
 	setupVisualEditorResponseHandler();
 
 	globalStoragePath = context.globalStorageUri.fsPath;
+
+	extensionCacheDirectory = path.join(context.globalStorageUri.fsPath, 'extensions');
 
 	client.onReady().then(async () => {
 
@@ -453,6 +465,88 @@ async function toggleGameRunnerOnT3ImageChanges() {
 	configuration.update("restartGameRunnerOnT3ImageChanges", !oldValue, true);
 }
 
+// TODO: cache download files to context.globalStorageUri.fsPath
+async function downloadFile(requestUrl: string, folder: string, fileName: string) {
+	try {
+		ensureDirSync(extensionCacheDirectory);
+		const cachedFilePath =  path.join(extensionCacheDirectory, fileName);
+		const pathToStoreExtension = path.resolve(__dirname, folder, fileName);
+		if(existsSync(cachedFilePath)) {
+			copyFileSync(cachedFilePath, pathToStoreExtension);
+			client.info(`Reusing cached file ${cachedFilePath}`);
+			return;
+		}
+		
+		const res = await axios.get(requestUrl, { responseType: "stream" });
+		if (res.status == 200) {
+			res.data.pipe(createWriteStream(pathToStoreExtension));
+			res.data.on("end", () => {
+				try {
+					copyFileSync(pathToStoreExtension, cachedFilePath);
+					client.info(`Download of ${fileName} to folder "${folder}" is completed`);
+				} catch(err) {
+					client.error(err);
+				}
+			});
+			return;
+		} 
+		throw new Error(`Error during download: ${res.status}`);
+	} catch (err) {
+		client.error("Error ", err);
+	}
+}
+
+
+
+async function downloadAndInstallExtension(context: ExtensionContext) {
+	const ifarchiveTads3ContributionsURL = 'http://ifarchive.org/if-archive/programming/tads3/library/contributions/';
+	if (extensionDownloadMap === undefined) {
+		const response = await axios.get(ifarchiveTads3ContributionsURL);
+		const entries = response.data.split('#');
+		extensionDownloadMap = new Map();
+		let idx = 0;
+		for (const entry of entries) {
+			const [key, data] = entry.split('\n\n');
+			if (idx > 0) {
+				extensionDownloadMap.set(key.trim(), data.trim());							
+			}
+			idx++;
+		}
+	}
+	const selections = await window.showQuickPick([...extensionDownloadMap.keys()], { canPickMany: true });
+	if (selections === undefined || selections.length === 0) {
+		return;
+	}
+	const option1: MessageItem = { title: 'Install' };
+	const option2: MessageItem = { title: 'Abort' };
+
+	const infoEntries = [];
+	for (const extKey of selections) {
+		const desc = extensionDownloadMap.get(extKey);
+		const entry = extKey + ' \n ' + desc;
+		infoEntries.push(entry);
+	}
+
+	const action = await window.showInformationMessage(infoEntries.join('\n\n***\n\n'), { modal: true }, option1, option2);
+	console.log(action);
+	if (action.title === 'Install') {
+		const makefileDir = dirname(chosenMakefileUri.fsPath);
+		for (const extKey of selections) {
+			await downloadFile(ifarchiveTads3ContributionsURL + extKey, makefileDir, extKey);
+			if (extKey.endsWith('.zip')) {
+				const extensionPath = path.join(makefileDir, extKey);
+				const fileNameWithoutZipExt = extKey.substr(0, extKey.length-4);
+				const extensionInstalledDirname = path.join(makefileDir, fileNameWithoutZipExt);
+				client.info(`Unzipping ${extKey} to ${extensionInstalledDirname}`);
+				try {
+					createReadStream(extensionPath).pipe(Extract({ path: extensionInstalledDirname }));
+				} catch(err) {
+					client.error(err);
+				}
+			}
+		}
+	}
+}
 
 function enablePreprocessorCodeLens(arg0: string, enablePreprocessorCodeLens: any) {
 	const configuration = workspace.getConfiguration("tads3");
@@ -521,7 +615,7 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 	});
 }
 
-export async function executeParse(makefileLocation: string, filePaths): Promise<any> {
+export async function executeParse(makefileLocation: string, filePaths: string[]): Promise<any> {
 	await client.onReady();
 	serverProcessCancelTokenSource = new CancellationTokenSource();
 	await client.sendRequest('executeParse', {
@@ -542,9 +636,9 @@ export async function cancelParse(): Promise<any> {
 
 
 
-let preprocessDocument;
+let preprocessDocument: TextDocument;
 
-function showPreprocessedTextAction(params) {
+function showPreprocessedTextAction(params: [any, any, any]) {
 	const [range, uri, preprocessedText] = params;
 	if (preprocessDocument) {
 		window.visibleTextEditors
