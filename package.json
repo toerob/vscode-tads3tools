@@ -63,12 +63,8 @@
 		],
 		"commands": [
 			{
-				"command": "tads3.parseTads3",
-				"title": "Tads3 command: Parse Tads3 source code"
-			},
-			{
 				"command": "tads3.clearCache",
-				"title": "Tads3 command: Clear cache for standard libraries adv3/adv3Lite. Usually this is not neccesary. "
+				"title": "Tads3 command: Clear cache for standard libraries adv3/adv3Lite. "
 			},
 			{
 				"command": "tads3.downloadAndInstallExtension",
@@ -141,9 +137,14 @@
 				"tads3.restartGameRunnerOnT3ImageChanges": {
 					"scope": "window",
 					"type": "boolean",
-					"runner": "frob",
 					"default": true,
 					"description": "Restarts the t3 game image in the interpreter whenever it is recompiled."
+				},
+				"tads3.gameRunnerInterpreter": {
+					"scope": "window",
+					"type": "string",
+					"default": "frob",
+					"description": "Runs the game in an command line interpreter if the setting tads3.restartGameRunnerOnT3ImageChanges is enabled. "
 				},
 				"tads3.maxNumberOfParseWorkerThreads": {
 					"scope": "resource",

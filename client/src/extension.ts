@@ -412,6 +412,13 @@ function setupAndMonitorBinaryGamefileChanges() {
 		if (!configuration.get("restartGameRunnerOnT3ImageChanges")) {
 			return;
 		}
+
+		
+		const interpreter = configuration.get("gameRunnerInterpreter");
+		if (!interpreter) {
+			return;
+		}
+
 		const fileBaseName = basename(event.fsPath);
 		if (gameRunnerTerminal) {
 			gameRunnerTerminal.sendText(`quit`);
@@ -422,7 +429,7 @@ function setupAndMonitorBinaryGamefileChanges() {
 		gameRunnerTerminal = window.createTerminal('Game runner terminal');
 		client.info(`${event.fsPath} changed, restarting ${fileBaseName}`);
 		gameRunnerTerminal.show(true);
-		gameRunnerTerminal.sendText(`frob ${fileBaseName}`);
+		gameRunnerTerminal.sendText(`${interpreter} ${fileBaseName}`);
 		window.showTextDocument(window.activeTextEditor.document);
 	});
 	t3FileSystemWatcher.onDidChange(event => runGameInTerminalSubject.next(event));
