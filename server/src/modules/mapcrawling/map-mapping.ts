@@ -98,8 +98,11 @@ export default class MapObjectManager {
 
 			const objectsAsArray = Array.from(mappedSymbols);
 
-			// Filter out rooms and doors:
-			const roomsWithConnections = objectsAsArray.filter(x => this.isRoomOrDoor(x));
+			const classList = new Set([...symbolManager.inheritanceMap.keys()]);
+			// Filter out rooms and doors and then classes:
+			const roomsWithConnections = objectsAsArray
+							.filter(x => this.isRoomOrDoor(x) && !classList.has(x.name));
+
 
 			// And the first level of children of each:
 			const childrenMap: DocumentSymbol[] = [];
@@ -148,6 +151,8 @@ export default class MapObjectManager {
 				// Remove properties
 				const propertiesAsNames = childrenMap.map(x => x.name);				
 				const nonPropertiesAndUncrawledObjects = uncrawledObjects.filter(x => !propertiesAsNames.includes(x.name));
+					
+
 
 				// Return crawled (and uncrawled rooms (only))
 				const collection = [...crawledObjects, ...nonPropertiesAndUncrawledObjects];
@@ -243,13 +248,14 @@ export default class MapObjectManager {
 		return false;
 	}
 
-
-
 	isRoomOrDoor(o: DocumentSymbol) {
 		//TODO: minor "hack" until all library files are being processed
 		// Should be removed once that is working perfectly
 		const a = this.findAdditionalProps(o);
 		try {
+			if(a?.isClass) {
+				return false;
+			}
 			if (o.detail) {
 				if (o.detail.includes('Door') 
 					|| o.detail.includes('Stairway')

@@ -13,6 +13,7 @@ export class ExtendedDocumentSymbolProperties {
 	objectScope: any | undefined;
 	functionScope: any | undefined;
 	symbol: any| undefined;
+	isClass: boolean| undefined;
 	isAssignment: boolean| undefined;
 	isModification: boolean|undefined;
 	isReplacement: boolean|undefined;
@@ -172,8 +173,11 @@ export class Tads3SymbolListener implements Tads3Listener {
 		}
 		const detail = ctx.superTypes()?.payload?.text ?? "object";
 
+		const additionalProps = new ExtendedDocumentSymbolProperties();
+
 		//TODO: add to classInheritance,
 		if (ctx._isClass) {
+			additionalProps.isClass = true;
 			const superClassNames = detail.split(',');
 			for (const superClassName of superClassNames) {
 				this.inheritanceMap.set(name, superClassName);				
@@ -187,7 +191,6 @@ export class Tads3SymbolListener implements Tads3Listener {
 		const symbol = DocumentSymbol.create(name, detail, ctx._isClass ? SymbolKind.Class : SymbolKind.Object, range, range, []);
 		this.currentObjectSymbol = symbol;
 
-		const additionalProps = new ExtendedDocumentSymbolProperties();
 		additionalProps.level = level;
 
 		if(ctx._isModify) {
@@ -242,9 +245,9 @@ export class Tads3SymbolListener implements Tads3Listener {
 		if (!ctx._isClass) {
 			this.lastObjectLevelMap.set(level, symbol);
 		}
-		if (name) {
-			this.additionalProperties.set(symbol, additionalProps);			
-		}
+		//if (name) {
+		this.additionalProperties.set(symbol, additionalProps);			
+		//}
 	}
 
 	exitObjectDeclaration(ctx: ObjectDeclarationContext) {

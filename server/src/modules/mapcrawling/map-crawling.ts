@@ -1,10 +1,7 @@
 import { DocumentSymbol, SymbolKind } from 'vscode-languageserver';
-import { Tads3SymbolManager } from '../symbol-manager';
 import { DefaultMapObject } from './DefaultMapObject';
-import MapObjectManager from './map-mapping';
 
 export const possibleExits = ['north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest', 'up', 'down', 'in', 'out', 'fore', 'aft', 'port', 'starboard'];
-// TODO: use possibleExits in extension.ts instead
 const dirArray: string[] = ['north', 'south', 'east', 'west', 'northeast', 'northwest', 'southeast', 'southwest', 'up', 'down', 'fore', 'aft', 'port', 'starboard' /*,'in','out'*/];
 let crawledRooms: DefaultMapObject[] = [];
 
@@ -17,8 +14,6 @@ let symbols: any[];
 const unlistedProxyRegExp = new RegExp(/static[(]{2}(.*)[)][.]createUnlistedProxy/);
 const unlistedProxyRegExpAdv3Lite = new RegExp(/UnlistedProxyConnector{\s*direction\s*[=]\s*(.*)\s*}/);
 const travelConnectorRegExp = new RegExp(/TravelConnector.*destination[=](.*)travelDesc.*/);
-//TravelConnector{destination=forestPathtravelDesc="
-
 
 const dirCoordsMap: any = {
 	north: [0, -1, 0],
@@ -34,15 +29,6 @@ const dirCoordsMap: any = {
 	//in: [0, 0, -1],
 	//out: [0, 0, 1]
 };
-
-
-
-function mapSymbolsToMapSymbols(symbolManager: Tads3SymbolManager) {
-	return [];
-}
-
-
-
 
 
 function getDirectionCoords(dir: string): [] {
@@ -62,8 +48,7 @@ export function crawlRooms(mapObjects: DefaultMapObject[], objectsAsArray: Docum
 		// Find the first Object with a direction property:
 		startRoom = mapObjects
 			.filter(x => x.kind === SymbolKind.Object)
-			//.find(x => x.props.find(x=>dirArray.includes(x.name)) )
-			.find(x => dirArray.find(dir => getAdjacentRoomName(x, dir) /*x[dir]*/ !== undefined));
+			.find(x => dirArray.find(dir => getAdjacentRoomName(x, dir) !== undefined));
 
 		if (startRoom === undefined) {
 			startRoom = mapObjects
@@ -106,7 +91,7 @@ function crawlRoom(room: DefaultMapObject, coords: any[], mapObjects: any[]) {
 	room.x = coords[0];
 	room.y = coords[1];
 	room.z = coords[2];
-	//console.error(`Adding room: ${room.name} x,y,z: ${room.x},${room.y},${room.z}`);
+	//console.log(`Adding room: ${room.name} x,y,z: ${room.x},${room.y},${room.z}`);
 	for (const dir of dirArray) {
 		let nextRoomName = getAdjacentRoomName(room, dir) /*room[dir]*/;
 		if (nextRoomName === undefined) {
@@ -118,7 +103,7 @@ function crawlRoom(room: DefaultMapObject, coords: any[], mapObjects: any[]) {
 			nextRoomName = travelConnectorMatch[1];
 			setAdjacentRoomName(room, dir, nextRoomName);
 			//room[dir] = nextRoomName;
-			//console.error(`Replacing travelConnector match ${match[1]} with: ${nextRoomName}`);
+			//console.log(`Replacing travelConnector match ${match[1]} with: ${nextRoomName}`);
 		}
 		let match = unlistedProxyRegExp.exec(nextRoomName);
 		if (match) {
@@ -129,21 +114,18 @@ function crawlRoom(room: DefaultMapObject, coords: any[], mapObjects: any[]) {
 			//nextRoomName = room[match[1]];
 			//room[dir] = nextRoomName;
 
-			//console.error(`Replacing proxy direction match ${match[1]} with: ${nextRoomName}`);
+			//console.log(`Replacing proxy direction match ${match[1]} with: ${nextRoomName}`);
 		} else {
 			match = unlistedProxyRegExpAdv3Lite.exec(nextRoomName);
 			if (match) {
 				const dir = match[1];
 				nextRoomName = getAdjacentRoomName(room, dir);
-				//nextRoomName = room[match[1]];
 
 				if (nextRoomName === undefined) {
 					console.error(`${match[1]} as property wasn't found within ${room.name}`);
 				}
 				setAdjacentRoomName(room, dir, nextRoomName);
-				//room[dir] = nextRoomName;
-
-				//console.error(`Replacing proxy direction match ${match[1]} with: ${nextRoomName}`);
+				//console.log(`Replacing proxy direction match ${match[1]} with: ${nextRoomName}`);
 			}
 		}
 
@@ -173,22 +155,14 @@ function crawlRoom(room: DefaultMapObject, coords: any[], mapObjects: any[]) {
 		}
 
 		if (nextRoom.detail.includes('Door') || nextRoom.detail.includes('Stairway')) {
-			//console.error(` (Passage type: ${nextRoom.detail}) `);
-
 			if (nextRoom.arrowConnection) {
 				const parentNode = symbols.find(x => x.children?.find((x: DefaultMapObject) => x.name === nextRoom.arrowConnection));
 				if (parentNode) {
 					nextRoom = mapObjects.find(x => x.name === parentNode.name);
-
 					setAdjacentRoomName(room, dir, nextRoom.name);
-					//room[dir] = nextRoom.name;
-
-					//console.error(`  (Replacing door object to parent node: ${nextRoom.name})`);
 				}
 			}
 		}
-
-
 
 		try {
 			const offsetCoords: any = getDirectionCoords(dir);

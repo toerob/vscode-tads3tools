@@ -101,9 +101,11 @@ export function activate(context: ExtensionContext) {
 	});
 
 	window.onDidChangeActiveTextEditor((event: any) => {
-		lastChosenTextDocument ??= event.document;
-		if (lastChosenTextDocument) {
-			client.info(`Last chosen editor changed to: ${lastChosenTextDocument.uri}`);
+		if(event.document !== undefined) {
+			lastChosenTextDocument = event.document;
+			if (lastChosenTextDocument) {
+				client.info(`Last chosen editor changed to: ${lastChosenTextDocument.uri}`);
+			}
 		}
 	});
 
@@ -739,10 +741,15 @@ async function openInVisualEditor(context: ExtensionContext) {
 		tads3VisualEditorPanel = undefined;
 	}, null, context.subscriptions);
 
+	tads3VisualEditorPanel.onDidChangeViewState(e=> {
+		if(e.webviewPanel.active) {
+			client.info(`Refresh map view`);
+			client.sendNotification('request/mapsymbols');		
+		}
+	});
+	
 	client.info(`Opening up the webview and ask server for map symbols`);
 	client.sendNotification('request/mapsymbols');
-
-	// TODO: redraw when back into focus
 
 	tads3VisualEditorPanel.webview.onDidReceiveMessage(event => {
 		const routine = visualEditorResponseHandlerMap.get(event.command);

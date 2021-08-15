@@ -2,6 +2,8 @@
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable no-undef */
 
+var acquireVsCodeApi;
+
 const vscode = acquireVsCodeApi();
 const refreshButton = document.getElementById('refreshButton');
 const roomSelector = document.getElementById('roomSelector');
@@ -421,16 +423,9 @@ function removeOptions(selectElement) {
 	}
 }
 
-
-// Clear previous options
 function clearRoomSelector() {
 	try {
 		removeOptions(roomSelector);
-		/*for(let idx = 0; idx<roomSelector.options.length; idx++) {
-			//roomSelector.options[idx] = null;
-			roomSelector.remove(idx);
-		}*/
-		//roomSelector.options = [];
 		vscode.postMessage({ command: 'log', payload: `Clearing old values in roomSelector: ${roomSelector.options.length} ` });
 
 	} catch (err) {

@@ -133,10 +133,11 @@ export function onDidChangePort(payload) {
 	}
 }
 export function onDidRemoveRoom(payload, persistedObjectPositions) {
-	if (payload) {
-		console.error(`Removing a room with name: ${payload}`);
-		client.sendRequest('request/findsymbol', ({ name: payload, postAction: 'remove' }));
-	}
+	//TODO: Not used
+	/*if (payload) {
+		//console.error(`Removing a room with name: ${payload}`);
+		//client.sendRequest('request/findsymbol', ({ name: payload, postAction: 'remove' }));
+	}*/
 }
 
 
