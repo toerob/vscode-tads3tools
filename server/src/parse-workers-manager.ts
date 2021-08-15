@@ -1,4 +1,4 @@
-import { DocumentSymbol,Range } from 'vscode-languageserver/node';
+import { DocumentSymbol, Range } from 'vscode-languageserver/node';
 import { preprocessAllFiles } from './parser/preprocessor';
 import { statSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { URI, Utils } from 'vscode-uri';
@@ -8,8 +8,8 @@ import { clearCompletionCache } from './modules/completions';
 import { basename } from 'path';
 import * as path from 'path';
 import { ensureDirSync } from 'fs-extra';
-import { Tads3SymbolManager } from './modules/symbol-manager';
-import { callbackify } from 'util';
+import { listenerCount } from 'events';
+import { any } from 'underscore';
 
 
 /**
@@ -17,24 +17,24 @@ import { callbackify } from 'util';
  * such as which library it uses, paths, flags etc..
  * @param chosenMakefileUri 
  */
- function analyzeMakefile(chosenMakefileUri: string) {
+function analyzeMakefile(chosenMakefileUri: string) {
 	const makefileString = readFileSync(chosenMakefileUri).toString();
 	const makeFileArray = makefileString.split(/\r?\n/);
 	const makefileArray = [];
-	for(const row of makeFileArray) {
-		if(row.trimLeft().startsWith('#')) {
+	for (const row of makeFileArray) {
+		if (row.trimLeft().startsWith('#')) {
 			continue;
 		}
-		const [key,value]= row.replace('  ',' ').split(' ');
-		if(key && value) {
-			makefileArray.push({key,value});
+		const [key, value] = row.replace('  ', ' ').split(' ');
+		if (key && value) {
+			makefileArray.push({ key, value });
 		}
 	}
 	connection.console.log(`Done analyzing makefile`);
 	return makefileArray;
 }
 
-let lastMakeFileLocation: string|undefined;
+let lastMakeFileLocation: string | undefined;
 let makefileStructure;
 let usingAdv3Lite = false;
 
@@ -50,13 +50,9 @@ const adv3LitePathRegExp = RegExp(/[/]?adv3[Ll]ite[/]|\\?adv3[Ll]ite\\/);
 
 const adv3PathRegExp = RegExp(/[/]?adv3[/]|\\?adv3\\/);
 
-const generalHeaderIncludeRegExp  = RegExp(/tads3[/]include[/]|tads3\\include\\/);
+const generalHeaderIncludeRegExp = RegExp(/tads3[/]include[/]|tads3\\include\\/);
 
 const useCachedLibrary = true;
-
-function clearCachedLibrary() {
-	//TODO
-}
 
 /**
  * 
@@ -64,27 +60,25 @@ function clearCachedLibrary() {
  * @param filePaths string array of files to parse, "undefined" means parse all files
  * @param token CancellationToken
  */
-export async function preprocessAndParseFiles(globalStoragePath: string, makefileLocation: string, filePaths: string[]|undefined, token: any) {
+export async function preprocessAndParseFiles(globalStoragePath: string, makefileLocation: string, filePaths: string[] | undefined, token: any) {
 
-	if(lastMakeFileLocation !== makefileLocation) {
+	if (lastMakeFileLocation !== makefileLocation) {
 		lastMakeFileLocation = makefileLocation;
 		makefileStructure = analyzeMakefile(makefileLocation);
 		usingAdv3Lite = !!makefileStructure?.find(keyvalue => keyvalue.key.match(/-lib/) && keyvalue.value.match(adv3LitePathRegExp)) ?? false;
-		connection.console.log('Project using ' + usingAdv3Lite?'adv3Lite':'standard adv3 library');
-		connection.sendNotification('response/makefile/keyvaluemap', {makefileStructure, usingAdv3Lite});
-	} 
+		connection.console.log('Project using ' + usingAdv3Lite ? 'adv3Lite' : 'standard adv3 library');
+		connection.sendNotification('response/makefile/keyvaluemap', { makefileStructure, usingAdv3Lite });
+	}
 
-	if(globalStoragePath) {
+	if (globalStoragePath) {
 		ensureDirSync(globalStoragePath);
 		connection.console.log(`Ensuring "${globalStoragePath}" exists`);
-		ensureDirSync(path.join(globalStoragePath,'.cache'));
-		const library = usingAdv3Lite?'adv3Lite':'adv3';
-		globalStorageCachePath = path.join(globalStoragePath,'.cache', library );
+		ensureDirSync(path.join(globalStoragePath, '.cache'));
+		const library = usingAdv3Lite ? 'adv3Lite' : 'adv3';
+		globalStorageCachePath = path.join(globalStoragePath, '.cache', library);
 
 		connection.console.log(`Ensuring "${globalStorageCachePath}" exists`);
 		ensureDirSync(globalStorageCachePath);
-		//const p = path.join(globalStorageCachePath,'test');
-		//writeFileSync(p, 'some contents');
 	}
 
 
@@ -116,13 +110,13 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 		return;
 	}
 
-    const maxNumberOfParseWorkerThreads:number = await connection.workspace.getConfiguration("tads3.maxNumberOfParseWorkerThreads");
+	const maxNumberOfParseWorkerThreads: number = await connection.workspace.getConfiguration("tads3.maxNumberOfParseWorkerThreads");
 
-	const parseOnlyTheWorkspaceFiles:boolean = await connection.workspace.getConfiguration("tads3.parseOnlyTheWorkspaceFiles");
-	if(parseOnlyTheWorkspaceFiles) {
-		allFilePaths = allFilePaths.filter(x=>x.startsWith(baseDir));
+	const parseOnlyTheWorkspaceFiles: boolean = await connection.workspace.getConfiguration("tads3.parseOnlyTheWorkspaceFiles");
+	if (parseOnlyTheWorkspaceFiles) {
+		allFilePaths = allFilePaths.filter(x => x.startsWith(baseDir));
 		connection.console.log(`Only parses files with base directory: ${baseDir}`); // Default 6 threads
-		connection.console.log(`****\n${allFilePaths.map(x=>basename(x)).join('\n')}****\n`);
+		connection.console.log(`****\n${allFilePaths.map(x => basename(x)).join('\n')}****\n`);
 	}
 	if (allFilePaths.length === 0) {
 		connection.console.log(`No files to parse. Aborting operation`);
@@ -134,9 +128,9 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	// allFilePaths = allFilePaths.splice(0,14);
 	const totalFiles = allFilePaths?.length;
 	let tracker = 0;
-	
+
 	// Spawn a single worker if only one file is to be parsed
-	if(allFilePaths.length === 1) {
+	if (allFilePaths.length === 1) {
 		const filePath = allFilePaths[0];
 		const startTime = Date.now();
 		connection.console.log(`Spawning worker to parse a single file: ${filePath}`);
@@ -144,9 +138,11 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 		const text = preprocessedFilesCacheMap.get(filePath) ?? '';
 		const jobResult = await worker(filePath, text);
 		connection.console.log(`Worker finished with result`);
-		const { symbols, keywords, additionalProperties} = jobResult;
+		const { symbols, keywords, additionalProperties, inheritanceMap } = jobResult;
 		symbolManager.symbols.set(filePath, symbols ?? []);
 		symbolManager.keywords.set(filePath, keywords ?? []);
+		inheritanceMap.forEach((value: string, key: string) => symbolManager.inheritanceMap.set(key, value));
+
 		clearCompletionCache();
 		symbolManager.additionalProperties.set(filePath, additionalProperties);
 		tracker++;
@@ -159,51 +155,58 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 		} catch (err) {
 			connection.console.error(`Error during thread termination: ${err}`);
 		}
-	// Setup a WorkerPool if we have a collection of files to parse
+		// Setup a WorkerPool if we have a collection of files to parse
 	} else {
 		connection.console.log(`Preparing to parse a total of ${allFilePaths.length} files`);
 		const poolSize = allFilePaths.length >= maxNumberOfParseWorkerThreads ? maxNumberOfParseWorkerThreads : 1;
 		connection.console.log(`Setting worker thread poolsize to: ${poolSize}`); // Default 6 threads
-			
+
 		const workerPool = Pool(() => spawn(new Worker('./worker')), poolSize);
-	
+
 		try {
 			const startTime = Date.now();
 			let cachedFiles = new Set();
 
-			if(initialParsing && useCachedLibrary) {
-				
+			if (initialParsing && useCachedLibrary) {
+
 				//const libraryKeywordsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
-				
-				cachedFiles = importLibrarySymbols('__symbols.json', (filePath:string, data:any)=>{
-					const symbols:DocumentSymbol[] = JSON.parse(data);
+
+				cachedFiles = importLibrarySymbols('__symbols.json', (filePath: string, data: any) => {
+					const symbols: DocumentSymbol[] = JSON.parse(data);
 					symbolManager.symbols.set(filePath, symbols);
 				});
 
-				importLibraryKeywords('__keywords.json',(filePath:string, data:any)=>{
-					const keywords:any = new Map(JSON.parse(data));
+				importLibraryKeywords('__keywords.json', (filePath: string, data: any) => {
+					const keywords: any = new Map(JSON.parse(data));
 					symbolManager.keywords.set(filePath, keywords);
 				});
+
+				importInheritanceMap((data: any) => {
+					const inheritanceMap: Map<string, string> = new Map(JSON.parse(data));
+					symbolManager.inheritanceMap = inheritanceMap;
+				});
+
 
 				const elapsedCacheReadTime = Date.now() - startTime;
 				connection.console.log(`Cached library files took ${elapsedCacheReadTime} ms to read`);
 			}
-	
+
 			for (const filePath of allFilePaths) {
 				connection.console.log(`Queuing parsing job ${filePath}`);
-	
+
 				// Only use cached values 
-				if(!cachedFiles.has(filePath)) {
+				if (!cachedFiles.has(filePath)) {
 					workerPool.queue(async (parseJob) => {
-	
+
 						//TODO consider report file before processing it: 
 						// e.g connection.sendNotification('symbolparsing/processing', [filePath, tracker, totalFiles, poolSize]);
 						const text = preprocessedFilesCacheMap.get(filePath) ?? '';
-						const { symbols, keywords, additionalProperties} = await parseJob(filePath, text);
-	
+						const { symbols, keywords, additionalProperties, inheritanceMap } = await parseJob(filePath, text);
+
 						symbolManager.symbols.set(filePath, symbols ?? []);
 						symbolManager.keywords.set(filePath, keywords ?? []);
-	
+						inheritanceMap.forEach((value: string, key: string) => symbolManager.inheritanceMap.set(key, value));
+
 						clearCompletionCache();
 						symbolManager.additionalProperties.set(filePath, additionalProperties);
 						tracker++;
@@ -215,34 +218,38 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 					connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, poolSize]);
 					connection.console.log(`${filePath} cached restored successfully`);
 				}
-	
-	
+
+
 			}
-	
+
 			try {
 				//workerPool.events.length
 				await workerPool.completed();
 				await workerPool.terminate();
-			} catch(err) {
-				connection.console.error(`Error happened during awaiting pool completion/termination: `+ err);
+			} catch (err) {
+				connection.console.error(`Error happened during awaiting pool completion/termination: ` + err);
 			}
-	
-			
+
+
 
 
 			const elapsedTime = Date.now() - startTime;
 			console.log(`All files parsed within ${elapsedTime} ms`);
 			connection.sendNotification('symbolparsing/allfiles/success', { allFilePaths, elapsedTime });
-	
-			if(initialParsing) {
+
+			if (initialParsing) {
 				const startTime = Date.now();
 				exportLibrarySymbols(symbolManager.symbols, usingAdv3Lite);
 				exportLibraryKeywords(symbolManager.keywords, usingAdv3Lite);
+				exportInheritanceMap(symbolManager.inheritanceMap);
+
+				// TODO: inheritanceMap must be exported to
+
 				const elapsedCacheReadTime = Date.now() - startTime;
 				connection.console.log(`Cached library files export took ${elapsedCacheReadTime} ms to write`);
 			}
 			initialParsing = false;
-			
+
 		} catch (err) {
 			await workerPool.terminate();
 			connection.console.error(`Error happened during parsing of files: ${err}`);
@@ -254,7 +261,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 function exportLibrarySymbols(symbols: Map<string, DocumentSymbol[]>, usingAdv3Lite: boolean) {
 	const librarySymbolsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
 	const librarySymbols = new Map();
-	for(const file of librarySymbolsFilePaths) {
+	for (const file of librarySymbolsFilePaths) {
 		librarySymbols.set(file, symbols.get(file));
 	}
 	for (const libraryPath of librarySymbols.keys()) {
@@ -272,23 +279,23 @@ function exportLibrarySymbols(symbols: Map<string, DocumentSymbol[]>, usingAdv3L
 	}
 }
 
-function exportLibraryKeywords(keywords: Map<string, Map<string, Range[]>>,usingAdv3Lite: boolean) {
+function exportLibraryKeywords(keywords: Map<string, Map<string, Range[]>>, usingAdv3Lite: boolean) {
 	const libraryKeywordsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
 	const libraryKeywords = new Map();
-	for(const file of libraryKeywordsFilePaths) {
+	for (const file of libraryKeywordsFilePaths) {
 		libraryKeywords.set(file, keywords.get(file));
 	}
-	if(globalStorageCachePath) {
-		for(const libraryKeywordPath of libraryKeywords.keys()) {
+	if (globalStorageCachePath) {
+		for (const libraryKeywordPath of libraryKeywords.keys()) {
 			const keywordRangeMap = libraryKeywords.get(libraryKeywordPath);
-			if(keywordRangeMap) {
+			if (keywordRangeMap) {
 				const keywordRangeMapArray = [...keywordRangeMap];
 				try {
 					const fileNameStr = `${basename(libraryKeywordPath)}__keywords.json`;
-					const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();					
+					const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 					writeFileSync(libraryCacheFilePath, JSON.stringify(keywordRangeMapArray).toString());
 					connection.console.log(`Cached keywords exported for${libraryKeywordPath} to ${libraryCacheFilePath}`);
-				} catch(err) {
+				} catch (err) {
 					connection.console.error(`Error happened during export of keywords: ${err}`);
 				}
 			}
@@ -296,19 +303,36 @@ function exportLibraryKeywords(keywords: Map<string, Map<string, Range[]>>,using
 	}
 }
 
-function importLibrarySymbols(fileSuffix: string, callback:any) {
+function exportInheritanceMap(inheritanceMap: Map<string, string>) {
+	if (globalStorageCachePath) {
+		const inheritanceMapArray = [...inheritanceMap];
+		try {
+			const fileNameStr = `inheritance__map.json`;
+			const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
+			writeFileSync(libraryCacheFilePath, JSON.stringify(inheritanceMapArray).toString());
+			connection.console.log(`Cached inheritancemap to ${libraryCacheFilePath}`);
+		} catch (err) {
+			connection.console.error(`Error happened during export: ${err}`);
+		}
+	}
+}
+
+
+
+
+function importLibrarySymbols(fileSuffix: string, callback: any) {
 	const librarySymbolsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
 	const cachedFiles = new Set();
-	if(globalStorageCachePath) {
-		for(const librarySymbolPath of librarySymbolsFilePaths) {
-			if(!existsSync(librarySymbolPath)) { continue;}
+	if (globalStorageCachePath) {
+		for (const librarySymbolPath of librarySymbolsFilePaths) {
+			if (!existsSync(librarySymbolPath)) { continue; }
 			try {
 				const fileNameStr = `${basename(librarySymbolPath)}${fileSuffix}`;
 				const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 				const data = readFileSync(libraryCacheFilePath).toString();
 				callback(librarySymbolPath, data);
-					//const symbols:DocumentSymbol[] = JSON.parse(data);
-					//symbolManager.symbols.set(librarySymbolPath, symbols);
+				//const symbols:DocumentSymbol[] = JSON.parse(data);
+				//symbolManager.symbols.set(librarySymbolPath, symbols);
 
 				connection.console.log('Cached symbols filed used for' + librarySymbolPath);
 				cachedFiles.add(librarySymbolPath);
@@ -320,19 +344,19 @@ function importLibrarySymbols(fileSuffix: string, callback:any) {
 	return cachedFiles;
 }
 
-function importLibraryKeywords(fileSuffix: string, callback:any) {
+function importLibraryKeywords(fileSuffix: string, callback: any) {
 	const libraryKeywordsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
 	const cachedFiles = new Set();
-	if(globalStorageCachePath) {
-		for(const libraryKeywordPath of libraryKeywordsFilePaths) {
-			if(!existsSync(libraryKeywordPath)) { continue;}
+	if (globalStorageCachePath) {
+		for (const libraryKeywordPath of libraryKeywordsFilePaths) {
+			if (!existsSync(libraryKeywordPath)) { continue; }
 			try {
 				const fileNameStr = `${basename(libraryKeywordPath)}${fileSuffix}`;
 				const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 				const data = readFileSync(libraryCacheFilePath).toString();
 				callback(libraryKeywordPath, data);
-					//const keywords:any = new Map(JSON.parse(data));
-					//symbolManager.keywords.set(libraryKeywordPath, keywords);		
+				//const keywords:any = new Map(JSON.parse(data));
+				//symbolManager.keywords.set(libraryKeywordPath, keywords);		
 
 				connection.console.log('Cached symbols filed used for' + libraryKeywordPath);
 				cachedFiles.add(libraryCacheFilePath);
@@ -343,6 +367,20 @@ function importLibraryKeywords(fileSuffix: string, callback:any) {
 		}
 	}
 	return cachedFiles;
+}
+
+function importInheritanceMap(callback: any) {
+	if (globalStorageCachePath) {
+		try {
+			const fileNameStr = `inheritance__map.json`;
+			const filePath = path.join(globalStorageCachePath, fileNameStr).toString();
+			const data = readFileSync(filePath).toString();
+			callback(data);
+			connection.console.log('Cached symbols filed used for' + filePath);
+		} catch (err) {
+			connection.console.error(`Error happened during import of symbols: ${err}`);
+		}
+	}
 }
 
 /*
@@ -370,8 +408,8 @@ function importFromFileSuffix(fileSuffix: string, callback:any) {
 
 
 function filterForLibraryFiles(array: string[]): string[] {
-	return array.filter((x:string)=>{
-		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp) 
+	return array.filter((x: string) => {
+		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp)
 			|| x.match(generalHeaderIncludeRegExp);
 	});
 }

@@ -63,6 +63,9 @@ export function getLastChosenTextEditor() { return lastChosenTextEditor; }
 
 let extensionDownloadMap: Map<any, any>;
 
+
+
+
 export function activate(context: ExtensionContext) {
 
 	const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));

@@ -7,8 +7,7 @@ import { Tads3Parser } from './parser/Tads3Parser';
 import { Tads3SymbolListener } from './parser/Tads3SymbolListener';
 import { expose } from 'threads';
 import { PredictionMode } from 'antlr4ts/atn/PredictionMode';
-import { Range, DefinitionParams, Location, DocumentSymbol  } from 'vscode-languageserver';
-import { connection } from './server';
+import { DocumentSymbol  } from 'vscode-languageserver';
 
 
 expose(function parseFunc(path: string, text: string) {
@@ -52,6 +51,7 @@ expose(function parseFunc(path: string, text: string) {
   return {
     keywords: listener.localKeywords ?? [],
     symbols: listener.symbols ?? symbols,
-    additionalProperties: listener.additionalProperties
+    additionalProperties: listener.additionalProperties,
+    inheritanceMap: listener.inheritanceMap
   };
 });

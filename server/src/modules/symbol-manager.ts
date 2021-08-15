@@ -33,11 +33,29 @@ export class Tads3SymbolManager {
 		return {};
 	}
 
+	mapHeritage(symbol: DocumentSymbol) {
+		const superTypes = symbol.detail?.split(',') ?? [];
+		const heritages = new Map();
+		for(const ancestor of superTypes) {
+			heritages.set(ancestor, this.findHeritage(ancestor));
+		}
+		return heritages;
+	}
 
-	findSuperTypes(name: any): DocumentSymbol[] {
-		throw new Error(`Not yet implemented`);
-		//const heritage = this.inheritanceMap.get(name);
-		//return [];
+	findHeritage(name: string): string[] {
+		const heritageStack:string[] = [];
+		let ancestorName = this.inheritanceMap.get(name);
+		heritageStack.push(name);
+		if(ancestorName) {
+			heritageStack.push(ancestorName);
+			while( ancestorName && (ancestorName = this.inheritanceMap.get(ancestorName)) !== undefined) {
+				if(ancestorName === '__root__') {
+					break;
+				}
+				heritageStack.push(ancestorName);
+			}
+		}
+		return heritageStack;
 	}
 
 	findContainingObject(filePath: string, position: Position): any {

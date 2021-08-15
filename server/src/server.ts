@@ -16,7 +16,8 @@ import {
 	CancellationTokenSource,
 	CodeLensRequest,
 	CodeLensResolveRequest,
-	SymbolKind} from 'vscode-languageserver/node';
+	SymbolKind,
+	DocumentSymbol} from 'vscode-languageserver/node';
 
 
 
