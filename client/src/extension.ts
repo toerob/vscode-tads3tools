@@ -8,7 +8,7 @@ import { exec } from 'child_process';
 import { copyFileSync, createReadStream, createWriteStream, existsSync, readFileSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem, Position } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem, Position, TextEditorSelectionChangeKind, SnippetString } from 'vscode';
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -24,6 +24,7 @@ import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
+import { editor } from './test/helper';
 
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
 const tads3CompileErrorParser = new Tads3CompileErrorParser();
@@ -82,7 +83,8 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 	
-	context.subscriptions.push(commands.registerCommand('tads3.setMakefile', setMakeFile));	
+	context.subscriptions.push(commands.registerCommand('tads3.createTemplateProject', ()=> createTemplateProject(context)));
+	context.subscriptions.push(commands.registerCommand('tads3.setMakefile', setMakeFile));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextForCurrentFile', showPreprocessedTextForCurrentFile));
@@ -907,5 +909,34 @@ async function selectMakefileWithDialog() {
 		return file[0];
 	}
 	return undefined;
+}
+
+async function createTemplateProject(context: ExtensionContext) {
+	const result = await window.showQuickPick(['adv3', 'adv3Lite'], { placeHolder: 'Project type' });
+	isUsingAdv3Lite = (result === 'adv3Lite' ? true : false);
+	if (workspace?.workspaceFolders?.length > 0) {
+		const firstWorkspaceFolder = workspace.workspaceFolders[0].uri;
+
+		const makefileResourceFilename = isUsingAdv3Lite ? 'Makefile-adv3Lite.t3m' : 'Makefile.t3m';
+		const gamefileResourceFilename = isUsingAdv3Lite ? 'gameMain-adv3Lite.t' : 'gameMain.t';
+
+		const makefileResourceFileUri = Uri.joinPath(context.extensionUri, 'resources', makefileResourceFilename);
+		const gamefileResourceFileUri = Uri.joinPath(context.extensionUri, 'resources', gamefileResourceFilename);
+
+		const makefileResourceFileContent = readFileSync(makefileResourceFileUri.fsPath).toString();
+		const gamefileResourceFileContent = readFileSync(gamefileResourceFileUri.fsPath).toString();
+
+		const makefileUri = Uri.joinPath(firstWorkspaceFolder, 'Makefile.t3m');
+		const gameFileUri = Uri.joinPath(firstWorkspaceFolder, 'gameMain.t');
+		const objFolderUri = Uri.joinPath(firstWorkspaceFolder, 'obj');
+
+		ensureDirSync(objFolderUri.fsPath);
+		writeFileSync(makefileUri.fsPath, makefileResourceFileContent);
+		writeFileSync(gameFileUri.fsPath, '');
+
+		await workspace.openTextDocument(gameFileUri.fsPath)
+			.then(doc => window.showTextDocument(doc))
+			.then(editor => editor.insertSnippet(new SnippetString(gamefileResourceFileContent), new Position(0, 0)));
+	}
 }
 

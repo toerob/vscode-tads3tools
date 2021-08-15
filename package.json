@@ -119,7 +119,7 @@
 				"category": "Preprocessing"
 			},
 			{
-				"command": "tads3.createProject",
+				"command": "tads3.createTemplateProject",
 				"title": "Tads3 command: Create a new Tads3 template project",
 				"category": "Edits"
 			},
