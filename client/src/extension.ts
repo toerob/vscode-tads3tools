@@ -5,12 +5,11 @@
  * ------------------------------------------------------------------------------------------ */
 
 import { exec } from 'child_process';
-import { copyFileSync, createReadStream, createWriteStream, exists, existsSync, fstat, read, readFile, readFileSync, readSync, statSync } from 'fs';
+import { copyFileSync, createReadStream, createWriteStream, exists, existsSync, fstat, read, readFile, readFileSync, readSync, statSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
 import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextDocumentChangeEvent, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem, Position } from 'vscode';
 import {
-	ConnectionError,
 	LanguageClient,
 	LanguageClientOptions,
 	ServerOptions,
@@ -85,14 +84,14 @@ export function activate(context: ExtensionContext) {
 		synchronize: {
 			// Notify the server about file changes to '.t, .h, and .clientrc files contained in the workspace
 			fileEvents: workspace.createFileSystemWatcher('**/.{t,h,t3m,clientrc}'),
-			
+
 		}
 	};
 
 	client = new LanguageClient('Tads3languageServer', 'Tads3 Language Server', serverOptions, clientOptions);
 	client.start();
 
-	
+
 
 	storageManager = new LocalStorageService(context.workspaceState);
 	//const globalStateManager = new LocalStorageService(context.globalState);
@@ -106,7 +105,7 @@ export function activate(context: ExtensionContext) {
 	}));*/
 
 
-	
+
 	context.subscriptions.push(commands.registerCommand('tads3.downloadAndInstallExtension', downloadAndInstallExtension));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
@@ -148,40 +147,40 @@ export function activate(context: ExtensionContext) {
 
 		client.onNotification('response/connectrooms', async ({ fromRoom, toRoom, validDirection1, validDirection2 }) => {
 			client.info(`Connect from  ${fromRoom.symbol.name}  (${fromRoom.filePath}) to ${toRoom.symbol.name} (${toRoom.filePath}) via ${validDirection1 / validDirection2} to (${toRoom.filePath})?`);
-			
-			
+
+
 			// Must begin with the room furthest down in the document,
 			// otherwise the position will be stale and the new direction property
 			// will be placed above the room object
 
 			//TODO: refactor this to be less verbose: lot's of redundancy here
-			if(fromRoom.symbol.range.start.line > toRoom.symbol.range.start.line) {
+			if (fromRoom.symbol.range.start.line > toRoom.symbol.range.start.line) {
 				await workspace.openTextDocument(fromRoom.filePath)
-					.then(doc=>window.showTextDocument(doc,ViewColumn.One)
-					.then(editor => {
-						editor.edit(editor => {
-							const pos = new Position(fromRoom.symbol.range.end.line, 0);
-							const text = `\t${validDirection1} = ${toRoom.symbol.name}\n`;
-							editor.insert(pos, text);
-						});
-						return editor;
-					}));
+					.then(doc => window.showTextDocument(doc, ViewColumn.One)
+						.then(editor => {
+							editor.edit(editor => {
+								const pos = new Position(fromRoom.symbol.range.end.line, 0);
+								const text = `\t${validDirection1} = ${toRoom.symbol.name}\n`;
+								editor.insert(pos, text);
+							});
+							return editor;
+						}));
 
 				await workspace.openTextDocument(toRoom.filePath)
-					.then(doc=>window.showTextDocument(doc,ViewColumn.One)
-					.then(editor => {
-						editor.edit(editor => {
-							const pos = new Position(toRoom.symbol.range.end.line, 0);
-							const text = `\t${validDirection2} = ${fromRoom.symbol.name}\n`;
-							editor.insert(pos, text);
-						});
-						return editor;
-					}));
+					.then(doc => window.showTextDocument(doc, ViewColumn.One)
+						.then(editor => {
+							editor.edit(editor => {
+								const pos = new Position(toRoom.symbol.range.end.line, 0);
+								const text = `\t${validDirection2} = ${fromRoom.symbol.name}\n`;
+								editor.insert(pos, text);
+							});
+							return editor;
+						}));
 
-			// Shifted order here:
+				// Shifted order here:
 			} else {
-					await workspace.openTextDocument(toRoom.filePath)
-					.then(doc=>window.showTextDocument(doc,ViewColumn.One))
+				await workspace.openTextDocument(toRoom.filePath)
+					.then(doc => window.showTextDocument(doc, ViewColumn.One))
 					.then(editor => {
 						editor.edit(editor => {
 							const pos = new Position(toRoom.symbol.range.end.line, 0);
@@ -190,8 +189,8 @@ export function activate(context: ExtensionContext) {
 						});
 						return editor;
 					});
-					await workspace.openTextDocument(fromRoom.filePath)
-					.then(doc=>window.showTextDocument(doc,ViewColumn.One))
+				await workspace.openTextDocument(fromRoom.filePath)
+					.then(doc => window.showTextDocument(doc, ViewColumn.One))
 					.then(editor => {
 						editor.edit(editor => {
 							const pos = new Position(fromRoom.symbol.range.end.line, 0);
@@ -203,13 +202,13 @@ export function activate(context: ExtensionContext) {
 			}
 
 			await workspace.openTextDocument(fromRoom.filePath)
-			.then(x=>x.save())
-			.then(saveResult=>console.log(`${saveResult} saved `));
+				.then(x => x.save())
+				.then(saveResult => console.log(`${saveResult} saved `));
 
-			if(fromRoom.filePath !== toRoom.filePath) {
+			if (fromRoom.filePath !== toRoom.filePath) {
 				await workspace.openTextDocument(toRoom.filePath)
-				.then(x=>x.save())
-				.then(saveResult=>console.log(`${saveResult} saved `));
+					.then(x => x.save())
+					.then(saveResult => console.log(`${saveResult} saved `));
 			}
 
 		});
@@ -237,9 +236,9 @@ export function activate(context: ExtensionContext) {
 					const pos = new Position(range.end.line + 1, 0);
 
 					// FIXME: Level isn't working:
-					
+
 					const levelArray = [];
-					for (let i = 0; i < level; i++) { 
+					for (let i = 0; i < level; i++) {
 						levelArray.push('+');
 					}
 
@@ -274,13 +273,13 @@ export function activate(context: ExtensionContext) {
 				selectedObject = symbol as DocumentSymbol; // keep track of the last selected object
 
 				workspace.openTextDocument(filePath)
-				.then(textDocument => {
-					window.showTextDocument(textDocument, {
-						preserveFocus: true,
-						selection: selectedObject.range,
-						viewColumn: ViewColumn.One,
+					.then(textDocument => {
+						window.showTextDocument(textDocument, {
+							preserveFocus: true,
+							selection: selectedObject.range,
+							viewColumn: ViewColumn.One,
+						});
 					});
-				});
 				// TODO: there's an issue here, due to all items being triggered with onRemoved whenever the map gets updated,
 				// thus all rooms would be deleted in their textdocument's equivalence whenever that happens. 
 				/*.then(()=> {
@@ -289,9 +288,9 @@ export function activate(context: ExtensionContext) {
 						//editor.edit(editorBuilder => editorBuilder.delete(selectedObject.range));
 					}	
 				});*/
-				
 
-				
+
+
 			}
 		});
 
@@ -477,11 +476,10 @@ async function toggleGameRunnerOnT3ImageChanges() {
 
 // TODO: cache download files to context.globalStorageUri.fsPath
 async function downloadFile(requestUrl: string, folder: string, fileName: string) {
-	try {
 		ensureDirSync(extensionCacheDirectory);
-		const cachedFilePath =  path.join(extensionCacheDirectory, fileName);
+		const cachedFilePath = path.join(extensionCacheDirectory, fileName);
 		const pathToStoreExtension = path.resolve(__dirname, folder, fileName);
-		if(existsSync(cachedFilePath)) {
+		if (existsSync(cachedFilePath)) {
 			copyFileSync(cachedFilePath, pathToStoreExtension);
 			client.info(`Reusing cached file ${cachedFilePath}`);
 			return;
@@ -494,35 +492,48 @@ async function downloadFile(requestUrl: string, folder: string, fileName: string
 				try {
 					copyFileSync(pathToStoreExtension, cachedFilePath);
 					client.info(`Download of ${fileName} to folder "${folder}" is completed`);
-				} catch(err) {
+				} catch (err) {
 					client.error(err);
 				}
 			});
 			return;
-		} 
+		}
 		throw new Error(`Error during download: ${res.status}`);
-	} catch (err) {
+/*	} catch (err) {
 		client.error("Error ", err);
-	}
+	}*/
 }
 
 
 
 async function downloadAndInstallExtension(context: ExtensionContext) {
+
+	// TODO:
+	//const configuration = workspace.getConfiguration("tads3");
+	//const ifarchiveTads3ContributionsURL = configuration.get("ifArchiveExtensionURL");
+
 	const ifarchiveTads3ContributionsURL = 'http://ifarchive.org/if-archive/programming/tads3/library/contributions/';
-	if (extensionDownloadMap === undefined) {
-		const response = await axios.get(ifarchiveTads3ContributionsURL);
-		const entries = response.data.split('#');
-		extensionDownloadMap = new Map();
-		let idx = 0;
-		for (const entry of entries) {
-			const [key, data] = entry.split('\n\n');
-			if (idx > 0) {
-				extensionDownloadMap.set(key.trim(), data.trim());							
+	try {
+		if (extensionDownloadMap === undefined) {
+			const response = await axios.get(ifarchiveTads3ContributionsURL);
+			const entries = response.data.split('#');
+			extensionDownloadMap = new Map();
+			let idx = 0;
+			for (const entry of entries) {
+				const [key, data] = entry.split('\n\n');
+				if (idx > 0) {
+					extensionDownloadMap.set(key.trim(), data.trim());
+				}
+				idx++;
 			}
-			idx++;
 		}
+	} catch(err) {
+		window.showErrorMessage(`Failed downloading extension list: ${err}`);
+		client.error(`Failed downloading extension list: ${err}`);
+		return;
 	}
+
+
 	const selections = await window.showQuickPick([...extensionDownloadMap.keys()], { canPickMany: true });
 	if (selections === undefined || selections.length === 0) {
 		return;
@@ -542,16 +553,35 @@ async function downloadAndInstallExtension(context: ExtensionContext) {
 	if (action.title === 'Install') {
 		const makefileDir = dirname(chosenMakefileUri.fsPath);
 		for (const extKey of selections) {
-			await downloadFile(ifarchiveTads3ContributionsURL + extKey, makefileDir, extKey);
+			const downloadURL = ifarchiveTads3ContributionsURL + extKey;
+			try {
+				await downloadFile(downloadURL, makefileDir, extKey);
+			} catch(err) {
+				client.error(`Download failed for ${downloadURL}: ${err}`);
+				window.showErrorMessage(`Download failed for ${downloadURL}: ${err}`);
+				continue;
+			}
+			
 			if (extKey.endsWith('.zip')) {
 				const extensionPath = path.join(makefileDir, extKey);
-				const fileNameWithoutZipExt = extKey.substr(0, extKey.length-4);
+				const fileNameWithoutZipExt = extKey.substr(0, extKey.length - 4);
 				const extensionInstalledDirname = path.join(makefileDir, fileNameWithoutZipExt);
 				client.info(`Unzipping ${extKey} to ${extensionInstalledDirname}`);
 				try {
-					createReadStream(extensionPath).pipe(Extract({ path: extensionInstalledDirname }));
-				} catch(err) {
-					client.error(err);
+					const readStream = createReadStream(extensionPath);
+					readStream.on('open', () => readStream.pipe(Extract({ path: extensionInstalledDirname })));
+					readStream.on('error', (err) => client.error(`Error during unzipping: ${err}`));
+					readStream.on('close', () => {
+						client.info(`Unzipping finished`);
+						try {
+							unlinkSync(extensionPath);
+							client.info(`Archive deleted`);
+						} catch(err) {
+							client.error(`Deletion of archive failed: ${err}`);
+						}
+					});
+				} catch (err) {
+					client.error(`Setting up readstream for ${extensionPath} failed: ${err}`);
 				}
 			}
 		}
@@ -568,7 +598,7 @@ function enablePreprocessorCodeLens(arg0: string, enablePreprocessorCodeLens: an
 async function diagnose(textDocument: TextDocument) {
 	const tads3ExtensionConfig = workspace.getConfiguration('tads3');
 	const compilerPath = tads3ExtensionConfig?.compiler?.path ?? 't3make';
-	const resultOfCompilation = await runCommand(`${compilerPath} -nobanner -q -f "${chosenMakefileUri.path}"`);
+	const resultOfCompilation = await runCommand(`${compilerPath} -nobanner -q -f "${chosenMakefileUri.fsPath}"`);
 	parseDiagnostics(resultOfCompilation.toString(), textDocument);
 }
 
@@ -684,11 +714,11 @@ function analyzeTextAtPosition() {
 		const text = window.activeTextEditor.document.lineAt(position.line).text;
 		const quote = findQuoteInStringRegExp.exec(text);
 
-		if(quote) {
+		if (quote) {
 			const firstQuote = quote[1];
 			window.showInformationMessage(`Analyzing ${firstQuote}`);
 			client.sendRequest('request/analyzeText/findNouns', { path: fsPath, position, firstQuote });
-	
+
 		}
 
 
@@ -798,7 +828,7 @@ function overridePositionWithPersistedCoordinates(mapObjects: any[] /*DefaultMap
 	const itemsToPersist = [];
 	for (const node of mapObjects) {
 		const persistedPosition = persistedObjectPositions.get(node.name);
-		if(persistedPosition) {
+		if (persistedPosition) {
 			console.log(`${node.name} has persisted position: ${persistedPosition[0]}/${persistedPosition[1]}`);
 		}
 		if (persistedPosition && persistedPosition.length === 2) {
@@ -843,10 +873,10 @@ async function initialParse() {
 
 async function installTracker(context: ExtensionContext) {
 
-	const filePath = isUsingAdv3Lite? '_gameTrackerAdv3Lite.t' : '_gameTrackerAdv3.t';
+	const filePath = isUsingAdv3Lite ? '_gameTrackerAdv3Lite.t' : '_gameTrackerAdv3.t';
 
 	const trackerFileContents = readFileSync(Uri.joinPath(context.extensionUri, 'resources', filePath).fsPath).toString();
-	
+
 	if (chosenMakefileUri) {
 		const workspaceFolder = dirname(chosenMakefileUri.fsPath);
 		if (workspaceFolder) {
@@ -856,7 +886,7 @@ async function installTracker(context: ExtensionContext) {
 				.then(doc => window.showTextDocument(doc, ViewColumn.Beside))
 				.then(async editor => {
 					await editor.edit((ed) => {
-						const trackerFile = isUsingAdv3Lite? '_gameTrackerAdv3Lite' : '_gameTrackerAdv3';
+						const trackerFile = isUsingAdv3Lite ? '_gameTrackerAdv3Lite' : '_gameTrackerAdv3';
 						const makefileText = editor.document.getText();
 						const isTrackerFileAlreadyIncluded = makefileText.includes(`-source ${trackerFile}`);
 						if (isTrackerFileAlreadyIncluded) {
@@ -874,13 +904,13 @@ async function installTracker(context: ExtensionContext) {
 				});
 
 
-			if(!isATrackerFileAlreadyCreated) {
+			if (!isATrackerFileAlreadyCreated) {
 				await writeFileSync(gameTrackerFilePath, trackerFileContents, 'utf-8');
 				await workspace.openTextDocument(gameTrackerFilePath)
-					.then(doc=>window.showTextDocument(doc,ViewColumn.Beside));	
+					.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
 				window.showInformationMessage(`The tracker file (_game_tracker.t) has been added into the project's folder. `);
 				return;
-			} 
+			}
 			window.showWarningMessage(`The tracker file (_game_tracker.t) is already in the project's folder. `);
 		}
 	}
