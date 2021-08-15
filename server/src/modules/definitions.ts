@@ -1,8 +1,8 @@
-import { TextDocuments } from 'vscode-languageserver';
+import { DefinitionLink, LocationLink, TextDocuments } from 'vscode-languageserver';
 import { connection } from '../server';
 import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
 import { getWordAtPosition } from './text-utils';
-import { DefinitionParams, Location  } from 'vscode-languageserver';
+import { DefinitionParams, Location, Range  } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 
@@ -17,10 +17,24 @@ export async function onDefinition({textDocument,position}: DefinitionParams, do
 			if(symbolName === 'object') {
 				return locations;
 			}
+
+			// TODO: Need inheritanceMap in place first
+			/*if(symbolName === 'inherited') {
+				const fsPath = URI.parse(textDocument.uri).fsPath;
+				const containingObject = symbolManager.findContainingObject(fsPath, position);
+				const superTypes = symbolManager.findSuperTypes(containingObject.name);
+			}*/
+
 			if(symbolName === 'self') {
-				// TODO: find enclosing object
-				// symbolManager.findClosestSelf();
-				return locations;
+				const fsPath = URI.parse(textDocument.uri).fsPath;
+				const containingObject = symbolManager.findContainingObject(fsPath, position);
+				if(containingObject) {
+					const toOfContainingObjectRange = Range.create(containingObject.range.start.line,containingObject.range.start.character,containingObject.range.start.line, containingObject.range.start.character);
+					const locationLink = LocationLink.create(textDocument.uri, containingObject.range, toOfContainingObjectRange);
+					if(locationLink) {
+						return [locationLink]; 
+					}
+				}
 			}
 
 			connection.console.log(`Find definition(s) for word: ${symbolName}`);

@@ -8,6 +8,8 @@ import { clearCompletionCache } from './modules/completions';
 import { basename } from 'path';
 import * as path from 'path';
 import { ensureDirSync } from 'fs-extra';
+import { Tads3SymbolManager } from './modules/symbol-manager';
+import { callbackify } from 'util';
 
 
 /**
@@ -170,8 +172,19 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 			let cachedFiles = new Set();
 
 			if(initialParsing && useCachedLibrary) {
-				cachedFiles = importLibrarySymbols(symbolManager.symbols, usingAdv3Lite);
-				importLibraryKeywords(symbolManager.keywords, usingAdv3Lite);
+				
+				//const libraryKeywordsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
+				
+				cachedFiles = importLibrarySymbols('__symbols.json', (filePath:string, data:any)=>{
+					const symbols:DocumentSymbol[] = JSON.parse(data);
+					symbolManager.symbols.set(filePath, symbols);
+				});
+
+				importLibraryKeywords('__keywords.json',(filePath:string, data:any)=>{
+					const keywords:any = new Map(JSON.parse(data));
+					symbolManager.keywords.set(filePath, keywords);
+				});
+
 				const elapsedCacheReadTime = Date.now() - startTime;
 				connection.console.log(`Cached library files took ${elapsedCacheReadTime} ms to read`);
 			}
@@ -283,18 +296,20 @@ function exportLibraryKeywords(keywords: Map<string, Map<string, Range[]>>,using
 	}
 }
 
-function importLibrarySymbols(symbolManagerSymbols: Map<string, DocumentSymbol[]>, usingAdv3Lite: boolean) {
+function importLibrarySymbols(fileSuffix: string, callback:any) {
 	const librarySymbolsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
 	const cachedFiles = new Set();
 	if(globalStorageCachePath) {
 		for(const librarySymbolPath of librarySymbolsFilePaths) {
 			if(!existsSync(librarySymbolPath)) { continue;}
 			try {
-				const fileNameStr = `${basename(librarySymbolPath)}__symbols.json`;
-				const libraryCacheFilePath = path.join(globalStorageCachePath,fileNameStr).toString();
+				const fileNameStr = `${basename(librarySymbolPath)}${fileSuffix}`;
+				const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 				const data = readFileSync(libraryCacheFilePath).toString();
-				const symbols:DocumentSymbol[] = JSON.parse(data);
-				symbolManagerSymbols.set(librarySymbolPath, symbols);
+				callback(librarySymbolPath, data);
+					//const symbols:DocumentSymbol[] = JSON.parse(data);
+					//symbolManager.symbols.set(librarySymbolPath, symbols);
+
 				connection.console.log('Cached symbols filed used for' + librarySymbolPath);
 				cachedFiles.add(librarySymbolPath);
 			} catch (err) {
@@ -305,35 +320,58 @@ function importLibrarySymbols(symbolManagerSymbols: Map<string, DocumentSymbol[]
 	return cachedFiles;
 }
 
-
-function filterForLibraryFiles(array: string[]) {
-	return array.filter((x:string)=>{
-		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp) 
-			|| x.match(generalHeaderIncludeRegExp);
-	});
-}
-
-/**
- * TODO: make sure this works... 
- * @param symbolManagerKeywords 
- * @param usingAdv3Lite 
- */
-function importLibraryKeywords(symbolManagerKeywords: Map<string, Map<string, Range[]>>, usingAdv3Lite: boolean) {
+function importLibraryKeywords(fileSuffix: string, callback:any) {
 	const libraryKeywordsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
 	const cachedFiles = new Set();
 	if(globalStorageCachePath) {
 		for(const libraryKeywordPath of libraryKeywordsFilePaths) {
-			const fileNameStr = `${basename(libraryKeywordPath)}__keywords.json`;
-			const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
-			if(existsSync(libraryCacheFilePath)) {
-				if(!existsSync(libraryCacheFilePath)) { continue;}
+			if(!existsSync(libraryKeywordPath)) { continue;}
+			try {
+				const fileNameStr = `${basename(libraryKeywordPath)}${fileSuffix}`;
+				const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 				const data = readFileSync(libraryCacheFilePath).toString();
-				const keywords:any = new Map(JSON.parse(data));
-				symbolManagerKeywords.set(libraryKeywordPath, keywords);		
+				callback(libraryKeywordPath, data);
+					//const keywords:any = new Map(JSON.parse(data));
+					//symbolManager.keywords.set(libraryKeywordPath, keywords);		
+
 				connection.console.log('Cached symbols filed used for' + libraryKeywordPath);
 				cachedFiles.add(libraryCacheFilePath);
+			} catch (err) {
+				connection.console.error(`Error happened during import of symbols: ${err}`);
 			}
+
 		}
 	}
 	return cachedFiles;
+}
+
+/*
+function importFromFileSuffix(fileSuffix: string, callback:any) {
+	const filePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
+	const cachedFiles = new Set();
+	if(globalStorageCachePath) {
+		for(const fp of filePaths) {
+			if(!existsSync(fp)) { continue;}
+			try {
+				const fileNameStr = `${basename(fp)}${fileSuffix}`;
+				const cachedFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
+				const data = readFileSync(cachedFilePath).toString();
+				callback(fp, data);
+				connection.console.log('Cached symbols filed used for' + fp);
+				cachedFiles.add(cachedFilePath);
+			} catch (err) {
+				connection.console.error(`Error happened during import: ${err}`);
+			}
+
+		}
+	}
+	return cachedFiles;
+}*/
+
+
+function filterForLibraryFiles(array: string[]): string[] {
+	return array.filter((x:string)=>{
+		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp) 
+			|| x.match(generalHeaderIncludeRegExp);
+	});
 }

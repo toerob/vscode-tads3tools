@@ -264,7 +264,7 @@ connection.onRequest('request/analyzeText/findNouns', async (params) => {
 		
 	if(symbol) {
 			const level = symbolManager.additionalProperties.get(path)?.get(symbol)?.level + 1;
-			connection.console.log(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
+			//connection.console.log(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
 			connection.sendNotification('response/analyzeText/findNouns', { tree, range: symbol.range, level } );
 		}
 	} else {
@@ -291,7 +291,7 @@ const posTagger = require('wink-pos-tagger');
 function analyzeText(text: string) {
 	const tagger = posTagger();
 	const tagged = tagger.tagSentence(text);
-	const nnTagged = tagged.filter((x:any) => x.pos === 'NN');
+	const nnTagged = tagged.filter((x:any) => x.pos === 'NN' || x.pos === 'NNP');
 	const uniqueValues = new Set(nnTagged.map((x:any)=>x.value as string));
 	return [...uniqueValues];
 }

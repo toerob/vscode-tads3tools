@@ -18,6 +18,7 @@ export class Tads3SymbolManager {
 		}
 		return {};
 	}
+
 	findClosestSymbolKindByPosition(filePath: string, kind: SymbolKind, position: Position): any {
 		const fileLocalSymbols = this.symbols.get(filePath);
 		if(fileLocalSymbols) {
@@ -33,6 +34,28 @@ export class Tads3SymbolManager {
 	}
 
 
+	findSuperTypes(name: any): DocumentSymbol[] {
+		throw new Error(`Not yet implemented`);
+		//const heritage = this.inheritanceMap.get(name);
+		//return [];
+	}
+
+	findContainingObject(filePath: string, position: Position): any {
+		function isClassOrObject(symbolKind: SymbolKind) {
+			return symbolKind === SymbolKind.Object
+				|| symbolKind === SymbolKind.Class;
+		}
+		const fileLocalSymbols = this.symbols.get(filePath);
+		if(fileLocalSymbols) {
+			const flattenedLocalSymbols = flattenTreeToArray(fileLocalSymbols);
+			return flattenedLocalSymbols?.find(s => 
+				isClassOrObject(s.kind)
+				&& position.line >= s.range.start.line
+				&& position.line <= s.range.end.line);
+			
+		}
+		return undefined;
+	}
 }
 
 export function flattenTreeToArray(localSymbols: DocumentSymbol[]) {

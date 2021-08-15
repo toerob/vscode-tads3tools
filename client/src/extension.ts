@@ -378,7 +378,7 @@ let currentTextDocument: TextDocument | undefined;
 async function onDidSaveTextDocument(textDocument: any) {
 	currentTextDocument = textDocument;
 
-	if (chosenMakefileUri && !existsSync(chosenMakefileUri.path)) {
+	if (chosenMakefileUri && !existsSync(chosenMakefileUri.fsPath)) {
 		chosenMakefileUri = undefined;
 	}
 
