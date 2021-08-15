@@ -8,6 +8,17 @@ export class Tads3SymbolManager {
 	additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
 	inheritanceMap: Map<string, string> = new Map(); // TODO:
 
+	getAdditionalProperties(symbol:DocumentSymbol) {
+		for(const keys of this.additionalProperties.keys()) {
+			const localAdditionalProps = this.additionalProperties.get(keys);
+			const props = localAdditionalProps?.get(symbol);
+			if(props) {
+				return props;
+			}
+		}
+		return undefined;
+	}
+
 	findSymbol(name: any) {
 		for (const filePath of this.symbols.keys()) {
 			const fileLocalSymbols = this.symbols.get(filePath);
@@ -90,6 +101,7 @@ export function addRecursively(localSymbols: DocumentSymbol[], basketOfSymbols: 
 		}
 	}
 }
+
 /*
 export function swapParent(newParent: ExtendedDocumentSymbol, oldParent: ExtendedDocumentSymbol, symbolAsExtDocObj: ExtendedDocumentSymbol, symbols: any) {
 	if (newParent) {

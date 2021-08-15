@@ -1,5 +1,5 @@
 import { Tads3Listener } from './Tads3Listener';
-import { ObjectDeclarationContext, PropertySetContext, PropertyContext, FunctionHeadContext, IdAtomContext, AssignmentStatementContext, FunctionDeclarationContext, CurlyObjectBodyContext, CodeBlockContext, MemberExprContext, ThrowStatementContext, IntrinsicMethodDeclarationContext, IntrinsicDeclarationContext } from './Tads3Parser';
+import { ObjectDeclarationContext, PropertySetContext, PropertyContext, FunctionHeadContext, IdAtomContext, AssignmentStatementContext, FunctionDeclarationContext, CurlyObjectBodyContext, CodeBlockContext, MemberExprContext, ThrowStatementContext, IntrinsicMethodDeclarationContext, IntrinsicDeclarationContext, GrammarDeclarationContext } from './Tads3Parser';
 import { ScopedEnvironment } from './ScopedEnvironment';
 import { CompletionItem, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { Location, Range } from 'vscode-languageserver';
@@ -14,6 +14,8 @@ export class ExtendedDocumentSymbolProperties {
 	functionScope: any | undefined;
 	symbol: any| undefined;
 	isAssignment: boolean| undefined;
+	isModification: boolean|undefined;
+	isReplacement: boolean|undefined;
 	shortName: string| undefined;
 	parent: DocumentSymbol | undefined;
 	superClassRoot: string | undefined;
@@ -137,6 +139,24 @@ export class Tads3SymbolListener implements Tads3Listener {
 		}
 
 	}
+
+	enterGrammarDeclaration(ctx: GrammarDeclarationContext) {
+		const identifiers =  ctx.identifierAtom();
+		const firstIdentifierStr = (identifiers && identifiers.length>0)? identifiers[0].ID()?.text : undefined;
+		const name = firstIdentifierStr ?? 'unnamed';
+		const start = (ctx.start.line ?? 1) - 1;
+		const stop = (ctx.stop?.line ?? 1) - 1;
+		const range = Range.create(start, 0, stop, 0);
+		const detail = 'grammar';
+		const symbol = DocumentSymbol.create(name, detail, SymbolKind.Struct, range, range, []);
+		this.symbols.push(symbol);
+		this.currentObjectSymbol = symbol;
+	}
+
+	exitGrammarDeclaration(ctx: GrammarDeclarationContext) {
+		this.currentObjectSymbol = undefined;
+	}
+
 	enterObjectDeclaration(ctx: ObjectDeclarationContext) {
 		let name: string = ctx.identifierAtom()?.ID()?.text.toString() ?? "unnamed";
 		const start = (ctx.start.line ?? 1) - 1;
@@ -169,6 +189,13 @@ export class Tads3SymbolListener implements Tads3Listener {
 
 		const additionalProps = new ExtendedDocumentSymbolProperties();
 		additionalProps.level = level;
+
+		if(ctx._isModify) {
+			additionalProps.isModification = true;
+		}
+		if(ctx._isReplace) {
+			additionalProps.isReplacement = true;
+		}
 
 		try {
 
