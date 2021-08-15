@@ -5,10 +5,10 @@
  * ------------------------------------------------------------------------------------------ */
 
 import { exec } from 'child_process';
-import { copyFileSync, createReadStream, createWriteStream, exists, existsSync, fstat, read, readFile, readFileSync, readSync, statSync, unlinkSync } from 'fs';
+import { copyFileSync, createReadStream, createWriteStream, existsSync, readFileSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, CancellationToken, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextDocumentChangeEvent, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem, Position } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem, Position } from 'vscode';
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -23,6 +23,7 @@ import { writeFileSync } from 'fs';
 import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
+import { rmdirSync } from 'fs';
 
 
 
@@ -109,19 +110,20 @@ export function activate(context: ExtensionContext) {
 
 
 
-	context.subscriptions.push(commands.registerCommand('tads3.downloadAndInstallExtension', downloadAndInstallExtension));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextForCurrentFile', showPreprocessedTextForCurrentFile));
 
+	
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.openProjectFileQuickPick', openProjectFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', () => openInVisualEditor(context)));
 
 	context.subscriptions.push(commands.registerCommand('tads3.restartGameRunnerOnT3ImageChanges', () => toggleGameRunnerOnT3ImageChanges()));
+	context.subscriptions.push(commands.registerCommand('tads3.downloadAndInstallExtension', downloadAndInstallExtension));
 	context.subscriptions.push(commands.registerCommand('tads3.analyzeTextAtPosition', () => analyzeTextAtPosition()));
 	context.subscriptions.push(commands.registerCommand('tads3.installTracker', () => installTracker(context)));
-
+	context.subscriptions.push(commands.registerCommand('tads3.clearCache', () => clearCache(context)));
 
 
 	window.onDidChangeTextEditorSelection(e => {
@@ -918,5 +920,18 @@ async function installTracker(context: ExtensionContext) {
 		}
 	}
 
+}
+
+async function clearCache(context: ExtensionContext) {
+	const userAnswer = await window.showInformationMessage(`This will clear all potential cache for the standard libraries adv3/adv3Lite. With the effect of all library files having to go through a full parse next time around.
+	Are you sure?`, { title: 'Yes' }, { title: 'No' });
+	if (userAnswer.title === 'Yes') {
+		try {
+			rmdirSync(globalStoragePath, { recursive: true });
+			window.showInformationMessage(`Standard library cache is cleared`);
+		} catch (err) {
+			window.showErrorMessage(`Error happened during cache removal: ${err}`);
+		}
+	}
 }
 
