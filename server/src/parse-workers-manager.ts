@@ -44,11 +44,11 @@ let initialParsing = true;
 
 let globalStorageCachePath: string | undefined;
 
-const adv3LitePathRegExp = RegExp(/[/]?adv3[Ll]ite[/]/);
+const adv3LitePathRegExp = RegExp(/[/]?adv3[Ll]ite[/]|\\?adv3[Ll]ite\\/);
 
-const adv3PathRegExp = RegExp(/[/]?adv3[/]/);
+const adv3PathRegExp = RegExp(/[/]?adv3[/]|\\?adv3\\/);
 
-const generalHeaderIncludeRegExp  = RegExp(/tads3[/]include[/]/);
+const generalHeaderIncludeRegExp  = RegExp(/tads3[/]include[/]|tads3\\include\\/);
 
 const useCachedLibrary = true;
 
@@ -67,7 +67,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	if(lastMakeFileLocation !== makefileLocation) {
 		lastMakeFileLocation = makefileLocation;
 		makefileStructure = analyzeMakefile(makefileLocation);
-		usingAdv3Lite = !!makefileStructure?.find(keyvalue => keyvalue.value.match(adv3LitePathRegExp)) ?? false;
+		usingAdv3Lite = !!makefileStructure?.find(keyvalue => keyvalue.key.match(/-lib/) && keyvalue.value.match(adv3LitePathRegExp)) ?? false;
 		connection.console.log('Project using ' + usingAdv3Lite?'adv3Lite':'standard adv3 library');
 		connection.sendNotification('response/makefile/keyvaluemap', {makefileStructure, usingAdv3Lite});
 	} 
