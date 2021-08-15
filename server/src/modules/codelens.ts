@@ -11,10 +11,9 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
     if(!enablePreprocessorCodeLens) {
         return codeLenses;
     }
-    //connection.console.log(`Code Lens enabled? ${enablePreprocessorCodeLens?'yes':'no'}`);
-    
 
-	const fsPath = URI.parse(textDocument.uri).fsPath;
+    const uri = URI.parse(textDocument.uri);
+	const fsPath = uri.fsPath;
 	const currentDoc = documents.get(textDocument.uri);
 	
     

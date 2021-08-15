@@ -560,6 +560,7 @@ function enablePreprocessorCodeLens(arg0: string, enablePreprocessorCodeLens: an
 	const configuration = workspace.getConfiguration("tads3");
 	const oldValue = configuration.get("enablePreprocessorCodeLens");
 	configuration.update("enablePreprocessorCodeLens", !oldValue);
+	window.showInformationMessage(`CodeLens for preprocessor differences is now ${!oldValue?'enabled':'disabled'} `);
 }
 
 
