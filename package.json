@@ -81,12 +81,6 @@
 				"enablement": "true"
 			},
 			{
-				"command": "tads3.addNode",
-				"title": "Tads3 command: Connect node (TEST)",
-				"category": "Editor",
-				"enablement": "true"
-			},
-			{
 				"command": "tads3.openInVisualEditor",
 				"title": "Tads3 command: Open current tads3 source code *.{t,h} in Tads3 Visual Editor ",
 				"category": "Editor",
@@ -127,11 +121,6 @@
 				"command": "tads3.enablePreprocessorCodeLens",
 				"title": "Tads3 command: Toggle CodeLens for preprocessed text of the current file",
 				"category": "Preprocessing"
-			},
-			{
-				"command": "tads3.insertDirectionProperty",
-				"title": "Tads3 command: CodeLens for inserting a direction property to a known object",
-				"category": "Edits"
 			},
 			{
 				"command": "tads3.createProject",

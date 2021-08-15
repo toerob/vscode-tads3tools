@@ -25,47 +25,33 @@ import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
 
-
-
-let errorDiagnostics = [];
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
-
 const tads3CompileErrorParser = new Tads3CompileErrorParser();
-let allFilesBeenProcessed = false;
-let isLongProcessingInAction = false;
-
-let serverProcessCancelTokenSource: CancellationTokenSource;
-let chosenMakefileUri: Uri | undefined;
-
-// A string array of preprocessed files available for retrieval from the server
-// via request: 'request/preprocessed/file'
-let preprocessedList: string[];
-
-export let tads3VisualEditorPanel: WebviewPanel | undefined = undefined;
-
 
 const preprocessedFilesMap: Map<string, string> = new Map();
-
-export let client: LanguageClient;
-
-let storageManager: LocalStorageService;
-
 const persistedObjectPositions = new Map();
 
+let storageManager: LocalStorageService;
 let selectedObject: DocumentSymbol | undefined;
 let lastChosenTextDocument: TextDocument | undefined;
 let lastChosenTextEditor: TextEditor;
 let isUsingAdv3Lite = false;
-
 let globalStoragePath: string;
 let extensionCacheDirectory: string;
-
-export function getLastChosenTextEditor() { return lastChosenTextEditor; }
-
+let currentTextDocument: TextDocument | undefined;
 let extensionDownloadMap: Map<any, any>;
 
+let errorDiagnostics = [];
+let allFilesBeenProcessed = false;
+let isLongProcessingInAction = false;
+let serverProcessCancelTokenSource: CancellationTokenSource;
+let chosenMakefileUri: Uri | undefined;
+let preprocessedList: string[];
 
+export let tads3VisualEditorPanel: WebviewPanel | undefined = undefined;
+export let client: LanguageClient;
 
+export function getLastChosenTextEditor() { return lastChosenTextEditor; }
 
 export function activate(context: ExtensionContext) {
 
@@ -81,44 +67,28 @@ export function activate(context: ExtensionContext) {
 	};
 
 	const clientOptions: LanguageClientOptions = {
-
 		documentSelector: [
 			{ scheme: 'untitled', language: 'tads3' },
 			{ scheme: 'file', language: 'tads3' }],
 		synchronize: {
-			// Notify the server about file changes to '.t, .h, and .clientrc files contained in the workspace
 			fileEvents: workspace.createFileSystemWatcher('**/.{t,h,t3m,clientrc}'),
-
 		}
 	};
 
 	client = new LanguageClient('Tads3languageServer', 'Tads3 Language Server', serverOptions, clientOptions);
 	client.start();
 
-
-
 	storageManager = new LocalStorageService(context.workspaceState);
-	//const globalStateManager = new LocalStorageService(context.globalState);
-
 
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
-
-
-	/*context.subscriptions.push(workspace.onDidOpenTextDocument(async (textDocument) => {
-		//
-	}));*/
-
-
-
+	
+	context.subscriptions.push(commands.registerCommand('tads3.setMakefile', setMakeFile));	
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextForCurrentFile', showPreprocessedTextForCurrentFile));
-
-	
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.openProjectFileQuickPick', openProjectFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', () => openInVisualEditor(context)));
-
 	context.subscriptions.push(commands.registerCommand('tads3.restartGameRunnerOnT3ImageChanges', () => toggleGameRunnerOnT3ImageChanges()));
 	context.subscriptions.push(commands.registerCommand('tads3.downloadAndInstallExtension', downloadAndInstallExtension));
 	context.subscriptions.push(commands.registerCommand('tads3.analyzeTextAtPosition', () => analyzeTextAtPosition()));
@@ -144,8 +114,6 @@ export function activate(context: ExtensionContext) {
 	extensionCacheDirectory = path.join(context.globalStorageUri.fsPath, 'extensions');
 
 	client.onReady().then(async () => {
-
-
 		client.onNotification('response/makefile/keyvaluemap', ({ makefileStructure, usingAdv3Lite }) => {
 			isUsingAdv3Lite = usingAdv3Lite;
 		});
@@ -220,13 +188,8 @@ export function activate(context: ExtensionContext) {
 
 
 		client.onNotification('response/analyzeText/findNouns', async ({ tree, range, level }) => {
-			//
 			client.info(tree);
-			//window.showInformationMessage(tree);
-			const options = tree; //.map(x => (x.value));
-			/*const i: MessageItem = {
-				title: ''
-			};*/
+			const options = tree; 
 			if (options.length === 0) {
 				window.showInformationMessage(`No suggestions for that line`);
 				return;
@@ -237,11 +200,8 @@ export function activate(context: ExtensionContext) {
 
 			for (const noun of result) {
 				await window.activeTextEditor.edit(editor => {
-					// Insert the line after the closing range of the current object
+					// Inserts the line after the closing range of the current object
 					const pos = new Position(range.end.line + 1, 0);
-
-					// FIXME: Level isn't working:
-
 					const levelArray = [];
 					for (let i = 0; i < level; i++) {
 						levelArray.push('+');
@@ -272,7 +232,9 @@ export function activate(context: ExtensionContext) {
 		// This is used by the map handler:
 		// If the client has asked the server to locate a symbol,
 		// The server responds by sending the client the symbol and filepath back
-		// if it finds anything, therefore "found" 
+		// The postAction is something the client originally defines
+		// and is supposed to be brought into action here.
+		// It is done this way so request/findsymbol can be reused for different purposes
 		client.onNotification('response/foundsymbol', ({ symbol, filePath, postAction }): void => {
 			if (symbol && filePath) {
 				selectedObject = symbol as DocumentSymbol; // keep track of the last selected object
@@ -357,19 +319,11 @@ export async function findAndSelectMakefileUri(askIfNotFound = true) {
 	} else if (files.length == 1) {
 		choice = files[0];
 	} else {
-		if (!choice && askIfNotFound) {
-			const file = await window.showOpenDialog({
-				title: `Select which folder the project's makefile (*.t3m) is located within`,
-				filters: { 'Makefiles': ['t3m'] },
-				openLabel: `Choose  makefile (*.t3m)`,
-				canSelectFolders: false,
-				canSelectFiles: true,
-			});
-			if (file.length > 0 && file[0] !== undefined) {
-				choice = files[0];
-			}
+		if (choice === undefined && askIfNotFound) {
+			choice = await selectMakefileWithDialog();				
 		}
 	}
+
 	if (choice === undefined) {
 		console.error(`No Makefile.t3m found, source code could not be processed.`);
 	}
@@ -377,7 +331,13 @@ export async function findAndSelectMakefileUri(askIfNotFound = true) {
 }
 
 
-let currentTextDocument: TextDocument | undefined;
+async function setMakeFile() {
+	chosenMakefileUri =  await selectMakefileWithDialog() ?? chosenMakefileUri;
+	if (chosenMakefileUri) {
+		client.info(`Chosen makefile set to: ${basename(chosenMakefileUri.fsPath)}`);
+	}
+}
+
 
 
 async function onDidSaveTextDocument(textDocument: any) {
@@ -471,15 +431,12 @@ function setupAndMonitorBinaryGamefileChanges() {
 
 
 
-// Commands
-
 async function toggleGameRunnerOnT3ImageChanges() {
 	const configuration = workspace.getConfiguration("tads3");
 	const oldValue = configuration.get("restartGameRunnerOnT3ImageChanges");
 	configuration.update("restartGameRunnerOnT3ImageChanges", !oldValue, true);
 }
 
-// TODO: cache download files to context.globalStorageUri.fsPath
 async function downloadFile(requestUrl: string, folder: string, fileName: string) {
 	ensureDirSync(extensionCacheDirectory);
 	const cachedFilePath = path.join(extensionCacheDirectory, fileName);
@@ -504,9 +461,6 @@ async function downloadFile(requestUrl: string, folder: string, fileName: string
 		return;
 	}
 	throw new Error(`Error during download: ${res.status}`);
-	/*	} catch (err) {
-			client.error("Error ", err);
-		}*/
 }
 
 
@@ -612,8 +566,6 @@ async function parseDiagnostics(resultOfCompilation: string, textDocument: TextD
 	collection.set(textDocument.uri, errorDiagnostics);
 }
 
-
-
 export function runCommand(command: string) {
 	return new Promise((resolve, reject) => {
 		let result = '';
@@ -631,9 +583,6 @@ export function runCommand(command: string) {
 		return result;
 	});
 }
-
-//----------------------------
-
 
 async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefined = undefined) {
 	const filePaths = textDocuments?.map(x => x.uri.fsPath) ?? undefined;  //[window.activeTextEditor.document.uri.fsPath];
@@ -718,17 +667,12 @@ function analyzeTextAtPosition() {
 		const position = window.activeTextEditor.selection.active;
 		const text = window.activeTextEditor.document.lineAt(position.line).text;
 		const quote = findQuoteInStringRegExp.exec(text);
-
 		if (quote) {
 			const firstQuote = quote[1];
 			window.showInformationMessage(`Analyzing ${firstQuote}`);
 			client.sendRequest('request/analyzeText/findNouns', { path: fsPath, position, firstQuote });
-
 		}
-
-
 	}
-
 }
 
 
@@ -933,5 +877,20 @@ async function clearCache(context: ExtensionContext) {
 			window.showErrorMessage(`Error happened during cache removal: ${err}`);
 		}
 	}
+}
+
+
+async function selectMakefileWithDialog() {
+	const file = await window.showOpenDialog({
+		title: `Select which folder the project's makefile (*.t3m) is located within`,
+		filters: { 'Makefiles': ['t3m'] },
+		openLabel: `Choose  makefile (*.t3m)`,
+		canSelectFolders: false,
+		canSelectFiles: true,
+	});
+	if (file && file.length > 0 && file[0] !== undefined) {
+		return file[0];
+	}
+	return undefined;
 }
 
