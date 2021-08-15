@@ -438,6 +438,10 @@ function clearRoomSelector() {
 	}
 }
 
+function isDoor(obj) {
+	return obj.detail.match('Door|Passage|Stairway');
+}
+
 function handleRoomNodes(payload) {
 	levelLabelRef.innerText = currentLevel;
 
@@ -448,7 +452,9 @@ function handleRoomNodes(payload) {
 
 				clearRoomSelector();
 				// Add option to selector
-				let sortedNames = payload.objects.map(x => x.name).sort(function (a, b) {
+				let sortedNames = payload.objects
+										.filter(x=>!isDoor(x))
+										.map(x => x.name).sort(function (a, b) {
 					if (a.name < b.name) return -1;
 					if (a.name > b.name) return 1;
 					return 0;

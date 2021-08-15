@@ -130,6 +130,14 @@ connection.onInitialized(() => {
 			connection.sendNotification('response/mapsymbols', symbols);
 		});
 	});
+	
+	connection.onRequest('request/changestartroom', (startRoom)=> {
+		mapper.startRoom = startRoom;
+		processMapSymbols(symbolManager, (symbols: DefaultMapObject[]) => {
+			connection.sendNotification('response/mapsymbols', symbols);
+		});
+	});
+
 
 	// In case the client asks for a symbol, locate it and send it back
 	connection.onRequest('request/findsymbol', ({ name, postAction }) => {

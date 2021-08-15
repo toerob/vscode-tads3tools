@@ -91,7 +91,8 @@ export function onDidChangeStartRoom(payload) {
 		this.startRoom = e.payload;
 		this.updateWebview(webviewPanel, this.lastSelectedTextDocument);
 	*/
-
+	console.log(`${payload}`);
+	client.sendRequest('request/changestartroom', (payload));
 }
 
 
