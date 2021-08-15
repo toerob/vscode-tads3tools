@@ -476,32 +476,32 @@ async function toggleGameRunnerOnT3ImageChanges() {
 
 // TODO: cache download files to context.globalStorageUri.fsPath
 async function downloadFile(requestUrl: string, folder: string, fileName: string) {
-		ensureDirSync(extensionCacheDirectory);
-		const cachedFilePath = path.join(extensionCacheDirectory, fileName);
-		const pathToStoreExtension = path.resolve(__dirname, folder, fileName);
-		if (existsSync(cachedFilePath)) {
-			copyFileSync(cachedFilePath, pathToStoreExtension);
-			client.info(`Reusing cached file ${cachedFilePath}`);
-			return;
-		}
+	ensureDirSync(extensionCacheDirectory);
+	const cachedFilePath = path.join(extensionCacheDirectory, fileName);
+	const pathToStoreExtension = path.resolve(__dirname, folder, fileName);
+	if (existsSync(cachedFilePath)) {
+		copyFileSync(cachedFilePath, pathToStoreExtension);
+		client.info(`Reusing cached file ${cachedFilePath}`);
+		return;
+	}
 
-		const res = await axios.get(requestUrl, { responseType: "stream" });
-		if (res.status == 200) {
-			res.data.pipe(createWriteStream(pathToStoreExtension));
-			res.data.on("end", () => {
-				try {
-					copyFileSync(pathToStoreExtension, cachedFilePath);
-					client.info(`Download of ${fileName} to folder "${folder}" is completed`);
-				} catch (err) {
-					client.error(err);
-				}
-			});
-			return;
-		}
-		throw new Error(`Error during download: ${res.status}`);
-/*	} catch (err) {
-		client.error("Error ", err);
-	}*/
+	const res = await axios.get(requestUrl, { responseType: "stream" });
+	if (res.status == 200) {
+		res.data.pipe(createWriteStream(pathToStoreExtension));
+		res.data.on("end", () => {
+			try {
+				copyFileSync(pathToStoreExtension, cachedFilePath);
+				client.info(`Download of ${fileName} to folder "${folder}" is completed`);
+			} catch (err) {
+				client.error(err);
+			}
+		});
+		return;
+	}
+	throw new Error(`Error during download: ${res.status}`);
+	/*	} catch (err) {
+			client.error("Error ", err);
+		}*/
 }
 
 
@@ -527,7 +527,7 @@ async function downloadAndInstallExtension(context: ExtensionContext) {
 				idx++;
 			}
 		}
-	} catch(err) {
+	} catch (err) {
 		window.showErrorMessage(`Failed downloading extension list: ${err}`);
 		client.error(`Failed downloading extension list: ${err}`);
 		return;
@@ -556,12 +556,12 @@ async function downloadAndInstallExtension(context: ExtensionContext) {
 			const downloadURL = ifarchiveTads3ContributionsURL + extKey;
 			try {
 				await downloadFile(downloadURL, makefileDir, extKey);
-			} catch(err) {
+			} catch (err) {
 				client.error(`Download failed for ${downloadURL}: ${err}`);
 				window.showErrorMessage(`Download failed for ${downloadURL}: ${err}`);
 				continue;
 			}
-			
+
 			if (extKey.endsWith('.zip')) {
 				const extensionPath = path.join(makefileDir, extKey);
 				const fileNameWithoutZipExt = extKey.substr(0, extKey.length - 4);
@@ -576,7 +576,7 @@ async function downloadAndInstallExtension(context: ExtensionContext) {
 						try {
 							unlinkSync(extensionPath);
 							client.info(`Archive deleted`);
-						} catch(err) {
+						} catch (err) {
 							client.error(`Deletion of archive failed: ${err}`);
 						}
 					});

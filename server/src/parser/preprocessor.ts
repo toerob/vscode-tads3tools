@@ -1,6 +1,7 @@
-import { URI } from 'vscode-languageserver';
+//import { URI } from 'vscode-languageserver';
 import { exec } from 'child_process';
 import { connection } from '../server';
+import { URI } from 'vscode-uri';
 
 const rowsMap = new Map<string, number>();
 
@@ -56,7 +57,9 @@ function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<s
 				if (currentCounter === undefined || currentCounter === Infinity) {
 					currentCounter = 1;
 				}
-				currentFile = match[2];
+
+				currentFile = match[2]
+								.replace(/\\\\/g,'\\'); 
 
 				const newCurrentCounter = Number(match[1]) - 1;
 				let lastLine = rowsMap.get(currentFile);

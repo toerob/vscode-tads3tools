@@ -1,10 +1,10 @@
 import { TextDocuments } from 'vscode-languageserver';
-import { URI } from 'vscode-uri';
-import { connection, documents } from '../server';
+import { connection } from '../server';
 import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
 import { getWordAtPosition } from './text-utils';
 import { DefinitionParams, Location  } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { URI } from 'vscode-uri';
 
 
 
@@ -30,8 +30,8 @@ export async function onDefinition({textDocument,position}: DefinitionParams, do
 					const symbol = flattenTreeToArray(localSymbols).find(x=>x.name === symbolName);
 					if(symbol !== undefined) {
 						connection.console.log(`Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`);
-						// TODO: syncPreprocessedWithDocument();
-						locations.push(Location.create(filePathKey, symbol.range));
+						const filePath = URI.file(filePathKey).toString();
+						locations.push(Location.create(filePath, symbol.range));
 					}
 				}
 			}

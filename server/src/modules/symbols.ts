@@ -2,7 +2,6 @@ import { promisify } from 'util';
 import { DocumentSymbolParams, TextDocuments } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
-import { connection } from '../server';
 import { Tads3SymbolManager } from './symbol-manager';
 
 const asyncSetTimeout = promisify(setTimeout);
