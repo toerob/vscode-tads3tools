@@ -1,4 +1,5 @@
 import { DocumentSymbol, SymbolKind } from 'vscode-languageserver';
+import { isUsingAdv3Lite } from '../../parse-workers-manager';
 import { ExtendedDocumentSymbolProperties } from '../../parser/Tads3SymbolListener';
 import { symbolManager } from '../../server';
 import { flattenTreeToArray, Tads3SymbolManager } from '../symbol-manager';
@@ -101,8 +102,9 @@ export default class MapObjectManager {
 			const classList = new Set([...symbolManager.inheritanceMap.keys()]);
 			// Filter out rooms and doors and then classes:
 			const roomsWithConnections = objectsAsArray
-							.filter(x => this.isRoomOrDoor(x) && !classList.has(x.name));
-
+				.filter(x => this.isRoomOrDoor(x))
+				.filter(x => !classList.has(x.name))
+				.filter(x => !['unknownDest_','varDest_'].includes(x.name) && isUsingAdv3Lite);
 
 			// And the first level of children of each:
 			const childrenMap: DocumentSymbol[] = [];

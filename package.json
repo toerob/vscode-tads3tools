@@ -17,7 +17,8 @@
 		"vscode": "^1.43.0"
 	},
 	"activationEvents": [
-		"onLanguage:tads3"
+		"onLanguage:tads3",
+		"onCommand:tads3.createTads3TemplateProject"
 	],
 	"main": "./client/out/extension",
 	"contributes": {

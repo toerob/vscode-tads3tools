@@ -923,8 +923,23 @@ async function createTemplateProject(context: ExtensionContext) {
 		canSelectFiles: false,
 	});
 
+
 	if(projectFolder.length > 0 && projectFolder[0] !== undefined) {
 		const firstWorkspaceFolder = projectFolder[0];
+
+		const makefileUri = Uri.joinPath(firstWorkspaceFolder, 'Makefile.t3m');
+		const gameFileUri = Uri.joinPath(firstWorkspaceFolder, 'gameMain.t');
+		const objFolderUri = Uri.joinPath(firstWorkspaceFolder, 'obj');
+
+
+		if (existsSync(makefileUri.fsPath) || existsSync(makefileUri.fsPath)) {
+			const userAnswer = await window.showInformationMessage(
+				`Project already have either a Makefile.t3m or a gameMain.t, do you want to overwrite them with a fresh template?`,
+				{ title: 'Yes' }, { title: 'No' });
+			if (userAnswer === undefined || userAnswer.title === 'No') {
+				return;
+			}
+		}
 
 		const result = await window.showQuickPick(['adv3', 'adv3Lite'], { placeHolder: 'Project type' });
 		isUsingAdv3Lite = (result === 'adv3Lite' ? true : false);
@@ -938,9 +953,6 @@ async function createTemplateProject(context: ExtensionContext) {
 		const makefileResourceFileContent = readFileSync(makefileResourceFileUri.fsPath).toString();
 		const gamefileResourceFileContent = readFileSync(gamefileResourceFileUri.fsPath).toString();
 
-		const makefileUri = Uri.joinPath(firstWorkspaceFolder, 'Makefile.t3m');
-		const gameFileUri = Uri.joinPath(firstWorkspaceFolder, 'gameMain.t');
-		const objFolderUri = Uri.joinPath(firstWorkspaceFolder, 'obj');
 
 		ensureDirSync(objFolderUri.fsPath);
 		writeFileSync(makefileUri.fsPath, makefileResourceFileContent);
