@@ -5,6 +5,9 @@
 var acquireVsCodeApi;
 
 const vscode = acquireVsCodeApi();
+
+
+const resetButton = document.getElementById('resetButton');
 const refreshButton = document.getElementById('refreshButton');
 const roomSelector = document.getElementById('roomSelector');
 const levelLabelRef = document.getElementById('levelLabel');
@@ -27,7 +30,6 @@ const MAX_LENGTH = 19;
 
 
 let selectedEditor = 0;  // 0: map editor, 1: conversation editor
-let persistedObjectPositions = new Map();  // Keep track of object positions within this map
 let lastMessage;
 let currentLevel = 0;
 
@@ -332,13 +334,9 @@ LiteGraph.registerNodeType("basic/room", RoomNode);
 LiteGraph.registerNodeType("basic/npc", NPCNode);
 
 
-refreshButton.addEventListener('click', () => {
-	//debugger;
-	/*if (lastMessage) {
-		refresh(lastMessage);		
-	}*/
-	vscode.postMessage({command: 'refresh' });
-
+refreshButton.addEventListener('click', () => vscode.postMessage({command: 'refresh' }));
+resetButton.addEventListener('click', () => {
+	return vscode.postMessage({ command: 'reset' });
 });
 
 window.addEventListener('message', event => {

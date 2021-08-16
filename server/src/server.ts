@@ -125,7 +125,11 @@ connection.onInitialized(() => {
 		abortParsingProcess?.cancel();
 	});
 
-	connection.onNotification('request/mapsymbols', () => {
+	connection.onNotification('request/mapsymbols', (options) => {
+		if(options?.reset) {
+			mapper.newlyCreatedRoomsSet.clear();
+			mapper.persistedObjectPositions.clear();
+		}
 		processMapSymbols(symbolManager, (symbols: DefaultMapObject[]) => {
 			connection.sendNotification('response/mapsymbols', symbols);
 		});
@@ -300,7 +304,7 @@ const posTagger = require('wink-pos-tagger');
 function analyzeText(text: string) {
 	const tagger = posTagger();
 	const tagged = tagger.tagSentence(text);
-	const nnTagged = tagged.filter((x:any) => x.pos === 'NN' || x.pos === 'NNP');
+	const nnTagged = tagged.filter((x:any) => x.pos.startsWith('NN'));
 	const uniqueValues = new Set(nnTagged.map((x:any)=>x.value as string));
 	return [...uniqueValues];
 }

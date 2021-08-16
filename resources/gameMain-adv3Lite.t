@@ -1,8 +1,6 @@
-//TODO: make me adv3Lite
-
 #charset "us-ascii"
-#include <adv3.h>
-#include <en_us.h> 
+#include <tads.h>
+#include "advlite.h"
 
 gameMain: GameMainDef
 	initialPlayerChar = ${6:me}
@@ -19,7 +17,7 @@ versionInfo: GameID
 	htmlDesc = '$4'
 ;
 
-${5:startRoom}: Room '$5' '$5'
+${5:startRoom}: Room '$5'
 ;
 
 +$6: Actor

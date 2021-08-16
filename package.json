@@ -63,6 +63,12 @@
 		],
 		"commands": [
 			{
+				"command": "tads3.createTads3TemplateProject",
+				"title": "Tads3 command: Create a new Tads3 template project",
+				"category": "Edits"
+			},
+
+			{
 				"command": "tads3.clearCache",
 				"title": "Tads3 command: Clear cache for standard libraries adv3/adv3Lite. "
 			},
@@ -117,11 +123,6 @@
 				"command": "tads3.enablePreprocessorCodeLens",
 				"title": "Tads3 command: Toggle CodeLens for preprocessed text of the current file",
 				"category": "Preprocessing"
-			},
-			{
-				"command": "tads3.createTemplateProject",
-				"title": "Tads3 command: Create a new Tads3 template project",
-				"category": "Edits"
 			},
 			{
 				"command": "tads3.analyzeTextAtPosition",

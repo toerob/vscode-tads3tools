@@ -18,13 +18,12 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
 	
     
     const preprocessedDocument = preprocessedFilesCacheMap.get(fsPath);
-	const preprocessedDocumentArray = preprocessedDocument?.split(/\r?\n/);
+	const preprocessedDocumentArray = preprocessedDocument?.trimEnd().split(/\r?\n/);
 
 	if(!currentDoc || !preprocessedDocumentArray) {
 		return [];
     }
-    
-	const currentDocArray = currentDoc?.getText().split(/\r?\n/);
+	const currentDocArray = currentDoc?.getText().trimEnd().split(/\r?\n/);
 
     // If the files has diverged more than the last line in length
     // (happens during preprocessing)
@@ -32,7 +31,8 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
     // be out of sync, and the codelens will be seen at incorrect 
     // positions
 
-    if (currentDocArray.length !== preprocessedDocumentArray.length-1) {
+    if (currentDocArray.length !== preprocessedDocumentArray.length) {
+        connection.console.log(`Document number of rows diverging from preprocessed document, skipping codelens this time around`);
         return [];
     }
 

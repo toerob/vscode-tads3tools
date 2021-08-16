@@ -21,7 +21,7 @@ Tads3tools has the following features:
 - Various commands and more...
 
 
-## Planned for features
+## Planned features
 
 - A debugger implementation (via DAP)
 - Go to references
@@ -48,27 +48,9 @@ The following command are at the user's disposal any time by using the regular v
 
 
 
-
 **Command details follows:**
 
 ---
-
-
-#### **"Tads3 command: Clear cache for standard libraries adv3/adv3Lite."**
-
-  This command will clear all the cache that's been built up since last parsing. This hopefully will only be useful for rare circumstances and edge cases. By default using cache for the library files will speed up parsing immensly.
-
-#### **"Tads3 command: Download and install extension(s)"**
-
-  Will open a quickpick dialog showing all the extensions for tads3 in the ifarchive contribution folder. It will let you multi-select which extension to download and install. At the moment, installment is only unzipping an archive to the project folder. This, because there might be non-uniformity in how extensions are installed and used. A downloaded file will also be cached in the same folder parent folder of the standard library cache. (globalStorageUri)
-
-#### **"Tads3 command: Install a tracker game file in the project so the game will remember player position between sessions""**  
-
-This command will install a "gametracker" tads source code file into the project and add itself to the makefile. (Both the makefile and this source code will be opened on the command run, so the effect can be seen right away.) Installing the game tracker allows for continuous game development, meaning the player position will be persisted ony any room change and whenever the game is restarted the tracker extension will move the player to the last persisted position and start the game from there. This along with the command for toggling a game restart on each t3 image file change this, will fire up the frob interpreter in a terminal on each incremental change that are saved with the latest change. 
-
-#### **"Tads3 command: Toggles on/off if the game should restarted as soon as the t3 image game file changes"**
-
-If toggled to be enabled, the game will be restarted with the default interpreter in a terminal, on any saved changes in the project that will lead to a new game image file. 
 
 #### **"Tads3 command: Open current tads3 source code \*.{t,h} in Tads3 Visual Editor"**
     
@@ -99,6 +81,22 @@ Toggles a codelens for any preprocessed differences in the original game source 
 #### **"Tads3 command: Analyze the text at the current position and offer code actions. "**
         
  Analyzes a room description (using NLP pos tagger technique) and identifies nouns in the text. Then displays a quickpick modal allowing you to select which one should be made a decoration for the current object. The levelling will be kept automatic, so in case the room starts with '+' the decoration objects will be set to '++'.
+
+#### **"Tads3 command: Download and install extension(s)"**
+
+  Will open a quickpick dialog showing all the extensions for tads3 in the ifarchive contribution folder. It will let you multi-select which extension to download and install. At the moment, installment is only unzipping an archive to the project folder. This, because there might be non-uniformity in how extensions are installed and used. A downloaded file will also be cached in the same folder parent folder of the standard library cache. (globalStorageUri)
+
+#### **"Tads3 command: Install a tracker game file in the project so the game will remember player position between sessions"**  
+
+This command will install a "gametracker" tads source code file into the project and add itself to the makefile. (Both the makefile and this source code will be opened on the command run, so the effect can be seen right away.) Installing the game tracker allows for continuous game development, meaning the player position will be persisted ony any room change and whenever the game is restarted the tracker extension will move the player to the last persisted position and start the game from there. This along with the command for toggling a game restart on each t3 image file change this, will fire up the frob interpreter in a terminal on each incremental change that are saved with the latest change. 
+
+#### **"Tads3 command: Toggles on/off if the game should restarted as soon as the t3 image game file changes"**
+
+If toggled to be enabled, the game will be restarted with the default interpreter in a terminal, on any saved changes in the project that will lead to a new game image file. 
+
+#### **"Tads3 command: Clear cache for standard libraries adv3/adv3Lite."**
+
+  This command will clear all the cache that's been built up since last parsing. This hopefully will only be useful for rare circumstances and edge cases. By default using cache for the library files will speed up parsing immensly.
 
 ---
 

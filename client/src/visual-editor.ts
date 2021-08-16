@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { Uri, Webview, window, workspace } from 'vscode';
-import { client, getLastChosenTextEditor } from './extension';
+import { Uri, Webview } from 'vscode';
+import { client, getLastChosenTextEditor, getUsingAdv3LiteStatus } from './extension';
 
 export const visualEditorResponseHandlerMap = new Map();
 
 export function setupVisualEditorResponseHandler() {
 	visualEditorResponseHandlerMap.set('refresh', onDidRefresh);
+	visualEditorResponseHandlerMap.set('reset', onDidReset);
 	visualEditorResponseHandlerMap.set('select', onDidSelectMapObject);
 	visualEditorResponseHandlerMap.set('showall', onDidShowAll);
 	visualEditorResponseHandlerMap.set('updatepos', onDidUpdatePosition);
@@ -21,6 +22,10 @@ export function setupVisualEditorResponseHandler() {
 
 export function onDidRefresh() {
 	client.sendNotification('request/mapsymbols');
+}
+
+export function onDidReset() {
+	client.sendNotification('request/mapsymbols', { reset: true });
 }
 
 export function onDidSelectMapObject(payload) {
@@ -122,14 +127,14 @@ const connectingPairStack = [];
 
 export function onDidChangePort(payload) {
 	if (connectingPairStack.length === 0) {
-		connectingPairStack.push(payload);		
+		connectingPairStack.push(payload);
 	} else {
 		const previousPayload = connectingPairStack.pop();
 		console.log('did change port: ');
 		console.log(payload);
 
 		// TODO: save the current document before if dirty
-		client.sendRequest('request/connectrooms', ({ currentPayload: payload, previousPayload}));
+		client.sendRequest('request/connectrooms', ({ currentPayload: payload, previousPayload }));
 	}
 }
 export function onDidRemoveRoom(payload, persistedObjectPositions) {
@@ -140,18 +145,22 @@ export function onDidRemoveRoom(payload, persistedObjectPositions) {
 	}*/
 }
 
+function capitalize(str: string) {
+	return str[0].toUpperCase() + str.substr(1);
+}
+
+function camelCaseName(name: string) {
+	const result = name?.split(/\s+/) ?? [];
+	const capitalized = result.map((x) => capitalize(x)).join('');
+	return capitalized[0].toLowerCase() + capitalized.substr(1);
+}
 
 
 export function onDidAddRoom(payload, persistedObjectPositions) {
 	const editorOfChoice = getLastChosenTextEditor();
-	if (payload && editorOfChoice) {
-		console.error(`Adding a room with name: ${payload.name}`);
+	if (payload && editorOfChoice && payload.name) {
 
-		/*const { foundObject, fileEntryUri } = this.locateObjectNameWithinAllSymbols(payload);
-		if (foundObject) {
-			window.showErrorMessage(`${payload} already exists as an identified object in file: ${fileEntryUri}`);
-			return;
-		}*/
+		const camelCasedName = camelCaseName(payload.name);
 
 		editorOfChoice.edit(async builder => {
 			const lastLine = editorOfChoice.document.lineCount - 1;
@@ -161,19 +170,25 @@ export function onDidAddRoom(payload, persistedObjectPositions) {
 			// TODO: Trigger same GUI in maprenderer as when changing title
 			const superTypes = 'Room';
 
+
 			// TODO: if using adv3Lite
-			const str = `\n${payload.name}: ${superTypes} '${payload.name}'\n;`;
+
+
+			const str = getUsingAdv3LiteStatus() ?
+				`\n${camelCasedName}: ${superTypes} '${payload.name}'\n;`
+				: `\n${camelCasedName}: ${superTypes} '${payload.name}' '${payload.name}'\n;`;
+
 			builder.insert(lastRange.end, str);
-			
+
 			//let snippet = new SnippetString("\n${1: " + payload.name + "}: ${1: Room} '${" + payload.name + "}';");
 			//await window.activeTextEditor.insertSnippet(snippet, lastRange)
 
 			// TODO: maybe... doesn't work
 			// Add a temporary symbol in the outliner (will get replaced by the parsed object
 			// On update:
-			persistedObjectPositions.set(payload.name, payload.pos);
+			persistedObjectPositions.set(camelCasedName, payload.pos);
 
-			
+
 
 		}).then(() => {
 			//this.lastChosenTextEditor = editorOfChoice;
@@ -182,12 +197,12 @@ export function onDidAddRoom(payload, persistedObjectPositions) {
 					console.error(`Successfully saved with new content`);
 				}
 			}).then(() => {
-				persistedObjectPositions.set(payload.name, payload.pos);
+				persistedObjectPositions.set(camelCasedName, payload.pos);
 
 				// TODO: Persist in server or here?
 				//this.newlyCreatedRoomsSet.add(payload.name);
 
-				client.sendRequest('request/addroom', ({ room: payload}));
+				client.sendRequest('request/addroom', ({ room: payload }));
 
 			});
 
@@ -213,6 +228,7 @@ export function getHtmlForWebview(webview: Webview, extensionUri: Uri): string {
 				<div id="content"></div>
 
 				<button id="refreshButton">Update</button>
+				<button id="resetButton">Reset</button>
 				<label id="dialogLabel">Editor</label>
 				<select id="editorSelector">
 					<option value="0">Map editor</option>

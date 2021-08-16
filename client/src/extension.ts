@@ -24,7 +24,6 @@ import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
-import { editor } from './test/helper';
 
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
 const tads3CompileErrorParser = new Tads3CompileErrorParser();
@@ -51,6 +50,10 @@ let preprocessedList: string[];
 
 export let tads3VisualEditorPanel: WebviewPanel | undefined = undefined;
 export let client: LanguageClient;
+
+export function getUsingAdv3LiteStatus() {
+	return isUsingAdv3Lite;
+}
 
 export function getLastChosenTextEditor() { return lastChosenTextEditor; }
 
@@ -83,7 +86,7 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 	
-	context.subscriptions.push(commands.registerCommand('tads3.createTemplateProject', ()=> createTemplateProject(context)));
+	context.subscriptions.push(commands.registerCommand('tads3.createTads3TemplateProject', () => createTemplateProject(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.setMakefile', setMakeFile));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
@@ -912,11 +915,20 @@ async function selectMakefileWithDialog() {
 }
 
 async function createTemplateProject(context: ExtensionContext) {
-	const result = await window.showQuickPick(['adv3', 'adv3Lite'], { placeHolder: 'Project type' });
-	isUsingAdv3Lite = (result === 'adv3Lite' ? true : false);
-	if (workspace?.workspaceFolders?.length > 0) {
-		const firstWorkspaceFolder = workspace.workspaceFolders[0].uri;
 
+	const projectFolder: Uri[] = await window.showOpenDialog({
+		title: `Select which in which folder to place the project folder`,
+		openLabel: `Select folder)`,
+		canSelectFolders: true,
+		canSelectFiles: false,
+	});
+
+	if(projectFolder.length > 0 && projectFolder[0] !== undefined) {
+		const firstWorkspaceFolder = projectFolder[0];
+
+		const result = await window.showQuickPick(['adv3', 'adv3Lite'], { placeHolder: 'Project type' });
+		isUsingAdv3Lite = (result === 'adv3Lite' ? true : false);
+	
 		const makefileResourceFilename = isUsingAdv3Lite ? 'Makefile-adv3Lite.t3m' : 'Makefile.t3m';
 		const gamefileResourceFilename = isUsingAdv3Lite ? 'gameMain-adv3Lite.t' : 'gameMain.t';
 
@@ -934,9 +946,11 @@ async function createTemplateProject(context: ExtensionContext) {
 		writeFileSync(makefileUri.fsPath, makefileResourceFileContent);
 		writeFileSync(gameFileUri.fsPath, '');
 
+		const gameFilecontent = new SnippetString(gamefileResourceFileContent);
+
 		await workspace.openTextDocument(gameFileUri.fsPath)
 			.then(doc => window.showTextDocument(doc))
-			.then(editor => editor.insertSnippet(new SnippetString(gamefileResourceFileContent), new Position(0, 0)));
+			.then(editor => editor.insertSnippet(gameFilecontent, new Position(0, 0)));
 	}
 }
 

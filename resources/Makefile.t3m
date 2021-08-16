@@ -1,4 +1,4 @@
-## Makefile for adv3
+## Makefile for an adv3 standard library game template
 
 -D LANGUAGE=en_us
 -D MESSAGESTYLE=neu

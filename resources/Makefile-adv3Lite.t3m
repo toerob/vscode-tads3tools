@@ -1,8 +1,7 @@
-## Makefile for adv3Lite
-## TODO: make adv3Lite compatible
+## Makefile for an adv3Lite library game template
 
--D LANGUAGE=en_us
--D MESSAGESTYLE=neu
+-I liblite
+-D LANGUAGE=english
 -Fy obj
 -Fo obj
 -FI /usr/local/share/frobtads/tads3/include
@@ -14,7 +13,9 @@
 ##sources
 -lib system
 -lib adv3Lite/adv3Lite
--source ${3:gameMain}.t
+-source gameMain.t
 
 -res
 GameInfo.txt
+
+
