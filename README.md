@@ -8,7 +8,7 @@ A language server/client for the Tads3 programming language and tailored made fo
 # Version 0.5 - alpha
 [![Demonstration](./screenshots/vscode-tads3tools.png)](./screenshots/vscode-tads3tools.png)
 
-https://user-images.githubusercontent.com/39532593/129703107-31cee505-2c4d-4288-beee-2ebc15b3fd72.mp4
+[![Video Demonstration](./screenshots/vscode-tads3tools-demo-small.mp4)](./screenshots/vscode-tads3tools-demo-small.mp4)
 
 
 ## Functionality
