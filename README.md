@@ -6,11 +6,10 @@
 A language server/client for the Tads3 programming language and tailored made for Visual Studio Code. 
 
 # Version 0.5 - alpha
-[![Demonstration](./screenshots/vscode-tads3tools.png)](./screenshots/vscode-tads3tools.png)
-
-[![Video Demonstration](./screenshots/vscode-tads3tools-demo-small.mp4)](./screenshots/vscode-tads3tools-demo-small.mp4)
 
 [![Video Demonstration](./screenshots/vscode-tads3tools-demo-small.gif)](./screenshots/vscode-tads3tools-demo-small.gif)
+
+(Better quality here: [![Video Demonstration](./screenshots/vscode-tads3tools-demo-small.mp4)](./screenshots/vscode-tads3tools-demo-small.mp4))
 
 
 ## Functionality
