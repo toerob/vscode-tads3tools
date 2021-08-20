@@ -627,7 +627,7 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 export async function executeParse(makefileLocation: string, filePaths: string[]): Promise<any> {
 	await client.onReady();
 	serverProcessCancelTokenSource = new CancellationTokenSource();
-	await client.sendRequest('executeParse', {
+	await client.sendRequest('request/parseDocuments', {
 		globalStoragePath,
 		makefileLocation: makefileLocation,
 		filePaths: filePaths,

@@ -5,11 +5,9 @@ import { URI, Utils } from 'vscode-uri';
 import { spawn, Pool, Worker, Thread } from 'threads';
 import { preprocessedFilesCacheMap, connection, symbolManager } from './server';
 import { clearCompletionCache } from './modules/completions';
-import { basename } from 'path';
+import { basename, dirname } from 'path';
 import * as path from 'path';
 import { ensureDirSync } from 'fs-extra';
-import { listenerCount } from 'events';
-import { any } from 'underscore';
 
 
 /**
@@ -408,8 +406,16 @@ function importFromFileSuffix(fileSuffix: string, callback:any) {
 
 
 function filterForLibraryFiles(array: string[]): string[] {
-	return array.filter((x: string) => {
-		return x.match(usingAdv3Lite ? adv3LitePathRegExp : adv3PathRegExp)
-			|| x.match(generalHeaderIncludeRegExp);
-	});
+	// Locate a common file used in both an adv3 or adv3Lite project: "tads.h"
+	const fileFoundInBothAdv3AndAdv3Lite = array.find(x => x.endsWith('/include/tads.h'));
+
+	// Now that we know the location of that file, we can better guess 
+	// the location of all tads3 standard library files by using the parent directory
+	// as a base directory:
+	if (fileFoundInBothAdv3AndAdv3Lite) {
+		const commonIncludePath = dirname(fileFoundInBothAdv3AndAdv3Lite);
+		const commonBaseDirectory = path.join(commonIncludePath, '..');
+		return array.filter((x: string) => x.startsWith(commonBaseDirectory));
+	}
+	return array;
 }
