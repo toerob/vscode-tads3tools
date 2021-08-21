@@ -103,10 +103,10 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 	//const parseTree = parser.program();
 	//c3Core;
 	//connection.console.log(parseTree.ruleContext.text);
-	
-	
 
 
+
+	
 	try {
 		if(currentLineStr.match(`${WS}self.${word}`)) {
 
@@ -250,8 +250,31 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 				}
 			}
 		}
+	
+	
+
+		// Add common keywords:
+		const tads3Keywords = ['grammar','switch','case','default','function','throw','new',
+		'template','for','try','catch','finally','enum','class','transient',
+		'modify','replace','propertyset','if','do','while','else','local',
+		'true','nil','intrinsic','inherited','delegated','property',
+		'dictionary','export','extern','return','static','string',
+		'foreach','in','...','..','step',
+		'not','is','break','continue','goto','token','pragma','operator'];
+
+		for(const keyword of tads3Keywords) {
+			const item = CompletionItem.create(keyword);
+			item.kind = CompletionItemKind.Keyword;
+			suggestions.add(item);
+		}
+
 		cachedKeyWords = suggestions;
 	}
+
+
+	
+
+
 	const results = fuzzysort.go(word, [...cachedKeyWords], {key: 'label'});
 	return results.map((x:any)=>x.obj);
 }
