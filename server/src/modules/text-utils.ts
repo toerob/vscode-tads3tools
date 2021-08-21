@@ -2,13 +2,34 @@ import { TextDocument, Position } from 'vscode-languageserver-textdocument';
 
 const tokenizeRegExp = /[a-zA-Z0-9_]+/g;
 
+
+export function offsetAt(document: TextDocument|undefined, position: Position) {
+	const rows = document?.getText().split(/\n/);
+	let offset = 0;
+	if(rows && position.line < rows.length) {
+		for (let rowIndex = 0; rowIndex <= position.line; rowIndex++) {
+			if(rowIndex === position.line) {
+				offset += position.character;		
+				break;
+			} else {
+				offset += rows[rowIndex].length + 1; // One extra for the carriage return
+			}
+		}
+		
+	} else {
+		throw new Error(`Can not calculate offset`);
+	}
+	return offset;
+}
+
+
 /**
  * 
  * @param currentDocument 
  * @param position 
  * @returns 
  */
-export function getWordAtPosition(currentDocument: TextDocument|any, position: Position) {
+export function getWordAtPosition(currentDocument: TextDocument|any, position: Position, asPosition=false) {
 	const text = currentDocument.getText();
 	const textRows = text.split(/\r?\n/);
 	if(position.line>textRows.length) {
@@ -30,6 +51,9 @@ export function getWordAtPosition(currentDocument: TextDocument|any, position: P
 				candidate = pos;
 			} 
 		}
+	}
+	if(asPosition) {
+		return (candidate !== undefined)? candidate : undefined;
 	}
 	return (candidate !== undefined)? tokenizedText.get(candidate) : undefined;
 }

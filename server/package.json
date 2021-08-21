@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@types/underscore": "^1.11.3",
+		"antlr4-c3": "^1.1.16",
 		"async": "^3.2.0",
 		"fs-extra": "^10.0.0",
 		"fuzzysort": "^1.1.4",

@@ -201,27 +201,29 @@ export function activate(context: ExtensionContext) {
 				window.showInformationMessage(`No suggestions for that line`);
 				return;
 			}
-			const result = await window.showQuickPick(options, {
-				canPickMany: true,
-			});
+			const result = await window.showQuickPick(options, {canPickMany: true});
 
+			// Build up a SnippetString with all the props identified in the text:
+
+			let stringBuffer = '';
 			for (const noun of result) {
 				await window.activeTextEditor.edit(editor => {
-					// Inserts the line after the closing range of the current object
-					const pos = new Position(range.end.line + 1, 0);
 					const levelArray = [];
 					for (let i = 0; i < level; i++) {
 						levelArray.push('+');
 					}
-
 					const text = isUsingAdv3Lite ?
-						`${levelArray.join('')} ${noun} : Decoration '${noun}';\n` 				// Adv3Lite style
-						: `${levelArray.join('')} ${noun} : Decoration '${noun}' '${noun}';\n`; 	// Adv3 style
+						`${levelArray.join('')} ${noun} : \${1:Decoration} '${noun}';\n` 				// Adv3Lite style
+						: `${levelArray.join('')} ${noun} : \${1:Decoration} '${noun}' '${noun}';\n`; 	// Adv3 style
 
-					editor.insert(pos, text);
+						stringBuffer += text;
 				});
 			}
-
+			stringBuffer += '$0';
+			
+			// Inserts the line after the closing range of the current object
+			const pos = new Position(range.end.line + 1, 0);
+			window.activeTextEditor.insertSnippet(new SnippetString(stringBuffer), pos);
 		});
 
 		client.onNotification('response/mapsymbols', symbols => {
@@ -297,16 +299,12 @@ export function activate(context: ExtensionContext) {
 
 }
 
-
-
 export function deactivate(): Thenable<void> | undefined {
 	if (!client) {
 		return undefined;
 	}
 	return client.stop();
 }
-
-
 
 export async function findAndSelectMakefileUri(askIfNotFound = true) {
 	let choice: Uri = undefined;
