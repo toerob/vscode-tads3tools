@@ -86,6 +86,7 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 	
+	context.subscriptions.push(commands.registerCommand('tads3.extractAllQuotes', () => extractAllQuotes(context)));	
 	context.subscriptions.push(commands.registerCommand('tads3.createTads3TemplateProject', () => createTemplateProject(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.setMakefile', setMakeFile));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
@@ -121,6 +122,17 @@ export function activate(context: ExtensionContext) {
 	extensionCacheDirectory = path.join(context.globalStorageUri.fsPath, 'extensions');
 
 	client.onReady().then(async () => {
+
+
+		client.onNotification('response/extractQuotes', (payload) => {
+
+			workspace
+				.openTextDocument({ language: 'tads3', content: payload.resultArray.join('\n') })
+				.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
+
+			
+		})
+
 		client.onNotification('response/makefile/keyvaluemap', ({ makefileStructure, usingAdv3Lite }) => {
 			isUsingAdv3Lite = usingAdv3Lite;
 		});
@@ -963,5 +975,20 @@ async function createTemplateProject(context: ExtensionContext) {
 			.then(doc => window.showTextDocument(doc))
 			.then(editor => editor.insertSnippet(gameFilecontent, new Position(0, 0)));
 	}
+}
+
+async function extractAllQuotes(context: ExtensionContext) {
+	const files = await window.showQuickPick(['All project files','current file']);
+	const types = await window.showQuickPick(['both','double','single']);
+
+	if(files.startsWith('current')) {
+		const text = window.activeTextEditor.document.getText();
+		const fsPath  = window.activeTextEditor.document.uri.fsPath;
+		await client.sendRequest('request/extractQuotes', {types, text, fsPath});	
+		return;
+	}
+	await client.sendRequest('request/extractQuotes', {types});	
+
+
 }
 

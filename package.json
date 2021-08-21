@@ -68,7 +68,11 @@
 				"title": "Tads3 command: Create a new Tads3 template project",
 				"category": "Edits"
 			},
-
+			{
+				"command": "tads3.extractAllQuotes",
+				"title": "Tads3 command: extract unique strings from source code",
+				"category": "Editor"
+			},
 			{
 				"command": "tads3.clearCache",
 				"title": "Tads3 command: Clear cache for standard libraries adv3/adv3Lite. "

@@ -32,6 +32,7 @@ import MapObjectManager from './modules/mapcrawling/map-mapping';
 import { onCodeLens } from './modules/codelens';
 import { onCompletion } from './modules/completions';
 import { onDocumentLinks } from './modules/links';
+import { tokenizeQuotesWithIndex } from './modules/text-utils';
 
 
 
@@ -251,6 +252,39 @@ connection.onCompletion(async (handler) => onCompletion(handler, documents, symb
 
 connection.onCodeLens(async (handler) => {
 	return onCodeLens(handler, documents, symbolManager);
+});
+
+connection.onRequest('request/extractQuotes', async (params) => {
+	if(params.fsPath === undefined) {
+		let resultArray:string[] = [];
+		for(const key of preprocessedFilesCacheMap.keys()) {
+			const prepText = preprocessedFilesCacheMap.get(key) ?? '';
+			const result = tokenizeQuotesWithIndex(prepText);
+			const fileResultArray = [...result.values()] ?? [];
+			resultArray = [...resultArray, ...fileResultArray];
+		}
+		if(params.types === 'single') {
+			resultArray = resultArray.filter(x=>x.startsWith('\''));
+		} else if(params.types === 'double') {
+			resultArray = resultArray.filter(x=>x.startsWith('\"'));
+		}
+
+		resultArray = [...new Set([...resultArray])]	
+		connection.sendNotification('response/extractQuotes', { resultArray } );
+		return;
+	}
+	
+	const { text, fsPath } = params;
+	const prepText = preprocessedFilesCacheMap.get(fsPath) ?? '';
+	const result = tokenizeQuotesWithIndex(prepText);
+	let resultArray = [...result.values()] ?? [];
+	if(params.types === 'single') {
+		resultArray = resultArray.filter(x=>x.startsWith('\''));
+	} else if(params.types === 'double') {
+		resultArray = resultArray.filter(x=>x.startsWith('\"'));
+	}
+
+	connection.sendNotification('response/extractQuotes', { resultArray } );
 });
 
 
