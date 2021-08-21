@@ -133,6 +133,13 @@ export function onDidChangePort(payload) {
 		console.log('did change port: ');
 		console.log(payload);
 
+		if(payload.to.includes(' ')) {
+			payload.to = camelCaseName(payload.to);
+		}
+		if(payload.from.includes(' ')) {
+			payload.from = camelCaseName(payload.from);
+		}
+
 		// TODO: save the current document before if dirty
 		client.sendRequest('request/connectrooms', ({ currentPayload: payload, previousPayload }));
 	}
