@@ -647,7 +647,8 @@ let preprocessDocument: TextDocument;
 
 function showPreprocessedTextAction(params: [any, any, any]) {
 	const [range, uri, preprocessedText] = params;
-	if (preprocessDocument) {
+	
+	if (preprocessDocument && !preprocessDocument.isClosed) {
 		window.visibleTextEditors
 			.find(editor => editor.document.uri.path === preprocessDocument.uri.path)
 			.edit(prepDoc => {

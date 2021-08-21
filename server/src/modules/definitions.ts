@@ -1,5 +1,5 @@
 import { DefinitionLink, LocationLink, TextDocuments } from 'vscode-languageserver';
-import { connection } from '../server';
+import { connection, preprocessedFilesCacheMap } from '../server';
 import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
 import { getWordAtPosition, withinQuote } from './text-utils';
 import { DefinitionParams, Location, Range } from 'vscode-languageserver';
@@ -9,12 +9,14 @@ import { SymbolKind } from 'vscode-languageserver';
 import { CharStreams, CommonTokenStream } from 'antlr4ts';
 import { Tads3Lexer } from '../parser/Tads3Lexer';
 import { Tads3Parser } from '../parser/Tads3Parser';
+import { Position } from 'vscode';
 
 const interpolatedExpressionRegExp = /[<][<](.*)[>][>]/g;
 
 export async function onDefinition({ textDocument, position }: DefinitionParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager) {
 	const locations: Location[] = [];
 	const currentDoc = documents.get(textDocument.uri);
+	
 	if (currentDoc) {
 
 		const quote = withinQuote(currentDoc, position);
@@ -36,7 +38,7 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 			return locations;
 		}
 
-		const symbolName = getWordAtPosition(currentDoc, position);
+		let symbolName = getWordAtPosition(currentDoc, position);
 
 		if (symbolName) {
 			if (symbolName === 'object') {
@@ -76,6 +78,25 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 					}
 				}
 			}
+
+
+			
+			// Not sure if this should be here since it is a bit too hardwired and only works for
+			// adv3: If ctrl-clicking "Examine" in dobjFor(Examine) "Examine" will be replaced with
+			// what the preprocessed version of it is, e.g:  "sentinelDobjExamine"
+			// But leaving it as is for now.
+
+			const currentLine = currentDoc.getText(Range.create(position.line, 0, position.line+1, 0));
+			const dobjForRegexp = /[id]objFor[(](.*)[)]/
+			const result = dobjForRegexp.exec(currentLine)
+			if(result && result[1] === symbolName) {
+				//const fsPath = URI.parse(textDocument.uri).fsPath;
+				//const prepRows = preprocessedFilesCacheMap.get(fsPath)?.split(/\n/) ?? [];
+				//const prepLine = (prepRows[position.line]) ?? '';
+				symbolName = "sentinelDobj" + symbolName;
+			}
+			
+
 
 			connection.console.log(`Find definition(s) for word: ${symbolName}`);
 			for (const filePathKey of symbolManager.symbols.keys()) {
