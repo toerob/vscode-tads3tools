@@ -1,22 +1,48 @@
 import { DefinitionLink, LocationLink, TextDocuments } from 'vscode-languageserver';
 import { connection } from '../server';
 import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
-import { getWordAtPosition } from './text-utils';
+import { getWordAtPosition, withinQuote } from './text-utils';
 import { DefinitionParams, Location, Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { SymbolKind } from 'vscode-languageserver';
+import { CharStreams, CommonTokenStream } from 'antlr4ts';
+import { Tads3Lexer } from '../parser/Tads3Lexer';
+import { Tads3Parser } from '../parser/Tads3Parser';
+
+const interpolatedExpressionRegExp = /[<][<](.*)[>][>]/g;
 
 export async function onDefinition({ textDocument, position }: DefinitionParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager) {
 	const locations: Location[] = [];
 	const currentDoc = documents.get(textDocument.uri);
 	if (currentDoc) {
+
+		const quote = withinQuote(currentDoc, position);
+		if(quote) {
+			// Left TODO: Quotes holds no definition per se. Unless it is an template inline expression  '<<' .* '>>'
+			// in which case we can parse that expression here.
+			/*
+			const inlineExpression = interpolatedExpressionRegExp.exec(quote.quoteString);
+			if(inlineExpression) {
+				const str = inlineExpression[1];
+				const input = CharStreams.fromString(str);
+				const lexer = new Tads3Lexer(input);
+				const tokenStream = new CommonTokenStream(lexer);
+				const parser = new Tads3Parser(tokenStream);
+				const parseTree = parser.expr();
+				console.log(parseTree.ruleContext);
+			}*/
+			
+			return locations;
+		}
+
 		const symbolName = getWordAtPosition(currentDoc, position);
 
 		if (symbolName) {
 			if (symbolName === 'object') {
 				return locations;
 			}
+
 
 			if (symbolName === 'inherited') {
 				const fsPath = URI.parse(textDocument.uri).fsPath;

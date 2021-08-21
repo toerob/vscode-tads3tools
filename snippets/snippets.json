@@ -410,12 +410,23 @@
 	},
 	"Tads3 foreach loop": {
 		"prefix": ["foreach"],
-		"body": ["foreach(local ${1:x}=${:0} in ${2} ) {",
-					"$0}",
-					""
-				 ],
+		"body": ["foreach(local ${1:x}=${:0} in ${2} ) {","$0}",""],
 		"description": "Tads3 foreach loop snippet"
 	},
+
+	
+	"Tads3 forEachInstance loop": {
+		"prefix": ["forEachInstance"],
+		"body": ["forEachInstance($1, function( ${1/(.*)/${1:/downcase}/} ) {","\t$2", "}","$0"],
+		"description": "Tads3 foreach loop snippet"
+	},
+	
+	"Tads3 .sort": {
+		"prefix": [".sort"],
+		"body": [".sort(${1|SortAsc,SortDesc|}, {a, b: $2a - b })","$0"],
+		"description": "Tads3 sort snippet"
+	},
+
 	"Tads3 .forEach": {
 		"prefix": [".forEach"],
 		"body": [".forEach(${1|{x:,function(x) {\n\t\n|}$2})$0;"],

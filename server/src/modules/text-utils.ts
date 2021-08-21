@@ -1,8 +1,16 @@
 import { TextDocument, Position } from 'vscode-languageserver-textdocument';
+import { connection } from '../server';
 
 const tokenizeRegExp = /[a-zA-Z0-9_]+/g;
 
+const quoteMatchRegExp = /(['](.*)[']|[']{3}(.*)[']{3}|["](.*)["]|["]{3}(.*)["]{3})/g;
 
+/**
+ * Converts a Position to Character offset.
+ * @param document - document that is used
+ * @param position - The position to convert
+ * @returns a number of the converted position
+ */
 export function offsetAt(document: TextDocument|undefined, position: Position) {
 	const rows = document?.getText().split(/\n/);
 	let offset = 0;
@@ -22,15 +30,69 @@ export function offsetAt(document: TextDocument|undefined, position: Position) {
 	return offset;
 }
 
+/**
+ * Determines if a position is within a quote or not
+ * @param document - document to be examined for quotes
+ * @param position - The position at which a quote is to be examined for
+ * @returns undefined if position is not within any quote, otherwise a structure of:
+ * 	 characterposition: the character offset of the position
+ *   quoteposition: The quote start character offset
+ *   endOfQuotePosition: the quote start character offset
+ *   quoteString: the quote string itself
+ */
+export function withinQuote(document: TextDocument|any, position: Position) {
+	const text = document.getText();
+	const characterPosition = offsetAt(document, position);
+	const tokenizedQuotes = tokenizeQuotesWithIndex(text);
+	for(const quotePosition of tokenizedQuotes.keys()) {
+		const quoteString = tokenizedQuotes.get(quotePosition);
+		const endOfQuotePosition = quotePosition+quoteString.length;
+		if(quotePosition <= characterPosition && characterPosition <= endOfQuotePosition) {
+			connection.console.log(`Position found within quote ${quoteString}`);
+			return {
+				characterPosition, 
+				quotePosition, 
+				endOfQuotePosition, 
+				quoteString
+			};
+		}
+	}
+	return undefined;
+
+
+}
 
 /**
+ * Tokenizes a text and extracts all quotes within it. 
+ * Either of following variant will be extracted:
+ * 'string' 
+ * ''' string ''''
+ * "string"
+ * """string"""
  * 
- * @param currentDocument 
- * @param position 
- * @returns 
+ * @param text - the text to find quotes within
+ * @returns a Map, with index for each quote set as key, and the quote as value
  */
-export function getWordAtPosition(currentDocument: TextDocument|any, position: Position, asPosition=false) {
-	const text = currentDocument.getText();
+export function tokenizeQuotesWithIndex(text: string) {
+	const quoteToken = new Map();
+	let word;
+	while((word = quoteMatchRegExp.exec(text))) {
+		quoteToken.set(word.index, word[0]);
+	}
+	return quoteToken;
+}
+
+
+/**
+ * Searches for a word at a given position within a TextDocument
+ * 
+ * @param document - the TextDocument that is to be examined
+ * @param position - the Position (line,char) where the word is at
+ * @param asPosition - boolean: true/false, affects the return value, default false
+ * @returns  if asPosition=true the index where word starts false, otherwise returns the wor
+ */
+export function getWordAtPosition(document: TextDocument|any, position: Position, asPosition=false) {
+	const text = document.getText();
 	const textRows = text.split(/\r?\n/);
 	if(position.line>textRows.length) {
 		return undefined;
@@ -58,6 +120,11 @@ export function getWordAtPosition(currentDocument: TextDocument|any, position: P
 	return (candidate !== undefined)? tokenizedText.get(candidate) : undefined;
 }
 
+/**
+ * Tokenizes words within a text
+ * @param text - the text to tokenize
+ * @returns a Map with word indexes as keys, and words as values
+ */
 export function tokenizeWithIndex(text: string) {
 	const indexToken = new Map();
 	let word;
