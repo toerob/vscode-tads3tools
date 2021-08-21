@@ -12,6 +12,7 @@ import { CodeCompletionCore } from 'antlr4-c3';
 import { CharStreams, CommonTokenStream } from 'antlr4ts';
 import { Tads3Lexer } from '../parser/Tads3Lexer';
 import { possibleExits } from './mapcrawling/map-crawling';
+import { isUsingAdv3Lite } from '../parse-workers-manager';
 
 let cachedKeyWords: Set<CompletionItem> | undefined = undefined;
 
@@ -186,13 +187,14 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 			connection.console.log(`Matching direction assignment for: "${word}"`);
 			for(const key of symbolManager.symbols.keys()) {
 				for(const symbol of symbolManager.symbols.get(key) ?? []) {
-					if(symbol.kind === SymbolKind.Object) {
-						const result = symbolManager.mapHeritage(symbol);
-						if(result.get(symbol.detail)?.includes('TravelConnector')) {
-							//connection.console.log(`${symbol.name} inherits from: TravelConnector `);
+					if (symbol.kind === SymbolKind.Object) {
+						const inheritanceMap = symbolManager.mapHeritage(symbol);
+						const commonRoomType =  isUsingAdv3Lite() ? 'Room' : 'TravelConnector';
+						const addSymbol = inheritanceMap.get(symbol.detail)?.includes(commonRoomType);				
+						if (addSymbol) {
 							const item = CompletionItem.create(symbol.name);
 							item.kind = CompletionItemKind.Struct;
-							suggestions.add(item);	
+							suggestions.add(item);
 						}
 					}
 				}
