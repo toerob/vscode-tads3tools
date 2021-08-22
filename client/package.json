@@ -1,9 +1,9 @@
 {
-	"name": "lsp-sample-client",
-	"description": "VSCode part of a language server",
-	"author": "Microsoft Corporation",
+	"name": "vscode-tads3tools-client",
+	"description": "VSCode client of a language server for",
+	"author": "Tomas Öberg",
 	"license": "MIT",
-	"version": "0.0.1",
+	"version": "0.0.5",
 	"publisher": "vscode",
 	"repository": {
 		"type": "git",

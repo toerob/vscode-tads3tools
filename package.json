@@ -1,6 +1,6 @@
 {
 	"name": "vscode-tads3tools",
-	"description": "Language server for Tads3",
+	"description": "Language server extension for Tads3",
 	"author": "Tomas Öberg",
 	"license": "MIT",
 	"version": "0.0.5",

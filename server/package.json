@@ -1,8 +1,8 @@
 {
-	"name": "lsp-sample-server",
-	"description": "Example implementation of a language server in node.",
-	"version": "1.0.0",
-	"author": "Microsoft Corporation",
+	"name": "vscode-tads3tools-server",
+	"description": "Language server implementation for Tads3 written for node.js",
+	"version": "0.0.5",
+	"author": "Tomas Öberg",
 	"license": "MIT",
 	"engines": {
 		"node": "*"
