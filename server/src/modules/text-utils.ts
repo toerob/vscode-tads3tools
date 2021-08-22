@@ -1,5 +1,4 @@
 import { TextDocument, Position } from 'vscode-languageserver-textdocument';
-import { connection } from '../server';
 
 const tokenizeRegExp = /[a-zA-Z0-9_]+/g;
 
@@ -48,7 +47,7 @@ export function withinQuote(document: TextDocument|any, position: Position) {
 		const quoteString = tokenizedQuotes.get(quotePosition);
 		const endOfQuotePosition = quotePosition+quoteString.length;
 		if(quotePosition <= characterPosition && characterPosition <= endOfQuotePosition) {
-			connection.console.log(`Position found within quote ${quoteString}`);
+			//connection.console.log(`Position found within quote ${quoteString}`);
 			return {
 				characterPosition, 
 				quotePosition, 

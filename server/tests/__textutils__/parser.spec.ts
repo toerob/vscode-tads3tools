@@ -1,16 +1,9 @@
 import assert = require('assert');
-import { getWordAtPosition, tokenizeWithIndex } from '../../src/modules/text-utils';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { integer, Position, ProposedFeatures } from 'vscode-languageserver';
-import { BailErrorStrategy, CharStreams, CommonTokenStream } from 'antlr4ts';
+import { CharStreams, CommonTokenStream } from 'antlr4ts';
 import { ParseTreeWalker } from 'antlr4ts/tree/ParseTreeWalker';
 import { Tads3Lexer } from '../../src/parser/Tads3Lexer';
 import { Tads3Listener } from '../../src/parser/Tads3Listener';
 import { ObjectDeclarationContext, PropertyContext, Tads3Parser, TemplateExprContext } from '../../src/parser/Tads3Parser';
-import { Tads3SymbolListener } from '../../src/parser/Tads3SymbolListener';
-import { expose } from 'threads';
-import { PredictionMode } from 'antlr4ts/atn/PredictionMode';
-import { Range, DefinitionParams, Location, DocumentSymbol  } from 'vscode-languageserver';
 
 
 describe('Parser tests', () => {

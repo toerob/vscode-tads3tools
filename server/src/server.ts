@@ -12,14 +12,8 @@ import {
 	DidChangeConfigurationNotification,
 	TextDocumentSyncKind,
 	InitializeResult,
-	Range,
 	CancellationTokenSource,
-	CodeLensRequest,
-	CodeLensResolveRequest,
-	SymbolKind,
-	DocumentSymbol} from 'vscode-languageserver/node';
-
-
+	SymbolKind} from 'vscode-languageserver/node';
 
 import { Tads3SymbolManager } from './modules/symbol-manager';
 import { onDocumentSymbol } from './modules/symbols';
@@ -31,9 +25,10 @@ import { DefaultMapObject } from './modules/mapcrawling/DefaultMapObject';
 import MapObjectManager from './modules/mapcrawling/map-mapping';
 import { onCodeLens } from './modules/codelens';
 import { onCompletion } from './modules/completions';
-import { onDocumentLinks } from './modules/links';
 import { tokenizeQuotesWithIndex } from './modules/text-utils';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const posTagger = require('wink-pos-tagger');
 
 
 export const preprocessedFilesCacheMap = new Map<string, string>();
@@ -331,9 +326,6 @@ documents.listen(connection);
 
 connection.listen();
 
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const posTagger = require('wink-pos-tagger');
 
 function analyzeText(text: string) {
 	const tagger = posTagger();

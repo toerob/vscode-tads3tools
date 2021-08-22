@@ -1,6 +1,5 @@
 
-import { Range, DefinitionParams, Location, DocumentSymbol, Position, SymbolKind } from 'vscode-languageserver';
-import { ExtendedDocumentSymbolProperties } from '../parser/Tads3SymbolListener';
+import { Range, DocumentSymbol, Position, SymbolKind } from 'vscode-languageserver';
 
 export class Tads3SymbolManager {
 	symbols: Map<string, DocumentSymbol[]> = new Map();

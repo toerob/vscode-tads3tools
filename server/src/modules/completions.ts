@@ -1,17 +1,12 @@
 import { CompletionParams, Position, TextDocuments, Range, CompletionItem, CompletionList, CompletionItemKind, SymbolKind } from 'vscode-languageserver/node';
 import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { connection, preprocessedFilesCacheMap } from '../server';
+import { connection } from '../server';
 
 import fuzzysort = require('fuzzysort');
-import { getWordAtPosition, offsetAt } from './text-utils';
-import { Tads3Parser } from '../parser/Tads3Parser';
+import { getWordAtPosition } from './text-utils';
 import {  } from 'vscode';
 import { URI } from 'vscode-uri';
-import { CodeCompletionCore } from 'antlr4-c3';
-import { CharStreams, CommonTokenStream } from 'antlr4ts';
-import { Tads3Lexer } from '../parser/Tads3Lexer';
-import { possibleExits } from './mapcrawling/map-crawling';
 import { isUsingAdv3Lite } from '../parse-workers-manager';
 
 let cachedKeyWords: Set<CompletionItem> | undefined = undefined;

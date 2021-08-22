@@ -1,5 +1,6 @@
 .vscode/**
 **/*.ts
+**/*.g4
 **/*.map
 .gitignore
 **/tsconfig.json
@@ -12,3 +13,5 @@ client/node_modules/**
 !client/node_modules/vscode-languageserver-protocol/**
 !client/node_modules/vscode-languageserver-types/**
 !client/node_modules/semver/**
+screenshots
+server/tests/

@@ -1,7 +1,6 @@
 //import { URI } from 'vscode-languageserver';
 import { exec } from 'child_process';
 import { connection } from '../server';
-import { URI } from 'vscode-uri';
 
 const rowsMap = new Map<string, number>();
 
