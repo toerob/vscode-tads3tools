@@ -802,7 +802,9 @@ updateWebview(webviewPanel: WebviewPanel, document: any , symbols = undefined) {
 
 }*/
 
-
+export function resetPersistedPositions() {
+	persistedObjectPositions.clear();
+}
 
 // TODO: this functionality probably need to go to the server side this time
 function overridePositionWithPersistedCoordinates(mapObjects: any[] /*DefaultMapObject[]*/) {

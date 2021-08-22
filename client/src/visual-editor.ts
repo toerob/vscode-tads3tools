@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { Uri, Webview } from 'vscode';
-import { client, getLastChosenTextEditor, getUsingAdv3LiteStatus } from './extension';
+import { client, getLastChosenTextEditor, getUsingAdv3LiteStatus, resetPersistedPositions } from './extension';
 
 export const visualEditorResponseHandlerMap = new Map();
 
@@ -25,6 +25,7 @@ export function onDidRefresh() {
 }
 
 export function onDidReset() {
+	resetPersistedPositions();
 	client.sendNotification('request/mapsymbols', { reset: true });
 }
 
