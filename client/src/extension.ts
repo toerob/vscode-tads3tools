@@ -748,13 +748,16 @@ async function openInVisualEditor(context: ExtensionContext) {
 		'Tads3 visual editor',
 		{
 			viewColumn: ViewColumn.Beside,
-			preserveFocus: true
+			preserveFocus: true,
 		}
 	);
-
-	const options: WebviewOptions = { enableScripts: true };
+	const options: WebviewOptions = { 
+		enableScripts: true,
+		localResourceRoots: [Uri.joinPath(context.extensionUri, 'media')],
+		
+	};
 	tads3VisualEditorPanel.webview.options = options;
-	tads3VisualEditorPanel.webview.html = getHtmlForWebview(tads3VisualEditorPanel.webview, context.extensionUri);
+	tads3VisualEditorPanel.webview.html = getHtmlForWebview(context, tads3VisualEditorPanel.webview, context.extensionUri);
 	tads3VisualEditorPanel.onDidDispose(() => {
 		tads3VisualEditorPanel = undefined;
 	}, null, context.subscriptions);

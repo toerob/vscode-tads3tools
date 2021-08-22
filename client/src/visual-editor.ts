@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { Uri, Webview } from 'vscode';
+import path = require('path');
+import { ExtensionContext, Uri, Webview } from 'vscode';
 import { client, getLastChosenTextEditor, getUsingAdv3LiteStatus, resetPersistedPositions } from './extension';
 
 export const visualEditorResponseHandlerMap = new Map();
@@ -220,18 +221,22 @@ export function onDidAddRoom(payload, persistedObjectPositions) {
 }
 
 
-export function getHtmlForWebview(webview: Webview, extensionUri: Uri): string {
+export function getHtmlForWebview(context: ExtensionContext, webview: Webview, extensionUri: Uri): string {
 	const scriptPath = 'media';
 	const litegraphScriptUri = webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, 'litegraph.min.js')) ?? '';
-	const litegraphCssUri = webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, 'litegraph.css')) ?? '';
-	const mapLogicUri = webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, 'maprenderer.js')) ?? '';
-	return `
+	const litegraphCssUri =    webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, 'litegraph.css')) ?? '';
+	const mapLogicUri =        webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, 'maprenderer.js')) ?? '';
+	const html = `
 		<html>
 			<head>
-				<link rel="stylesheet" type="text/css" href="${litegraphCssUri}">
-				<script type="text/javascript" src="${litegraphScriptUri}"></script>
+				<meta charset="UTF-8">
+				<meta 
+					http-equiv="Content-Security-Policy" 
+					content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource}; img-src ${webview.cspSource} data: https:; " />
+				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+				<link rel="stylesheet" type="text/css" href="${litegraphCssUri}" >
+				<script type="text/javascript" src="${litegraphScriptUri}" ></script>
 			</head>
-
 			<body style='width:100%; height:100% padding:0px;'>
 				<div id="content"></div>
 
@@ -262,5 +267,5 @@ export function getHtmlForWebview(webview: Webview, extensionUri: Uri): string {
 				<script src="${mapLogicUri}"></script>
 			</body>
 		</html>`;
-
+	return html;
 }
