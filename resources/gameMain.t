@@ -18,6 +18,7 @@ versionInfo: GameID
 ;
 
 ${5:startRoom}: Room '$5' '$5'
+	""
 ;
 
 +$6: Actor

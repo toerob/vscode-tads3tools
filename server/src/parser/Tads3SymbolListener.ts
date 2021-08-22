@@ -159,7 +159,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 	}
 
 	enterObjectDeclaration(ctx: ObjectDeclarationContext) {
-		let name: string = ctx.identifierAtom()?.ID()?.text.toString() ?? "unnamed";
+		let name: string = (ctx.identifierAtom()?.ID()?.text?.toString()) ?? "unnamed";
 		const start = (ctx.start.line ?? 1) - 1;
 		const stop = (ctx.stop?.line ?? 1) - 1;
 		const range = Range.create(start, 0, stop, 0);
@@ -168,14 +168,12 @@ export class Tads3SymbolListener implements Tads3Listener {
 			level = ctx._level.length;
 		}
 		if (name === 'unnamed') {
-			//name = ctx.superTypes().toString();
 			name = ctx.superTypes()?.identifierAtom()?.ID()?.toString() ?? 'unnamed';
 		}
 		const detail = ctx.superTypes()?.payload?.text ?? "object";
 
 		const additionalProps = new ExtendedDocumentSymbolProperties();
 
-		//TODO: add to classInheritance,
 		if (ctx._isClass) {
 			additionalProps.isClass = true;
 			const superClassNames = detail.split(',');
@@ -184,10 +182,6 @@ export class Tads3SymbolListener implements Tads3Listener {
 			}
 		}
 
-		// TODO: make a decision here:
-		/*if(this.symbols.map(x=>x.name===name)) {
-			name += new String(`(${++this.inc})`);
-		}*/
 		const symbol = DocumentSymbol.create(name, detail, ctx._isClass ? SymbolKind.Class : SymbolKind.Object, range, range, []);
 		this.currentObjectSymbol = symbol;
 
@@ -245,9 +239,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 		if (!ctx._isClass) {
 			this.lastObjectLevelMap.set(level, symbol);
 		}
-		//if (name) {
 		this.additionalProperties.set(symbol, additionalProps);			
-		//}
 	}
 
 	exitObjectDeclaration(ctx: ObjectDeclarationContext) {
@@ -323,12 +315,12 @@ export class Tads3SymbolListener implements Tads3Listener {
 			isInnerObject = true;
 			//ctx.curlyObjectBody()?.children[1].payload.getChild(0).identifierAtom()[0].text
 		}
-		const start = ctx.start.line - 1;
+		const start = (ctx.start.line - 1);
 		if (name === undefined || name === '') {
 			console.error(`Couldn't process symbol at row ${start}`);
 			return;
 		}
-		const stop = ((ctx.stop?.line) ?? 1) - 1 ?? start;
+		const stop = (((ctx.stop?.line) ?? 1) - 1) ?? start;
 		const startCharacter =  (ctx.start?.charPositionInLine) ?? 0;
 		const stopCharacter = (ctx.stop?.charPositionInLine) ?? 0;
 		const range = Range.create(start, startCharacter, stop, stopCharacter); // TODO: stop character here.

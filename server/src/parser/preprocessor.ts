@@ -25,9 +25,10 @@ export function runCommand(command: string) {
 
 
 export async function preprocessAllFiles(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>) {
+	const t3makeCompilerPath: number = await connection.workspace.getConfiguration('tads3.compiler.path') ?? 't3make'
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
-	const commandLine = `t3make -P -q -f "${chosenMakefilePath}"`;
+	const commandLine = `${t3makeCompilerPath} -P -q -f "${chosenMakefilePath}"`;
 	const result: any = await runCommand(commandLine);
 	processPreprocessedResult(result, preprocessedFilesCacheMap);
 }

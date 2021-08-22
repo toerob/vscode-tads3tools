@@ -218,6 +218,13 @@
 					"type": "boolean",
 					"default": false,
 					"description": "Shows preprocessed rows above as CodeLens when they differ from original source code."
+				},
+				"tads3.ifArchiveExtensionURL": {
+					"scope": "window",
+					"type": "string",
+					"default": "http://ifarchive.org/if-archive/programming/tads3/library/contributions/",
+					"pattern": "https?://ifarchive.org/.*",
+					"description": "Path the ifarchive directory for tads3 contributions"
 				}
 			}
 		}

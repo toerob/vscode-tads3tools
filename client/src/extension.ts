@@ -24,6 +24,7 @@ import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
+import { SSL_OP_EPHEMERAL_RSA } from 'constants';
 
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
 const tads3CompileErrorParser = new Tads3CompileErrorParser();
@@ -413,42 +414,47 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 
 let t3FileSystemWatcher: FileSystemWatcher = undefined;
 
-let gameRunnerTerminal: Terminal = undefined;
-
 const runGameInTerminalSubject = new Subject();
 
 function setupAndMonitorBinaryGamefileChanges() {
-	if (gameRunnerTerminal) {
-		client.info(`Game runner terminal already set up, skipping`);
-		return;
-	}
+	const documentWorkingOn = window.activeTextEditor.document;
 	const workspaceFolder = dirname(chosenMakefileUri.fsPath);
 	t3FileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, "*.t3"));
-	runGameInTerminalSubject.pipe(debounceTime(300)).subscribe((event: any) => {
+
+	runGameInTerminalSubject.pipe(debounceTime(200)).subscribe( (event: any) => {
 		const configuration = workspace.getConfiguration("tads3");
 		if (!configuration.get("restartGameRunnerOnT3ImageChanges")) {
 			return;
 		}
 
-		
 		const interpreter = configuration.get("gameRunnerInterpreter");
 		if (!interpreter) {
 			return;
 		}
 
 		const fileBaseName = basename(event.fsPath);
-		if (gameRunnerTerminal) {
+		const gameRunnerTerminals = window.terminals.filter(x=>x.name === 'Tads3 Game runner terminal');
+		for(const gameRunnerTerminal of gameRunnerTerminals) {
 			gameRunnerTerminal.sendText(`quit`);
 			gameRunnerTerminal.sendText(`y`);
 			gameRunnerTerminal.sendText(``);
 			gameRunnerTerminal.dispose();
 		}
-		gameRunnerTerminal = window.createTerminal('Game runner terminal');
+
+		const gameRunnerTerminal = window.createTerminal('Tads3 Game runner terminal');
 		client.info(`${event.fsPath} changed, restarting ${fileBaseName}`);
-		gameRunnerTerminal.show(true);
+		
+		
+		// FIXME: preserveFocus doesn't work, the terminal takes focus anyway (might be because of sendText)
+		gameRunnerTerminal.show(true); 
+
 		gameRunnerTerminal.sendText(`${interpreter} ${fileBaseName}`);
-		window.showTextDocument(window.activeTextEditor.document);
+
+		// FIXME: Interim hack to make preserveFocus work even when there's a slow startup of the interpreter
+		// (This won't always work, especially on a slow machine)
+		setTimeout(() => window.showTextDocument(documentWorkingOn), 500);	
 	});
+
 	t3FileSystemWatcher.onDidChange(event => runGameInTerminalSubject.next(event));
 }
 
@@ -490,12 +496,8 @@ async function downloadFile(requestUrl: string, folder: string, fileName: string
 
 
 async function downloadAndInstallExtension(context: ExtensionContext) {
-
-	// TODO:
-	//const configuration = workspace.getConfiguration("tads3");
-	//const ifarchiveTads3ContributionsURL = configuration.get("ifArchiveExtensionURL");
-
-	const ifarchiveTads3ContributionsURL = 'http://ifarchive.org/if-archive/programming/tads3/library/contributions/';
+	const configuration = workspace.getConfiguration("tads3");
+	const ifarchiveTads3ContributionsURL: string = configuration.get("ifArchiveExtensionURL");
 	try {
 		if (extensionDownloadMap === undefined) {
 			const response = await axios.get(ifarchiveTads3ContributionsURL);
