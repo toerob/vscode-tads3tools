@@ -1,31 +1,72 @@
 
-
-
 # vscode-tads3tools
 
 A language server/client for the Tads3 programming language and tailored made for Visual Studio Code. 
 
 # Version 0.5 - alpha
 
-[![Video Demonstration](./screenshots/vscode-tads3tools-demo-small.gif)](./screenshots/vscode-tads3tools-demo-small.gif)
-
-(Better quality here: [![Video Demonstration](./screenshots/vscode-tads3tools-demo-small.mp4)](./screenshots/vscode-tads3tools-demo-small.mp4))
-
 
 ## Functionality
 
 Tads3tools has the following features:
-
-- Diagnostics regenerated on each file change 
+- Command for creating new projects
 - Symbol outliner derived from each file in the tads3 project
 - Symbol definitions (with cross references through the project files)
-- CodeLens for showing preprocessed differences 
 - A webview containing the visual map for visualizing and helping out creating a game world.
 - Word completions (fuzzy searching through defined symbols and keywords in the project)
+- Diagnostics regenerated on each file change 
+- Snippets to help out with commonly used classes, such as Room, Thing, Actor, ActorState, AgendaItem, Topic etc...
+- CodeLens for showing preprocessed differences 
 - Auto generate decorations based on room descriptions
 - Auto monitoring the tads3 game image and restart the game on any changes
-- Snippets to help out with commonly used classes, such as Room, Thing, Actor, ActorState, AgendaItem, Topic etc...
 - Various commands and more...
+
+
+## Features
+
+Create new projects easily:
+
+https://user-images.githubusercontent.com/39532593/130358170-ea5878d5-c504-4b55-94e8-10ae55a6fa84.mp4
+
+Symbol outliner:
+
+https://user-images.githubusercontent.com/39532593/130358201-3be0d686-465c-4316-b304-9e7370f93347.mp4
+
+Symbol definitions:
+
+https://user-images.githubusercontent.com/39532593/130358231-eb120e91-8521-498e-bd3b-a3cc3c7318ae.mp4
+
+Use an interactive map editor for a visual experience while creating the game world:
+
+https://user-images.githubusercontent.com/39532593/130358350-a4c9c3a4-4b73-4fcd-9e76-ad39a44cee8e.mp4
+
+See diagnostics on each save:
+
+https://user-images.githubusercontent.com/39532593/130358270-b5d887e2-bcc1-430e-8806-9a42a79119c5.mp4
+
+Completions as you type and save time:
+
+https://user-images.githubusercontent.com/39532593/130358322-24908cf1-9b69-49b5-836c-bbeb03735894.mp4
+
+Snippets for boilerplate code:
+
+https://user-images.githubusercontent.com/39532593/130358339-227d99c6-6325-4de4-9e06-03cd54392430.mp4
+
+https://user-images.githubusercontent.com/39532593/130358342-109e2ea7-619c-47b3-aa47-1f920bb19bf4.mp4
+
+Be lazy and automatically create props for each room:
+
+https://user-images.githubusercontent.com/39532593/130358397-e1c7bf6a-217f-44bb-9388-b18e6c20ed3a.mp4
+
+Examine how preprocessed documents look like for better understanding during debugging:
+
+https://user-images.githubusercontent.com/39532593/130358400-d8c96975-27da-4e70-974d-b65b4ad34717.mp4
+
+Extract all single or double quoted strings in the project or current file:
+
+https://user-images.githubusercontent.com/39532593/130358391-4115016f-2e3b-4bd4-ada4-6f2f2892aae2.mp4
+
+
 
 
 ## Planned features
