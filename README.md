@@ -5,10 +5,22 @@ A language server/client for the Tads3 programming language and tailored made fo
 
 # Version 0.5 - alpha
 
+## First time users
+
+Install the extension and open up a tads3 project folder (use the open folder feature of vscode), or create a new project with the "Tads3 command: Create a new Tads3 template project" found in the general command menu (CTRL-SHIFT-P). (See the movie below).
+
+Opening up a folder and/or saving a tads3 source code within an opened project will trigger a symbol parsing of that current file (or the whole project, if it hasn't already parsed all files). 
+
+First time using the extension within a project, all the current library files will be parsed (adv3 or adv3Lite). This is done with several threads running in parallel (default is 6 and configurable), but even so the time for indexing all of it will take some time. It's been timed to be around 1 minute, 30 seconds on a 2013 macbook pro, and around 20 seconds on a desktop running linux/windows.
+
+After this initial parse, all library files will be cached and persisted, and only the project files will be parsed. Reducing the parsing time to almost non-visible. So expect a slightly longer initial parse and then a blissful immediate one.
+
+See all the movies in here for a quick introduction in how to use this extension.
 
 ## Features
 
-### vscode-tads3tools has the following features:
+vscode-tads3tools has the following features:
+
 
 
 Create new projects easily:
@@ -146,7 +158,6 @@ Select which makefile to use (this will be set automatically when opening the pr
  - Wink pos-tagger (https://github.com/winkjs/wink-pos-tagger) MIT License
  - Threads (https://github.com/andywer/threads.js) by Andy Wermke(andywer) MIT License
  - Axios (https://github.com/axios/axios) MIT License
- - Threads (https://github.com/andywer/threads.js) by Andy Wermke(andywer) MIT License
  - The Tads3 tmLanguage definition (for syntax highlighting) is copied from Sam Win-Mason
    (repo here: https://github.com/Or4c/vscode-tads3), and originally ported from the Sublime Text plugin by VoidPhantom (https://github.com/VoidPhantom/sublime-tads3) (Both distributed under the UNLICENSE license 
 
