@@ -13,9 +13,12 @@
 		"vscode": "^1.52.0"
 	},
 	"dependencies": {
+		"@types/axios": "^0.14.0",
 		"@types/unzipper": "^0.10.4",
 		"fs-extra": "^10.0.0",
+		"rxjs": "^7.2.0",
 		"vscode-languageclient": "^7.0.0"
+
 	},
 	"devDependencies": {
 		"@types/vscode": "^1.52.0",

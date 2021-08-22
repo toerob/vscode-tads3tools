@@ -1,17 +1,68 @@
 .vscode/**
 **/*.ts
 **/*.g4
+**/*.spec.ts
 **/*.map
 .gitignore
 **/tsconfig.json
 **/tsconfig.base.json
 contributing.md
 .travis.yml
-client/node_modules/**
-!client/node_modules/vscode-jsonrpc/**
-!client/node_modules/vscode-languageclient/**
-!client/node_modules/vscode-languageserver-protocol/**
-!client/node_modules/vscode-languageserver-types/**
-!client/node_modules/semver/**
-screenshots
-server/tests/
+
+server/node_modules/node
+server/node_modules/.bin
+server/node_modules/typescript/**
+server/node_modules/npm/**
+server/node_modules/@babel/**
+server/node_modules/antlr4ts-cli/**
+
+
+
+##client/node_modules/**
+##server/node_modules/**
+# !node_modules/@types/vscode/**
+
+# !client/node_modules/@types/axios/**
+# !client/node_modules/@types/unzipper/**
+# !client/node_modules/fs-extra/**
+# !client/node_modules/rxjs/**
+# !client/node_modules/vscode-jsonrpc/**
+# !client/node_modules/vscode-languageclient/**
+# !client/node_modules/vscode-languageserver-protocol/**
+# !client/node_modules/vscode-languageserver-types/**
+# !client/node_modules/semver/**
+
+# !server/node_modules/@types/fs-extra/**
+# !server/node_modules/fuzzysort/**
+# !server/node_modules/antlr4ts/**
+# !server/node_modules/fs-extra/**
+# !server/node_modules/vscode-uri/**
+# !server/node_modules/vscode-jsonrpc/**
+# !server/node_modules/vscode-languageserver/**
+# !server/node_modules/vscode-languageserver-textdocument/**
+# !server/node_modules/vscode-languageserver-protocol/**
+# !server/node_modules/vscode-languageserver-types/**
+# !server/node_modules/node/**
+# !server/node_modules/threads/**/*
+# !server/node_modules/callsites/**/*
+# !server/node_modules/debug/**/*
+# !server/node_modules/ms/**/*
+# !server/node_modules/observable-fns/**/*
+# !server/node_modules/is-observable/**/*
+# !server/node_modules/universalify/**/*
+# !server/node_modules/graceful-fs/**/*
+# !server/node_modules/jsonfile/**/*
+# !server/node_modules/wink*/**/*
+
+!server/node_modules/threads/dist/**/*
+!server/node_modules/wink-pos-tagger/**
+!server/node_modules/fuzzysort/**
+
+screenshots/**
+server/tests/**
+server/testFixture/**
+
+!server/src/parser/Tads3.g4
+!server/src/parser/Tads3.tokens
+!server/src/parser/Tads3Lexer.interp
+!server/src/parser/Tads3Lexer.tokens

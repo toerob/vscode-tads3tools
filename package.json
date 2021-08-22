@@ -3,7 +3,7 @@
 	"description": "Language server for Tads3",
 	"author": "Tomas Öberg",
 	"license": "MIT",
-	"version": "1.0.0",
+	"version": "0.0.5",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/toerob/vscode-tads3tools.git"
@@ -230,7 +230,7 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile && npm run esbuild-base -- --minify",
+		"vscode:prepublish": "npm run compile",
 		"antlr4ts": "antlr4ts -visitor server/src/parser/Tads3.g4",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
@@ -257,13 +257,6 @@
 		"typescript": "^4.3.5"
 	},
 	"dependencies": {
-		"@types/axios": "^0.14.0",
-		"@types/vscode": "^1.58.1",
-		"antlr4ts": "^0.5.0-alpha.4",
-		"antlr4ts-cli": "^0.5.0-alpha.4",
-		"fuzzysort": "^1.1.4",
-		"litegraph.js": "^0.7.10",
-		"rxjs": "^7.2.0",
-		"threads": "^1.6.5"
+		"@types/vscode": "^1.58.1"
 	}
 }
