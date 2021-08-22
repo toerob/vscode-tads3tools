@@ -158,7 +158,6 @@ Select which makefile to use (this will be set automatically when opening the pr
  - Wink pos-tagger (https://github.com/winkjs/wink-pos-tagger) MIT License
  - Threads (https://github.com/andywer/threads.js) by Andy Wermke(andywer) MIT License
  - Axios (https://github.com/axios/axios) MIT License
- - Threads (https://github.com/andywer/threads.js) by Andy Wermke(andywer) MIT License
  - The Tads3 tmLanguage definition (for syntax highlighting) is copied from Sam Win-Mason
    (repo here: https://github.com/Or4c/vscode-tads3), and originally ported from the Sublime Text plugin by VoidPhantom (https://github.com/VoidPhantom/sublime-tads3) (Both distributed under the UNLICENSE license 
 
