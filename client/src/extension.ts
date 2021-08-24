@@ -371,7 +371,6 @@ async function setMakeFile() {
 	client.info(`Chosen makefile set to: ${basename(chosenMakefileUri.fsPath)}`);
 	const makefileDoc = await workspace.openTextDocument(chosenMakefileUri.fsPath);
 
-	//const makefileDoc = workspace.textDocuments.find(x=>x.uri.fs === chosenMakefileUri.fsPath);
 	await diagnose(makefileDoc);
 
 	if (errorDiagnostics.length > 0) {

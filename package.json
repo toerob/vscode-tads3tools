@@ -235,7 +235,7 @@
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-		"e2e-test": "sh ./scripts/e2e.sh",
+		"e2e-test": "npm run compile && sh ./scripts/e2e.sh",
 
 		"test": "cd server; jest",
 
