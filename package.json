@@ -236,16 +236,12 @@
 		"watch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
 		"e2e-test": "npm run compile && sh ./scripts/e2e.sh",
-
 		"test": "cd server; jest",
-
 		"esbuild-base": "esbuild ./client/src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
 		"esbuild": "npm run esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
 		"test-compile": "tsc -p ./"
 	},
-
-
 	"devDependencies": {
 		"@types/mocha": "^9.0.0",
 		"@types/node": "^16.4.7",
@@ -253,6 +249,7 @@
 		"@typescript-eslint/parser": "^4.28.5",
 		"esbuild": "^0.12.22",
 		"eslint": "^7.31.0",
+		"jest": "^27.0.6",
 		"mocha": "^9.0.3",
 		"typescript": "^4.3.5"
 	},
