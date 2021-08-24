@@ -304,6 +304,13 @@ export function activate(context: ExtensionContext) {
 			isLongProcessingInAction = false;
 		});
 
+		client.onNotification("symbolparsing/allfiles/failed", (allFilePaths ) => {
+			window.showErrorMessage(`Parsing all files via makefile ${basename(chosenMakefileUri.fsPath)} failed `, {modal:true});
+			isLongProcessingInAction = false;
+			allFilesBeenProcessed = false;
+		});
+
+
 		initialParse();
 
 	});
@@ -349,13 +356,29 @@ export async function findAndSelectMakefileUri(askIfNotFound = true) {
 
 
 async function setMakeFile() {
-	chosenMakefileUri =  await selectMakefileWithDialog() ?? chosenMakefileUri;
-	if (chosenMakefileUri) {
-		client.info(`Chosen makefile set to: ${basename(chosenMakefileUri.fsPath)}`);
-	}
+	client.info(`Diagnosing`);
 	if(isLongProcessingInAction) {
-		window.showInformationMessage(`Cannot perform a parse right now, since a full project parsing is already in progress. Try again later. `);
+		window.showWarningMessage(`Cannot change makefile and reparse right now, since a full project parsing is already in progress. Try again later. `, {modal: true});
+		return;
 	}
+
+	chosenMakefileUri =  await findAndSelectMakefileUri() ?? chosenMakefileUri;
+	if (chosenMakefileUri === undefined) {
+		client.info(`No makefile, cannot parse document symbols. `);
+		return;
+	}
+
+	client.info(`Chosen makefile set to: ${basename(chosenMakefileUri.fsPath)}`);
+	const makefileDoc = await workspace.openTextDocument(chosenMakefileUri.fsPath);
+
+	//const makefileDoc = workspace.textDocuments.find(x=>x.uri.fs === chosenMakefileUri.fsPath);
+	await diagnose(makefileDoc);
+
+	if (errorDiagnostics.length > 0) {
+		window.showErrorMessage(`Error during compilation:\n${errorDiagnostics.map(e=>e.message).join('\n')}`);
+		return;
+	}
+
 	isLongProcessingInAction = true;
 	client.info(`Preprocess and parse all documents`);
 	await preprocessAndParseDocument();

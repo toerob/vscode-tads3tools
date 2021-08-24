@@ -118,6 +118,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	}
 	if (allFilePaths.length === 0) {
 		connection.console.log(`No files to parse. Aborting operation`);
+		connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
 		return;
 	}
 
