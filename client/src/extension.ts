@@ -8,7 +8,7 @@ import { exec } from 'child_process';
 import { copyFileSync, createReadStream, createWriteStream, existsSync, readFileSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem, Position, TextEditorSelectionChangeKind, SnippetString } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString } from 'vscode';
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -24,7 +24,6 @@ import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
-import { SSL_OP_EPHEMERAL_RSA } from 'constants';
 
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
 const tads3CompileErrorParser = new Tads3CompileErrorParser();
@@ -330,7 +329,8 @@ export async function findAndSelectMakefileUri(askIfNotFound = true) {
 			const pick = await window.showQuickPick(entriesStr);
 			choice = qpItemMap.get(pick);
 		} else {
-			choice = files[0];
+			const defaultMakefile = files.find(x=>x.fsPath.endsWith('Makefile.t3m'));
+			choice = defaultMakefile? defaultMakefile : files[0];
 			window.showInformationMessage(`Using first found makefile in project`);
 		}
 	} else if (files.length == 1) {
@@ -949,7 +949,7 @@ async function createTemplateProject(context: ExtensionContext) {
 		const objFolderUri = Uri.joinPath(firstWorkspaceFolder, 'obj');
 
 
-		if (existsSync(makefileUri.fsPath) || existsSync(makefileUri.fsPath)) {
+		if (existsSync(makefileUri.fsPath) || existsSync(gameFileUri.fsPath)) {
 			const userAnswer = await window.showInformationMessage(
 				`Project already have either a Makefile.t3m or a gameMain.t, do you want to overwrite them with a fresh template?`,
 				{ title: 'Yes' }, { title: 'No' });
