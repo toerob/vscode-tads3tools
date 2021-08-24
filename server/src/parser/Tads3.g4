@@ -55,8 +55,11 @@ pragmaDirective:
 
 grammarDeclaration:
     (isModify=MODIFY | isReplace=REPLACE)? GRAMMAR prodName=identifierAtom (LEFT_PAREN tag=identifierAtom RIGHT_PAREN)? COLON
-    grammarRules COLON superTypes
-    (curlyObjectBody | semiColonEndedObjectBody)
+    grammarRules COLON
+    (
+        superTypes
+        (curlyObjectBody | semiColonEndedObjectBody)
+    )?
 ;
 
 grammarRules:
@@ -115,7 +118,7 @@ objectDeclaration:
 
 templateExpr:
     (singleString=SSTR SEMICOLON?
-    | AT atLocation=identifierAtom
+    | AT atLocation=expr
     | doubleString=DSTR SEMICOLON?
     | PLUS number=NR
     | ARROW (connection=identifierAtom|expression=expr) //TODO: test expression=expr
@@ -159,7 +162,7 @@ dictionaryProperty:
 
 propertySet:
     (PROPERTYSET paramsWithWildcard
-    |PROPERTYSET LEFT_PAREN paramsWithWildcard? RIGHT_PAREN)
+    |PROPERTYSET prefix=SSTR? LEFT_PAREN paramsWithWildcard? RIGHT_PAREN)
     curlyObjectBody
 ;
 
@@ -182,7 +185,7 @@ function moveFloatingObjects(loc)
 */
 
 functionDeclaration:
-   (functionHead codeBlock)
+   isReplace=REPLACE? (functionHead codeBlock)
    | operatorOverride
 ;
 
@@ -369,6 +372,7 @@ primary:
 identifierAtom:
     ID
     | IN
+    | IS
     | STEP
     | STRING
     | OPERATOR

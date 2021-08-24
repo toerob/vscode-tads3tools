@@ -353,9 +353,13 @@ async function setMakeFile() {
 	if (chosenMakefileUri) {
 		client.info(`Chosen makefile set to: ${basename(chosenMakefileUri.fsPath)}`);
 	}
+	if(isLongProcessingInAction) {
+		window.showInformationMessage(`Cannot perform a parse right now, since a full project parsing is already in progress. Try again later. `);
+	}
+	isLongProcessingInAction = true;
+	client.info(`Preprocess and parse all documents`);
+	await preprocessAndParseDocument();
 }
-
-
 
 async function onDidSaveTextDocument(textDocument: any) {
 	currentTextDocument = textDocument;
