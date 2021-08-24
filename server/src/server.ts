@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* --------------------------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.
@@ -264,7 +265,7 @@ connection.onRequest('request/extractQuotes', async (params) => {
 			resultArray = resultArray.filter(x=>x.startsWith('\"'));
 		}
 
-		resultArray = [...new Set([...resultArray])]	
+		resultArray = [...new Set([...resultArray])];
 		connection.sendNotification('response/extractQuotes', { resultArray } );
 		return;
 	}

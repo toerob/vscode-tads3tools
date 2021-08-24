@@ -122,15 +122,11 @@ export function activate(context: ExtensionContext) {
 
 	client.onReady().then(async () => {
 
-
 		client.onNotification('response/extractQuotes', (payload) => {
-
 			workspace
 				.openTextDocument({ language: 'tads3', content: payload.resultArray.join('\n') })
 				.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
-
-			
-		})
+		});
 
 		client.onNotification('response/makefile/keyvaluemap', ({ makefileStructure, usingAdv3Lite }) => {
 			isUsingAdv3Lite = usingAdv3Lite;
@@ -656,6 +652,7 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 				client.sendNotification('request/mapsymbols');			
 			}*/
 		});
+		
 		await executeParse(chosenMakefileUri.fsPath, filePaths);
 		return true;
 	});

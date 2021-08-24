@@ -89,6 +89,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	const baseDir = Utils.dirname(URI.parse(makefileLocation)).fsPath;
 
 	if (filePaths === undefined) {
+		initialParsing = true;
 		allFilePaths = [...preprocessedFilesCacheMap.keys()];
 
 		// Sort by size, size ordering, the largest files goes first:
