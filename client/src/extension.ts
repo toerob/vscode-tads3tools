@@ -50,6 +50,7 @@ let chosenMakefileUri: Uri | undefined;
 let preprocessedList: string[];
 
 let preprocessDocument: TextDocument;
+let makefileKeyMapValues = [];
 
 export let tads3VisualEditorPanel: WebviewPanel | undefined = undefined;
 export let client: LanguageClient;
@@ -132,6 +133,7 @@ export function activate(context: ExtensionContext) {
 		});
 
 		client.onNotification('response/makefile/keyvaluemap', ({ makefileStructure, usingAdv3Lite }) => {
+			makefileKeyMapValues = makefileStructure;
 			isUsingAdv3Lite = usingAdv3Lite;
 		});
 
@@ -638,7 +640,7 @@ async function diagnose(textDocument: TextDocument) {
 	isDiagnosing = false;
 }
 
-async function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocument) {
+function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocument) {
 	errorDiagnostics = tads3CompileErrorParser.parse(resultOfCompilation, textDocument);
 	collection.set(textDocument.uri, errorDiagnostics);
 }
@@ -909,8 +911,14 @@ async function initialParse() {
 async function installTracker(context: ExtensionContext) {
 
 	const filePath = isUsingAdv3Lite ? '_gameTrackerAdv3Lite.t' : '_gameTrackerAdv3.t';
+	let trackerFileContents = readFileSync(Uri.joinPath(context.extensionUri, 'resources', filePath).fsPath).toString();
 
-	const trackerFileContents = readFileSync(Uri.joinPath(context.extensionUri, 'resources', filePath).fsPath).toString();
+	const { value } = makefileKeyMapValues?.find(keyvalue => keyvalue.key === '-D' && keyvalue.value.startsWith(`LANGUAGE`));
+	const languageValue = value.split('=');
+	if (languageValue.length === 2) {
+		trackerFileContents = trackerFileContents.replace('<en_us.h>', `<${languageValue[1]}.h>`);
+	}
+
 
 	if (chosenMakefileUri) {
 		const workspaceFolder = dirname(chosenMakefileUri.fsPath);
