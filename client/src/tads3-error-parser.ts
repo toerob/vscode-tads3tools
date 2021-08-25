@@ -15,20 +15,19 @@ export class Tads3CompileErrorParser {
 		const unbrokenErrorText = text.replace(/\n/g, '');
 		const result = errorOrWarningRegExp.exec(unbrokenErrorText);
 		if (result) {
-			let line: number = (result[3] ? Number.parseInt((result[3]) as string) : 1) - 1 ?? 0;
+			const line: number = (result[3] ? Number.parseInt((result[3]) as string) : 1) - 1 ?? 0;
 			if (result.length >= 4) {
 				const isError = (result[4].match('[Ee]rror')) ? true : false;
 				const characterLengthOfIssueLine = textDocument.positionAt(line).character.valueOf();
 				const severity = isError ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning;
 				const position = new Position(line, characterLengthOfIssueLine);
 				const range = new Range(position, position);
-				let message = (result[5] ?? '').replace(summaryRegExp, '');
-				const source = result[1] ?? '';
+				const message = (result[5] ?? '').replace(summaryRegExp, '');
 				const diagnostic: Diagnostic = {
 					severity,
 					range,
 					message,
-					source
+					source: 'tads3',
 				};
 				diagnostics.push(diagnostic);
 			}

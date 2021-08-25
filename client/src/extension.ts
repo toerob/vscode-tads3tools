@@ -48,6 +48,8 @@ let serverProcessCancelTokenSource: CancellationTokenSource;
 let chosenMakefileUri: Uri | undefined;
 let preprocessedList: string[];
 
+let preprocessDocument: TextDocument;
+
 export let tads3VisualEditorPanel: WebviewPanel | undefined = undefined;
 export let client: LanguageClient;
 
@@ -367,7 +369,14 @@ async function setMakeFile() {
 	client.info(`Chosen makefile set to: ${basename(chosenMakefileUri.fsPath)}`);
 	const makefileDoc = await workspace.openTextDocument(chosenMakefileUri.fsPath);
 
-	await diagnose(makefileDoc);
+
+	try {
+		await diagnose(makefileDoc);
+	} catch (err) {
+		window.showErrorMessage(`Error while diagnosing: ${err}`);
+		client.error(`Error while diagnosing: ${err}`);
+		return;
+	}
 
 	if (errorDiagnostics.length > 0) {
 		window.showErrorMessage(`Error during compilation:\n${errorDiagnostics.map(e=>e.message).join('\n')}`);
@@ -402,12 +411,18 @@ async function onDidSaveTextDocument(textDocument: any) {
 
 
 async function diagnosePreprocessAndParse(textDocument: TextDocument) {
-
 	client.info(`Diagnosing`);
-	await diagnose(textDocument);
+	try {
+		await diagnose(textDocument);
+	} catch (err) {
+		client.error(`Error while diagnosing: ${err}`);
+		window.showErrorMessage(`Error while diagnosing: ${err}`);
+		return;
+	}
+
 	if (errorDiagnostics.length > 0) {
 		//throw new Error('Could not assemble outliner symbols since there\'s an error. ');
-		//window.showWarningMessage(`Could not assemble outliner symbols since there\'s an error. `);
+		window.showWarningMessage(`Could not assemble outliner symbols since there was an error. `);
 		return;
 	}
 	//allFilesBeenProcessed = true;
@@ -601,8 +616,18 @@ function enablePreprocessorCodeLens(arg0: string, enablePreprocessorCodeLens: an
 	window.showInformationMessage(`CodeLens for preprocessor differences is now ${!oldValue?'enabled':'disabled'} `);
 }
 
+function ensureObjFolderExistsInProjectRoot() {
+	if (existsSync(chosenMakefileUri.fsPath)) {
+		const projectBaseDirectory = dirname(chosenMakefileUri.fsPath);
+		const objFolderUri = path.join(projectBaseDirectory, 'obj');
+		ensureDirSync(objFolderUri);
+		return;
+	}
+	throw new Error(`Could not ensure obj folder exists in the root folder since no makefile is known. `);
+}
 
 async function diagnose(textDocument: TextDocument) {
+	ensureObjFolderExistsInProjectRoot();
 	const tads3ExtensionConfig = workspace.getConfiguration('tads3');
 	const compilerPath = tads3ExtensionConfig?.compiler?.path ?? 't3make';
 	const resultOfCompilation = await runCommand(`${compilerPath} -nobanner -q -f "${chosenMakefileUri.fsPath}"`);
@@ -652,7 +677,7 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 				client.sendNotification('request/mapsymbols');			
 			}*/
 		});
-		
+
 		await executeParse(chosenMakefileUri.fsPath, filePaths);
 		return true;
 	});
@@ -677,28 +702,25 @@ export async function cancelParse(): Promise<any> {
 	});
 }
 
-
-
-let preprocessDocument: TextDocument;
-
-function showPreprocessedTextAction(params: [any, any, any]) {
+async function showPreprocessedTextAction(params: [any, any, any]) {
 	const [range, uri, preprocessedText] = params;
-	
 	if (preprocessDocument && !preprocessDocument.isClosed) {
-		window.visibleTextEditors
+		await window.showTextDocument(preprocessDocument, {
+			viewColumn: ViewColumn.Beside,
+			preserveFocus: true,
+			preview: true,
+		});
+		await window.visibleTextEditors
 			.find(editor => editor.document.uri.path === preprocessDocument.uri.path)
 			.edit(prepDoc => {
 				const wholeRange = preprocessDocument.validateRange(new Range(0, 0, preprocessDocument.lineCount, 0));
 				prepDoc.replace(wholeRange, preprocessedText);
-			}).then(() => {
-				showAndScrollToRange(preprocessDocument, range);
 			});
+		showAndScrollToRange(preprocessDocument, range);
 	} else {
-		workspace.openTextDocument({ language: 'tads3', content: preprocessedText })
-			.then(doc => {
-				preprocessDocument = doc;
-				showAndScrollToRange(doc, range);
-			});
+		const doc = await workspace.openTextDocument({ language: 'tads3', content: preprocessedText });
+		preprocessDocument = doc;
+		showAndScrollToRange(doc, range);
 	}
 }
 
