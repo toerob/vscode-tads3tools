@@ -115,12 +115,11 @@ objectDeclaration:
     (curlyObjectBody | semiColonEndedObjectBody)
 ;
 
-
 templateExpr:
     (singleString=SSTR SEMICOLON?
     | AT atLocation=expr
     | doubleString=DSTR SEMICOLON?
-    | PLUS number=NR
+    | (PLUS|MINUS|STAR|DIV|MOD|AMP|NOT|TILDE) (op=identifierAtom|expression=expr)
     | ARROW (connection=identifierAtom|expression=expr) //TODO: test expression=expr
     | LEFT_BRACKET array RIGHT_BRACKET
     )  OPTIONAL?
@@ -170,22 +169,8 @@ paramsWithWildcard:
     (parameters+=primary|STAR) (COMMA paramsWithWildcard)*
 ;
 
-
-
-/*
-TODO: fix
-function moveFloatingObjects(loc)
-{
-    for( local obj = firstObj(Floating) ; obj != nil ; obj = nextObj(obj, Floating) ) {
-
-    }
-        //if(obj.isFoundIn(loc))
-          //obj.moveIntoForTravel(loc);
-}
-*/
-
 functionDeclaration:
-   isReplace=REPLACE? (functionHead codeBlock)
+   (isModify=MODIFY?|isReplace=REPLACE?) (functionHead codeBlock)
    | operatorOverride
 ;
 
@@ -249,8 +234,7 @@ labelStatement:
 
 switchStatement:
     SWITCH LEFT_PAREN expr RIGHT_PAREN LEFT_CURLY
-        (CASE primary COLON (codeBlock|stats*))*
-        (DEFAULT COLON codeBlock*)?
+        (((CASE primary)|DEFAULT) COLON (codeBlock|stats*))*
     RIGHT_CURLY
 ;
 

@@ -79,8 +79,14 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 		ensureDirSync(globalStorageCachePath);
 	}
 
+	try {
+		await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
+	} catch (error) {
+		connection.console.error(error);
+		connection.sendNotification('symbolparsing/allfiles/failed', { error: error.message });
+		return;
+	}
 
-	await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
 	connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);
 
 	let allFilePaths = filePaths;
@@ -104,8 +110,8 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 		});
 	}
 	if (allFilePaths === undefined) {
-		console.error(`No files found to parse`);
-		connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
+		connection.console.error(`No files found to parse`);
+		connection.sendNotification('symbolparsing/allfiles/failed', { error: `No files found to parse` });
 		return;
 	}
 
@@ -119,7 +125,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	}
 	if (allFilePaths.length === 0) {
 		connection.console.log(`No files to parse. Aborting operation`);
-		connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
+		connection.sendNotification('symbolparsing/allfiles/failed', {error: `No files to parse. Aborting operation`});
 		return;
 	}
 

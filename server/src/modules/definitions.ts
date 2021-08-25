@@ -87,8 +87,8 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 			// But leaving it as is for now.
 
 			const currentLine = currentDoc.getText(Range.create(position.line, 0, position.line+1, 0));
-			const dobjForRegexp = /[id]objFor[(](.*)[)]/
-			const result = dobjForRegexp.exec(currentLine)
+			const dobjForRegexp = /[id]objFor[(](.*)[)]/;
+			const result = dobjForRegexp.exec(currentLine);
 			if(result && result[1] === symbolName) {
 				//const fsPath = URI.parse(textDocument.uri).fsPath;
 				//const prepRows = preprocessedFilesCacheMap.get(fsPath)?.split(/\n/) ?? [];
@@ -98,7 +98,7 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 			
 
 
-			connection.console.log(`Find definition(s) for word: ${symbolName}`);
+			//connection.console.log(`Find definition(s) for word: ${symbolName}`);
 			for (const filePathKey of symbolManager.symbols.keys()) {
 				const localSymbols = symbolManager.symbols.get(filePathKey);
 				if (localSymbols) {

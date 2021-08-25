@@ -303,13 +303,11 @@ export function activate(context: ExtensionContext) {
 			isLongProcessingInAction = false;
 		});
 
-		client.onNotification("symbolparsing/allfiles/failed", (allFilePaths ) => {
-			window.showErrorMessage(`Parsing all files via makefile ${basename(chosenMakefileUri.fsPath)} failed `, {modal:true});
+		client.onNotification("symbolparsing/allfiles/failed", ({ error } ) => {
+			window.showErrorMessage(`Parsing all files via makefile ${basename(chosenMakefileUri.fsPath)} failed: ${error} `, {modal:true});
 			isLongProcessingInAction = false;
 			allFilesBeenProcessed = false;
 		});
-
-
 		initialParse();
 
 	});
