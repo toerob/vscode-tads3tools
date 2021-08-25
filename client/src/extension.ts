@@ -42,6 +42,7 @@ let currentTextDocument: TextDocument | undefined;
 let extensionDownloadMap: Map<any, any>;
 
 let errorDiagnostics = [];
+let isDiagnosing = false;
 let allFilesBeenProcessed = false;
 let isLongProcessingInAction = false;
 let serverProcessCancelTokenSource: CancellationTokenSource;
@@ -369,7 +370,6 @@ async function setMakeFile() {
 	client.info(`Chosen makefile set to: ${basename(chosenMakefileUri.fsPath)}`);
 	const makefileDoc = await workspace.openTextDocument(chosenMakefileUri.fsPath);
 
-
 	try {
 		await diagnose(makefileDoc);
 	} catch (err) {
@@ -412,17 +412,21 @@ async function onDidSaveTextDocument(textDocument: any) {
 
 async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 	client.info(`Diagnosing`);
+	if (isDiagnosing) {
+		client.info(`Already diagnosing. Skipping. `);
+		return;
+	}
 	try {
 		await diagnose(textDocument);
 	} catch (err) {
-		client.error(`Error while diagnosing: ${err}`);
+		client.info(`Error while diagnosing: ${err}`);
 		window.showErrorMessage(`Error while diagnosing: ${err}`);
 		return;
 	}
-
 	if (errorDiagnostics.length > 0) {
 		//throw new Error('Could not assemble outliner symbols since there\'s an error. ');
-		window.showWarningMessage(`Could not assemble outliner symbols since there was an error. `);
+		//window.showWarningMessage(`Could not assemble outliner symbols since there was an error. `);
+		client.error(`Could not assemble outliner symbols due to error(s): \n${errorDiagnostics.map(e=>e.message).join('\n')}`);
 		return;
 	}
 	//allFilesBeenProcessed = true;
@@ -627,11 +631,13 @@ function ensureObjFolderExistsInProjectRoot() {
 }
 
 async function diagnose(textDocument: TextDocument) {
+	isDiagnosing = true;
 	ensureObjFolderExistsInProjectRoot();
 	const tads3ExtensionConfig = workspace.getConfiguration('tads3');
 	const compilerPath = tads3ExtensionConfig?.compiler?.path ?? 't3make';
 	const resultOfCompilation = await runCommand(`${compilerPath} -nobanner -q -f "${chosenMakefileUri.fsPath}"`);
 	parseDiagnostics(resultOfCompilation.toString(), textDocument);
+	isDiagnosing = false;
 }
 
 async function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocument) {
