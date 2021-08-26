@@ -82,7 +82,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	try {
 		await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
 	} catch (error) {
-		connection.console.error(error);
+		connection.console.error(error.message);
 		connection.sendNotification('symbolparsing/allfiles/failed', { error: error.message });
 		return;
 	}

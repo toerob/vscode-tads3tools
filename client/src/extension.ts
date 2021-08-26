@@ -963,14 +963,15 @@ async function installTracker(context: ExtensionContext) {
 
 async function clearCache(context: ExtensionContext) {
 	const userAnswer = await window.showInformationMessage(`This will clear all potential cache for the standard libraries adv3/adv3Lite. With the effect of all library files having to go through a full parse next time around.
-	Are you sure?`, { title: 'Yes' }, { title: 'No' });
-	if (userAnswer.title === 'Yes') {
-		try {
-			rmdirSync(globalStoragePath, { recursive: true });
-			window.showInformationMessage(`Standard library cache is cleared`);
-		} catch (err) {
-			window.showErrorMessage(`Error happened during cache removal: ${err}`);
-		}
+	Are you sure?`, {modal:true}, { title: 'Yes' }, { title: 'No' });
+	if(userAnswer === undefined || userAnswer.title === 'No') {
+		return;
+	}
+	try {
+		rmdirSync(globalStoragePath, { recursive: true });
+		window.showInformationMessage(`Standard library cache is cleared`);
+	} catch (err) {
+		window.showErrorMessage(`Error happened during cache removal: ${err}`);
 	}
 }
 
