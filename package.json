@@ -3,7 +3,7 @@
 	"description": "Language server extension for Tads3",
 	"author": "Tomas Öberg",
 	"license": "MIT",
-	"version": "0.0.5",
+	"version": "0.0.6-SNAPSHOT",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/toerob/vscode-tads3tools.git"
@@ -237,7 +237,7 @@
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
 		"e2e-test": "npm run compile && sh ./scripts/e2e.sh",
 		"test": "cd server; jest",
-		"clean": "rm package-lock.json;rm client/package-lock.json;rm server/package-lock.json;rm -r node_modules;rm -r client/node_modules;rm -r server/node_modules;",
+		"rebuild": "rm package-lock.json;rm client/package-lock.json;rm server/package-lock.json;rm -r node_modules;rm -r client/node_modules;rm -r server/node_modules;npm install",
 		"esbuild-base": "esbuild ./client/src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
 		"esbuild": "npm run esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
