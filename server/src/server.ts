@@ -27,6 +27,7 @@ import MapObjectManager from './modules/mapcrawling/map-mapping';
 import { onCodeLens } from './modules/codelens';
 import { onCompletion } from './modules/completions';
 import { tokenizeQuotesWithIndex } from './modules/text-utils';
+import { onDocumentLinks } from './modules/links';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
@@ -78,9 +79,9 @@ connection.onInitialize((params: InitializeParams) => {
 			documentSymbolProvider: true,
 			referencesProvider: false, // TODO: need to fix the row synchronization issue
 			definitionProvider: true,
-			/*documentLinkProvider: {
-				resolveProvider: false,
-			},*/
+			documentLinkProvider: {
+				resolveProvider: true,
+			},
 			codeLensProvider: {
 				resolveProvider: true,
 			},
@@ -244,7 +245,7 @@ connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, documen
 //connection.onReferences(async (handler) => onReferences(handler,documents, symbolManager));
 connection.onDefinition(async (handler) => onDefinition(handler,documents, symbolManager));
 connection.onCompletion(async (handler) => onCompletion(handler, documents, symbolManager));
-//connection.onDocumentLinks(async (handler) => onDocumentLinks(handler, documents, symbolManager));
+connection.onDocumentLinks(async (handler) => onDocumentLinks(handler, documents, symbolManager));
 
 connection.onCodeLens(async (handler) => {
 	return onCodeLens(handler, documents, symbolManager);
