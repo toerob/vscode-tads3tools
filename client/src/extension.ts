@@ -361,11 +361,12 @@ async function setMakeFile() {
 		return;
 	}
 
-	chosenMakefileUri =  await findAndSelectMakefileUri() ?? chosenMakefileUri;
-	if (chosenMakefileUri === undefined) {
+	const newMakefile = await findAndSelectMakefileUri();
+	if (newMakefile === undefined) {
 		client.info(`No makefile, cannot parse document symbols. `);
 		return;
 	}
+	chosenMakefileUri = newMakefile;
 
 	client.info(`Chosen makefile set to: ${basename(chosenMakefileUri.fsPath)}`);
 	const makefileDoc = await workspace.openTextDocument(chosenMakefileUri.fsPath);
@@ -909,14 +910,14 @@ async function initialParse() {
 }
 
 async function installTracker(context: ExtensionContext) {
-
 	const filePath = isUsingAdv3Lite ? '_gameTrackerAdv3Lite.t' : '_gameTrackerAdv3.t';
 	let trackerFileContents = readFileSync(Uri.joinPath(context.extensionUri, 'resources', filePath).fsPath).toString();
-
-	const { value } = makefileKeyMapValues?.find(keyvalue => keyvalue.key === '-D' && keyvalue.value.startsWith(`LANGUAGE`));
-	const languageValue = value.split('=');
-	if (languageValue.length === 2) {
-		trackerFileContents = trackerFileContents.replace('<en_us.h>', `<${languageValue[1]}.h>`);
+	const keyvalue = makefileKeyMapValues?.find(keyvalue => keyvalue?.key === '-D' && keyvalue.value?.startsWith(`LANGUAGE`));
+	if(keyvalue) {
+		const languageValue = keyvalue.value?.split('=');
+		if (languageValue.length === 2) {
+			trackerFileContents = trackerFileContents.replace('<en_us.h>', `<${languageValue[1]}.h>`);
+		}
 	}
 
 
