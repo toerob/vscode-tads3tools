@@ -24,6 +24,7 @@ import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
+import { Tads3DocumentLinkProvider } from './modules/links';
 
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
 const tads3CompileErrorParser = new Tads3CompileErrorParser();
@@ -57,6 +58,10 @@ export let client: LanguageClient;
 
 export function getUsingAdv3LiteStatus() {
 	return isUsingAdv3Lite;
+}
+
+export function getProcessedFileList(): string[] {
+	return preprocessedList;
 }
 
 export function getLastChosenTextEditor() { return lastChosenTextEditor; }
@@ -103,6 +108,9 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('tads3.analyzeTextAtPosition', () => analyzeTextAtPosition()));
 	context.subscriptions.push(commands.registerCommand('tads3.installTracker', () => installTracker(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.clearCache', () => clearCache(context)));
+
+	context.subscriptions.push(languages.registerDocumentLinkProvider({ language: "tads3", }, new Tads3DocumentLinkProvider()));
+
 
 
 	window.onDidChangeTextEditorSelection(e => {
