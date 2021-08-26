@@ -1,9 +1,8 @@
 import { Tads3Listener } from './Tads3Listener';
-import { ObjectDeclarationContext, PropertySetContext, PropertyContext, FunctionHeadContext, IdAtomContext, AssignmentStatementContext, FunctionDeclarationContext, CurlyObjectBodyContext, CodeBlockContext, MemberExprContext, ThrowStatementContext, IntrinsicMethodDeclarationContext, IntrinsicDeclarationContext, GrammarDeclarationContext } from './Tads3Parser';
+import { ObjectDeclarationContext, PropertySetContext, PropertyContext, FunctionHeadContext, IdAtomContext, AssignmentStatementContext, FunctionDeclarationContext, CurlyObjectBodyContext, CodeBlockContext, MemberExprContext, ThrowStatementContext, IntrinsicMethodDeclarationContext, IntrinsicDeclarationContext, GrammarDeclarationContext, TemplateDeclarationContext } from './Tads3Parser';
 import { ScopedEnvironment } from './ScopedEnvironment';
 import { CompletionItem, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
-import { Location, Range } from 'vscode-languageserver';
-import { connection } from '../server';
+import { Range } from 'vscode-languageserver';
 
 // TODO: Maybe much easier to just keep a map instead of an object like this?
 export class ExtendedDocumentSymbolProperties {
@@ -72,7 +71,6 @@ export class Tads3SymbolListener implements Tads3Listener {
 	localKeywords: Map<string, Range[]> = new Map();
 
 	memberCallChains = new Map();
-	
 
 	enterIdAtom(ctx: IdAtomContext) {
 		try {
@@ -481,6 +479,18 @@ export class Tads3SymbolListener implements Tads3Listener {
 			this.currentFunctionSymbol = undefined;
 		} catch(err) {
 			console.error(err);
+		}
+	}
+
+	enterTemplateDeclaration(ctx: TemplateDeclarationContext) {
+		const name = ctx._className?.ID()?.text;
+		if (name) {
+			const detail = "template";
+			const start = (ctx.start.line ?? 1) - 1;
+			const stop = (ctx.stop?.line ?? 1) - 1;
+			const range = Range.create(start, 0, stop, 0);
+			const symbol = DocumentSymbol.create(name, detail, SymbolKind.TypeParameter, range, range);
+			this.symbols.push(symbol);
 		}
 	}
 }

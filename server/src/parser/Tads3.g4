@@ -234,7 +234,7 @@ labelStatement:
 
 switchStatement:
     SWITCH LEFT_PAREN expr RIGHT_PAREN LEFT_CURLY
-        (((CASE primary)|DEFAULT) COLON (codeBlock|stats*))*
+        (((CASE expr)|DEFAULT) COLON (codeBlock|stats*))*
     RIGHT_CURLY
 ;
 

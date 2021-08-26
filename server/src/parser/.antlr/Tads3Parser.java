@@ -3376,8 +3376,11 @@ public class Tads3Parser extends Parser {
 	public static class SwitchStatementContext extends ParserRuleContext {
 		public TerminalNode SWITCH() { return getToken(Tads3Parser.SWITCH, 0); }
 		public TerminalNode LEFT_PAREN() { return getToken(Tads3Parser.LEFT_PAREN, 0); }
-		public ExprContext expr() {
-			return getRuleContext(ExprContext.class,0);
+		public List<ExprContext> expr() {
+			return getRuleContexts(ExprContext.class);
+		}
+		public ExprContext expr(int i) {
+			return getRuleContext(ExprContext.class,i);
 		}
 		public TerminalNode RIGHT_PAREN() { return getToken(Tads3Parser.RIGHT_PAREN, 0); }
 		public TerminalNode LEFT_CURLY() { return getToken(Tads3Parser.LEFT_CURLY, 0); }
@@ -3399,12 +3402,6 @@ public class Tads3Parser extends Parser {
 		public List<TerminalNode> CASE() { return getTokens(Tads3Parser.CASE); }
 		public TerminalNode CASE(int i) {
 			return getToken(Tads3Parser.CASE, i);
-		}
-		public List<PrimaryContext> primary() {
-			return getRuleContexts(PrimaryContext.class);
-		}
-		public PrimaryContext primary(int i) {
-			return getRuleContext(PrimaryContext.class,i);
 		}
 		public List<StatsContext> stats() {
 			return getRuleContexts(StatsContext.class);
@@ -3450,7 +3447,7 @@ public class Tads3Parser extends Parser {
 					setState(616);
 					match(CASE);
 					setState(617);
-					primary();
+					expr(0);
 					}
 					}
 					break;
@@ -6269,7 +6266,7 @@ public class Tads3Parser extends Parser {
 		"\u0260\3\2\2\2\u0260\u0261\7N\2\2\u0261G\3\2\2\2\u0262\u0263\5l\67\2\u0263"+
 		"\u0264\7I\2\2\u0264I\3\2\2\2\u0265\u0266\7\4\2\2\u0266\u0267\7O\2\2\u0267"+
 		"\u0268\5h\65\2\u0268\u0269\7P\2\2\u0269\u027b\7V\2\2\u026a\u026b\7\5\2"+
-		"\2\u026b\u026e\5j\66\2\u026c\u026e\7\6\2\2\u026d\u026a\3\2\2\2\u026d\u026c"+
+		"\2\u026b\u026e\5h\65\2\u026c\u026e\7\6\2\2\u026d\u026a\3\2\2\2\u026d\u026c"+
 		"\3\2\2\2\u026e\u026f\3\2\2\2\u026f\u0277\7I\2\2\u0270\u0278\5<\37\2\u0271"+
 		"\u0273\5> \2\u0272\u0271\3\2\2\2\u0273\u0276\3\2\2\2\u0274\u0272\3\2\2"+
 		"\2\u0274\u0275\3\2\2\2\u0275\u0278\3\2\2\2\u0276\u0274\3\2\2\2\u0277\u0270"+

@@ -2877,7 +2877,7 @@ export class Tads3Parser extends Parser {
 					this.state = 616;
 					this.match(Tads3Parser.CASE);
 					this.state = 617;
-					this.primary();
+					this.expr(0);
 					}
 					}
 					break;
@@ -5226,7 +5226,7 @@ export class Tads3Parser extends Parser {
 		"\x07N\x02\x02\u0261G\x03\x02\x02\x02\u0262\u0263\x05l7\x02\u0263\u0264" +
 		"\x07I\x02\x02\u0264I\x03\x02\x02\x02\u0265\u0266\x07\x04\x02\x02\u0266" +
 		"\u0267\x07O\x02\x02\u0267\u0268\x05h5\x02\u0268\u0269\x07P\x02\x02\u0269" +
-		"\u027B\x07V\x02\x02\u026A\u026B\x07\x05\x02\x02\u026B\u026E\x05j6\x02" +
+		"\u027B\x07V\x02\x02\u026A\u026B\x07\x05\x02\x02\u026B\u026E\x05h5\x02" +
 		"\u026C\u026E\x07\x06\x02\x02\u026D\u026A\x03\x02\x02\x02\u026D\u026C\x03" +
 		"\x02\x02\x02\u026E\u026F\x03\x02\x02\x02\u026F\u0277\x07I\x02\x02\u0270" +
 		"\u0278\x05<\x1F\x02\u0271\u0273\x05> \x02\u0272\u0271\x03\x02\x02\x02" +
@@ -7208,8 +7208,14 @@ export class LabelStatementContext extends ParserRuleContext {
 export class SwitchStatementContext extends ParserRuleContext {
 	public SWITCH(): TerminalNode { return this.getToken(Tads3Parser.SWITCH, 0); }
 	public LEFT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.LEFT_PAREN, 0); }
-	public expr(): ExprContext {
-		return this.getRuleContext(0, ExprContext);
+	public expr(): ExprContext[];
+	public expr(i: number): ExprContext;
+	public expr(i?: number): ExprContext | ExprContext[] {
+		if (i === undefined) {
+			return this.getRuleContexts(ExprContext);
+		} else {
+			return this.getRuleContext(i, ExprContext);
+		}
 	}
 	public RIGHT_PAREN(): TerminalNode { return this.getToken(Tads3Parser.RIGHT_PAREN, 0); }
 	public LEFT_CURLY(): TerminalNode { return this.getToken(Tads3Parser.LEFT_CURLY, 0); }
@@ -7248,15 +7254,6 @@ export class SwitchStatementContext extends ParserRuleContext {
 			return this.getTokens(Tads3Parser.CASE);
 		} else {
 			return this.getToken(Tads3Parser.CASE, i);
-		}
-	}
-	public primary(): PrimaryContext[];
-	public primary(i: number): PrimaryContext;
-	public primary(i?: number): PrimaryContext | PrimaryContext[] {
-		if (i === undefined) {
-			return this.getRuleContexts(PrimaryContext);
-		} else {
-			return this.getRuleContext(i, PrimaryContext);
 		}
 	}
 	public stats(): StatsContext[];
