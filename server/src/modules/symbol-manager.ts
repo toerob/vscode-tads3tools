@@ -7,11 +7,11 @@ export class Tads3SymbolManager {
 	additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
 	inheritanceMap: Map<string, string> = new Map(); // TODO:
 
-	getAdditionalProperties(symbol:DocumentSymbol) {
-		for(const keys of this.additionalProperties.keys()) {
+	getAdditionalProperties(symbol: DocumentSymbol) {
+		for (const keys of this.additionalProperties.keys()) {
 			const localAdditionalProps = this.additionalProperties.get(keys);
 			const props = localAdditionalProps?.get(symbol);
-			if(props) {
+			if (props) {
 				return props;
 			}
 		}
@@ -19,19 +19,37 @@ export class Tads3SymbolManager {
 	}
 
 	findSymbol(name: any) {
-		for (const filePath of this.symbols.keys()) {
-			const fileLocalSymbols = this.symbols.get(filePath);
-			const symbol = fileLocalSymbols?.find(s => s.name === name);
-			if (symbol) {
-				return { symbol, filePath };
+		if (name) {
+			for (const filePath of this.symbols.keys()) {
+				const fileLocalSymbols = this.symbols.get(filePath);
+				const symbol = fileLocalSymbols?.find(s => s.name === name);
+				if (symbol) {
+					return { symbol, filePath };
+				}
 			}
 		}
 		return {};
 	}
 
+	getTemplates(): Set<DocumentSymbol> {
+		const templates = new Set<DocumentSymbol>();
+		for (const filePath of this.symbols.keys()) {
+			const fileLocalSymbols = this.symbols.get(filePath);
+			const templateSymbolsArray = fileLocalSymbols?.filter(s => s.kind === SymbolKind.TypeParameter) ?? [];
+			for (const templateSymbol of templateSymbolsArray) {
+				templates.add(templateSymbol);
+			}
+		}
+		return templates;
+	}
+
+	getTemplatesFor(symbolName: string) {
+		return [...this.getTemplates() ?? []].filter(x => x.name === symbolName);
+	}
+
 	findClosestSymbolKindByPosition(filePath: string, kind: SymbolKind, position: Position): any {
 		const fileLocalSymbols = this.symbols.get(filePath);
-		if(fileLocalSymbols) {
+		if (fileLocalSymbols) {
 			const flattenedLocalSymbols = flattenTreeToArray(fileLocalSymbols);
 			const symbol = flattenedLocalSymbols?.find(s => s.kind === kind
 				&& position.line >= s.range.start.line
@@ -46,20 +64,20 @@ export class Tads3SymbolManager {
 	mapHeritage(symbol: DocumentSymbol) {
 		const superTypes = symbol.detail?.split(',') ?? [];
 		const heritages = new Map();
-		for(const ancestor of superTypes) {
+		for (const ancestor of superTypes) {
 			heritages.set(ancestor, this.findHeritage(ancestor));
 		}
 		return heritages;
 	}
 
 	findHeritage(name: string): string[] {
-		const heritageStack:string[] = [];
+		const heritageStack: string[] = [];
 		let ancestorName = this.inheritanceMap.get(name);
 		heritageStack.push(name);
-		if(ancestorName) {
+		if (ancestorName) {
 			heritageStack.push(ancestorName);
-			while( ancestorName && (ancestorName = this.inheritanceMap.get(ancestorName)) !== undefined) {
-				if(ancestorName === '__root__') {
+			while (ancestorName && (ancestorName = this.inheritanceMap.get(ancestorName)) !== undefined) {
+				if (ancestorName === '__root__') {
 					break;
 				}
 				heritageStack.push(ancestorName);
@@ -74,13 +92,13 @@ export class Tads3SymbolManager {
 				|| symbolKind === SymbolKind.Class;
 		}
 		const fileLocalSymbols = this.symbols.get(filePath);
-		if(fileLocalSymbols) {
+		if (fileLocalSymbols) {
 			const flattenedLocalSymbols = flattenTreeToArray(fileLocalSymbols);
-			return flattenedLocalSymbols?.find(s => 
+			return flattenedLocalSymbols?.find(s =>
 				isClassOrObject(s.kind)
 				&& position.line >= s.range.start.line
 				&& position.line <= s.range.end.line);
-			
+
 		}
 		return undefined;
 	}

@@ -1,4 +1,4 @@
-import { DocumentSymbol, Range } from 'vscode-languageserver/node';
+import { DocumentSymbol, Range, TextDocuments } from 'vscode-languageserver/node';
 import { preprocessAllFiles } from './parser/preprocessor';
 import { statSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { URI, Utils } from 'vscode-uri';
@@ -8,6 +8,7 @@ import { clearCompletionCache } from './modules/completions';
 import { basename, dirname } from 'path';
 import * as path from 'path';
 import { ensureDirSync } from 'fs-extra';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
 
 /**
@@ -79,8 +80,14 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 		ensureDirSync(globalStorageCachePath);
 	}
 
+	try {
+		await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
+	} catch (error) {
+		connection.console.error(error.message);
+		connection.sendNotification('symbolparsing/allfiles/failed', { error: error.message });
+		return;
+	}
 
-	await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
 	connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);
 
 	let allFilePaths = filePaths;
@@ -89,6 +96,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	const baseDir = Utils.dirname(URI.parse(makefileLocation)).fsPath;
 
 	if (filePaths === undefined) {
+		initialParsing = true;
 		allFilePaths = [...preprocessedFilesCacheMap.keys()];
 
 		// Sort by size, size ordering, the largest files goes first:
@@ -103,14 +111,15 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 		});
 	}
 	if (allFilePaths === undefined) {
-		console.error(`No files found to parse`);
-		connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
+		connection.console.error(`No files found to parse`);
+		connection.sendNotification('symbolparsing/allfiles/failed', { error: `No files found to parse` });
 		return;
 	}
 
 	const maxNumberOfParseWorkerThreads: number = await connection.workspace.getConfiguration("tads3.maxNumberOfParseWorkerThreads");
 
 	const parseOnlyTheWorkspaceFiles: boolean = await connection.workspace.getConfiguration("tads3.parseOnlyTheWorkspaceFiles");
+
 	if (parseOnlyTheWorkspaceFiles) {
 		allFilePaths = allFilePaths.filter(x => x.startsWith(baseDir));
 		connection.console.log(`Only parses files with base directory: ${baseDir}`); // Default 6 threads
@@ -118,6 +127,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	}
 	if (allFilePaths.length === 0) {
 		connection.console.log(`No files to parse. Aborting operation`);
+		connection.sendNotification('symbolparsing/allfiles/failed', {error: `No files to parse. Aborting operation`});
 		return;
 	}
 

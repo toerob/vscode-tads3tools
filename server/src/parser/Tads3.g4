@@ -55,8 +55,11 @@ pragmaDirective:
 
 grammarDeclaration:
     (isModify=MODIFY | isReplace=REPLACE)? GRAMMAR prodName=identifierAtom (LEFT_PAREN tag=identifierAtom RIGHT_PAREN)? COLON
-    grammarRules COLON superTypes
-    (curlyObjectBody | semiColonEndedObjectBody)
+    grammarRules COLON
+    (
+        superTypes
+        (curlyObjectBody | semiColonEndedObjectBody)
+    )?
 ;
 
 grammarRules:
@@ -79,7 +82,7 @@ item:
 ;
 
 templateDeclaration:
-    className=identifierAtom TEMPLATE (properties+=expr OPTIONAL?)+ SEMICOLON
+    className=identifierAtom TEMPLATE (properties+=expr isOptional+=OPTIONAL?)+ SEMICOLON
     | STRING TEMPLATE ARITHMETIC_LEFT (identifierAtom|STAR|IS|IN)* ARITHMETIC_RIGHT templateId=identifierAtom SEMICOLON
 
 ;
@@ -112,12 +115,11 @@ objectDeclaration:
     (curlyObjectBody | semiColonEndedObjectBody)
 ;
 
-
 templateExpr:
     (singleString=SSTR SEMICOLON?
-    | AT atLocation=identifierAtom
+    | AT atLocation=expr
     | doubleString=DSTR SEMICOLON?
-    | PLUS number=NR
+    | op=(PLUS|MINUS|STAR|DIV|MOD|AMP|NOT|TILDE) (id=identifierAtom|expression=expr)
     | ARROW (connection=identifierAtom|expression=expr) //TODO: test expression=expr
     | LEFT_BRACKET array RIGHT_BRACKET
     )  OPTIONAL?
@@ -159,7 +161,7 @@ dictionaryProperty:
 
 propertySet:
     (PROPERTYSET paramsWithWildcard
-    |PROPERTYSET LEFT_PAREN paramsWithWildcard? RIGHT_PAREN)
+    |PROPERTYSET prefix=SSTR? LEFT_PAREN paramsWithWildcard? RIGHT_PAREN)
     curlyObjectBody
 ;
 
@@ -167,22 +169,8 @@ paramsWithWildcard:
     (parameters+=primary|STAR) (COMMA paramsWithWildcard)*
 ;
 
-
-
-/*
-TODO: fix
-function moveFloatingObjects(loc)
-{
-    for( local obj = firstObj(Floating) ; obj != nil ; obj = nextObj(obj, Floating) ) {
-
-    }
-        //if(obj.isFoundIn(loc))
-          //obj.moveIntoForTravel(loc);
-}
-*/
-
 functionDeclaration:
-   (functionHead codeBlock)
+   (isModify=MODIFY?|isReplace=REPLACE?) (functionHead codeBlock)
    | operatorOverride
 ;
 
@@ -246,8 +234,7 @@ labelStatement:
 
 switchStatement:
     SWITCH LEFT_PAREN expr RIGHT_PAREN LEFT_CURLY
-        (CASE primary COLON (codeBlock|stats*))*
-        (DEFAULT COLON codeBlock*)?
+        (((CASE expr)|DEFAULT) COLON (codeBlock|stats*))*
     RIGHT_CURLY
 ;
 
@@ -369,6 +356,7 @@ primary:
 identifierAtom:
     ID
     | IN
+    | IS
     | STEP
     | STRING
     | OPERATOR

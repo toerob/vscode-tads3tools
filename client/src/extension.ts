@@ -8,7 +8,7 @@ import { exec } from 'child_process';
 import { copyFileSync, createReadStream, createWriteStream, existsSync, readFileSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, Terminal, MessageItem, Position, TextEditorSelectionChangeKind, SnippetString } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString } from 'vscode';
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -24,7 +24,6 @@ import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
-import { SSL_OP_EPHEMERAL_RSA } from 'constants';
 
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
 const tads3CompileErrorParser = new Tads3CompileErrorParser();
@@ -43,17 +42,25 @@ let currentTextDocument: TextDocument | undefined;
 let extensionDownloadMap: Map<any, any>;
 
 let errorDiagnostics = [];
+let isDiagnosing = false;
 let allFilesBeenProcessed = false;
 let isLongProcessingInAction = false;
 let serverProcessCancelTokenSource: CancellationTokenSource;
 let chosenMakefileUri: Uri | undefined;
 let preprocessedList: string[];
 
+let preprocessDocument: TextDocument;
+let makefileKeyMapValues = [];
+
 export let tads3VisualEditorPanel: WebviewPanel | undefined = undefined;
 export let client: LanguageClient;
 
 export function getUsingAdv3LiteStatus() {
 	return isUsingAdv3Lite;
+}
+
+export function getProcessedFileList(): string[] {
+	return preprocessedList;
 }
 
 export function getLastChosenTextEditor() { return lastChosenTextEditor; }
@@ -123,17 +130,14 @@ export function activate(context: ExtensionContext) {
 
 	client.onReady().then(async () => {
 
-
 		client.onNotification('response/extractQuotes', (payload) => {
-
 			workspace
 				.openTextDocument({ language: 'tads3', content: payload.resultArray.join('\n') })
 				.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
-
-			
-		})
+		});
 
 		client.onNotification('response/makefile/keyvaluemap', ({ makefileStructure, usingAdv3Lite }) => {
+			makefileKeyMapValues = makefileStructure;
 			isUsingAdv3Lite = usingAdv3Lite;
 		});
 
@@ -305,6 +309,11 @@ export function activate(context: ExtensionContext) {
 			isLongProcessingInAction = false;
 		});
 
+		client.onNotification("symbolparsing/allfiles/failed", ({ error } ) => {
+			window.showErrorMessage(`Parsing all files via makefile ${basename(chosenMakefileUri.fsPath)} failed: ${error} `, {modal:true});
+			isLongProcessingInAction = false;
+			allFilesBeenProcessed = false;
+		});
 		initialParse();
 
 	});
@@ -330,7 +339,8 @@ export async function findAndSelectMakefileUri(askIfNotFound = true) {
 			const pick = await window.showQuickPick(entriesStr);
 			choice = qpItemMap.get(pick);
 		} else {
-			choice = files[0];
+			const defaultMakefile = files.find(x=>x.fsPath.endsWith('Makefile.t3m'));
+			choice = defaultMakefile? defaultMakefile : files[0];
 			window.showInformationMessage(`Using first found makefile in project`);
 		}
 	} else if (files.length == 1) {
@@ -349,13 +359,39 @@ export async function findAndSelectMakefileUri(askIfNotFound = true) {
 
 
 async function setMakeFile() {
-	chosenMakefileUri =  await selectMakefileWithDialog() ?? chosenMakefileUri;
-	if (chosenMakefileUri) {
-		client.info(`Chosen makefile set to: ${basename(chosenMakefileUri.fsPath)}`);
+	client.info(`Diagnosing`);
+	if(isLongProcessingInAction) {
+		window.showWarningMessage(`Cannot change makefile and reparse right now, since a full project parsing is already in progress. Try again later. `, {modal: true});
+		return;
 	}
+
+	const newMakefile = await findAndSelectMakefileUri();
+	if (newMakefile === undefined) {
+		client.info(`No makefile, cannot parse document symbols. `);
+		return;
+	}
+	chosenMakefileUri = newMakefile;
+
+	client.info(`Chosen makefile set to: ${basename(chosenMakefileUri.fsPath)}`);
+	const makefileDoc = await workspace.openTextDocument(chosenMakefileUri.fsPath);
+
+	try {
+		await diagnose(makefileDoc);
+	} catch (err) {
+		window.showErrorMessage(`Error while diagnosing: ${err}`);
+		client.error(`Error while diagnosing: ${err}`);
+		return;
+	}
+
+	if (errorDiagnostics.length > 0) {
+		window.showErrorMessage(`Error during compilation:\n${errorDiagnostics.map(e=>e.message).join('\n')}`);
+		return;
+	}
+
+	isLongProcessingInAction = true;
+	client.info(`Preprocess and parse all documents`);
+	await preprocessAndParseDocument();
 }
-
-
 
 async function onDidSaveTextDocument(textDocument: any) {
 	currentTextDocument = textDocument;
@@ -380,12 +416,22 @@ async function onDidSaveTextDocument(textDocument: any) {
 
 
 async function diagnosePreprocessAndParse(textDocument: TextDocument) {
-
 	client.info(`Diagnosing`);
-	await diagnose(textDocument);
+	if (isDiagnosing) {
+		client.info(`Already diagnosing. Skipping. `);
+		return;
+	}
+	try {
+		await diagnose(textDocument);
+	} catch (err) {
+		client.info(`Error while diagnosing: ${err}`);
+		window.showErrorMessage(`Error while diagnosing: ${err}`);
+		return;
+	}
 	if (errorDiagnostics.length > 0) {
 		//throw new Error('Could not assemble outliner symbols since there\'s an error. ');
-		//window.showWarningMessage(`Could not assemble outliner symbols since there\'s an error. `);
+		//window.showWarningMessage(`Could not assemble outliner symbols since there was an error. `);
+		client.error(`Could not assemble outliner symbols due to error(s): \n${errorDiagnostics.map(e=>e.message).join('\n')}`);
 		return;
 	}
 	//allFilesBeenProcessed = true;
@@ -416,7 +462,6 @@ let t3FileSystemWatcher: FileSystemWatcher = undefined;
 const runGameInTerminalSubject = new Subject();
 
 function setupAndMonitorBinaryGamefileChanges() {
-	const documentWorkingOn = window.activeTextEditor.document;
 	const workspaceFolder = dirname(chosenMakefileUri.fsPath);
 	t3FileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, "*.t3"));
 
@@ -451,6 +496,7 @@ function setupAndMonitorBinaryGamefileChanges() {
 
 		// FIXME: Interim hack to make preserveFocus work even when there's a slow startup of the interpreter
 		// (This won't always work, especially on a slow machine)
+		const documentWorkingOn = window.activeTextEditor.document;
 		setTimeout(() => window.showTextDocument(documentWorkingOn), 500);	
 	});
 
@@ -579,15 +625,27 @@ function enablePreprocessorCodeLens(arg0: string, enablePreprocessorCodeLens: an
 	window.showInformationMessage(`CodeLens for preprocessor differences is now ${!oldValue?'enabled':'disabled'} `);
 }
 
+function ensureObjFolderExistsInProjectRoot() {
+	if (existsSync(chosenMakefileUri.fsPath)) {
+		const projectBaseDirectory = dirname(chosenMakefileUri.fsPath);
+		const objFolderUri = path.join(projectBaseDirectory, 'obj');
+		ensureDirSync(objFolderUri);
+		return;
+	}
+	throw new Error(`Could not ensure obj folder exists in the root folder since no makefile is known. `);
+}
 
 async function diagnose(textDocument: TextDocument) {
+	isDiagnosing = true;
+	ensureObjFolderExistsInProjectRoot();
 	const tads3ExtensionConfig = workspace.getConfiguration('tads3');
 	const compilerPath = tads3ExtensionConfig?.compiler?.path ?? 't3make';
 	const resultOfCompilation = await runCommand(`${compilerPath} -nobanner -q -f "${chosenMakefileUri.fsPath}"`);
 	parseDiagnostics(resultOfCompilation.toString(), textDocument);
+	isDiagnosing = false;
 }
 
-async function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocument) {
+function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocument) {
 	errorDiagnostics = tads3CompileErrorParser.parse(resultOfCompilation, textDocument);
 	collection.set(textDocument.uri, errorDiagnostics);
 }
@@ -630,6 +688,7 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 				client.sendNotification('request/mapsymbols');			
 			}*/
 		});
+
 		await executeParse(chosenMakefileUri.fsPath, filePaths);
 		return true;
 	});
@@ -654,28 +713,25 @@ export async function cancelParse(): Promise<any> {
 	});
 }
 
-
-
-let preprocessDocument: TextDocument;
-
-function showPreprocessedTextAction(params: [any, any, any]) {
+async function showPreprocessedTextAction(params: [any, any, any]) {
 	const [range, uri, preprocessedText] = params;
-	
 	if (preprocessDocument && !preprocessDocument.isClosed) {
-		window.visibleTextEditors
+		await window.showTextDocument(preprocessDocument, {
+			viewColumn: ViewColumn.Beside,
+			preserveFocus: true,
+			preview: true,
+		});
+		await window.visibleTextEditors
 			.find(editor => editor.document.uri.path === preprocessDocument.uri.path)
 			.edit(prepDoc => {
 				const wholeRange = preprocessDocument.validateRange(new Range(0, 0, preprocessDocument.lineCount, 0));
 				prepDoc.replace(wholeRange, preprocessedText);
-			}).then(() => {
-				showAndScrollToRange(preprocessDocument, range);
 			});
+		showAndScrollToRange(preprocessDocument, range);
 	} else {
-		workspace.openTextDocument({ language: 'tads3', content: preprocessedText })
-			.then(doc => {
-				preprocessDocument = doc;
-				showAndScrollToRange(doc, range);
-			});
+		const doc = await workspace.openTextDocument({ language: 'tads3', content: preprocessedText });
+		preprocessDocument = doc;
+		showAndScrollToRange(doc, range);
 	}
 }
 
@@ -858,10 +914,16 @@ async function initialParse() {
 }
 
 async function installTracker(context: ExtensionContext) {
-
 	const filePath = isUsingAdv3Lite ? '_gameTrackerAdv3Lite.t' : '_gameTrackerAdv3.t';
+	let trackerFileContents = readFileSync(Uri.joinPath(context.extensionUri, 'resources', filePath).fsPath).toString();
+	const keyvalue = makefileKeyMapValues?.find(keyvalue => keyvalue?.key === '-D' && keyvalue.value?.startsWith(`LANGUAGE`));
+	if(keyvalue) {
+		const languageValue = keyvalue.value?.split('=');
+		if (languageValue.length === 2) {
+			trackerFileContents = trackerFileContents.replace('<en_us.h>', `<${languageValue[1]}.h>`);
+		}
+	}
 
-	const trackerFileContents = readFileSync(Uri.joinPath(context.extensionUri, 'resources', filePath).fsPath).toString();
 
 	if (chosenMakefileUri) {
 		const workspaceFolder = dirname(chosenMakefileUri.fsPath);
@@ -905,14 +967,15 @@ async function installTracker(context: ExtensionContext) {
 
 async function clearCache(context: ExtensionContext) {
 	const userAnswer = await window.showInformationMessage(`This will clear all potential cache for the standard libraries adv3/adv3Lite. With the effect of all library files having to go through a full parse next time around.
-	Are you sure?`, { title: 'Yes' }, { title: 'No' });
-	if (userAnswer.title === 'Yes') {
-		try {
-			rmdirSync(globalStoragePath, { recursive: true });
-			window.showInformationMessage(`Standard library cache is cleared`);
-		} catch (err) {
-			window.showErrorMessage(`Error happened during cache removal: ${err}`);
-		}
+	Are you sure?`, {modal:true}, { title: 'Yes' }, { title: 'No' });
+	if(userAnswer === undefined || userAnswer.title === 'No') {
+		return;
+	}
+	try {
+		rmdirSync(globalStoragePath, { recursive: true });
+		window.showInformationMessage(`Standard library cache is cleared`);
+	} catch (err) {
+		window.showErrorMessage(`Error happened during cache removal: ${err}`);
 	}
 }
 
@@ -949,7 +1012,7 @@ async function createTemplateProject(context: ExtensionContext) {
 		const objFolderUri = Uri.joinPath(firstWorkspaceFolder, 'obj');
 
 
-		if (existsSync(makefileUri.fsPath) || existsSync(makefileUri.fsPath)) {
+		if (existsSync(makefileUri.fsPath) || existsSync(gameFileUri.fsPath)) {
 			const userAnswer = await window.showInformationMessage(
 				`Project already have either a Makefile.t3m or a gameMain.t, do you want to overwrite them with a fresh template?`,
 				{ title: 'Yes' }, { title: 'No' });

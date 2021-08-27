@@ -2,31 +2,35 @@
 {
 	"version": "0.2.0",
 	"configurations": [
-	{
-		"args": [
-			"-u",
-			"tdd",
-			"--timeout",
-			"999999",
-			"--colors",
-			"${workspaceFolder}/server/out/test"
-		],
-		"internalConsoleOptions": "openOnSessionStart",
-		"name": "Mocha Tests",
-		"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-		"request": "launch",
-		"skipFiles": [
-			"<node_internals>/**"
-		],
-		"type": "pwa-node"
-	},
+		{
+			"args": [
+				"-u",
+				"tdd",
+				"--timeout",
+				"999999",
+				"--colors",
+				"${workspaceFolder}/server/out/test"
+			],
+			"internalConsoleOptions": "openOnSessionStart",
+			"name": "Mocha Tests",
+			"program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+			"request": "launch",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"type": "pwa-node"
+		},
 		{
 			"type": "extensionHost",
 			"request": "launch",
 			"name": "Launch Client",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceRoot}"],
-			"outFiles": ["${workspaceRoot}/client/out/**/*.js"],
+			"args": [
+				"--extensionDevelopmentPath=${workspaceRoot}"
+			],
+			"outFiles": [
+				"${workspaceRoot}/client/out/**/*.js"
+			],
 			"preLaunchTask": {
 				"type": "npm",
 				"script": "watch"
@@ -38,7 +42,9 @@
 			"name": "Attach to Server",
 			"port": 6009,
 			"restart": true,
-			"outFiles": ["${workspaceRoot}/server/out/**/*.js"]
+			"outFiles": [
+				"${workspaceRoot}/server/out/**/*.js"
+			]
 		},
 		{
 			"name": "Language Server E2E Test",
@@ -50,13 +56,33 @@
 				"--extensionTestsPath=${workspaceRoot}/client/out/test/index",
 				"${workspaceRoot}/client/testFixture"
 			],
-			"outFiles": ["${workspaceRoot}/client/out/test/**/*.js"]
+			"outFiles": [
+				"${workspaceRoot}/client/out/test/**/*.js"
+			]
+		},
+		{
+			"name": "Extension Tests",
+			"type": "extensionHost",
+			"request": "launch",
+			"runtimeExecutable": "${execPath}",
+			"args": [
+				"${workspaceRoot}/client/testFixture",
+				"--disable-extensions",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--extensionTestsPath=${workspaceFolder}/client/out/test/index"
+			],
+			"outFiles": [
+				"${workspaceFolder}/client/out/test/**/*.js"
+			]
 		}
 	],
 	"compounds": [
 		{
 			"name": "Client + Server",
-			"configurations": ["Launch Client", "Attach to Server"]
+			"configurations": [
+				"Launch Client",
+				"Attach to Server"
+			]
 		}
 	]
 }

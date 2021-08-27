@@ -12,11 +12,10 @@ export let documentEol: string;
 export let platformEol: string;
 
 /**
- * Activates the vscode.lsp-sample extension
+ * Activates the toerob.vscode-tads3tools extension
  */
 export async function activate(docUri: vscode.Uri) {
-	// The extensionId is `publisher.name` from package.json
-	const ext = vscode.extensions.getExtension('vscode-samples.lsp-sample')!;
+	const ext = vscode.extensions.getExtension('toerob.vscode-tads3tools')!;
 	await ext.activate();
 	try {
 		doc = await vscode.workspace.openTextDocument(docUri);
@@ -27,7 +26,7 @@ export async function activate(docUri: vscode.Uri) {
 	}
 }
 
-async function sleep(ms: number) {
+export async function sleep(ms: number) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 

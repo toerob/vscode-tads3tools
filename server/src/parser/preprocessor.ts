@@ -1,6 +1,7 @@
 //import { URI } from 'vscode-languageserver';
 import { exec } from 'child_process';
-import { connection } from '../server';
+import { readFileSync } from 'fs';
+import { connection, preprocessedFilesCacheMap } from '../server';
 
 const rowsMap = new Map<string, number>();
 
@@ -24,12 +25,18 @@ export function runCommand(command: string) {
 
 
 export async function preprocessAllFiles(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>) {
-	const t3makeCompilerPath: number = await connection.workspace.getConfiguration('tads3.compiler.path') ?? 't3make'
+	const t3makeCompilerPath: number = await connection.workspace.getConfiguration('tads3.compiler.path') ?? 't3make';
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
 	const commandLine = `${t3makeCompilerPath} -P -q -f "${chosenMakefilePath}"`;
 	const result: any = await runCommand(commandLine);
+	if (result.match(/unable to open/i)) {
+		throw new Error(`Preprocessing failed: ${result}`);
+	}
 	processPreprocessedResult(result, preprocessedFilesCacheMap);
+
+	const unprocessedRowsMap = countRowsOfUnprocessedFiles([...preprocessedFilesCacheMap?.keys()] ?? []);
+	postProcessPreprocessedResult(unprocessedRowsMap);
 }
 
 function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<string, string>) {
@@ -89,6 +96,7 @@ function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<s
 				continue;
 			}
 		}
+
 		if (!line.startsWith('#charset')) {
 			currentBuffer = currentBuffer.concat(line).concat('\n');
 		} else {
@@ -127,3 +135,41 @@ function storeCurrentBufferAndRows(currentFile: string, currentBuffer: string, c
 		console.error(err);
 	}
 }
+function countRowsOfUnprocessedFiles(filesArray: string[]) {
+	let startTime = Date.now();
+	const rowMap = new Map();
+	for(const f of filesArray) {
+		const contents = readFileSync(f).toString();
+		const countedLines = contents.split(/\r?\n/)?.length;
+		rowMap.set(f,countedLines);
+	}
+	let elapsedTime = Date.now() - startTime;
+	connection.console.log(`Counting row lines done in ${elapsedTime} ms`);
+	return rowMap;
+}
+
+
+/**
+ * Some preprocessed documents (such as adv3.h / adv3Lite.h) gets duplicated several times during 
+ * preprocessing and ends up very long, therefore they need trimming.
+ * @param unprocessedRowsMap 
+ */
+function postProcessPreprocessedResult(unprocessedRowsMap: Map<string, number>) {
+	const startTime = Date.now();
+	for(const filename of preprocessedFilesCacheMap.keys()) {
+		const preprocessedText = preprocessedFilesCacheMap.get(filename);
+		if(preprocessedText) {
+			const processedRowsArray = preprocessedText.split(/\r?\n/)
+			const unprocessedRows = unprocessedRowsMap.get(filename);
+			if(unprocessedRows) {
+				if(processedRowsArray.length > unprocessedRows) {
+					const slicedText = processedRowsArray.slice(0, unprocessedRows).join('\n');
+					preprocessedFilesCacheMap.set(filename, slicedText);
+				}	
+			}
+		}
+	}
+	const elapsedTime = Date.now() - startTime;
+	connection.console.log(`Postprocessing row lines done in ${elapsedTime} ms`);
+}
+

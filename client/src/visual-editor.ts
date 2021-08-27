@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import path = require('path');
 import { ExtensionContext, Uri, Webview } from 'vscode';
 import { client, getLastChosenTextEditor, getUsingAdv3LiteStatus, resetPersistedPositions } from './extension';
 

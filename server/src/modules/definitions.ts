@@ -16,7 +16,6 @@ const interpolatedExpressionRegExp = /[<][<](.*)[>][>]/g;
 export async function onDefinition({ textDocument, position }: DefinitionParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager) {
 	const locations: Location[] = [];
 	const currentDoc = documents.get(textDocument.uri);
-	
 	if (currentDoc) {
 
 		const quote = withinQuote(currentDoc, position);
@@ -87,8 +86,8 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 			// But leaving it as is for now.
 
 			const currentLine = currentDoc.getText(Range.create(position.line, 0, position.line+1, 0));
-			const dobjForRegexp = /[id]objFor[(](.*)[)]/
-			const result = dobjForRegexp.exec(currentLine)
+			const dobjForRegexp = /[id]objFor[(](.*)[)]/;
+			const result = dobjForRegexp.exec(currentLine);
 			if(result && result[1] === symbolName) {
 				//const fsPath = URI.parse(textDocument.uri).fsPath;
 				//const prepRows = preprocessedFilesCacheMap.get(fsPath)?.split(/\n/) ?? [];
@@ -98,13 +97,13 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 			
 
 
-			connection.console.log(`Find definition(s) for word: ${symbolName}`);
+			//connection.console.log(`Find definition(s) for word: ${symbolName}`);
 			for (const filePathKey of symbolManager.symbols.keys()) {
 				const localSymbols = symbolManager.symbols.get(filePathKey);
 				if (localSymbols) {
 					const symbol = flattenTreeToArray(localSymbols).find(x => x.name === symbolName);
 					if (symbol !== undefined) {
-						connection.console.log(`Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`);
+						//connection.console.log(`Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`);
 						const filePath = URI.file(filePathKey).toString();
 						locations.push(Location.create(filePath, symbol.range));
 					}
