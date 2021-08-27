@@ -119,7 +119,7 @@ templateExpr:
     (singleString=SSTR SEMICOLON?
     | AT atLocation=expr
     | doubleString=DSTR SEMICOLON?
-    | (PLUS|MINUS|STAR|DIV|MOD|AMP|NOT|TILDE) (op=identifierAtom|expression=expr)
+    | op=(PLUS|MINUS|STAR|DIV|MOD|AMP|NOT|TILDE) (id=identifierAtom|expression=expr)
     | ARROW (connection=identifierAtom|expression=expr) //TODO: test expression=expr
     | LEFT_BRACKET array RIGHT_BRACKET
     )  OPTIONAL?

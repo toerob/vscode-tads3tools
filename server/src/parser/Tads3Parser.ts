@@ -1526,9 +1526,10 @@ export class Tads3Parser extends Parser {
 			case Tads3Parser.STAR:
 				{
 				this.state = 370;
+				_localctx._op = this._input.LT(1);
 				_la = this._input.LA(1);
 				if (!(((((_la - 50)) & ~0x1F) === 0 && ((1 << (_la - 50)) & ((1 << (Tads3Parser.AMP - 50)) | (1 << (Tads3Parser.NOT - 50)) | (1 << (Tads3Parser.PLUS - 50)) | (1 << (Tads3Parser.DIV - 50)) | (1 << (Tads3Parser.MOD - 50)) | (1 << (Tads3Parser.MINUS - 50)) | (1 << (Tads3Parser.TILDE - 50)) | (1 << (Tads3Parser.STAR - 50)))) !== 0))) {
-				this._errHandler.recoverInline(this);
+					_localctx._op = this._errHandler.recoverInline(this);
 				} else {
 					if (this._input.LA(1) === Token.EOF) {
 						this.matchedEOF = true;
@@ -1543,7 +1544,7 @@ export class Tads3Parser extends Parser {
 				case 1:
 					{
 					this.state = 371;
-					_localctx._op = this.identifierAtom();
+					_localctx._id = this.identifierAtom();
 					}
 					break;
 
@@ -6259,7 +6260,8 @@ export class TemplateExprContext extends ParserRuleContext {
 	public _singleString!: Token;
 	public _atLocation!: ExprContext;
 	public _doubleString!: Token;
-	public _op!: IdentifierAtomContext;
+	public _op!: Token;
+	public _id!: IdentifierAtomContext;
 	public _expression!: ExprContext;
 	public _connection!: IdentifierAtomContext;
 	public AT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.AT, 0); }
@@ -6274,6 +6276,7 @@ export class TemplateExprContext extends ParserRuleContext {
 		return this.tryGetRuleContext(0, ExprContext);
 	}
 	public DSTR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.DSTR, 0); }
+	public OPTIONAL(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.OPTIONAL, 0); }
 	public PLUS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.PLUS, 0); }
 	public MINUS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.MINUS, 0); }
 	public STAR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.STAR, 0); }
@@ -6282,7 +6285,6 @@ export class TemplateExprContext extends ParserRuleContext {
 	public AMP(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.AMP, 0); }
 	public NOT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.NOT, 0); }
 	public TILDE(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.TILDE, 0); }
-	public OPTIONAL(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.OPTIONAL, 0); }
 	public SEMICOLON(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.SEMICOLON, 0); }
 	public identifierAtom(): IdentifierAtomContext | undefined {
 		return this.tryGetRuleContext(0, IdentifierAtomContext);
