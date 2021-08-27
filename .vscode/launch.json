@@ -66,8 +66,7 @@
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
 			"args": [
-				
-				"/tmp/",
+				"${workspaceRoot}/client/testFixture",
 				"--disable-extensions",
 				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--extensionTestsPath=${workspaceFolder}/client/out/test/index"
