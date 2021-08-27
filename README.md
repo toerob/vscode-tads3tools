@@ -3,8 +3,6 @@
 
 A language server/client for the Tads3 programming language and tailored made for Visual Studio Code. 
 
-# Version 0.5 - alpha
-
 ## First time users
 
 Install the extension and open up a tads3 project folder (use the open folder feature of vscode), or create a new project with the "Tads3 command: Create a new Tads3 template project" found in the general command menu (CTRL-SHIFT-P). (See the movie below).
