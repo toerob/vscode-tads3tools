@@ -28,6 +28,7 @@ import { onCodeLens } from './modules/codelens';
 import { onCompletion } from './modules/completions';
 import { tokenizeQuotesWithIndex } from './modules/text-utils';
 import { onDocumentLinks } from './modules/links';
+import { onHover } from './modules/hover';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
@@ -89,7 +90,7 @@ connection.onInitialize((params: InitializeParams) => {
 				openClose: true,
 				change: TextDocumentSyncKind.Full,
 			},
-			// Tell the client that this server supports code completion.
+			hoverProvider: true,
 			completionProvider: {
 				resolveProvider: false
 			}
@@ -246,6 +247,7 @@ connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, documen
 connection.onDefinition(async (handler) => onDefinition(handler,documents, symbolManager));
 connection.onCompletion(async (handler) => onCompletion(handler, documents, symbolManager));
 connection.onDocumentLinks(async (handler) => onDocumentLinks(handler, documents, symbolManager));
+connection.onHover(async (handler) => onHover(handler, documents, symbolManager));
 
 connection.onCodeLens(async (handler) => {
 	return onCodeLens(handler, documents, symbolManager);
@@ -355,4 +357,5 @@ function parseDirection(directionName: any): string|undefined {
 	return undefined;
 	//throw new Error(`Not a valid direction`);
 }
+
 

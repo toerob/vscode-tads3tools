@@ -16,7 +16,6 @@ const interpolatedExpressionRegExp = /[<][<](.*)[>][>]/g;
 export async function onDefinition({ textDocument, position }: DefinitionParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager) {
 	const locations: Location[] = [];
 	const currentDoc = documents.get(textDocument.uri);
-	
 	if (currentDoc) {
 
 		const quote = withinQuote(currentDoc, position);
@@ -104,7 +103,7 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 				if (localSymbols) {
 					const symbol = flattenTreeToArray(localSymbols).find(x => x.name === symbolName);
 					if (symbol !== undefined) {
-						connection.console.log(`Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`);
+						//connection.console.log(`Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`);
 						const filePath = URI.file(filePathKey).toString();
 						locations.push(Location.create(filePath, symbol.range));
 					}

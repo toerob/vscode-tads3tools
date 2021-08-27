@@ -82,7 +82,7 @@ item:
 ;
 
 templateDeclaration:
-    className=identifierAtom TEMPLATE (properties+=expr OPTIONAL?)+ SEMICOLON
+    className=identifierAtom TEMPLATE (properties+=expr isOptional+=OPTIONAL?)+ SEMICOLON
     | STRING TEMPLATE ARITHMETIC_LEFT (identifierAtom|STAR|IS|IN)* ARITHMETIC_RIGHT templateId=identifierAtom SEMICOLON
 
 ;

@@ -831,7 +831,8 @@ export class Tads3Parser extends Parser {
 					if (_la === Tads3Parser.OPTIONAL) {
 						{
 						this.state = 209;
-						this.match(Tads3Parser.OPTIONAL);
+						_localctx._OPTIONAL = this.match(Tads3Parser.OPTIONAL);
+						_localctx._isOptional.push(_localctx._OPTIONAL);
 						}
 					}
 
@@ -5802,6 +5803,8 @@ export class TemplateDeclarationContext extends ParserRuleContext {
 	public _className!: IdentifierAtomContext;
 	public _expr!: ExprContext;
 	public _properties: ExprContext[] = [];
+	public _OPTIONAL!: Token;
+	public _isOptional: Token[] = [];
 	public _templateId!: IdentifierAtomContext;
 	public TEMPLATE(): TerminalNode { return this.getToken(Tads3Parser.TEMPLATE, 0); }
 	public SEMICOLON(): TerminalNode { return this.getToken(Tads3Parser.SEMICOLON, 0); }

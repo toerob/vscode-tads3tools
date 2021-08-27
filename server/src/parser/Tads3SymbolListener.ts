@@ -3,6 +3,8 @@ import { ObjectDeclarationContext, PropertySetContext, PropertyContext, Function
 import { ScopedEnvironment } from './ScopedEnvironment';
 import { CompletionItem, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { Range } from 'vscode-languageserver';
+import { ParseTree } from 'antlr4ts/tree/ParseTree';
+import { Interval } from 'antlr4ts/misc/Interval';
 
 // TODO: Maybe much easier to just keep a map instead of an object like this?
 export class ExtendedDocumentSymbolProperties {
@@ -485,7 +487,13 @@ export class Tads3SymbolListener implements Tads3Listener {
 	enterTemplateDeclaration(ctx: TemplateDeclarationContext) {
 		const name = ctx._className?.ID()?.text;
 		if (name) {
-			const detail = "template";
+			let detail;
+			const a = ctx.start.startIndex;
+			const b = ctx.stop?.stopIndex;
+			if (a && b) {
+				const interval = new Interval(a, b);
+				detail = ctx.start.inputStream?.getText(interval) ?? 'template';
+			}
 			const start = (ctx.start.line ?? 1) - 1;
 			const stop = (ctx.stop?.line ?? 1) - 1;
 			const range = Range.create(start, 0, stop, 0);
@@ -494,3 +502,4 @@ export class Tads3SymbolListener implements Tads3Listener {
 		}
 	}
 }
+

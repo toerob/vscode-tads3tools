@@ -1,4 +1,4 @@
-import { DocumentSymbol, Range } from 'vscode-languageserver/node';
+import { DocumentSymbol, Range, TextDocuments } from 'vscode-languageserver/node';
 import { preprocessAllFiles } from './parser/preprocessor';
 import { statSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { URI, Utils } from 'vscode-uri';
@@ -8,6 +8,7 @@ import { clearCompletionCache } from './modules/completions';
 import { basename, dirname } from 'path';
 import * as path from 'path';
 import { ensureDirSync } from 'fs-extra';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
 
 /**
@@ -118,6 +119,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	const maxNumberOfParseWorkerThreads: number = await connection.workspace.getConfiguration("tads3.maxNumberOfParseWorkerThreads");
 
 	const parseOnlyTheWorkspaceFiles: boolean = await connection.workspace.getConfiguration("tads3.parseOnlyTheWorkspaceFiles");
+
 	if (parseOnlyTheWorkspaceFiles) {
 		allFilePaths = allFilePaths.filter(x => x.startsWith(baseDir));
 		connection.console.log(`Only parses files with base directory: ${baseDir}`); // Default 6 threads

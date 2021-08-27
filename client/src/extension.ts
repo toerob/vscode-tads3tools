@@ -462,7 +462,6 @@ let t3FileSystemWatcher: FileSystemWatcher = undefined;
 const runGameInTerminalSubject = new Subject();
 
 function setupAndMonitorBinaryGamefileChanges() {
-	const documentWorkingOn = window.activeTextEditor.document;
 	const workspaceFolder = dirname(chosenMakefileUri.fsPath);
 	t3FileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, "*.t3"));
 
@@ -497,6 +496,7 @@ function setupAndMonitorBinaryGamefileChanges() {
 
 		// FIXME: Interim hack to make preserveFocus work even when there's a slow startup of the interpreter
 		// (This won't always work, especially on a slow machine)
+		const documentWorkingOn = window.activeTextEditor.document;
 		setTimeout(() => window.showTextDocument(documentWorkingOn), 500);	
 	});
 
