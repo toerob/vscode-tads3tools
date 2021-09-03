@@ -163,6 +163,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 		} catch (err) {
 			connection.console.error(`Error during thread termination: ${err}`);
 		}
+
 		// Setup a WorkerPool if we have a collection of files to parse
 	} else {
 		connection.console.log(`Preparing to parse a total of ${allFilePaths.length} files`);
@@ -171,20 +172,21 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 
 		const workerPool = Pool(() => spawn(new Worker('./worker')), poolSize);
 
+		const libraryFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
+
 		try {
 			const startTime = Date.now();
 			let cachedFiles = new Set();
 
 			if (initialParsing && useCachedLibrary) {
 
-				//const libraryKeywordsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
 
-				cachedFiles = importLibrarySymbols('__symbols.json', (filePath: string, data: any) => {
+				cachedFiles = importLibrarySymbols(libraryFilePaths, '__symbols.json', (filePath: string, data: any) => {
 					const symbols: DocumentSymbol[] = JSON.parse(data);
 					symbolManager.symbols.set(filePath, symbols);
 				});
 
-				importLibraryKeywords('__keywords.json', (filePath: string, data: any) => {
+				importLibraryKeywords(libraryFilePaths, '__keywords.json', (filePath: string, data: any) => {
 					const keywords: any = new Map(JSON.parse(data));
 					symbolManager.keywords.set(filePath, keywords);
 				});
@@ -193,7 +195,6 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 					const inheritanceMap: Map<string, string> = new Map(JSON.parse(data));
 					symbolManager.inheritanceMap = inheritanceMap;
 				});
-
 
 				const elapsedCacheReadTime = Date.now() - startTime;
 				connection.console.log(`Cached library files took ${elapsedCacheReadTime} ms to read`);
@@ -247,8 +248,11 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 
 			if (initialParsing) {
 				const startTime = Date.now();
-				exportLibrarySymbols(symbolManager.symbols, usingAdv3Lite);
-				exportLibraryKeywords(symbolManager.keywords, usingAdv3Lite);
+
+				//const libraryFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
+
+				exportLibrarySymbols(libraryFilePaths, symbolManager.symbols, usingAdv3Lite);
+				exportLibraryKeywords(libraryFilePaths, symbolManager.keywords, usingAdv3Lite);
 				exportInheritanceMap(symbolManager.inheritanceMap);
 
 				// TODO: inheritanceMap must be exported to
@@ -266,10 +270,9 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	}
 }
 
-function exportLibrarySymbols(symbols: Map<string, DocumentSymbol[]>, usingAdv3Lite: boolean) {
-	const librarySymbolsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
+function exportLibrarySymbols(libraryFilePaths: string[], symbols: Map<string, DocumentSymbol[]>, usingAdv3Lite: boolean) {
 	const librarySymbols = new Map();
-	for (const file of librarySymbolsFilePaths) {
+	for (const file of libraryFilePaths) {
 		librarySymbols.set(file, symbols.get(file));
 	}
 	for (const libraryPath of librarySymbols.keys()) {
@@ -287,10 +290,9 @@ function exportLibrarySymbols(symbols: Map<string, DocumentSymbol[]>, usingAdv3L
 	}
 }
 
-function exportLibraryKeywords(keywords: Map<string, Map<string, Range[]>>, usingAdv3Lite: boolean) {
-	const libraryKeywordsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
+function exportLibraryKeywords(libraryFilePaths: string[], keywords: Map<string, Map<string, Range[]>>, usingAdv3Lite: boolean) {
 	const libraryKeywords = new Map();
-	for (const file of libraryKeywordsFilePaths) {
+	for (const file of libraryFilePaths) {
 		libraryKeywords.set(file, keywords.get(file));
 	}
 	if (globalStorageCachePath) {
@@ -325,24 +327,17 @@ function exportInheritanceMap(inheritanceMap: Map<string, string>) {
 	}
 }
 
-
-
-
-function importLibrarySymbols(fileSuffix: string, callback: any) {
-	const librarySymbolsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
+function importLibrarySymbols(libraryFilePaths: string[], fileSuffix: string, callback: any) {
 	const cachedFiles = new Set();
 	if (globalStorageCachePath) {
-		for (const librarySymbolPath of librarySymbolsFilePaths) {
+		for (const librarySymbolPath of libraryFilePaths) {
 			if (!existsSync(librarySymbolPath)) { continue; }
 			try {
 				const fileNameStr = `${basename(librarySymbolPath)}${fileSuffix}`;
 				const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 				const data = readFileSync(libraryCacheFilePath).toString();
 				callback(librarySymbolPath, data);
-				//const symbols:DocumentSymbol[] = JSON.parse(data);
-				//symbolManager.symbols.set(librarySymbolPath, symbols);
-
-				connection.console.log('Cached symbols filed used for' + librarySymbolPath);
+				connection.console.log(`Cached symbols filed used for "${librarySymbolPath}"`);
 				cachedFiles.add(librarySymbolPath);
 			} catch (err) {
 				connection.console.error(`Error happened during import of symbols: ${err}`);
@@ -352,11 +347,11 @@ function importLibrarySymbols(fileSuffix: string, callback: any) {
 	return cachedFiles;
 }
 
-function importLibraryKeywords(fileSuffix: string, callback: any) {
-	const libraryKeywordsFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
+// TODO: (combine to make one method out of these two)
+function importLibraryKeywords(libraryFilePaths: string[], fileSuffix: string, callback: any) {
 	const cachedFiles = new Set();
 	if (globalStorageCachePath) {
-		for (const libraryKeywordPath of libraryKeywordsFilePaths) {
+		for (const libraryKeywordPath of libraryFilePaths) {
 			if (!existsSync(libraryKeywordPath)) { continue; }
 			try {
 				const fileNameStr = `${basename(libraryKeywordPath)}${fileSuffix}`;
@@ -416,8 +411,12 @@ function importFromFileSuffix(fileSuffix: string, callback:any) {
 
 
 function filterForLibraryFiles(array: string[]): string[] {
+
 	// Locate a common file used in both an adv3 or adv3Lite project: "tads.h"
-	const fileFoundInBothAdv3AndAdv3Lite = array.find(x => x.endsWith('/include/tads.h'));
+	// Comparison needs to be done using URI to match windows file path system also
+	const fileFoundInBothAdv3AndAdv3Lite = array.find(x => {
+		return URI.file(x).path.match(/include[/]tads.h$/);
+	});
 
 	// Now that we know the location of that file, we can better guess 
 	// the location of all tads3 standard library files by using the parent directory
@@ -426,6 +425,7 @@ function filterForLibraryFiles(array: string[]): string[] {
 		const commonIncludePath = dirname(fileFoundInBothAdv3AndAdv3Lite);
 		const commonBaseDirectory = path.join(commonIncludePath, '..');
 		return array.filter((x: string) => x.startsWith(commonBaseDirectory));
-	}
-	return array;
+	} 
+
+	return [];
 }
