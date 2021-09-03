@@ -65,7 +65,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 		lastMakeFileLocation = makefileLocation;
 		makefileStructure = analyzeMakefile(makefileLocation);
 		usingAdv3Lite = !!makefileStructure?.find(keyvalue => keyvalue.key.match(/-lib/) && keyvalue.value.match(adv3LitePathRegExp)) ?? false;
-		connection.console.log('Project using ' + usingAdv3Lite ? 'adv3Lite' : 'standard adv3 library');
+		connection.console.log('Project using ' + (usingAdv3Lite ? 'adv3Lite' : 'standard adv3 library'));
 		connection.sendNotification('response/makefile/keyvaluemap', { makefileStructure, usingAdv3Lite });
 	}
 
@@ -82,7 +82,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 
 	try {
 		await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
-	} catch (error) {
+	} catch (error:any) {
 		connection.console.error(error.message);
 		connection.sendNotification('symbolparsing/allfiles/failed', { error: error.message });
 		return;
