@@ -5,7 +5,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import { exec } from 'child_process';
-import { copyFileSync, createReadStream, createWriteStream, existsSync, readFileSync, unlinkSync } from 'fs';
+import { copyFileSync, createReadStream, createWriteStream, exists, existsSync, readFileSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
 import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString } from 'vscode';
@@ -1030,9 +1030,14 @@ async function createTemplateProject(context: ExtensionContext) {
 		const makefileResourceFileUri = Uri.joinPath(context.extensionUri, 'resources', makefileResourceFilename);
 		const gamefileResourceFileUri = Uri.joinPath(context.extensionUri, 'resources', gamefileResourceFilename);
 
-		const makefileResourceFileContent = readFileSync(makefileResourceFileUri.fsPath).toString();
+		let makefileResourceFileContent = readFileSync(makefileResourceFileUri.fsPath).toString();
 		const gamefileResourceFileContent = readFileSync(gamefileResourceFileUri.fsPath).toString();
 
+		if (!existsSync('/usr/local/share/frobtads/tads3/include') && !existsSync('/usr/local/share/frobtads/tads3/lib')) {
+			makefileResourceFileContent = makefileResourceFileContent
+				.replace('-FI /usr/local/share/frobtads/tads3/include', '#-FI /usr/local/share/frobtads/tads3/include')
+				.replace('-FL /usr/local/share/frobtads/tads3/lib', '#-FL /usr/local/share/frobtads/tads3/lib');
+		}
 
 		ensureDirSync(objFolderUri.fsPath);
 		writeFileSync(makefileUri.fsPath, makefileResourceFileContent);
