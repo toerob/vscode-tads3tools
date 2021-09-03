@@ -304,7 +304,7 @@ function exportLibraryKeywords(libraryFilePaths: string[], keywords: Map<string,
 					const fileNameStr = `${basename(libraryKeywordPath)}__keywords.json`;
 					const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 					writeFileSync(libraryCacheFilePath, JSON.stringify(keywordRangeMapArray).toString());
-					connection.console.log(`Cached keywords exported for${libraryKeywordPath} to ${libraryCacheFilePath}`);
+					connection.console.log(`Cached keywords exported for ${libraryKeywordPath} to ${libraryCacheFilePath}`);
 				} catch (err) {
 					connection.console.error(`Error happened during export of keywords: ${err}`);
 				}

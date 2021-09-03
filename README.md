@@ -104,6 +104,8 @@ https://user-images.githubusercontent.com/39532593/130358391-4115016f-2e3b-4bd4-
 
 If toggled to be enabled, the game will be restarted with the default interpreter in a terminal, on any saved changes in the project that will lead to a new game image file. 
 
+The interpreter can be changed in the setting called "Tads3: Game Runner Interpreter to change", the default is set to "frob", but can for instance be set to "t3run.exe -plain", "htmlt3.exe" to make it run on windows if those interpreters are installed.
+
 ---
 
 **"Tads3 command: Clear cache for standard libraries adv3/adv3Lite."**
