@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.1-alpha
+
+Mostly patches for Windows platform.
+
+### Fixed
+
+  - Fixed so libraries are filtered correctly in windows.
+  - Fixed a log output bug that always displayed adv3Lite even though adv3 library was used
+  - Fixed a link issue on windows, file paths are now universally handled in the LinkProvider
+  - Fixed create new project command: linux default lib/include dirs removed if not existing (like on windows)
+  - Slightly better efficiency
+
 ## 0.1.0-alpha
 
 ### Added
