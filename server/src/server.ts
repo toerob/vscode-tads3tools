@@ -313,9 +313,7 @@ connection.onRequest('request/analyzeText/findNouns', async (params) => {
 			//connection.console.log(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
 			connection.sendNotification('response/analyzeText/findNouns', { tree, range: symbol.range, level } );
 		}
-	} else {
-		//
-	}
+	} 
 
 });
 

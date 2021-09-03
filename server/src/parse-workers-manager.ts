@@ -1,4 +1,4 @@
-import { DocumentSymbol, Range, TextDocuments } from 'vscode-languageserver/node';
+import { DocumentSymbol, Range } from 'vscode-languageserver/node';
 import { preprocessAllFiles } from './parser/preprocessor';
 import { statSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { URI, Utils } from 'vscode-uri';
@@ -8,7 +8,6 @@ import { clearCompletionCache } from './modules/completions';
 import { basename, dirname } from 'path';
 import * as path from 'path';
 import { ensureDirSync } from 'fs-extra';
-import { TextDocument } from 'vscode-languageserver-textdocument';
 
 
 /**
@@ -203,11 +202,11 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 			for (const filePath of allFilePaths) {
 				connection.console.log(`Queuing parsing job ${filePath}`);
 
-				// Only use cached values 
+				// Only use cached values herein:
 				if (!cachedFiles.has(filePath)) {
 					workerPool.queue(async (parseJob) => {
 
-						//TODO consider report file before processing it: 
+						// TODO consider report file before processing it: 
 						// e.g connection.sendNotification('symbolparsing/processing', [filePath, tracker, totalFiles, poolSize]);
 						const text = preprocessedFilesCacheMap.get(filePath) ?? '';
 						const { symbols, keywords, additionalProperties, inheritanceMap } = await parseJob(filePath, text);
@@ -227,12 +226,9 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 					connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, poolSize]);
 					connection.console.log(`${filePath} cached restored successfully`);
 				}
-
-
 			}
 
 			try {
-				//workerPool.events.length
 				await workerPool.completed();
 				await workerPool.terminate();
 			} catch (err) {
@@ -248,15 +244,9 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 
 			if (initialParsing) {
 				const startTime = Date.now();
-
-				//const libraryFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
-
 				exportLibrarySymbols(libraryFilePaths, symbolManager.symbols, usingAdv3Lite);
 				exportLibraryKeywords(libraryFilePaths, symbolManager.keywords, usingAdv3Lite);
 				exportInheritanceMap(symbolManager.inheritanceMap);
-
-				// TODO: inheritanceMap must be exported to
-
 				const elapsedCacheReadTime = Date.now() - startTime;
 				connection.console.log(`Cached library files export took ${elapsedCacheReadTime} ms to write`);
 			}
@@ -358,9 +348,6 @@ function importLibraryKeywords(libraryFilePaths: string[], fileSuffix: string, c
 				const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 				const data = readFileSync(libraryCacheFilePath).toString();
 				callback(libraryKeywordPath, data);
-				//const keywords:any = new Map(JSON.parse(data));
-				//symbolManager.keywords.set(libraryKeywordPath, keywords);		
-
 				connection.console.log('Cached symbols filed used for' + libraryKeywordPath);
 				cachedFiles.add(libraryCacheFilePath);
 			} catch (err) {
@@ -413,19 +400,22 @@ function importFromFileSuffix(fileSuffix: string, callback:any) {
 function filterForLibraryFiles(array: string[]): string[] {
 
 	// Locate a common file used in both an adv3 or adv3Lite project: "tads.h"
-	// Comparison needs to be done using URI to match windows file path system also
-	const fileFoundInBothAdv3AndAdv3Lite = array.find(x => {
-		return URI.file(x).path.match(/include[/]tads.h$/);
-	});
+	// Comparison needs to be done using URI to match windows file path system also.
+
+	const fileFoundInBothAdv3AndAdv3Lite = array.find(x => URI.file(x).path.match(/include[/]tads.h$/));
 
 	// Now that we know the location of that file, we can better guess 
 	// the location of all tads3 standard library files by using the parent directory
-	// as a base directory:
+	// as a base directory.
+
 	if (fileFoundInBothAdv3AndAdv3Lite) {
 		const commonIncludePath = dirname(fileFoundInBothAdv3AndAdv3Lite);
 		const commonBaseDirectory = path.join(commonIncludePath, '..');
 		return array.filter((x: string) => x.startsWith(commonBaseDirectory));
 	} 
+
+	// If no library files were found, return an empty array so they at least have the chance of 
+	// getting parsed.
 
 	return [];
 }
