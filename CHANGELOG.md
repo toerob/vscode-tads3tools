@@ -2,11 +2,14 @@
 
 ## 0.1.1-alpha
 
-Mostly patches for Windows platform.
+### Added
+  - Class name hovering on now reveals documentation from library source code
+  - Text Completion reveals documentation on class level
 
 ### Fixed
+  Different OS Platform issues and tweaks:
 
-  - Fixed so libraries are filtered correctly in windows.
+  - Fixed a bug that filtered libraries incorrectly on windows platform.
   - Fixed a log output bug that always displayed adv3Lite even though adv3 library was used
   - Fixed a link issue on windows, file paths are now universally handled in the LinkProvider
   - Fixed create new project command: linux default lib/include dirs removed if not existing (like on windows)
