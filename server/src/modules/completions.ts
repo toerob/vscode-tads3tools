@@ -1,13 +1,14 @@
 import { CompletionParams, Position, TextDocuments, Range, CompletionItem, CompletionList, CompletionItemKind, SymbolKind } from 'vscode-languageserver/node';
 import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { connection } from '../server';
+import { connection, symbolManager } from '../server';
 
 import fuzzysort = require('fuzzysort');
 import { getWordAtPosition } from './text-utils';
 import {  } from 'vscode';
 import { URI } from 'vscode-uri';
 import { isUsingAdv3Lite } from '../parse-workers-manager';
+import { retrieveDocumentationForKeyword } from './documentation';
 
 let cachedKeyWords: Set<CompletionItem> | undefined = undefined;
 
@@ -134,9 +135,9 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 					for(const prop of result.symbol.children ?? []) {
 						const item = CompletionItem.create(prop.name);
 						switch(prop.kind) {
-							case SymbolKind.Property:   item.kind = CompletionItemKind.Property; 	break;
-							case SymbolKind.Object: 	item.kind = CompletionItemKind.Class; 		break;
-							case SymbolKind.Function:   item.kind = CompletionItemKind.Function; 	break;
+							case SymbolKind.Property:   item.kind = CompletionItemKind.Property; break;
+							case SymbolKind.Object: 	item.kind = CompletionItemKind.Class; 	 break;
+							case SymbolKind.Function:   item.kind = CompletionItemKind.Function; break;
 						}
 						suggestions.add(item);
 					}
@@ -161,6 +162,7 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 			for(const className of classNames) {
 				const item = CompletionItem.create(className);
 				item.kind = CompletionItemKind.Class;
+				applyDocumentation(item);
 				suggestions.add(item);
 			}
 			if(word === undefined) {
@@ -168,7 +170,7 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 			}
 
 			const results = fuzzysort.go(word, [...suggestions], {key: 'label'});
-			connection.console.log(results.map(x=>x.obj.label).join(','));
+			//connection.console.log(results.map(x=>x.obj.label).join(','));
 			return results.map((x:any)=>x.obj);		
 		}
 	
@@ -189,6 +191,7 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 						if (addSymbol) {
 							const item = CompletionItem.create(symbol.name);
 							item.kind = CompletionItemKind.Struct;
+							applyDocumentation(item);
 							suggestions.add(item);
 						}
 					}
@@ -240,6 +243,7 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 						usedUpKeys.add(value.name);
 						const item = CompletionItem.create(value.name);
 						item.kind = CompletionItemKind.Class;
+						applyDocumentation(item);
 						suggestions.add(item);
 					}	
 				}
@@ -266,13 +270,37 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 		cachedKeyWords = suggestions;
 	}
 
-
-	
-
-
 	const results = fuzzysort.go(word, [...cachedKeyWords], {key: 'label'});
 	return results.map((x:any)=>x.obj);
 }
+
+function applyDocumentation(item:CompletionItem) {
+	const symbolSearchResult = symbolManager.findSymbols(item.label, [SymbolKind.Class]);
+	if(symbolSearchResult && symbolSearchResult.length>0 && symbolSearchResult[0]?.symbols?.length>0) {
+		const filePath = symbolSearchResult[0].filePath;
+		const symbol = symbolSearchResult[0].symbols[0];
+		if(symbol && filePath) {
+			if(filePath && symbol.kind === SymbolKind.Class) {
+				const doc = retrieveDocumentationForKeyword(symbol, filePath)
+				if(doc) {
+					item.documentation = doc;
+				}
+			}	
+		}
+	}
+	return item;
+}
+
+/*
+function applyDocumentationInternal(item:CompletionItem, symbol: DocumentSymbol, filePath: string) {
+	if(filePath && symbol.kind === SymbolKind.Class) {
+		const doc = retrieveDocumentationForKeyword(symbol, filePath)
+		if(doc) {
+			item.documentation = doc;
+		}
+	}
+	return item;
+}*/
 
 /*
 function setupPreferredRules() {

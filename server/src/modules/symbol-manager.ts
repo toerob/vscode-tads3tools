@@ -1,5 +1,6 @@
 
 import { Range, DocumentSymbol, Position, SymbolKind } from 'vscode-languageserver';
+import { resourceLimits } from 'worker_threads';
 
 export class Tads3SymbolManager {
 	symbols: Map<string, DocumentSymbol[]> = new Map();
@@ -18,18 +19,54 @@ export class Tads3SymbolManager {
 		return undefined;
 	}
 
-	findSymbol(name: any) {
+	findSymbol(name: any, deepSearch = true) {
 		if (name) {
 			for (const filePath of this.symbols.keys()) {
 				const fileLocalSymbols = this.symbols.get(filePath);
-				const symbol = fileLocalSymbols?.find(s => s.name === name);
-				if (symbol) {
-					return { symbol, filePath };
+				if(fileLocalSymbols) {
+					const flattened = deepSearch? flattenTreeToArray(fileLocalSymbols) : fileLocalSymbols;
+					const symbol = flattened?.find(s => s.name === name);
+					if (symbol) {
+						return { symbol, filePath };
+					}
 				}
 			}
 		}
 		return {};
 	}
+
+
+	findSymbols(name: string, allowedKind: SymbolKind[]|undefined = undefined, deepSearch = true) {
+		const symbolSearchResult = [];
+		if (name) {
+			for (const filePath of this.symbols.keys()) {
+				const fileLocalSymbols = deepSearch? 
+					flattenTreeToArray(this.symbols.get(filePath) ?? []) 
+					: this.symbols.get(filePath) ?? [];
+					
+				let result;
+				if(allowedKind !== undefined) {
+					result = fileLocalSymbols?.filter(s => allowedKind.includes(s.kind) && s.name === name);
+				} else {
+					result = fileLocalSymbols?.filter(s => s.name === name);
+				}
+				if(result && result.length>0) {
+					symbolSearchResult.push({filePath, symbols: result});
+				}
+			}
+		}
+		return symbolSearchResult;
+	}
+
+	/*findDocumentForSymbol(name: string) {
+		const symbolSearchResult = this.findSymbols(name);
+		if(symbolSearchResult) {
+			const comment = symbolSearchResult[0]? this.getAdditionalProperties(symbolSearchResult[0].symbol): undefined;
+			return comment;
+		} else {
+			return;
+		}
+	}*/
 
 	getTemplates(): Set<DocumentSymbol> {
 		const templates = new Set<DocumentSymbol>();
