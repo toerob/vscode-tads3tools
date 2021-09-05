@@ -21,9 +21,6 @@ vscode-tads3tools has the following features:
 
 
 
-Create new projects easily:
-
-https://user-images.githubusercontent.com/39532593/130358170-ea5878d5-c504-4b55-94e8-10ae55a6fa84.mp4
 
 Symbol outliner:
 
@@ -32,6 +29,18 @@ https://user-images.githubusercontent.com/39532593/130358201-3be0d686-465c-4316-
 Symbol definitions:
 
 https://user-images.githubusercontent.com/39532593/130358231-eb120e91-8521-498e-bd3b-a3cc3c7318ae.mp4
+
+
+Hover over keywords to see documentation for classes, methods and properties:
+
+https://user-images.githubusercontent.com/39532593/132140782-1de7cd37-6c10-400c-92e0-722a02d75e01.mp4
+
+
+Create new projects easily:
+
+https://user-images.githubusercontent.com/39532593/130358170-ea5878d5-c504-4b55-94e8-10ae55a6fa84.mp4
+
+
 
 
 ---
@@ -53,6 +62,11 @@ https://user-images.githubusercontent.com/39532593/130358270-b5d887e2-bcc1-430e-
 Completions as you type and save time:
 
 https://user-images.githubusercontent.com/39532593/130358322-24908cf1-9b69-49b5-836c-bbeb03735894.mp4
+
+Documentation while using Text Completion:
+
+https://user-images.githubusercontent.com/39532593/132140758-9c4c9d69-8d6c-4e65-b18d-eac583b32ba8.mp4
+
 
 Snippets for boilerplate code:
 
