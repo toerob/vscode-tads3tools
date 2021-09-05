@@ -5,6 +5,8 @@
 ### Added
   - Class name hovering on now reveals documentation from library source code
   - Text Completion reveals documentation on class level
+  
+  Thank you for the suggestions Tomáš Bláha and Luděk Šťastný!
 
 ### Fixed
   Different OS Platform issues and tweaks:
@@ -15,6 +17,8 @@
   - Fixed create new project command: linux default lib/include dirs removed if not existing (like on windows)
   - Fixed making sure t3make path is within quotes
   - Slightly better efficiency during cached library import/export
+
+  Major thanks to Jost Schenck for helping out with several bugs on the windows platform!
 
 ## 0.1.0-alpha
 

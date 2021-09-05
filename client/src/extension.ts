@@ -17,13 +17,14 @@ import {
 } from 'vscode-languageclient/node';
 import { setupVisualEditorResponseHandler, visualEditorResponseHandlerMap, getHtmlForWebview } from './visual-editor';
 import { Tads3CompileErrorParser } from './tads3-error-parser';
-import { Subject, debounceTime } from 'rxjs';
+import { Subject, debounceTime, ignoreElements } from 'rxjs';
 import { LocalStorageService } from './local-storage-service';
 import { writeFileSync } from 'fs';
 import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
+import { validateCompilerPath, validateUserSettings } from './validations';
 
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
 const tads3CompileErrorParser = new Tads3CompileErrorParser();
@@ -92,8 +93,8 @@ export function activate(context: ExtensionContext) {
 	storageManager = new LocalStorageService(context.workspaceState);
 
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
-	
-	context.subscriptions.push(commands.registerCommand('tads3.extractAllQuotes', () => extractAllQuotes(context)));	
+
+	context.subscriptions.push(commands.registerCommand('tads3.extractAllQuotes', () => extractAllQuotes(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.createTads3TemplateProject', () => createTemplateProject(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.setMakefile', setMakeFile));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
@@ -114,13 +115,14 @@ export function activate(context: ExtensionContext) {
 	});
 
 	window.onDidChangeActiveTextEditor((event: any) => {
-		if(event.document !== undefined) {
+		if (event.document !== undefined) {
 			lastChosenTextDocument = event.document;
 			if (lastChosenTextDocument) {
 				client.info(`Last chosen editor changed to: ${lastChosenTextDocument.uri}`);
 			}
 		}
 	});
+
 
 	setupVisualEditorResponseHandler();
 
@@ -212,12 +214,12 @@ export function activate(context: ExtensionContext) {
 
 		client.onNotification('response/analyzeText/findNouns', async ({ tree, range, level }) => {
 			client.info(tree);
-			const options = tree; 
+			const options = tree;
 			if (options.length === 0) {
 				window.showInformationMessage(`No suggestions for that line`);
 				return;
 			}
-			const result = await window.showQuickPick(options, {canPickMany: true});
+			const result = await window.showQuickPick(options, { canPickMany: true });
 
 			// Build up a SnippetString with all the props identified in the text:
 
@@ -232,11 +234,11 @@ export function activate(context: ExtensionContext) {
 						`${levelArray.join('')} ${noun} : \${1:Decoration} '${noun}';\n` 				// Adv3Lite style
 						: `${levelArray.join('')} ${noun} : \${1:Decoration} '${noun}' '${noun}';\n`; 	// Adv3 style
 
-						stringBuffer += text;
+					stringBuffer += text;
 				});
 			}
 			stringBuffer += '$0';
-			
+
 			// Inserts the line after the closing range of the current object
 			const pos = new Position(range.end.line + 1, 0);
 			window.activeTextEditor.insertSnippet(new SnippetString(stringBuffer), pos);
@@ -309,13 +311,21 @@ export function activate(context: ExtensionContext) {
 			isLongProcessingInAction = false;
 		});
 
-		client.onNotification("symbolparsing/allfiles/failed", ({ error } ) => {
-			window.showErrorMessage(`Parsing all files via makefile ${basename(chosenMakefileUri.fsPath)} failed: ${error} `, {modal:true});
+		client.onNotification("symbolparsing/allfiles/failed", ({ error }) => {
+			window.showErrorMessage(`Parsing all files via makefile ${basename(chosenMakefileUri.fsPath)} failed: ${error} `, { modal: true });
 			isLongProcessingInAction = false;
 			allFilesBeenProcessed = false;
 		});
-		initialParse();
 
+		workspace.onDidChangeConfiguration(async config => {
+			if (config.affectsConfiguration('tads3.compiler.path')) {
+				validateCompilerPath(workspace.getConfiguration("tads3").get('compiler.path'));
+			}
+		});
+	
+		if(await validateUserSettings()) {
+			initialParse();
+		}
 	});
 
 }
@@ -339,15 +349,15 @@ export async function findAndSelectMakefileUri(askIfNotFound = true) {
 			const pick = await window.showQuickPick(entriesStr);
 			choice = qpItemMap.get(pick);
 		} else {
-			const defaultMakefile = files.find(x=>x.fsPath.endsWith('Makefile.t3m'));
-			choice = defaultMakefile? defaultMakefile : files[0];
+			const defaultMakefile = files.find(x => x.fsPath.endsWith('Makefile.t3m'));
+			choice = defaultMakefile ? defaultMakefile : files[0];
 			window.showInformationMessage(`Using first found makefile in project`);
 		}
 	} else if (files.length == 1) {
 		choice = files[0];
 	} else {
 		if (choice === undefined && askIfNotFound) {
-			choice = await selectMakefileWithDialog();				
+			choice = await selectMakefileWithDialog();
 		}
 	}
 
@@ -360,8 +370,8 @@ export async function findAndSelectMakefileUri(askIfNotFound = true) {
 
 async function setMakeFile() {
 	client.info(`Diagnosing`);
-	if(isLongProcessingInAction) {
-		window.showWarningMessage(`Cannot change makefile and reparse right now, since a full project parsing is already in progress. Try again later. `, {modal: true});
+	if (isLongProcessingInAction) {
+		window.showWarningMessage(`Cannot change makefile and reparse right now, since a full project parsing is already in progress. Try again later. `, { modal: true });
 		return;
 	}
 
@@ -384,7 +394,7 @@ async function setMakeFile() {
 	}
 
 	if (errorDiagnostics.length > 0) {
-		window.showErrorMessage(`Error during compilation:\n${errorDiagnostics.map(e=>e.message).join('\n')}`);
+		window.showErrorMessage(`Error during compilation:\n${errorDiagnostics.map(e => e.message).join('\n')}`);
 		return;
 	}
 
@@ -431,7 +441,7 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 	if (errorDiagnostics.length > 0) {
 		//throw new Error('Could not assemble outliner symbols since there\'s an error. ');
 		//window.showWarningMessage(`Could not assemble outliner symbols since there was an error. `);
-		client.error(`Could not assemble outliner symbols due to error(s): \n${errorDiagnostics.map(e=>e.message).join('\n')}`);
+		client.error(`Could not assemble outliner symbols due to error(s): \n${errorDiagnostics.map(e => e.message).join('\n')}`);
 		return;
 	}
 	//allFilesBeenProcessed = true;
@@ -465,7 +475,7 @@ function setupAndMonitorBinaryGamefileChanges() {
 	const workspaceFolder = dirname(chosenMakefileUri.fsPath);
 	t3FileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, "*.t3"));
 
-	runGameInTerminalSubject.pipe(debounceTime(200)).subscribe( (event: any) => {
+	runGameInTerminalSubject.pipe(debounceTime(200)).subscribe((event: any) => {
 		const configuration = workspace.getConfiguration("tads3");
 		if (!configuration.get("restartGameRunnerOnT3ImageChanges")) {
 			return;
@@ -477,8 +487,8 @@ function setupAndMonitorBinaryGamefileChanges() {
 		}
 
 		const fileBaseName = basename(event.fsPath);
-		const gameRunnerTerminals = window.terminals.filter(x=>x.name === 'Tads3 Game runner terminal');
-		for(const gameRunnerTerminal of gameRunnerTerminals) {
+		const gameRunnerTerminals = window.terminals.filter(x => x.name === 'Tads3 Game runner terminal');
+		for (const gameRunnerTerminal of gameRunnerTerminals) {
 			gameRunnerTerminal.sendText(`quit`);
 			gameRunnerTerminal.sendText(`y`);
 			gameRunnerTerminal.sendText(``);
@@ -487,17 +497,17 @@ function setupAndMonitorBinaryGamefileChanges() {
 
 		const gameRunnerTerminal = window.createTerminal('Tads3 Game runner terminal');
 		client.info(`${event.fsPath} changed, restarting ${fileBaseName}`);
-		
-		
+
+
 		// FIXME: preserveFocus doesn't work, the terminal takes focus anyway (might be because of sendText)
-		gameRunnerTerminal.show(true); 
+		gameRunnerTerminal.show(true);
 
 		gameRunnerTerminal.sendText(`${interpreter} ${fileBaseName}`);
 
 		// FIXME: Interim hack to make preserveFocus work even when there's a slow startup of the interpreter
 		// (This won't always work, especially on a slow machine)
 		const documentWorkingOn = window.activeTextEditor.document;
-		setTimeout(() => window.showTextDocument(documentWorkingOn), 500);	
+		setTimeout(() => window.showTextDocument(documentWorkingOn), 500);
 	});
 
 	t3FileSystemWatcher.onDidChange(event => runGameInTerminalSubject.next(event));
@@ -622,7 +632,7 @@ function enablePreprocessorCodeLens(arg0: string, enablePreprocessorCodeLens: an
 	const configuration = workspace.getConfiguration("tads3");
 	const oldValue = configuration.get("enablePreprocessorCodeLens");
 	configuration.update("enablePreprocessorCodeLens", !oldValue);
-	window.showInformationMessage(`CodeLens for preprocessor differences is now ${!oldValue?'enabled':'disabled'} `);
+	window.showInformationMessage(`CodeLens for preprocessor differences is now ${!oldValue ? 'enabled' : 'disabled'} `);
 }
 
 function ensureObjFolderExistsInProjectRoot() {
@@ -807,10 +817,10 @@ async function openInVisualEditor(context: ExtensionContext) {
 			preserveFocus: true,
 		}
 	);
-	const options: WebviewOptions = { 
+	const options: WebviewOptions = {
 		enableScripts: true,
 		localResourceRoots: [Uri.joinPath(context.extensionUri, 'media')],
-		
+
 	};
 	tads3VisualEditorPanel.webview.options = options;
 	tads3VisualEditorPanel.webview.html = getHtmlForWebview(context, tads3VisualEditorPanel.webview, context.extensionUri);
@@ -818,13 +828,13 @@ async function openInVisualEditor(context: ExtensionContext) {
 		tads3VisualEditorPanel = undefined;
 	}, null, context.subscriptions);
 
-	tads3VisualEditorPanel.onDidChangeViewState(e=> {
-		if(e.webviewPanel.active) {
+	tads3VisualEditorPanel.onDidChangeViewState(e => {
+		if (e.webviewPanel.active) {
 			client.info(`Refresh map view`);
-			client.sendNotification('request/mapsymbols');		
+			client.sendNotification('request/mapsymbols');
 		}
 	});
-	
+
 	client.info(`Opening up the webview and ask server for map symbols`);
 	client.sendNotification('request/mapsymbols');
 
@@ -917,7 +927,7 @@ async function installTracker(context: ExtensionContext) {
 	const filePath = isUsingAdv3Lite ? '_gameTrackerAdv3Lite.t' : '_gameTrackerAdv3.t';
 	let trackerFileContents = readFileSync(Uri.joinPath(context.extensionUri, 'resources', filePath).fsPath).toString();
 	const keyvalue = makefileKeyMapValues?.find(keyvalue => keyvalue?.key === '-D' && keyvalue.value?.startsWith(`LANGUAGE`));
-	if(keyvalue) {
+	if (keyvalue) {
 		const languageValue = keyvalue.value?.split('=');
 		if (languageValue.length === 2) {
 			trackerFileContents = trackerFileContents.replace('<en_us.h>', `<${languageValue[1]}.h>`);
@@ -967,8 +977,8 @@ async function installTracker(context: ExtensionContext) {
 
 async function clearCache(context: ExtensionContext) {
 	const userAnswer = await window.showInformationMessage(`This will clear all potential cache for the standard libraries adv3/adv3Lite. With the effect of all library files having to go through a full parse next time around.
-	Are you sure?`, {modal:true}, { title: 'Yes' }, { title: 'No' });
-	if(userAnswer === undefined || userAnswer.title === 'No') {
+	Are you sure?`, { modal: true }, { title: 'Yes' }, { title: 'No' });
+	if (userAnswer === undefined || userAnswer.title === 'No') {
 		return;
 	}
 	try {
@@ -1004,7 +1014,7 @@ async function createTemplateProject(context: ExtensionContext) {
 	});
 
 
-	if(projectFolder.length > 0 && projectFolder[0] !== undefined) {
+	if (projectFolder.length > 0 && projectFolder[0] !== undefined) {
 		const firstWorkspaceFolder = projectFolder[0];
 
 		const makefileUri = Uri.joinPath(firstWorkspaceFolder, 'Makefile.t3m');
@@ -1023,7 +1033,7 @@ async function createTemplateProject(context: ExtensionContext) {
 
 		const result = await window.showQuickPick(['adv3', 'adv3Lite'], { placeHolder: 'Project type' });
 		isUsingAdv3Lite = (result === 'adv3Lite' ? true : false);
-	
+
 		const makefileResourceFilename = isUsingAdv3Lite ? 'Makefile-adv3Lite.t3m' : 'Makefile.t3m';
 		const gamefileResourceFilename = isUsingAdv3Lite ? 'gameMain-adv3Lite.t' : 'gameMain.t';
 
@@ -1052,17 +1062,18 @@ async function createTemplateProject(context: ExtensionContext) {
 }
 
 async function extractAllQuotes(context: ExtensionContext) {
-	const files = await window.showQuickPick(['All project files','current file']);
-	const types = await window.showQuickPick(['both','double','single']);
+	const files = await window.showQuickPick(['All project files', 'current file']);
+	const types = await window.showQuickPick(['both', 'double', 'single']);
 
-	if(files.startsWith('current')) {
+	if (files.startsWith('current')) {
 		const text = window.activeTextEditor.document.getText();
-		const fsPath  = window.activeTextEditor.document.uri.fsPath;
-		await client.sendRequest('request/extractQuotes', {types, text, fsPath});	
+		const fsPath = window.activeTextEditor.document.uri.fsPath;
+		await client.sendRequest('request/extractQuotes', { types, text, fsPath });
 		return;
 	}
-	await client.sendRequest('request/extractQuotes', {types});	
+	await client.sendRequest('request/extractQuotes', { types });
 
 
 }
+
 
