@@ -3,7 +3,7 @@
 	"description": "Language server extension for Tads3",
 	"author": "Tomas Öberg",
 	"license": "MIT",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/toerob/vscode-tads3tools.git"
@@ -205,13 +205,13 @@
 					"scope": "window",
 					"type": "string",
 					"default": "/usr/local/share/frobtads/tads3/lib/",
-					"description": "Path the tads3 compiler (t3make). "
+					"description": "Path the tads3 library files. "
 				},
 				"tads3.include": {
 					"scope": "window",
 					"type": "string",
 					"default": "/usr/local/share/frobtads/tads3/include/",
-					"description": "Path the tads3 compiler (t3make). "
+					"description": "Path the tads3 include files. "
 				},
 				"tads3.enablePreprocessorCodeLens": {
 					"scope": "resource",

@@ -92,7 +92,9 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	let allFilePaths = filePaths;
 
 	// Parse project files close to the makefile first:
-	const baseDir = Utils.dirname(URI.parse(makefileLocation)).fsPath;
+	const baseDir = Utils.dirname(URI.file(makefileLocation)).fsPath;
+	connection.console.log(`Setting up base directory for project: ${baseDir}`); // Default 6 threads
+
 
 	if (filePaths === undefined) {
 		initialParsing = true;

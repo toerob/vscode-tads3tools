@@ -13,7 +13,8 @@
   - Fixed a log output bug that always displayed adv3Lite even though adv3 library was used
   - Fixed a link issue on windows, file paths are now universally handled in the LinkProvider
   - Fixed create new project command: linux default lib/include dirs removed if not existing (like on windows)
-  - Slightly better efficiency
+  - Fixed making sure t3make path is within quotes
+  - Slightly better efficiency during cached library import/export
 
 ## 0.1.0-alpha
 

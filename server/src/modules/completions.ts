@@ -281,7 +281,7 @@ function applyDocumentation(item:CompletionItem) {
 		const symbol = symbolSearchResult[0].symbols[0];
 		if(symbol && filePath) {
 			if(filePath && symbol.kind === SymbolKind.Class) {
-				const doc = retrieveDocumentationForKeyword(symbol, filePath)
+				const doc = retrieveDocumentationForKeyword(symbol, filePath);
 				if(doc) {
 					item.documentation = doc;
 				}
