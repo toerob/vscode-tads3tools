@@ -49,7 +49,7 @@ export function offsetAt(document: TextDocument|undefined, position: Position) {
 		}
 		
 	} else {
-		throw new Error(`Can not calculate offset`);
+		throw new Error(`Can not calculate offset. the line position ${position.line} is greater than the rows in the text`);
 	}
 	return offset;
 }

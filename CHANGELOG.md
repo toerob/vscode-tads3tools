@@ -12,6 +12,7 @@
   Different OS Platform issues and tweaks:
 
   - Fixed a bug that filtered libraries incorrectly on windows platform.
+  - Fixed a bug that didn't display outliner symbols on windows platform (caused by case insensitive file paths).
   - Fixed a log output bug that always displayed adv3Lite even though adv3 library was used
   - Fixed a link issue on windows, file paths are now universally handled in the LinkProvider
   - Fixed create new project command: linux default lib/include dirs removed if not existing (like on windows)

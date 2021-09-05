@@ -1,4 +1,4 @@
-import { TextDocuments, HoverParams, Hover, MarkupKind, SymbolKind, MarkedString, MarkupContent, DocumentSymbol } from 'vscode-languageserver/node';
+import { TextDocuments, HoverParams, Hover, MarkupKind, SymbolKind, DocumentSymbol } from 'vscode-languageserver/node';
 import { Tads3SymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { getWordAtPosition } from './text-utils';

@@ -389,7 +389,7 @@ async function setMakeFile() {
 		await diagnose(makefileDoc);
 	} catch (err) {
 		window.showErrorMessage(`Error while diagnosing: ${err}`);
-		client.error(`Error while diagnosing: ${err}`);
+		client.error(`Error while diagnosing: ${err.message}`);
 		return;
 	}
 
@@ -441,7 +441,7 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 	if (errorDiagnostics.length > 0) {
 		//throw new Error('Could not assemble outliner symbols since there\'s an error. ');
 		//window.showWarningMessage(`Could not assemble outliner symbols since there was an error. `);
-		client.error(`Could not assemble outliner symbols due to error(s): \n${errorDiagnostics.map(e => e.message).join('\n')}`);
+		client.warn(`Could not assemble outliner symbols due to error(s): \n${errorDiagnostics.map(e => e.message).join('\n')}`);
 		return;
 	}
 	//allFilesBeenProcessed = true;
