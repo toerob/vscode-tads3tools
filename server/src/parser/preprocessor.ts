@@ -23,7 +23,6 @@ export function runCommand(command: string) {
 	});
 }
 
-
 export async function preprocessAllFiles(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>) {
 	const t3makeCompilerPath: number = await connection.workspace.getConfiguration('tads3.compiler.path') ?? 't3make';
 	preprocessedFilesCacheMap.clear();

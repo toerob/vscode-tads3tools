@@ -1,7 +1,6 @@
 import { DocumentSymbol, Position } from 'vscode-languageserver/node';
 import { stripComments, strOffsetAt } from './text-utils';
 import { readFileSync } from 'fs';
-import { connection } from '../server';
 import { basename } from 'path';
 
 const documentationCachedKeywords = new Map();

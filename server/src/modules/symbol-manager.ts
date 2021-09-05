@@ -1,12 +1,15 @@
-
 import { Range, DocumentSymbol, Position, SymbolKind } from 'vscode-languageserver';
-import { resourceLimits } from 'worker_threads';
+import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 
 export class Tads3SymbolManager {
-	symbols: Map<string, DocumentSymbol[]> = new Map();
+	symbols: Map<string, DocumentSymbol[]>;
 	keywords: Map<string, Map<string, Range[]>> = new Map();
 	additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
-	inheritanceMap: Map<string, string> = new Map(); // TODO:
+	inheritanceMap: Map<string, string> = new Map();
+
+	constructor() {
+		this.symbols = (process.platform === 'win32') ? new CaseInsensitiveMap() : new Map();
+	}
 
 	getAdditionalProperties(symbol: DocumentSymbol) {
 		for (const keys of this.additionalProperties.keys()) {
@@ -23,8 +26,8 @@ export class Tads3SymbolManager {
 		if (name) {
 			for (const filePath of this.symbols.keys()) {
 				const fileLocalSymbols = this.symbols.get(filePath);
-				if(fileLocalSymbols) {
-					const flattened = deepSearch? flattenTreeToArray(fileLocalSymbols) : fileLocalSymbols;
+				if (fileLocalSymbols) {
+					const flattened = deepSearch ? flattenTreeToArray(fileLocalSymbols) : fileLocalSymbols;
 					const symbol = flattened?.find(s => s.name === name);
 					if (symbol) {
 						return { symbol, filePath };
@@ -36,22 +39,22 @@ export class Tads3SymbolManager {
 	}
 
 
-	findSymbols(name: string, allowedKind: SymbolKind[]|undefined = undefined, deepSearch = true) {
+	findSymbols(name: string, allowedKind: SymbolKind[] | undefined = undefined, deepSearch = true) {
 		const symbolSearchResult = [];
 		if (name) {
 			for (const filePath of this.symbols.keys()) {
-				const fileLocalSymbols = deepSearch? 
-					flattenTreeToArray(this.symbols.get(filePath) ?? []) 
+				const fileLocalSymbols = deepSearch ?
+					flattenTreeToArray(this.symbols.get(filePath) ?? [])
 					: this.symbols.get(filePath) ?? [];
-					
+
 				let result;
-				if(allowedKind !== undefined) {
+				if (allowedKind !== undefined) {
 					result = fileLocalSymbols?.filter(s => allowedKind.includes(s.kind) && s.name === name);
 				} else {
 					result = fileLocalSymbols?.filter(s => s.name === name);
 				}
-				if(result && result.length>0) {
-					symbolSearchResult.push({filePath, symbols: result});
+				if (result && result.length > 0) {
+					symbolSearchResult.push({ filePath, symbols: result });
 				}
 			}
 		}

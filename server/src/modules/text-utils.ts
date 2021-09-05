@@ -62,8 +62,9 @@ export function offsetAt(document: TextDocument|undefined, position: Position) {
  */
 export function stripComments(commentedText:string): string {
 	return commentedText.split(/\n/)
-	.map(x=>x.replace(/^\s+[*]\s+/g, ''))
+	.map(x=>x.replace(/^\s+[*]\s+/g, ' '))
 	.join('')
+	.replace('  ', ' ')
 	.replace('/*', '')
 	.replace('*/', '');
 }

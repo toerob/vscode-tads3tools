@@ -47,7 +47,7 @@ export function onHover({ textDocument, position, workDoneToken }: HoverParams, 
 							for (const symbol of eachPathAndSymbolResult.symbols) {
 								const classDoc = retrieveDocumentationForKeyword(symbol, filePath);
 								if (classDoc) {
-									documentation += `\n\n${classDoc}\n\n\t(source: ${filePath})\n\n`;
+									documentation += `\n\n${classDoc}\r\n (source: ${filePath})\n\n`;
 								}
 							}
 						}
