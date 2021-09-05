@@ -1,9 +1,11 @@
 import { DocumentSymbol, Position } from 'vscode-languageserver/node';
 import { stripComments, strOffsetAt } from './text-utils';
 import { readFileSync } from 'fs';
+import { connection } from '../server';
+import { basename } from 'path';
 
 const documentationCachedKeywords = new Map();
-
+const documentationDontCheckCachedKeywords = new Set();
 /**
  * Retrieves a documentation for a symbol and filepath. 
  * It checks if there's a multiline comment above the symbol at hand at that there's only whitespaces 
@@ -18,10 +20,21 @@ const documentationCachedKeywords = new Map();
 export function retrieveDocumentationForKeyword(symbol: DocumentSymbol, filePath: string) {
 	const keyword = symbol?.name;
 	if (keyword) {
-		if (documentationCachedKeywords.has(symbol)) {
-			return documentationCachedKeywords.get(symbol);
+
+		// Create a unique hashed identifier for this symbol, (storing the symbol as key doesn't work)
+		const symbolHash = hashSymbol(symbol, filePath);
+
+		// Quickly verify we don't read from disk for an already disqualified symbol entry
+		if (documentationDontCheckCachedKeywords.has(symbolHash)) {
+			return '';
+		}
+
+		if (documentationCachedKeywords.has(symbolHash)) {
+			//connection.console.log(`Reading from cache: ${filePath}`);
+			return documentationCachedKeywords.get(symbolHash);
 		}
 		if (filePath) {
+			//connection.console.log(`Reading from disc: ${filePath}`);
 			const originalSourceCode = readFileSync(filePath).toString();
 			const startOfClassLine = symbol.range.start.line;
 			const offset = strOffsetAt(originalSourceCode, Position.create(startOfClassLine, 0));
@@ -35,13 +48,27 @@ export function retrieveDocumentationForKeyword(symbol: DocumentSymbol, filePath
 				const doc = stripComments(tads3DocString);
 
 				if (doc && doc.length > 0) {
-					documentationCachedKeywords.set(symbol, doc);
+					documentationCachedKeywords.set(symbolHash, doc);
 				}
 				return doc;
+			} else {
+				documentationDontCheckCachedKeywords.add(symbolHash);
 			}
 		}
 	}
 	return '';
 }
 
+
+/**
+ * Create a unique key for each entry so caching is successful
+ * @param symbol 
+ * @param filePath 
+ * @returns 
+ */
+function hashSymbol(symbol: DocumentSymbol, filePath: string) {
+	const hash = symbol.name + '|' + symbol.range.start.line + ':' + symbol.range.start.character + '|' + basename(filePath);
+	return hash;
+
+}
 

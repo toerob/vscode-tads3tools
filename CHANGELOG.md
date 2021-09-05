@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.1-alpha
+## 0.2.0-alpha
 
 ### Added
   - Hovering on classes, objects, methods and properties now reveals documentation from library source code
