@@ -3,7 +3,7 @@
 ## 0.1.1-alpha
 
 ### Added
-  - Class name hovering on now reveals documentation from library source code
+  - Hovering on classes, objects, methods and properties now reveals documentation from library source code
   - Text Completion reveals documentation on class level
   
   Thank you for the suggestions Tomáš Bláha and Luděk Šťastný!

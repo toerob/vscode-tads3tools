@@ -21,6 +21,13 @@ const ID = '[a-zA-Z0-9_]+';
 const DIR = '(north|south|east|west|northeast|northwest|southeast|southwest|up|down|in|out)';
 const WS = '\\s*';
 const dirAssignmentRegExp = new RegExp(`^${WS}${DIR}${WS}=${WS}(${ID})?`);
+const tads3Keywords = ['grammar', 'switch', 'case', 'default', 'function', 'throw', 'new',
+	'template', 'for', 'try', 'catch', 'finally', 'enum', 'class', 'transient',
+	'modify', 'replace', 'propertyset', 'if', 'do', 'while', 'else', 'local',
+	'true', 'nil', 'intrinsic', 'inherited', 'delegated', 'property',
+	'dictionary', 'export', 'extern', 'return', 'static', 'string',
+	'foreach', 'in', '...', '..', 'step',
+	'not', 'is', 'break', 'continue', 'goto', 'token', 'pragma', 'operator'];
 
 export function onCompletion(handler: CompletionParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager): CompletionList | CompletionItem[] { 
 	const suggestions:Set<CompletionItem> = new Set();
@@ -104,6 +111,7 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 
 	
 	try {
+		// match "self[.](.*)"
 		if(currentLineStr.match(`${WS}self.${word}`)) {
 
 			//TODO: default also? 
@@ -150,8 +158,6 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 			return results.map((x:any)=>x.obj);		
 
 		}
-
-		// match "self."
 
 		// An object declaration where the word is a class, show all class alternatives:
 		if(currentLineStr.match(`${WS}(class)?${ID}${WS}:${WS}${word}`)
@@ -249,18 +255,8 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 				}
 			}
 		}
-	
-	
 
-		// Add common keywords:
-		const tads3Keywords = ['grammar','switch','case','default','function','throw','new',
-		'template','for','try','catch','finally','enum','class','transient',
-		'modify','replace','propertyset','if','do','while','else','local',
-		'true','nil','intrinsic','inherited','delegated','property',
-		'dictionary','export','extern','return','static','string',
-		'foreach','in','...','..','step',
-		'not','is','break','continue','goto','token','pragma','operator'];
-
+		// Add common tads3 keywords
 		for(const keyword of tads3Keywords) {
 			const item = CompletionItem.create(keyword);
 			item.kind = CompletionItemKind.Keyword;
