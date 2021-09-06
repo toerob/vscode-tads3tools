@@ -10,7 +10,8 @@ const symbolsAllowingHoveringDocs = [
 	SymbolKind.TypeParameter,
 	SymbolKind.Interface,
 	SymbolKind.Method,
-	SymbolKind.Property
+	SymbolKind.Property,
+	SymbolKind.Function
 ];
 
 function checkSymbolsAllowingHoveringDocs(x: DocumentSymbol) {
