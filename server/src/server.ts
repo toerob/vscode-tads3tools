@@ -14,7 +14,8 @@ import {
 	TextDocumentSyncKind,
 	InitializeResult,
 	CancellationTokenSource,
-	SymbolKind} from 'vscode-languageserver/node';
+	SymbolKind,
+	NotificationType} from 'vscode-languageserver/node';
 
 import { Tads3SymbolManager } from './modules/symbol-manager';
 import { onDocumentSymbol } from './modules/symbols';
@@ -29,12 +30,14 @@ import { onCompletion } from './modules/completions';
 import { tokenizeQuotesWithIndex } from './modules/text-utils';
 import { onDocumentLinks } from './modules/links';
 import { onHover } from './modules/hover';
+import { CaseInsensitiveMap } from './modules/CaseInsensitiveMap';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
 
 
-export const preprocessedFilesCacheMap = new Map<string, string>();
+export const preprocessedFilesCacheMap = (process.platform === 'win32')? new CaseInsensitiveMap<string, string>() : new Map<string, string>();
+
 export const symbolManager = new Tads3SymbolManager();
 export const mapper = new MapObjectManager(symbolManager);
 
@@ -60,6 +63,7 @@ let hasDiagnosticRelatedInformationCapability = false;
 
 connection.onInitialize((params: InitializeParams) => {
 	const capabilities = params.capabilities;
+
 
 	// Does the client support the `workspace/configuration` request?
 	// If not, we fall back using global settings.
@@ -300,6 +304,7 @@ connection.onRequest('request/analyzeText/findNouns', async (params) => {
 	const preprocessedText = preprocessedFilesCacheMap.get(path);
 	const array = preprocessedText?.split(/\r?\n/) ?? [];
 	const line = array[position.line];
+	
 	connection.console.log(`Analyzing: ${line} / ${text}`);
 
 	if(line) {

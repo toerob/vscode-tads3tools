@@ -9,18 +9,30 @@
 		"url": "https://github.com/toerob/vscode-tads3tools.git"
 	},
 	"publisher": "toerob",
-	"categories": [],
+	"categories": [
+		"Programming Languages",
+		"Snippets"
+	],
 	"keywords": [
+		"tads",
+		"tads3",
 		"multi-root ready"
 	],
 	"engines": {
 		"vscode": "^1.43.0"
 	},
 	"activationEvents": [
+		"*",
 		"onLanguage:tads3",
 		"onCommand:tads3.createTads3TemplateProject"
 	],
 	"main": "./client/out/extension",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": false
+		},
+		"virtualWorkspaces": false
+	},
 	"contributes": {
 		"snippets": [
 			{

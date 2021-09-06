@@ -160,7 +160,7 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 		connection.console.log(`${filePath} parsed successfully in ${elapsedTime} ms`);
 		try {
 			await Thread.terminate(worker);
-			connection.console.log(`(worker terminated)`);
+			connection.console.log(`[worker unassigned]`);
 		} catch (err) {
 			connection.console.error(`Error during thread termination: ${err}`);
 		}

@@ -25,6 +25,7 @@ import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
 import { validateCompilerPath, validateUserSettings } from './validations';
+import { extensionState } from './state';
 
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
 const tads3CompileErrorParser = new Tads3CompileErrorParser();
@@ -43,15 +44,19 @@ let currentTextDocument: TextDocument | undefined;
 let extensionDownloadMap: Map<any, any>;
 
 let errorDiagnostics = [];
-let isDiagnosing = false;
 let allFilesBeenProcessed = false;
-let isLongProcessingInAction = false;
 let serverProcessCancelTokenSource: CancellationTokenSource;
 let chosenMakefileUri: Uri | undefined;
 let preprocessedList: string[];
 
 let preprocessDocument: TextDocument;
 let makefileKeyMapValues = [];
+
+let t3FileSystemWatcher: FileSystemWatcher = undefined;
+
+const diagnoseAndCompileSubject = new Subject();
+
+const runGameInTerminalSubject = new Subject();
 
 export let tads3VisualEditorPanel: WebviewPanel | undefined = undefined;
 export let client: LanguageClient;
@@ -302,18 +307,18 @@ export function activate(context: ExtensionContext) {
 		});
 
 		client.onNotification("symbolparsing/allfiles/success", ({ elapsedTime }) => {
-			if (isLongProcessingInAction) {
+			if (extensionState.isLongProcessingInAction()) {
 				window.showInformationMessage(`All project and library files are now parsed (elapsed time: ${elapsedTime} ms)`);
 			} else {
 				client.info(`File parsed (elapsed time: ${elapsedTime} ms)`);
 			}
 			client.sendNotification('request/mapsymbols');
-			isLongProcessingInAction = false;
+			extensionState.setLongProcessing(false);
 		});
 
 		client.onNotification("symbolparsing/allfiles/failed", ({ error }) => {
 			window.showErrorMessage(`Parsing all files via makefile ${basename(chosenMakefileUri.fsPath)} failed: ${error} `, { modal: true });
-			isLongProcessingInAction = false;
+			extensionState.setLongProcessing(false);
 			allFilesBeenProcessed = false;
 		});
 
@@ -326,6 +331,35 @@ export function activate(context: ExtensionContext) {
 		if(await validateUserSettings()) {
 			initialParse();
 		}
+
+
+		diagnoseAndCompileSubject.pipe(debounceTime(250)).subscribe(async (textDocument: TextDocument) => {
+			
+			currentTextDocument = textDocument;
+
+			if(extensionState.isDiagnosing()) {
+				client.info(`### Hold yer horses....`);
+				return;
+			}
+
+			if (chosenMakefileUri && !existsSync(chosenMakefileUri.fsPath)) {
+				chosenMakefileUri = undefined;
+			}
+	
+			if (chosenMakefileUri === undefined) {
+				chosenMakefileUri = await findAndSelectMakefileUri();
+			}
+	
+			if (chosenMakefileUri === undefined) {
+				console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
+				return;
+			}
+			if (!t3FileSystemWatcher) {
+				setupAndMonitorBinaryGamefileChanges(); // Client specific feature
+			}
+			await diagnosePreprocessAndParse(textDocument);
+		});
+
 	});
 
 }
@@ -369,12 +403,10 @@ export async function findAndSelectMakefileUri(askIfNotFound = true) {
 
 
 async function setMakeFile() {
-	client.info(`Diagnosing`);
-	if (isLongProcessingInAction) {
+	if (extensionState.isLongProcessingInAction()) {
 		window.showWarningMessage(`Cannot change makefile and reparse right now, since a full project parsing is already in progress. Try again later. `, { modal: true });
 		return;
 	}
-
 	const newMakefile = await findAndSelectMakefileUri();
 	if (newMakefile === undefined) {
 		client.info(`No makefile, cannot parse document symbols. `);
@@ -390,54 +422,36 @@ async function setMakeFile() {
 	} catch (err) {
 		window.showErrorMessage(`Error while diagnosing: ${err}`);
 		client.error(`Error while diagnosing: ${err.message}`);
+		extensionState.setDiagnosing(false);
 		return;
-	}
+	} 
 
 	if (errorDiagnostics.length > 0) {
 		window.showErrorMessage(`Error during compilation:\n${errorDiagnostics.map(e => e.message).join('\n')}`);
 		return;
 	}
 
-	isLongProcessingInAction = true;
+	extensionState.setLongProcessing(true);
 	client.info(`Preprocess and parse all documents`);
 	await preprocessAndParseDocument();
 }
 
 async function onDidSaveTextDocument(textDocument: any) {
-	currentTextDocument = textDocument;
-
-	if (chosenMakefileUri && !existsSync(chosenMakefileUri.fsPath)) {
-		chosenMakefileUri = undefined;
-	}
-
-	if (chosenMakefileUri === undefined) {
-		chosenMakefileUri = await findAndSelectMakefileUri();
-	}
-
-	if (chosenMakefileUri === undefined) {
-		console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
-		return;
-	}
-	if (!t3FileSystemWatcher) {
-		setupAndMonitorBinaryGamefileChanges(); // Client specific feature
-	}
-	await diagnosePreprocessAndParse(textDocument);
+	client.info(`Debouncing`);
+	diagnoseAndCompileSubject.next(textDocument);
 }
 
 
 async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 	client.info(`Diagnosing`);
-	if (isDiagnosing) {
-		client.info(`Already diagnosing. Skipping. `);
-		return;
-	}
-	try {
+    try {
 		await diagnose(textDocument);
 	} catch (err) {
 		client.info(`Error while diagnosing: ${err}`);
 		window.showErrorMessage(`Error while diagnosing: ${err}`);
+		extensionState.setDiagnosing(false);
 		return;
-	}
+	} 
 	if (errorDiagnostics.length > 0) {
 		//throw new Error('Could not assemble outliner symbols since there\'s an error. ');
 		//window.showWarningMessage(`Could not assemble outliner symbols since there was an error. `);
@@ -447,14 +461,14 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 	//allFilesBeenProcessed = true;
 	client.info(`Diagnosing went by with no errors`);
 	if (!allFilesBeenProcessed) {
-		isLongProcessingInAction = true;
+		extensionState.setLongProcessing(true);
 		allFilesBeenProcessed = true;
 		client.info(`Preprocess and parse all documents`);
 		preprocessAndParseDocument();
 		return;
 	} else {
 
-		if (isLongProcessingInAction) {
+		if (extensionState.isLongProcessingInAction()) {
 			client.info(`Skipping parsing since long processing is in action`);
 		} else {
 			client.info(`Preprocess and parse ${textDocument.uri.fsPath}`);
@@ -467,9 +481,6 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 
 
 
-let t3FileSystemWatcher: FileSystemWatcher = undefined;
-
-const runGameInTerminalSubject = new Subject();
 
 function setupAndMonitorBinaryGamefileChanges() {
 	const workspaceFolder = dirname(chosenMakefileUri.fsPath);
@@ -646,13 +657,13 @@ function ensureObjFolderExistsInProjectRoot() {
 }
 
 async function diagnose(textDocument: TextDocument) {
-	isDiagnosing = true;
+	extensionState.setDiagnosing(true);
 	ensureObjFolderExistsInProjectRoot();
 	const tads3ExtensionConfig = workspace.getConfiguration('tads3');
 	const compilerPath = tads3ExtensionConfig?.compiler?.path ?? 't3make';
 	const resultOfCompilation = await runCommand(`${compilerPath} -nobanner -q -f "${chosenMakefileUri.fsPath}"`);
 	parseDiagnostics(resultOfCompilation.toString(), textDocument);
-	isDiagnosing = false;
+	extensionState.setDiagnosing(false);
 }
 
 function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocument) {

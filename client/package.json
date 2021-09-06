@@ -16,6 +16,7 @@
 		"@types/unzipper": "^0.10.4",
 		"axios": "^0.21.2",
 		"fs-extra": "^10.0.0",
+		"mobx": "^6.3.3",
 		"rxjs": "^7.3.0",
 		"vscode-languageclient": "^7.0.0"
 	},

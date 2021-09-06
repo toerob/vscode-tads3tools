@@ -1,28 +1,36 @@
-/*import { autorun, makeAutoObservable, observable, reaction } from "mobx";
-
-export enum ExtensionState {DIAGNOSING, LONGPROCESSING, IDLE}
+import { autorun, makeAutoObservable, observable, reaction } from "mobx";
+import { client } from './extension';
 
 class ExtensionStateStore {
 
-	curState: ExtensionState = ExtensionState.IDLE;
+	longProcessing = false;
 
-	get currentState() { 
-		return this.curState; 
-	}
+	diagnosing = false;
 
 	constructor() {
 		makeAutoObservable(this, {
-			curState: observable
+			longProcessing: observable,
+			diagnosing: observable
 		});
-		autorun(() =>  {
-			console.log(` *** Current State: ${ ExtensionState[this.curState]} `);
+		autorun(() => {
+			const text = [];
+			if (this.diagnosing) text.push('[Diagnosing]');
+			if (this.longProcessing) text.push('[Longprocessing]');
+			setTimeout(()=>reportState(text.length > 0 ? text.join(' and ') : 'Done'));
 		});
 	}
+	setDiagnosing(state: boolean) { this.diagnosing = state; }
 
-	setState(newState:ExtensionState) {
-		this.curState = newState;
-	}
+	setLongProcessing(state: boolean) { this.longProcessing = state; }
+
+	isDiagnosing() { return this.diagnosing; }
+
+	isLongProcessingInAction() { return this.longProcessing; }
 
 }
 
-export const extensionState = new ExtensionStateStore();*/
+export const extensionState = new ExtensionStateStore();
+
+export function reportState(text) {
+	client.info(`Current state(s): ${text}`);
+}
