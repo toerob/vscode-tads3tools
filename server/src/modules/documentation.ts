@@ -1,11 +1,16 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+
 import { DocumentSymbol, Position } from 'vscode-languageserver/node';
 import { stripComments, strOffsetAt } from './text-utils';
 import { readFileSync } from 'fs';
 import { basename } from 'path';
 import { connection } from '../server';
+import LRUCache = require('lru-cache');
 
-const documentationCachedKeywords = new Map();
-const documentationDontCheckCachedKeywords = new Set();
+const documentationCachedKeywords = new LRUCache({ max: 500 });
+
+const documentationDontCheckCachedKeywords = new LRUCache({ max: 500 });
+
 /**
  * Retrieves a documentation for a symbol and filepath. 
  * It checks if there's a multiline comment above the symbol at hand at that there's only whitespaces 
@@ -54,7 +59,7 @@ export function retrieveDocumentationForKeyword(symbol: DocumentSymbol, filePath
 						}
 						return doc;
 					} else {
-						documentationDontCheckCachedKeywords.add(symbolHash);
+						documentationDontCheckCachedKeywords.set(symbolHash, true);
 					}
 				} catch(err:any) {
 					connection.console.error(err.message);

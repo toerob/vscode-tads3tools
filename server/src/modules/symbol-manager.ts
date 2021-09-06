@@ -3,12 +3,19 @@ import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 
 export class Tads3SymbolManager {
 	symbols: Map<string, DocumentSymbol[]>;
-	keywords: Map<string, Map<string, Range[]>> = new Map();
+	keywords: Map<string, Map<string, Range[]>>;
 	additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
 	inheritanceMap: Map<string, string> = new Map();
 
 	constructor() {
-		this.symbols = (process.platform === 'win32') ? new CaseInsensitiveMap() : new Map();
+		// Windows doesn't recognize case differences in file paths, therefore we need to use case insensitive maps:
+		if (process.platform === 'win32') {
+			this.symbols = new CaseInsensitiveMap();
+			this.keywords = new CaseInsensitiveMap();
+		} else {
+			this.symbols = new Map();
+			this.keywords = new Map();
+		}
 	}
 
 	getAdditionalProperties(symbol: DocumentSymbol) {
