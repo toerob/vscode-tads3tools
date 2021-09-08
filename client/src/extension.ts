@@ -303,6 +303,7 @@ export function activate(context: ExtensionContext) {
 		});
 
 		client.onNotification('response/preprocessed/list', (filesNames: string[]) => {
+			extensionState.setPreprocessing(false);
 			preprocessedList = filesNames;
 		});
 
@@ -319,6 +320,7 @@ export function activate(context: ExtensionContext) {
 		client.onNotification("symbolparsing/allfiles/failed", ({ error }) => {
 			window.showErrorMessage(`Parsing all files via makefile ${basename(chosenMakefileUri.fsPath)} failed: ${error} `, { modal: true });
 			extensionState.setLongProcessing(false);
+			extensionState.setPreprocessing(false);
 			allFilesBeenProcessed = false;
 		});
 
@@ -332,15 +334,11 @@ export function activate(context: ExtensionContext) {
 			initialParse();
 		}
 
-
-		diagnoseAndCompileSubject.pipe(debounceTime(250)).subscribe(async (textDocument: TextDocument) => {
-			
+		/**
+		 * This will be trigger by onDidSaveTextDocument:
+		 */
+		diagnoseAndCompileSubject.pipe(debounceTime(200)).subscribe(async (textDocument: TextDocument) => {
 			currentTextDocument = textDocument;
-
-			if(extensionState.isDiagnosing()) {
-				client.info(`### Hold yer horses....`);
-				return;
-			}
 
 			if (chosenMakefileUri && !existsSync(chosenMakefileUri.fsPath)) {
 				chosenMakefileUri = undefined;
@@ -437,6 +435,17 @@ async function setMakeFile() {
 }
 
 async function onDidSaveTextDocument(textDocument: any) {
+	
+	if(extensionState.isDiagnosing()) {
+		client.warn(`Still diagnosing, parsing is skipped this time around`);
+		return;
+	}
+
+	if(extensionState.isPreprocessing()) {
+		client.warn(`Still preprocessing, parsing is skipped this time around`);
+		return;
+	}
+
 	client.info(`Debouncing`);
 	diagnoseAndCompileSubject.next(textDocument);
 }
@@ -718,6 +727,7 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 export async function executeParse(makefileLocation: string, filePaths: string[]): Promise<any> {
 	await client.onReady();
 	serverProcessCancelTokenSource = new CancellationTokenSource();
+	extensionState.setPreprocessing(true);
 	await client.sendRequest('request/parseDocuments', {
 		globalStoragePath,
 		makefileLocation: makefileLocation,
