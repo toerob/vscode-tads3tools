@@ -102,10 +102,10 @@ export class Tads3SymbolManager {
 				&& position.line >= s.range.start.line
 				&& position.line <= s.range.end.line);
 			if (symbol) {
-				return { symbol, filePath };
+				return symbol;
 			}
 		}
-		return {};
+		return undefined;
 	}
 
 	mapHeritage(symbol: DocumentSymbol) {

@@ -311,9 +311,8 @@ connection.onRequest('request/analyzeText/findNouns', async (params) => {
 		const tree = analyzeText(line);
 		
 		// Calculate where to best put the suggestions
-		const { symbol } = symbolManager.findClosestSymbolKindByPosition(path, SymbolKind.Object, position);
-		
-	if(symbol) {
+		const symbol = symbolManager.findClosestSymbolKindByPosition(path, SymbolKind.Object, position);
+		if(symbol) {
 			const level = symbolManager.additionalProperties.get(path)?.get(symbol)?.level + 1;
 			//connection.console.log(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
 			connection.sendNotification('response/analyzeText/findNouns', { tree, range: symbol.range, level } );
