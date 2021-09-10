@@ -9,9 +9,11 @@ Install the extension and open up a tads3 project folder (use the open folder fe
 
 Opening up a folder and/or saving a tads3 source code within an opened project will trigger a symbol parsing of that current file (or the whole project, if it hasn't already parsed all files). 
 
-First time using the extension within a project, all the current library files will be parsed (adv3 or adv3Lite). This is done with several threads running in parallel (default is 6 and configurable), but even so the time for indexing all of it will take some time. It's been timed to be around 1 minute, 30 seconds on a 2013 macbook pro, and around 20 seconds on a desktop running linux/windows.
+**Please observe**: The extension relies heavily on the project's Makefile (.t3m) file, so be sure it points to the correct includes and/or libraries. If you can compile it with the "t3make" command in a command line tool, it should be good to go with the extension too. Provided the default command "t3make" can be found. (This is otherwise configurable in the setting "tads3.compiler.path".)
 
-After this initial parse, all library files will be cached and persisted, and only the project files will be parsed. Reducing the parsing time to almost non-visible. So expect a slightly longer initial parse and then a blissful immediate one.
+First time using the extension within a valid project, all the current library files will be parsed (adv3 or adv3Lite). This is done with several threads running in parallel (default is 6 and configurable), but even so the time for indexing all of it will take some time. It's been timed to be around 1 minute, 30 seconds on a 2013 macbook pro, and around 20 seconds on a desktop running linux/windows i7 3.70GHz.
+
+After this initial parse, all library files will be cached and persisted, and only the project files will be parsed, which will reduce the parsing time to barely noticable. So expect a slightly longer initial parse the first time and then a immediate one the next time you open any project using the same libraries. 
 
 See all the movies in here for a quick introduction in how to use this extension.
 
