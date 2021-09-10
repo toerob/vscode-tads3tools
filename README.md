@@ -3,15 +3,17 @@
 
 A language server/client for the Tads3 programming language and tailored made for Visual Studio Code. 
 
+Prioritized to work on **linux** and **mac** platform but also supported on **windows**.
+
 ## First time users
 
-Install the extension and open up a tads3 project folder (use the open folder feature of vscode), or create a new project with the "Tads3 command: Create a new Tads3 template project" found in the general command menu (CTRL-SHIFT-P). (See the movie below).
+Install the extension and open up a tads3 project folder (use the open folder feature of vscode), or create a new project with the "Tads3 command: Create a new Tads3 template project" found in the general command menu _(CTRL-SHIFT-P)_. (See the movie below).
 
 Opening up a folder and/or saving a tads3 source code within an opened project will trigger a symbol parsing of that current file (or the whole project, if it hasn't already parsed all files). 
 
 **Please observe**: The extension relies heavily on the project's Makefile (.t3m) file, so be sure it points to the correct includes and/or libraries. If you can compile it with the "t3make" command in a command line tool, it should be good to go with the extension too. Provided the default command "t3make" can be found. (This is otherwise configurable in the setting "tads3.compiler.path".)
 
-First time using the extension within a valid project, all the current library files will be parsed (adv3 or adv3Lite). This is done with several threads running in parallel (default is 6 and configurable), but even so the time for indexing all of it will take some time. It's been timed to be around 1 minute, 30 seconds on a 2013 macbook pro, and around 20 seconds on a desktop running linux/windows i7 3.70GHz.
+First time using the extension within a valid project, all the current library files will be parsed (**adv3** or **adv3Lite**). This is done with several threads running in parallel (default is 6 and configurable), but even so the time for indexing all of it will take some time. It's been timed to be around 1 minute, 30 seconds on a 2013 macbook pro, and around 20 seconds on a desktop running linux/windows i7 3.70GHz.
 
 After this initial parse, all library files will be cached and persisted, and only the project files will be parsed, which will reduce the parsing time to barely noticable. So expect a slightly longer initial parse the first time and then a immediate one the next time you open any project using the same libraries. 
 
