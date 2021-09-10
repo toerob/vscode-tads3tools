@@ -27,6 +27,7 @@ import { rmdirSync } from 'fs';
 import { validateCompilerPath, validateUserSettings } from './validations';
 import { extensionState } from './state';
 
+const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
 const tads3CompileErrorParser = new Tads3CompileErrorParser();
 
@@ -337,7 +338,8 @@ export function activate(context: ExtensionContext) {
 		/**
 		 * This will be trigger by onDidSaveTextDocument:
 		 */
-		diagnoseAndCompileSubject.pipe(debounceTime(200)).subscribe(async (textDocument: TextDocument) => {
+		diagnoseAndCompileSubject.pipe(debounceTime(DEBOUNCE_TIME)).subscribe(async (textDocument: TextDocument) => {
+			client.info(`Debounce time of ${DEBOUNCE_TIME} has passed.`);
 			currentTextDocument = textDocument;
 
 			if (chosenMakefileUri && !existsSync(chosenMakefileUri.fsPath)) {
@@ -446,7 +448,7 @@ async function onDidSaveTextDocument(textDocument: any) {
 		return;
 	}
 
-	client.info(`Debouncing`);
+	
 	diagnoseAndCompileSubject.next(textDocument);
 }
 
@@ -492,10 +494,11 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 
 
 function setupAndMonitorBinaryGamefileChanges() {
+	client.info(`setup and monitor binary game file changes. `);
 	const workspaceFolder = dirname(chosenMakefileUri.fsPath);
 	t3FileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, "*.t3"));
 
-	runGameInTerminalSubject.pipe(debounceTime(200)).subscribe((event: any) => {
+	runGameInTerminalSubject.pipe(debounceTime(DEBOUNCE_TIME)).subscribe((event: any) => {
 		const configuration = workspace.getConfiguration("tads3");
 		if (!configuration.get("restartGameRunnerOnT3ImageChanges")) {
 			return;
@@ -509,6 +512,7 @@ function setupAndMonitorBinaryGamefileChanges() {
 		const fileBaseName = basename(event.fsPath);
 		const gameRunnerTerminals = window.terminals.filter(x => x.name === 'Tads3 Game runner terminal');
 		for (const gameRunnerTerminal of gameRunnerTerminals) {
+			client.info(`Dispose previous game runner terminal`);
 			gameRunnerTerminal.sendText(`quit`);
 			gameRunnerTerminal.sendText(`y`);
 			gameRunnerTerminal.sendText(``);
@@ -516,12 +520,10 @@ function setupAndMonitorBinaryGamefileChanges() {
 		}
 
 		const gameRunnerTerminal = window.createTerminal('Tads3 Game runner terminal');
-		client.info(`${event.fsPath} changed, restarting ${fileBaseName}`);
-
+		client.info(`${event.fsPath} changed, restarting ${fileBaseName} in game runner terminal`);
 
 		// FIXME: preserveFocus doesn't work, the terminal takes focus anyway (might be because of sendText)
 		gameRunnerTerminal.show(true);
-
 		gameRunnerTerminal.sendText(`${interpreter} ${fileBaseName}`);
 
 		// FIXME: Interim hack to make preserveFocus work even when there's a slow startup of the interpreter
