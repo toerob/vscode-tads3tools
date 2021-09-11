@@ -1,7 +1,7 @@
 {
 	"name": "vscode-tads3tools-server",
 	"description": "Language server implementation for Tads3 written for node.js",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"author": "Tomas Öberg",
 	"license": "MIT",
 	"engines": {
@@ -12,9 +12,11 @@
 		"url": "https://github.com/Microsoft/vscode-extension-samples"
 	},
 	"dependencies": {
+		"@types/lru-cache": "^5.1.1",
 		"antlr4ts": "^0.5.0-alpha.4",
 		"fs-extra": "^10.0.0",
 		"fuzzysort": "^1.1.4",
+		"lru-cache": "^6.0.0",
 		"node": "^16.6.1",
 		"threads": "^1.6.5",
 		"vscode-languageserver": "^7.0.0",

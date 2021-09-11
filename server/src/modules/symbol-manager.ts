@@ -1,11 +1,22 @@
-
 import { Range, DocumentSymbol, Position, SymbolKind } from 'vscode-languageserver';
+import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 
 export class Tads3SymbolManager {
-	symbols: Map<string, DocumentSymbol[]> = new Map();
-	keywords: Map<string, Map<string, Range[]>> = new Map();
+	symbols: Map<string, DocumentSymbol[]>;
+	keywords: Map<string, Map<string, Range[]>>;
 	additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
-	inheritanceMap: Map<string, string> = new Map(); // TODO:
+	inheritanceMap: Map<string, string> = new Map();
+
+	constructor() {
+		// Windows doesn't recognize case differences in file paths, therefore we need to use case insensitive maps:
+		if (process.platform === 'win32') {
+			this.symbols = new CaseInsensitiveMap();
+			this.keywords = new CaseInsensitiveMap();
+		} else {
+			this.symbols = new Map();
+			this.keywords = new Map();
+		}
+	}
 
 	getAdditionalProperties(symbol: DocumentSymbol) {
 		for (const keys of this.additionalProperties.keys()) {
@@ -18,18 +29,54 @@ export class Tads3SymbolManager {
 		return undefined;
 	}
 
-	findSymbol(name: any) {
+	findSymbol(name: any, deepSearch = true) {
 		if (name) {
 			for (const filePath of this.symbols.keys()) {
 				const fileLocalSymbols = this.symbols.get(filePath);
-				const symbol = fileLocalSymbols?.find(s => s.name === name);
-				if (symbol) {
-					return { symbol, filePath };
+				if (fileLocalSymbols) {
+					const flattened = deepSearch ? flattenTreeToArray(fileLocalSymbols) : fileLocalSymbols;
+					const symbol = flattened?.find(s => s.name === name);
+					if (symbol) {
+						return { symbol, filePath };
+					}
 				}
 			}
 		}
 		return {};
 	}
+
+
+	findSymbols(name: string, allowedKind: SymbolKind[] | undefined = undefined, deepSearch = true) {
+		const symbolSearchResult = [];
+		if (name) {
+			for (const filePath of this.symbols.keys()) {
+				const fileLocalSymbols = deepSearch ?
+					flattenTreeToArray(this.symbols.get(filePath) ?? [])
+					: this.symbols.get(filePath) ?? [];
+
+				let result;
+				if (allowedKind !== undefined) {
+					result = fileLocalSymbols?.filter(s => allowedKind.includes(s.kind) && s.name === name);
+				} else {
+					result = fileLocalSymbols?.filter(s => s.name === name);
+				}
+				if (result && result.length > 0) {
+					symbolSearchResult.push({ filePath, symbols: result });
+				}
+			}
+		}
+		return symbolSearchResult;
+	}
+
+	/*findDocumentForSymbol(name: string) {
+		const symbolSearchResult = this.findSymbols(name);
+		if(symbolSearchResult) {
+			const comment = symbolSearchResult[0]? this.getAdditionalProperties(symbolSearchResult[0].symbol): undefined;
+			return comment;
+		} else {
+			return;
+		}
+	}*/
 
 	getTemplates(): Set<DocumentSymbol> {
 		const templates = new Set<DocumentSymbol>();
@@ -55,10 +102,10 @@ export class Tads3SymbolManager {
 				&& position.line >= s.range.start.line
 				&& position.line <= s.range.end.line);
 			if (symbol) {
-				return { symbol, filePath };
+				return symbol;
 			}
 		}
-		return {};
+		return undefined;
 	}
 
 	mapHeritage(symbol: DocumentSymbol) {

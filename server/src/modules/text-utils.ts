@@ -30,6 +30,47 @@ export function offsetAt(document: TextDocument|undefined, position: Position) {
 }
 
 /**
+ * Converts a Position to Character offset.
+ * @param text - string that is used
+ * @param position - The position to convert
+ * @returns a number of the converted position
+ */
+ export function strOffsetAt(text: string, position: Position) {
+	const rows = text.split(/\n/);
+	let offset = 0;
+	if(rows && position.line < rows.length) {
+		for (let rowIndex = 0; rowIndex <= position.line; rowIndex++) {
+			if(rowIndex === position.line) {
+				offset += position.character;		
+				break;
+			} else {
+				offset += rows[rowIndex].length + 1; // One extra for the carriage return
+			}
+		}
+		
+	} else {
+		throw new Error(`Can not calculate offset. the line position ${position.line} is greater than the rows in the text`);
+	}
+	return offset;
+}
+
+
+/**
+ * Strips away comment tokens from class documentation
+ * @param commentedText - the text to strip from comments
+ * @returns a string
+ */
+export function stripComments(commentedText:string): string {
+	return commentedText.split(/\n/)
+	.map(x=>x.replace(/^\s+[*]\s+/g, ' '))
+	.join('')
+	.replace('  ', ' ')
+	.replace('/*', '')
+	.replace('*/', '');
+}
+
+
+/**
  * Determines if a position is within a quote or not
  * @param document - document to be examined for quotes
  * @param position - The position at which a quote is to be examined for

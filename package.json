@@ -3,24 +3,36 @@
 	"description": "Language server extension for Tads3",
 	"author": "Tomas Öberg",
 	"license": "MIT",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/toerob/vscode-tads3tools.git"
 	},
 	"publisher": "toerob",
-	"categories": [],
+	"categories": [
+		"Programming Languages",
+		"Snippets"
+	],
 	"keywords": [
+		"tads",
+		"tads3",
 		"multi-root ready"
 	],
 	"engines": {
 		"vscode": "^1.43.0"
 	},
 	"activationEvents": [
+		"*",
 		"onLanguage:tads3",
 		"onCommand:tads3.createTads3TemplateProject"
 	],
 	"main": "./client/out/extension",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": false
+		},
+		"virtualWorkspaces": false
+	},
 	"contributes": {
 		"snippets": [
 			{
@@ -150,7 +162,7 @@
 					"scope": "window",
 					"type": "string",
 					"default": "frob",
-					"description": "Runs the game in an command line interpreter if the setting tads3.restartGameRunnerOnT3ImageChanges is enabled. "
+					"description": "Runs the game in an command line interpreter if the setting tads3.restartGameRunnerOnT3ImageChanges is enabled. \n(Note: If on windows \"t3run.exe -plain\" can be used if the regular tads3 workbench is installed.)"
 				},
 				"tads3.maxNumberOfParseWorkerThreads": {
 					"scope": "resource",
@@ -205,13 +217,13 @@
 					"scope": "window",
 					"type": "string",
 					"default": "/usr/local/share/frobtads/tads3/lib/",
-					"description": "Path the tads3 compiler (t3make). "
+					"description": "Path the tads3 library files. "
 				},
 				"tads3.include": {
 					"scope": "window",
 					"type": "string",
 					"default": "/usr/local/share/frobtads/tads3/include/",
-					"description": "Path the tads3 compiler (t3make). "
+					"description": "Path the tads3 include files. "
 				},
 				"tads3.enablePreprocessorCodeLens": {
 					"scope": "resource",
@@ -256,6 +268,7 @@
 		"typescript": "^4.3.5"
 	},
 	"dependencies": {
-		"@types/vscode": "^1.58.1"
+		"@types/vscode": "^1.58.1",
+		"vsce": "^1.96.3"
 	}
 }

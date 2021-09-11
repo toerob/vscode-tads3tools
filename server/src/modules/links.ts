@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import { DocumentLink, DocumentLinkParams, TextDocuments, Range } from 'vscode-languageserver';
 import { Tads3SymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -15,22 +16,22 @@ export async function onDocumentLinks({ textDocument }: DocumentLinkParams, docu
 		const fileNameArray = [...preprocessedFilesCacheMap.keys()];
 		try {
 			for (let nr = 0; nr < documentLineCount; nr++) {
-				let line = documentArray[nr];
-				let match = includeRegexp.exec(line);
+				const line = documentArray[nr];
+				const match = includeRegexp.exec(line);
 				if (match && match.length === 3) {
-					let startOfLink = (match[1]?.length + 1) ?? 0;
-					let nameOfLink = match[2] ?? '';
-					let endOfLink = startOfLink + nameOfLink.length;
-					let documentLink = DocumentLink.create(Range.create(nr, startOfLink, nr, endOfLink));
+					const startOfLink = (match[1]?.length + 1) ?? 0;
+					const nameOfLink = match[2] ?? '';
+					const endOfLink = startOfLink + nameOfLink.length;
+					const documentLink = DocumentLink.create(Range.create(nr, startOfLink, nr, endOfLink));
 					const fullPath = fileNameArray.find(x => x.endsWith(nameOfLink));
 					if (fullPath) {
-						documentLink.target = URI.parse(fullPath).fsPath;
+						documentLink.target = URI.file(fullPath).path;
 						links.push(documentLink);
 					}
 				}
 			}
-		} catch (err) {
-			connection.console.error(err);
+		} catch (err: any) {
+			connection.console.error(err.message);
 		}
 	}
 	return links;

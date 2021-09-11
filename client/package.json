@@ -3,7 +3,7 @@
 	"description": "VSCode client of a language server for",
 	"author": "Tomas Öberg",
 	"license": "MIT",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"publisher": "vscode",
 	"repository": {
 		"type": "git",
@@ -13,15 +13,15 @@
 		"vscode": "^1.52.0"
 	},
 	"dependencies": {
-		"axios": "^0.21.1",
 		"@types/unzipper": "^0.10.4",
+		"axios": "^0.21.2",
 		"fs-extra": "^10.0.0",
-		"rxjs": "^7.2.0",
+		"mobx": "^6.3.3",
+		"rxjs": "^7.3.0",
 		"vscode-languageclient": "^7.0.0"
-
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.52.0",
-		"@vscode/test-electron": "^1.6.1"
+		"@types/vscode": "^1.60.0",
+		"@vscode/test-electron": "^1.6.2"
 	}
 }

@@ -23,12 +23,11 @@ export function runCommand(command: string) {
 	});
 }
 
-
 export async function preprocessAllFiles(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>) {
 	const t3makeCompilerPath: number = await connection.workspace.getConfiguration('tads3.compiler.path') ?? 't3make';
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
-	const commandLine = `${t3makeCompilerPath} -P -q -f "${chosenMakefilePath}"`;
+	const commandLine = `"${t3makeCompilerPath}" -P -q -f "${chosenMakefilePath}"`;
 	const result: any = await runCommand(commandLine);
 	if (result.match(/unable to open/i)) {
 		throw new Error(`Preprocessing failed: ${result}`);
@@ -136,14 +135,14 @@ function storeCurrentBufferAndRows(currentFile: string, currentBuffer: string, c
 	}
 }
 function countRowsOfUnprocessedFiles(filesArray: string[]) {
-	let startTime = Date.now();
+	const startTime = Date.now();
 	const rowMap = new Map();
 	for(const f of filesArray) {
 		const contents = readFileSync(f).toString();
 		const countedLines = contents.split(/\r?\n/)?.length;
 		rowMap.set(f,countedLines);
 	}
-	let elapsedTime = Date.now() - startTime;
+	const elapsedTime = Date.now() - startTime;
 	connection.console.log(`Counting row lines done in ${elapsedTime} ms`);
 	return rowMap;
 }
@@ -159,7 +158,7 @@ function postProcessPreprocessedResult(unprocessedRowsMap: Map<string, number>) 
 	for(const filename of preprocessedFilesCacheMap.keys()) {
 		const preprocessedText = preprocessedFilesCacheMap.get(filename);
 		if(preprocessedText) {
-			const processedRowsArray = preprocessedText.split(/\r?\n/)
+			const processedRowsArray = preprocessedText.split(/\r?\n/);
 			const unprocessedRows = unprocessedRowsMap.get(filename);
 			if(unprocessedRows) {
 				if(processedRowsArray.length > unprocessedRows) {

@@ -3,15 +3,19 @@
 
 A language server/client for the Tads3 programming language and tailored made for Visual Studio Code. 
 
+Prioritized to work on **linux** and **mac** platform but also supported on **windows**.
+
 ## First time users
 
-Install the extension and open up a tads3 project folder (use the open folder feature of vscode), or create a new project with the "Tads3 command: Create a new Tads3 template project" found in the general command menu (CTRL-SHIFT-P). (See the movie below).
+Install the extension and open up a tads3 project folder (use the open folder feature of vscode), or create a new project with the "Tads3 command: Create a new Tads3 template project" found in the general command menu _(CTRL-SHIFT-P)_. (See the movie below).
 
 Opening up a folder and/or saving a tads3 source code within an opened project will trigger a symbol parsing of that current file (or the whole project, if it hasn't already parsed all files). 
 
-First time using the extension within a project, all the current library files will be parsed (adv3 or adv3Lite). This is done with several threads running in parallel (default is 6 and configurable), but even so the time for indexing all of it will take some time. It's been timed to be around 1 minute, 30 seconds on a 2013 macbook pro, and around 20 seconds on a desktop running linux/windows.
+**Please observe**: The extension relies heavily on the project's Makefile (.t3m) file, so be sure it points to the correct includes and/or libraries. If you can compile it with the "t3make" command in a command line tool, it should be good to go with the extension too. Provided the default command "t3make" can be found. (This is otherwise configurable in the setting "tads3.compiler.path".)
 
-After this initial parse, all library files will be cached and persisted, and only the project files will be parsed. Reducing the parsing time to almost non-visible. So expect a slightly longer initial parse and then a blissful immediate one.
+First time using the extension within a valid project, all the current library files will be parsed (**adv3** or **adv3Lite**). This is done with several threads running in parallel (default is 6 and configurable), but even so the time for indexing all of it will take some time. It's been timed to be around 1 minute, 30 seconds on a 2013 macbook pro, and around 20 seconds on a desktop running linux/windows i7 3.70GHz.
+
+After this initial parse, all library files will be cached and persisted, and only the project files will be parsed, which will reduce the parsing time to barely noticable. So expect a slightly longer initial parse the first time and then a immediate one the next time you open any project using the same libraries. 
 
 See all the movies in here for a quick introduction in how to use this extension.
 
@@ -21,9 +25,6 @@ vscode-tads3tools has the following features:
 
 
 
-Create new projects easily:
-
-https://user-images.githubusercontent.com/39532593/130358170-ea5878d5-c504-4b55-94e8-10ae55a6fa84.mp4
 
 Symbol outliner:
 
@@ -32,6 +33,18 @@ https://user-images.githubusercontent.com/39532593/130358201-3be0d686-465c-4316-
 Symbol definitions:
 
 https://user-images.githubusercontent.com/39532593/130358231-eb120e91-8521-498e-bd3b-a3cc3c7318ae.mp4
+
+
+Hover over keywords to see documentation for classes, methods and properties:
+
+https://user-images.githubusercontent.com/39532593/132140782-1de7cd37-6c10-400c-92e0-722a02d75e01.mp4
+
+
+Create new projects easily:
+
+https://user-images.githubusercontent.com/39532593/130358170-ea5878d5-c504-4b55-94e8-10ae55a6fa84.mp4
+
+
 
 
 ---
@@ -53,6 +66,11 @@ https://user-images.githubusercontent.com/39532593/130358270-b5d887e2-bcc1-430e-
 Completions as you type and save time:
 
 https://user-images.githubusercontent.com/39532593/130358322-24908cf1-9b69-49b5-836c-bbeb03735894.mp4
+
+Documentation while using Text Completion:
+
+https://user-images.githubusercontent.com/39532593/132140758-9c4c9d69-8d6c-4e65-b18d-eac583b32ba8.mp4
+
 
 Snippets for boilerplate code:
 
@@ -103,6 +121,8 @@ https://user-images.githubusercontent.com/39532593/130358391-4115016f-2e3b-4bd4-
 **"Tads3 command: Toggles on/off if the game should restarted as soon as the t3 image game file changes"**
 
 If toggled to be enabled, the game will be restarted with the default interpreter in a terminal, on any saved changes in the project that will lead to a new game image file. 
+
+The interpreter can be changed in the setting called "Tads3: Game Runner Interpreter to change", the default is set to "frob", but can for instance be set to "t3run.exe -plain", "htmlt3.exe" to make it run on windows if those interpreters are installed.
 
 ---
 
