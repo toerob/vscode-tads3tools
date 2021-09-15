@@ -17,6 +17,16 @@ First time using the extension within a valid project, all the current library f
 
 After this initial parse, all library files will be cached and persisted, and only the project files will be parsed, which will reduce the parsing time to barely noticable. So expect a slightly longer initial parse the first time and then a immediate one the next time you open any project using the same libraries. 
 
+### Note on compilation
+
+Compilation happens automatically on every save in the editor on files part of the project. In that process a new t3 game image is built if no errors are found and placed according to the specification of the project's Makefile. (Default is in the root of the project folder and can be overriden with the -o argument). If errors on the other hand were found, no new image will produced and diagnostics are shown with markers in the editor and detailed in the View/Problems section. 
+
+Running the game file in an interpreter can be toggled to happen automatically using the (CTRL-SHIFT-P) command: ”Tads3 command: Toggles on/off if the game should restarted as soon as the t3 image game file changes” The extension monitors any t3 file within the project folder for changes and with this setting enabled launches the game with the frob interpreter in a terminal within vscode. (This is a feature primarily working on mac/linux right now.)
+
+Subsequent launching can be made to keep track of last player position by installing a game tracker with the command “Tads3 command: Install a tracker...”. This will persist the player’s position and restore it on each new game run. It is simply a tads3 extension being added to the directory and the makefile that can be removed anytime. 
+
+
+
 See all the movies in here for a quick introduction in how to use this extension.
 
 ## Features
