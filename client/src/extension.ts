@@ -74,8 +74,12 @@ export function getProcessedFileList(): string[] {
 
 export function getLastChosenTextEditor() { return lastChosenTextEditor; }
 
+import { activateTads3Debug, Tads3DebugAdapterServerDescriptorFactory } from './debugger/debugger';
 
-export async function activate(context: ExtensionContext) {
+export function activate(context: ExtensionContext) {
+	
+	activateTads3Debug(context, new Tads3DebugAdapterServerDescriptorFactory());
+
 	const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
 	const debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
 	const serverOptions: ServerOptions = {
