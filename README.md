@@ -7,7 +7,9 @@ Prioritized to work on **linux** and **mac** platform but also supported on **wi
 
 ## First time users
 
-Install the extension and open up a tads3 project folder (use the open folder feature of vscode), or create a new project with the "Tads3 command: Create a new Tads3 template project" found in the general command menu _(CTRL-SHIFT-P)_. (See the movie below).
+Install the extension via the marketplace by opening the extension tab within vscode and search for its partial/full name, select it and install.  
+
+Once installed open up a tads3 project folder (use the open folder feature of vscode), or create a new project with the "Tads3 command: Create a new Tads3 template project" found in the general command menu _(CTRL-SHIFT-P)_. (See the movie below).
 
 Opening up a folder and/or saving a tads3 source code within an opened project will trigger a symbol parsing of that current file (or the whole project, if it hasn't already parsed all files). 
 
