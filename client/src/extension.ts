@@ -1037,13 +1037,13 @@ async function createTemplateProject(context: ExtensionContext) {
 	});
 
 
-	if (projectFolder.length > 0 && projectFolder[0] !== undefined) {
+	if (projectFolder?.length > 0 && projectFolder[0] !== undefined) {
 		const firstWorkspaceFolder = projectFolder[0];
 
+		
 		const makefileUri = Uri.joinPath(firstWorkspaceFolder, 'Makefile.t3m');
 		const gameFileUri = Uri.joinPath(firstWorkspaceFolder, 'gameMain.t');
 		const objFolderUri = Uri.joinPath(firstWorkspaceFolder, 'obj');
-
 
 		if (existsSync(makefileUri.fsPath) || existsSync(gameFileUri.fsPath)) {
 			const userAnswer = await window.showInformationMessage(

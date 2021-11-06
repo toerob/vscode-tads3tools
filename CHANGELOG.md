@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1-alpha
+
+### Fixed
+  - Fixed issue with a tads3 Makefile select dialog appearing in other languages besides tads3
+  - Fixed aborting the create project dialog that caused an error before. 
+
+
+# Changelog
+
 ## 0.2.0-alpha
 
 ### Added
