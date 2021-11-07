@@ -903,13 +903,13 @@ function overridePositionWithPersistedCoordinates(mapObjects: any[]) {
 async function initialParse() {
 	if (window.activeTextEditor.document) {
 		const textDocument = window.activeTextEditor.document;
-		client.info(`Trying to locate a default makefile`);
+		client.info(`Trying to locate a default tads3 makefile`);
 
 		if (chosenMakefileUri === undefined) {
 			chosenMakefileUri = await findAndSelectMakefileUri();
 		}
 		if (chosenMakefileUri === undefined) {
-			console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
+			console.error(`No tads3 makefile could be found`);
 			return;
 		}
 
