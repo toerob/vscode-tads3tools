@@ -14,14 +14,14 @@
 	},
 	"dependencies": {
 		"@types/unzipper": "^0.10.4",
-		"axios": "^0.21.2",
+		"axios": "^0.24.0",
 		"fs-extra": "^10.0.0",
-		"mobx": "^6.3.3",
-		"rxjs": "^7.3.0",
+		"mobx": "^6.3.6",
+		"rxjs": "^7.4.0",
 		"vscode-languageclient": "^7.0.0"
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.60.0",
+		"@types/vscode": "^1.62.0",
 		"@vscode/test-electron": "^1.6.2"
 	}
 }
