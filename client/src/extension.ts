@@ -371,7 +371,7 @@ export function deactivate(): Thenable<void> | undefined {
 	return client.stop();
 }
 
-export async function findAndSelectMakefileUri(askIfNotFound = true) {
+export async function findAndSelectMakefileUri(askIfNotFound = false) {
 	let choice: Uri = undefined;
 	const files = await workspace.findFiles(`**/*.t3m`);
 	if (files.length > 1) {
@@ -448,7 +448,7 @@ async function onDidSaveTextDocument(textDocument: any) {
 		return;
 	}
 
-	
+
 	diagnoseAndCompileSubject.next(textDocument);
 }
 
@@ -928,7 +928,7 @@ async function initialParse() {
 		client.info(`Trying to locate a default makefile`);
 
 		if (chosenMakefileUri === undefined) {
-			chosenMakefileUri = await findAndSelectMakefileUri(false);
+			chosenMakefileUri = await findAndSelectMakefileUri();
 		}
 		if (chosenMakefileUri === undefined) {
 			console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
