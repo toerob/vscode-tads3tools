@@ -2,9 +2,11 @@
 
 ## 0.2.1-alpha
 
+### Added
+  - Adds a warning dialog when the user tries to compile the project without setting -Fy or -Fo
 ### Fixed
   - Fixed issue with a tads3 Makefile select dialog appearing in other languages besides tads3
-  - Fixed aborting the create project dialog that caused an error before. 
+  - Fixed an error that was cause by cancelling the create new tads3 project dialog
 
 
 # Changelog

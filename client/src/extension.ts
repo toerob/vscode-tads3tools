@@ -8,7 +8,7 @@ import { exec } from 'child_process';
 import { copyFileSync, createReadStream, createWriteStream, exists, existsSync, readFileSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, TextEditorRevealType, CancellationError } from 'vscode';
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -26,6 +26,7 @@ import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
 import { validateCompilerPath, validateUserSettings } from './validations';
 import { extensionState } from './state';
+import { validateMakefile } from './validate-makefile';
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -330,8 +331,8 @@ export function activate(context: ExtensionContext) {
 				validateCompilerPath(workspace.getConfiguration("tads3").get('compiler.path'));
 			}
 		});
-	
-		if(await validateUserSettings()) {
+
+		if (await validateUserSettings()) {
 			initialParse();
 		}
 
@@ -345,11 +346,11 @@ export function activate(context: ExtensionContext) {
 			if (chosenMakefileUri && !existsSync(chosenMakefileUri.fsPath)) {
 				chosenMakefileUri = undefined;
 			}
-	
+
 			if (chosenMakefileUri === undefined) {
 				chosenMakefileUri = await findAndSelectMakefileUri();
 			}
-	
+
 			if (chosenMakefileUri === undefined) {
 				console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
 				return;
@@ -420,11 +421,13 @@ async function setMakeFile() {
 	try {
 		await diagnose(makefileDoc);
 	} catch (err) {
-		window.showErrorMessage(`Error while diagnosing: ${err}`);
-		client.error(`Error while diagnosing: ${err.message}`);
+		if(!(err instanceof CancellationError)) {
+			window.showErrorMessage(`Error while diagnosing: ${err}`);
+			client.error(`Error while diagnosing: ${err.message}`);
+		}
 		extensionState.setDiagnosing(false);
 		return;
-	} 
+	}
 
 	if (errorDiagnostics.length > 0) {
 		window.showErrorMessage(`Error during compilation:\n${errorDiagnostics.map(e => e.message).join('\n')}`);
@@ -437,13 +440,13 @@ async function setMakeFile() {
 }
 
 async function onDidSaveTextDocument(textDocument: any) {
-	
-	if(extensionState.isDiagnosing()) {
+
+	if (extensionState.isDiagnosing()) {
 		client.warn(`Still diagnosing, parsing is skipped this time around`);
 		return;
 	}
 
-	if(extensionState.isPreprocessing()) {
+	if (extensionState.isPreprocessing()) {
 		client.warn(`Still preprocessing, parsing is skipped this time around`);
 		return;
 	}
@@ -455,14 +458,16 @@ async function onDidSaveTextDocument(textDocument: any) {
 
 async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 	client.info(`Diagnosing`);
-    try {
+	try {
 		await diagnose(textDocument);
 	} catch (err) {
-		client.info(`Error while diagnosing: ${err}`);
-		window.showErrorMessage(`Error while diagnosing: ${err}`);
+		if(!(err instanceof CancellationError)) {
+			client.info(`Error while diagnosing: ${err}`);
+			window.showErrorMessage(`Error while diagnosing: ${err}`);	
+		}
 		extensionState.setDiagnosing(false);
 		return;
-	} 
+	}
 	if (errorDiagnostics.length > 0) {
 		//throw new Error('Could not assemble outliner symbols since there\'s an error. ');
 		//window.showWarningMessage(`Could not assemble outliner symbols since there was an error. `);
@@ -668,6 +673,7 @@ function ensureObjFolderExistsInProjectRoot() {
 }
 
 async function diagnose(textDocument: TextDocument) {
+	await validateMakefile(chosenMakefileUri);
 	extensionState.setDiagnosing(true);
 	ensureObjFolderExistsInProjectRoot();
 	const tads3ExtensionConfig = workspace.getConfiguration('tads3');
@@ -1040,7 +1046,7 @@ async function createTemplateProject(context: ExtensionContext) {
 	if (projectFolder?.length > 0 && projectFolder[0] !== undefined) {
 		const firstWorkspaceFolder = projectFolder[0];
 
-		
+
 		const makefileUri = Uri.joinPath(firstWorkspaceFolder, 'Makefile.t3m');
 		const gameFileUri = Uri.joinPath(firstWorkspaceFolder, 'gameMain.t');
 		const objFolderUri = Uri.joinPath(firstWorkspaceFolder, 'obj');
