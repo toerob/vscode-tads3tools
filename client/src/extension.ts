@@ -356,7 +356,7 @@ export function activate(context: ExtensionContext) {
 				return;
 			}
 			if (!t3FileSystemWatcher) {
-				setupAndMonitorBinaryGamefileChanges(); // Client specific feature
+				setupAndMonitorBinaryGamefileChanges();
 			}
 			await diagnosePreprocessAndParse(textDocument);
 		});
@@ -421,7 +421,7 @@ async function setMakeFile() {
 	try {
 		await diagnose(makefileDoc);
 	} catch (err) {
-		if(!(err instanceof CancellationError)) {
+		if (!(err instanceof CancellationError)) {
 			window.showErrorMessage(`Error while diagnosing: ${err}`);
 			client.error(`Error while diagnosing: ${err.message}`);
 		}
@@ -461,16 +461,14 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 	try {
 		await diagnose(textDocument);
 	} catch (err) {
-		if(!(err instanceof CancellationError)) {
+		if (!(err instanceof CancellationError)) {
 			client.info(`Error while diagnosing: ${err}`);
-			window.showErrorMessage(`Error while diagnosing: ${err}`);	
+			window.showErrorMessage(`Error while diagnosing: ${err}`);
 		}
 		extensionState.setDiagnosing(false);
 		return;
 	}
 	if (errorDiagnostics.length > 0) {
-		//throw new Error('Could not assemble outliner symbols since there\'s an error. ');
-		//window.showWarningMessage(`Could not assemble outliner symbols since there was an error. `);
 		client.warn(`Could not assemble outliner symbols due to error(s): \n${errorDiagnostics.map(e => e.message).join('\n')}`);
 		return;
 	}
@@ -691,7 +689,7 @@ function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocumen
 export function runCommand(command: string) {
 	return new Promise((resolve, reject) => {
 		let result = '';
-		const childProcess = exec(command, /*{maxBuffer: 1024 * 50000 }*/); 	//TODO: make configurable
+		const childProcess = exec(command, /*{maxBuffer: 1024 * 50000 }*/);
 		try {
 			childProcess.stdout.on('data', (data: any) => {
 				result += data;
@@ -707,7 +705,7 @@ export function runCommand(command: string) {
 }
 
 async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefined = undefined) {
-	const filePaths = textDocuments?.map(x => x.uri.fsPath) ?? undefined;  //[window.activeTextEditor.document.uri.fsPath];
+	const filePaths = textDocuments?.map(x => x.uri.fsPath) ?? undefined;
 	await window.withProgress({
 		location: ProgressLocation.Window,
 		title: 'Parsing symbols',
@@ -824,8 +822,6 @@ function showAndScrollToRange(document: TextDocument, range: Range) {
 	});
 }
 
-
-
 /**
  * Visual editor webview for the project. Draws a map or npc details
  * @param context 
@@ -877,35 +873,11 @@ async function openInVisualEditor(context: ExtensionContext) {
 	});
 }
 
-
-/*
-TODO: update webview function. 
-
-The old code:
-
-updateWebview(webviewPanel: WebviewPanel, document: any , symbols = undefined) {
-	webviewPanel.webview.postMessage({
-		type: 'update',
-		payload: document.getText(),
-	});
-	webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, document);
-
-	if(symbols) {
-		try {
-			webviewPanel.webview.postMessage({ command: 'tads3.addNode', objects: symbols  });
-		} catch(err) {
-			console.error(err);
-		}
-	}
-
-}*/
-
 export function resetPersistedPositions() {
 	persistedObjectPositions.clear();
 }
 
-// TODO: this functionality probably need to go to the server side this time
-function overridePositionWithPersistedCoordinates(mapObjects: any[] /*DefaultMapObject[]*/) {
+function overridePositionWithPersistedCoordinates(mapObjects: any[]) {
 	const itemsToPersist = [];
 	for (const node of mapObjects) {
 		const persistedPosition = persistedObjectPositions.get(node.name);
@@ -945,7 +917,7 @@ async function initialParse() {
 		if (!t3FileSystemWatcher) {
 			client.info(`Setting up t3 image monitor `);
 			if (!t3FileSystemWatcher) {
-				setupAndMonitorBinaryGamefileChanges(); // Client specific feature
+				setupAndMonitorBinaryGamefileChanges();
 			}
 		}
 		await diagnosePreprocessAndParse(textDocument);
