@@ -41,6 +41,8 @@ let el = document.getElementById('inputDialog');
 el.style.visibility = "hidden";
 let isPopulatingMap = true;
 
+let lowestZLevel = 0;
+let highestZLevel = 0;
 
 
 
@@ -77,13 +79,17 @@ mapCanvas.onNodeMoved = function (node) {
 //canvas.use_gradients = true; //set to true to render titlebar with gradients
 
 levelUp = function () {
-	currentLevel++;
-	refresh(lastMessage);
+	if(currentLevel<highestZLevel) {
+		currentLevel++;
+		refresh(lastMessage);	
+	}
 };
 
 levelDown = function () {
-	currentLevel--;
-	refresh(lastMessage);
+	if(currentLevel>lowestZLevel) {
+		currentLevel--;
+		refresh(lastMessage);
+	}
 };
 
 let config = {
@@ -497,6 +503,9 @@ function handleRoomNodes(payload) {
 				let maximumY = 0;
 				for (let i = 0; i < payload.objects.length; i++) {
 					const currentObject = payload.objects[i];
+					lowestZLevel = Math.min(lowestZLevel, currentObject.z);
+					highestZLevel = Math.max(highestZLevel,currentObject.z);
+
 					if (currentObject.z !== currentLevel) {
 						handleLater.push(currentObject);
 						continue;

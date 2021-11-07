@@ -231,7 +231,7 @@ export function getHtmlForWebview(context: ExtensionContext, webview: Webview, e
 				<meta charset="UTF-8">
 				<meta 
 					http-equiv="Content-Security-Policy" 
-					content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource}; img-src ${webview.cspSource} data: https:; " />
+					content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} data: https:; " />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link rel="stylesheet" type="text/css" href="${litegraphCssUri}" >
 				<script type="text/javascript" src="${litegraphScriptUri}" ></script>
