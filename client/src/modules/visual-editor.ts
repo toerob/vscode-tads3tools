@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ExtensionContext, Uri, Webview } from 'vscode';
-import { client, getLastChosenTextEditor, getUsingAdv3LiteStatus, resetPersistedPositions } from './extension';
+import { client, getLastChosenTextEditor, getUsingAdv3LiteStatus, resetPersistedPositions } from '../extension';
 
 export const visualEditorResponseHandlerMap = new Map();
 

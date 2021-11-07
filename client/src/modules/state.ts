@@ -1,5 +1,5 @@
 import { autorun, makeAutoObservable, observable, reaction } from "mobx";
-import { client } from './extension';
+import { client } from '../extension';
 
 class ExtensionStateStore {
 

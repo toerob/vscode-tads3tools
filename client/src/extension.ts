@@ -5,7 +5,7 @@
  * ------------------------------------------------------------------------------------------ */
 
 import { exec } from 'child_process';
-import { copyFileSync, createReadStream, createWriteStream, exists, existsSync, readFileSync, unlinkSync } from 'fs';
+import { copyFileSync, createReadStream, createWriteStream, exists, existsSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
 import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, TextEditorRevealType, CancellationError } from 'vscode';
@@ -15,18 +15,20 @@ import {
 	ServerOptions,
 	TransportKind
 } from 'vscode-languageclient/node';
-import { setupVisualEditorResponseHandler, visualEditorResponseHandlerMap, getHtmlForWebview } from './visual-editor';
-import { Tads3CompileErrorParser } from './tads3-error-parser';
-import { Subject, debounceTime, ignoreElements } from 'rxjs';
-import { LocalStorageService } from './local-storage-service';
-import { writeFileSync } from 'fs';
+import { setupVisualEditorResponseHandler, visualEditorResponseHandlerMap, getHtmlForWebview } from './modules/visual-editor';
+import { Tads3CompileErrorParser } from './modules/tads3-error-parser';
+import { Subject, debounceTime } from 'rxjs';
+import { LocalStorageService } from './modules/local-storage-service';
 import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
-import { validateCompilerPath, validateUserSettings } from './validations';
-import { extensionState } from './state';
-import { validateMakefile } from './validate-makefile';
+import { validateCompilerPath, validateUserSettings } from './modules/validations';
+import { extensionState } from './modules/state';
+import { validateMakefile } from './modules/validate-makefile';
+import { extractAllQuotes } from './modules/extractAllQuotes';
+import { createTemplateProject } from './modules/createTemplateProject';
+import { installTracker } from './modules/installTracker';
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -39,7 +41,7 @@ let storageManager: LocalStorageService;
 let selectedObject: DocumentSymbol | undefined;
 let lastChosenTextDocument: TextDocument | undefined;
 let lastChosenTextEditor: TextEditor;
-let isUsingAdv3Lite = false;
+export let isUsingAdv3Lite = false;
 let globalStoragePath: string;
 let extensionCacheDirectory: string;
 let currentTextDocument: TextDocument | undefined;
@@ -48,11 +50,11 @@ let extensionDownloadMap: Map<any, any>;
 let errorDiagnostics = [];
 let allFilesBeenProcessed = false;
 let serverProcessCancelTokenSource: CancellationTokenSource;
-let chosenMakefileUri: Uri | undefined;
+export let chosenMakefileUri: Uri | undefined;
 let preprocessedList: string[];
 
 let preprocessDocument: TextDocument;
-let makefileKeyMapValues = [];
+export let makefileKeyMapValues = [];
 
 let t3FileSystemWatcher: FileSystemWatcher = undefined;
 
@@ -65,6 +67,12 @@ export let client: LanguageClient;
 
 export function getUsingAdv3LiteStatus() {
 	return isUsingAdv3Lite;
+}
+export function setUsingAdv3LiteStatus(usingAdv3Lite) {
+	isUsingAdv3Lite = usingAdv3Lite;
+}
+export function getChosenMakefileUri(): Uri | undefined {
+	return chosenMakefileUri;
 }
 
 export function getProcessedFileList(): string[] {
@@ -96,6 +104,7 @@ export function activate(context: ExtensionContext) {
 
 	client = new LanguageClient('Tads3languageServer', 'Tads3 Language Server', serverOptions, clientOptions);
 	client.start();
+	client.info(`Tads3 Language Client Activates`);
 
 	storageManager = new LocalStorageService(context.workspaceState);
 
@@ -115,7 +124,6 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('tads3.analyzeTextAtPosition', () => analyzeTextAtPosition()));
 	context.subscriptions.push(commands.registerCommand('tads3.installTracker', () => installTracker(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.clearCache', () => clearCache(context)));
-
 
 	window.onDidChangeTextEditorSelection(e => {
 		lastChosenTextEditor = e.textEditor;
@@ -716,6 +724,12 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 			return false;
 		});
 		client.onNotification('symbolparsing/success', ([filePath, tracker, totalFiles, poolSize]) => {
+			if(allFilesBeenProcessed && !extensionState.isLongProcessingInAction()) {
+				if(tads3VisualEditorPanel) {
+					client.info(`Refreshing the map view`);
+					client.sendNotification('request/mapsymbols');
+				}
+			}
 			const filename = basename(Uri.parse(filePath).path);
 			progress.report({ message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}` });
 			// TODO: maybe show "stale data" indicator instead
@@ -924,58 +938,6 @@ async function initialParse() {
 	}
 }
 
-async function installTracker(context: ExtensionContext) {
-	const filePath = isUsingAdv3Lite ? '_gameTrackerAdv3Lite.t' : '_gameTrackerAdv3.t';
-	let trackerFileContents = readFileSync(Uri.joinPath(context.extensionUri, 'resources', filePath).fsPath).toString();
-	const keyvalue = makefileKeyMapValues?.find(keyvalue => keyvalue?.key === '-D' && keyvalue.value?.startsWith(`LANGUAGE`));
-	if (keyvalue) {
-		const languageValue = keyvalue.value?.split('=');
-		if (languageValue.length === 2) {
-			trackerFileContents = trackerFileContents.replace('<en_us.h>', `<${languageValue[1]}.h>`);
-		}
-	}
-
-
-	if (chosenMakefileUri) {
-		const workspaceFolder = dirname(chosenMakefileUri.fsPath);
-		if (workspaceFolder) {
-			const gameTrackerFilePath = path.join(workspaceFolder, filePath);
-			const isATrackerFileAlreadyCreated = existsSync(gameTrackerFilePath);
-			await workspace.openTextDocument(chosenMakefileUri.fsPath)
-				.then(doc => window.showTextDocument(doc, ViewColumn.Beside))
-				.then(async editor => {
-					await editor.edit((ed) => {
-						const trackerFile = isUsingAdv3Lite ? '_gameTrackerAdv3Lite' : '_gameTrackerAdv3';
-						const makefileText = editor.document.getText();
-						const isTrackerFileAlreadyIncluded = makefileText.includes(`-source ${trackerFile}`);
-						if (isTrackerFileAlreadyIncluded) {
-							return window.showWarningMessage(`Tracker file was already included in ${chosenMakefileUri.fsPath}`);
-						}
-						const idx = makefileText.lastIndexOf('-source');
-						const lastSourceRowPosition = editor.document.positionAt(idx);
-						const lineBelow = lastSourceRowPosition.translate(1).with({ character: 0 });
-						ed.insert(lineBelow, `-source ${trackerFile}\n`);
-						const includedFileRange = new Range(lineBelow.line, 0, lineBelow.line, 0);
-						editor.revealRange(includedFileRange);
-						return window.showInformationMessage(`Tracker file was included in ${chosenMakefileUri.fsPath}`);
-					});
-					await editor.document.save();
-				});
-
-
-			if (!isATrackerFileAlreadyCreated) {
-				await writeFileSync(gameTrackerFilePath, trackerFileContents, 'utf-8');
-				await workspace.openTextDocument(gameTrackerFilePath)
-					.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
-				window.showInformationMessage(`The tracker file (_game_tracker.t) has been added into the project's folder. `);
-				return;
-			}
-			window.showWarningMessage(`The tracker file (_game_tracker.t) is already in the project's folder. `);
-		}
-	}
-
-}
-
 async function clearCache(context: ExtensionContext) {
 	const userAnswer = await window.showInformationMessage(`This will clear all potential cache for the standard libraries adv3/adv3Lite. With the effect of all library files having to go through a full parse next time around.
 	Are you sure?`, { modal: true }, { title: 'Yes' }, { title: 'No' });
@@ -1004,77 +966,3 @@ async function selectMakefileWithDialog() {
 	}
 	return undefined;
 }
-
-async function createTemplateProject(context: ExtensionContext) {
-
-	const projectFolder: Uri[] = await window.showOpenDialog({
-		title: `Select which in which folder to place the project folder`,
-		openLabel: `Select folder)`,
-		canSelectFolders: true,
-		canSelectFiles: false,
-	});
-
-
-	if (projectFolder?.length > 0 && projectFolder[0] !== undefined) {
-		const firstWorkspaceFolder = projectFolder[0];
-
-
-		const makefileUri = Uri.joinPath(firstWorkspaceFolder, 'Makefile.t3m');
-		const gameFileUri = Uri.joinPath(firstWorkspaceFolder, 'gameMain.t');
-		const objFolderUri = Uri.joinPath(firstWorkspaceFolder, 'obj');
-
-		if (existsSync(makefileUri.fsPath) || existsSync(gameFileUri.fsPath)) {
-			const userAnswer = await window.showInformationMessage(
-				`Project already have either a Makefile.t3m or a gameMain.t, do you want to overwrite them with a fresh template?`,
-				{ title: 'Yes' }, { title: 'No' });
-			if (userAnswer === undefined || userAnswer.title === 'No') {
-				return;
-			}
-		}
-
-		const result = await window.showQuickPick(['adv3', 'adv3Lite'], { placeHolder: 'Project type' });
-		isUsingAdv3Lite = (result === 'adv3Lite' ? true : false);
-
-		const makefileResourceFilename = isUsingAdv3Lite ? 'Makefile-adv3Lite.t3m' : 'Makefile.t3m';
-		const gamefileResourceFilename = isUsingAdv3Lite ? 'gameMain-adv3Lite.t' : 'gameMain.t';
-
-		const makefileResourceFileUri = Uri.joinPath(context.extensionUri, 'resources', makefileResourceFilename);
-		const gamefileResourceFileUri = Uri.joinPath(context.extensionUri, 'resources', gamefileResourceFilename);
-
-		let makefileResourceFileContent = readFileSync(makefileResourceFileUri.fsPath).toString();
-		const gamefileResourceFileContent = readFileSync(gamefileResourceFileUri.fsPath).toString();
-
-		if (!existsSync('/usr/local/share/frobtads/tads3/include') && !existsSync('/usr/local/share/frobtads/tads3/lib')) {
-			makefileResourceFileContent = makefileResourceFileContent
-				.replace('-FI /usr/local/share/frobtads/tads3/include', '#-FI /usr/local/share/frobtads/tads3/include')
-				.replace('-FL /usr/local/share/frobtads/tads3/lib', '#-FL /usr/local/share/frobtads/tads3/lib');
-		}
-
-		ensureDirSync(objFolderUri.fsPath);
-		writeFileSync(makefileUri.fsPath, makefileResourceFileContent);
-		writeFileSync(gameFileUri.fsPath, '');
-
-		const gameFilecontent = new SnippetString(gamefileResourceFileContent);
-
-		await workspace.openTextDocument(gameFileUri.fsPath)
-			.then(doc => window.showTextDocument(doc))
-			.then(editor => editor.insertSnippet(gameFilecontent, new Position(0, 0)));
-	}
-}
-
-async function extractAllQuotes(context: ExtensionContext) {
-	const files = await window.showQuickPick(['All project files', 'current file']);
-	const types = await window.showQuickPick(['both', 'double', 'single']);
-
-	if (files.startsWith('current')) {
-		const text = window.activeTextEditor.document.getText();
-		const fsPath = window.activeTextEditor.document.uri.fsPath;
-		await client.sendRequest('request/extractQuotes', { types, text, fsPath });
-		return;
-	}
-	await client.sendRequest('request/extractQuotes', { types });
-
-
-}
-
-
