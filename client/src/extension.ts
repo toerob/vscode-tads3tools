@@ -319,7 +319,7 @@ async function setMakeFile() {
 		client.info(`No makefile, cannot parse document symbols. `);
 		return;
 	}
-	extensionState.setChosenMakefileUri(newMakefile)
+	extensionState.setChosenMakefileUri(newMakefile);
 
 	client.info(`Chosen makefile set to: ${basename(extensionState.getChosenMakefileUri().fsPath)}`);
 	const makefileDoc = await workspace.openTextDocument(extensionState.getChosenMakefileUri().fsPath);
