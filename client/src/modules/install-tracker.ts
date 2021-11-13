@@ -3,10 +3,11 @@ import * as path from 'path';
 import { dirname } from 'path';
 import { workspace, ExtensionContext, window, Uri, Range, ViewColumn } from 'vscode';
 import { writeFileSync } from 'fs';
-import { makefileKeyMapValues, getChosenMakefileUri, getUsingAdv3LiteStatus } from '../extension';
+import { makefileKeyMapValues } from '../extension';
+import { extensionState } from './state';
 
 export async function installTracker(context: ExtensionContext) {
-	const filePath = getUsingAdv3LiteStatus() ? '_gameTrackerAdv3Lite.t' : '_gameTrackerAdv3.t';
+	const filePath = extensionState.getUsingAdv3LiteStatus() ? '_gameTrackerAdv3Lite.t' : '_gameTrackerAdv3.t';
 	let trackerFileContents = readFileSync(Uri.joinPath(context.extensionUri, 'resources', filePath).fsPath).toString();
 	const keyvalue = makefileKeyMapValues?.find(keyvalue => keyvalue?.key === '-D' && keyvalue.value?.startsWith(`LANGUAGE`));
 	if (keyvalue) {
@@ -15,7 +16,7 @@ export async function installTracker(context: ExtensionContext) {
 			trackerFileContents = trackerFileContents.replace('<en_us.h>', `<${languageValue[1]}.h>`);
 		}
 	}
-	const chosenMakefileUri = getChosenMakefileUri();
+	const chosenMakefileUri = extensionState.getChosenMakefileUri();
 
 	if (chosenMakefileUri) {
 		const workspaceFolder = dirname(chosenMakefileUri.fsPath);
@@ -26,7 +27,7 @@ export async function installTracker(context: ExtensionContext) {
 				.then(doc => window.showTextDocument(doc, ViewColumn.Beside))
 				.then(async (editor) => {
 					await editor.edit((ed) => {
-						const trackerFile = getUsingAdv3LiteStatus() ? '_gameTrackerAdv3Lite' : '_gameTrackerAdv3';
+						const trackerFile = extensionState.getUsingAdv3LiteStatus() ? '_gameTrackerAdv3Lite' : '_gameTrackerAdv3';
 						const makefileText = editor.document.getText();
 						const isTrackerFileAlreadyIncluded = makefileText.includes(`-source ${trackerFile}`);
 						if (isTrackerFileAlreadyIncluded) {

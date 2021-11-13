@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'fs';
 import { workspace, ExtensionContext, window, Uri, Position, SnippetString } from 'vscode';
 import { writeFileSync } from 'fs';
 import { ensureDirSync } from 'fs-extra';
-import { isUsingAdv3Lite, setUsingAdv3LiteStatus } from '../extension';
+import { extensionState } from './state';
 
 export async function createTemplateProject(context: ExtensionContext) {
 
@@ -32,10 +32,12 @@ export async function createTemplateProject(context: ExtensionContext) {
 		}
 
 		const result = await window.showQuickPick(['adv3', 'adv3Lite'], { placeHolder: 'Project type' });
-		setUsingAdv3LiteStatus((result === 'adv3Lite' ? true : false));
+		const isAdv3LiteLibUsed = (result === 'adv3Lite' ? true : false);
+		extensionState.setUsingAdv3LiteStatus(isAdv3LiteLibUsed);
 
-		const makefileResourceFilename = isUsingAdv3Lite ? 'Makefile-adv3Lite.t3m' : 'Makefile.t3m';
-		const gamefileResourceFilename = isUsingAdv3Lite ? 'gameMain-adv3Lite.t' : 'gameMain.t';
+		
+		const makefileResourceFilename = isAdv3LiteLibUsed ? 'Makefile-adv3Lite.t3m' : 'Makefile.t3m';
+		const gamefileResourceFilename = isAdv3LiteLibUsed ? 'gameMain-adv3Lite.t' : 'gameMain.t';
 
 		const makefileResourceFileUri = Uri.joinPath(context.extensionUri, 'resources', makefileResourceFilename);
 		const gamefileResourceFileUri = Uri.joinPath(context.extensionUri, 'resources', gamefileResourceFilename);
