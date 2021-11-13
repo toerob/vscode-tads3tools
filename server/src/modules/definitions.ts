@@ -1,15 +1,10 @@
-import { DefinitionLink, LocationLink, TextDocuments } from 'vscode-languageserver';
-import { connection, preprocessedFilesCacheMap } from '../server';
+import { LocationLink, TextDocuments } from 'vscode-languageserver';
 import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
 import { getWordAtPosition, withinQuote } from './text-utils';
 import { DefinitionParams, Location, Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { SymbolKind } from 'vscode-languageserver';
-import { CharStreams, CommonTokenStream } from 'antlr4ts';
-import { Tads3Lexer } from '../parser/Tads3Lexer';
-import { Tads3Parser } from '../parser/Tads3Parser';
-import { Position } from 'vscode';
 
 const interpolatedExpressionRegExp = /[<][<](.*)[>][>]/g;
 

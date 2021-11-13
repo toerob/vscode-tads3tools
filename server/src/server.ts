@@ -14,8 +14,7 @@ import {
 	TextDocumentSyncKind,
 	InitializeResult,
 	CancellationTokenSource,
-	SymbolKind,
-	NotificationType} from 'vscode-languageserver/node';
+	SymbolKind} from 'vscode-languageserver/node';
 
 import { Tads3SymbolManager } from './modules/symbol-manager';
 import { onDocumentSymbol } from './modules/symbols';
@@ -31,6 +30,7 @@ import { tokenizeQuotesWithIndex } from './modules/text-utils';
 import { onDocumentLinks } from './modules/links';
 import { onHover } from './modules/hover';
 import { CaseInsensitiveMap } from './modules/CaseInsensitiveMap';
+import { onWorkspaceSymbol } from './modules/workspace-symbols';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
@@ -82,6 +82,7 @@ connection.onInitialize((params: InitializeParams) => {
 	const result: InitializeResult = {
 		capabilities: {
 			documentSymbolProvider: true,
+			workspaceSymbolProvider: true,
 			referencesProvider: false, // TODO: need to fix the row synchronization issue
 			definitionProvider: true,
 			documentLinkProvider: {
@@ -246,6 +247,8 @@ connection.onDidChangeWatchedFiles(_change => {
 	connection.console.log('We received an file change event');
 });
 
+connection.onWorkspaceSymbol(async (handler) => onWorkspaceSymbol(handler, documents, symbolManager));
+
 connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, documents, symbolManager));
 //connection.onReferences(async (handler) => onReferences(handler,documents, symbolManager));
 connection.onDefinition(async (handler) => onDefinition(handler,documents, symbolManager));
@@ -359,5 +362,3 @@ function parseDirection(directionName: any): string|undefined {
 	return undefined;
 	//throw new Error(`Not a valid direction`);
 }
-
-

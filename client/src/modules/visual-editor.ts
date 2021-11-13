@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ExtensionContext, Uri, Webview } from 'vscode';
-import { client, getLastChosenTextEditor, getUsingAdv3LiteStatus, resetPersistedPositions } from './extension';
+import { client, getLastChosenTextEditor, resetPersistedPositions } from '../extension';
+import { extensionState } from './state';
 
 export const visualEditorResponseHandlerMap = new Map();
 
@@ -174,15 +175,10 @@ export function onDidAddRoom(payload, persistedObjectPositions) {
 			const lastLine = editorOfChoice.document.lineCount - 1;
 			let lastRange = editorOfChoice.document.lineAt(lastLine).range;
 			lastRange = editorOfChoice.document.validateRange(lastRange);
-			// TODO: use Snippet?
-			// TODO: Trigger same GUI in maprenderer as when changing title
+
 			const superTypes = 'Room';
 
-
-			// TODO: if using adv3Lite
-
-
-			const str = getUsingAdv3LiteStatus() ?
+			const str = extensionState.getUsingAdv3LiteStatus() ?
 				`\n${camelCasedName}: ${superTypes} '${payload.name}'\n;`
 				: `\n${camelCasedName}: ${superTypes} '${payload.name}' '${payload.name}'\n;`;
 
@@ -231,7 +227,7 @@ export function getHtmlForWebview(context: ExtensionContext, webview: Webview, e
 				<meta charset="UTF-8">
 				<meta 
 					http-equiv="Content-Security-Policy" 
-					content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource}; img-src ${webview.cspSource} data: https:; " />
+					content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} data: https:; " />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link rel="stylesheet" type="text/css" href="${litegraphCssUri}" >
 				<script type="text/javascript" src="${litegraphScriptUri}" ></script>

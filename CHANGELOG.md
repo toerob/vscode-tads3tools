@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0-alpha
+
+### Added
+  - A workspace symbol provider is added. You can now use the key combination CTRL-T and use fuzzy search to locate a symbol located in any file.
+  - Now the visual map, if opened, auto redraws itself on each new save that leads to a successful parse.
+  - A warning dialog is shown when the user tries to compile the project without setting -Fy or -Fo in the makefile
+
+  Thank you John Ziegler for bringing up the idea of a workspace symbol provider!
+
+### Fixed
+  - Fixed an issue that caused a dialog to select a tads3 Makefile to appear in other languages besides tads3
+  - Fixed an error that was caused by cancelling the create new tads3 project dialog
+  - Expand Content-Security-Policy to allow inline script (so map level buttons can used)
+  - Map levels can only be changed to existing planes
+
+# Changelog
+
 ## 0.2.0-alpha
 
 ### Added

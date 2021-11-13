@@ -1,5 +1,5 @@
 import { window, workspace } from 'vscode';
-import { runCommand } from './extension';
+import { runCommand } from "./run-command";
 
 export const versionRegexp = new RegExp(`TADS Compiler (.*) Copyright `);
 

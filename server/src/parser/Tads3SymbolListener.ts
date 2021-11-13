@@ -3,7 +3,6 @@ import { ObjectDeclarationContext, PropertySetContext, PropertyContext, Function
 import { ScopedEnvironment } from './ScopedEnvironment';
 import { CompletionItem, DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { Range } from 'vscode-languageserver';
-import { ParseTree } from 'antlr4ts/tree/ParseTree';
 import { Interval } from 'antlr4ts/misc/Interval';
 
 // TODO: Maybe much easier to just keep a map instead of an object like this?
