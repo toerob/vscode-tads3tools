@@ -7,6 +7,8 @@
   - Now the visual map, if opened, auto redraws itself on each new save that leads to a successful parse.
   - A warning dialog is shown when the user tries to compile the project without setting -Fy or -Fo in the makefile
 
+  Thank you John Ziegler for bringing up the idea of a workspace symbol provider!
+
 ### Fixed
   - Fixed an issue that caused a dialog to select a tads3 Makefile to appear in other languages besides tads3
   - Fixed an error that was caused by cancelling the create new tads3 project dialog
