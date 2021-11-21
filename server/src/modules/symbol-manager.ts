@@ -1,4 +1,5 @@
-import { Range, DocumentSymbol, Position, SymbolKind } from 'vscode-languageserver';
+import { Range, DocumentSymbol, Position, SymbolKind, SymbolInformation } from 'vscode-languageserver';
+import { URI } from 'vscode-uri';
 import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 
 export class Tads3SymbolManager {
@@ -6,10 +7,13 @@ export class Tads3SymbolManager {
 	keywords: Map<string, Map<string, Range[]>>;
 	additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
 	inheritanceMap: Map<string, string> = new Map();
+	
+	onWindowsPlatform: boolean  = false;
 
 	constructor() {
 		// Windows doesn't recognize case differences in file paths, therefore we need to use case insensitive maps:
-		if (process.platform === 'win32') {
+		this.onWindowsPlatform = process.platform === 'win32';
+		if (this.onWindowsPlatform) {
 			this.symbols = new CaseInsensitiveMap();
 			this.keywords = new CaseInsensitiveMap();
 		} else {
@@ -68,15 +72,19 @@ export class Tads3SymbolManager {
 		return symbolSearchResult;
 	}
 
-	/*findDocumentForSymbol(name: string) {
-		const symbolSearchResult = this.findSymbols(name);
-		if(symbolSearchResult) {
-			const comment = symbolSearchResult[0]? this.getAdditionalProperties(symbolSearchResult[0].symbol): undefined;
-			return comment;
-		} else {
-			return;
+	getAllWorkspaceSymbols(): SymbolInformation[] {
+		const symbolSearchResult: SymbolInformation[] = [];
+		for (const filePath of this.symbols.keys()) {
+			const fp = this.onWindowsPlatform ? URI.file(filePath)?.path : filePath; // On Windows we need to convert this path
+			const fileLocalSymbols = flattenTreeToSymbolInformationArray(fp, this.symbols.get(filePath) ?? [])
+			if (fileLocalSymbols) {
+				for (const fileLocalSymbol of fileLocalSymbols) {
+					symbolSearchResult.push(fileLocalSymbol);
+				}
+			}
 		}
-	}*/
+		return symbolSearchResult;
+	}
 
 	getTemplates(): Set<DocumentSymbol> {
 		const templates = new Set<DocumentSymbol>();
@@ -162,6 +170,21 @@ export function addRecursively(localSymbols: DocumentSymbol[], basketOfSymbols: 
 		basketOfSymbols.push(symbol);
 		if (symbol.children) {
 			addRecursively(symbol.children, basketOfSymbols);
+		}
+	}
+}
+
+export function flattenTreeToSymbolInformationArray(filepath:string, localSymbols: DocumentSymbol[]) : SymbolInformation[] {
+	const basketOfSymbols: SymbolInformation[] = [];
+	addSymbolInformationRecursively(filepath, localSymbols, basketOfSymbols);
+	return basketOfSymbols;
+}
+
+export function addSymbolInformationRecursively(filepath:string, localSymbols: DocumentSymbol[], basketOfSymbols: any, containerName?: string) {
+	for (const symbol of localSymbols) {
+		basketOfSymbols.push(SymbolInformation.create(symbol.name, symbol.kind, symbol.range, filepath, containerName));
+		if (symbol.children) {
+			addSymbolInformationRecursively(filepath, symbol.children, basketOfSymbols, symbol.name);
 		}
 	}
 }
