@@ -32,6 +32,7 @@ import { connectRoomsWithProperties } from './modules/map-editor-sync';
 import { runCommand } from './modules/run-command';
 import { analyzeTextAtPosition } from './modules/commands/analyzeTextAtPosition';
 import { findAndSelectMakefileUri } from './modules/findAndSelectMakefileUri';
+import { addFileToProject } from './modules/addFileToProject';
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -102,6 +103,8 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 
 	context.subscriptions.push(commands.registerCommand('tads3.createTads3TemplateProject', () => createTemplateProject(context)));
+	context.subscriptions.push(commands.registerCommand('tads3.addFileToProject', () => addFileToProject(context)));
+
 	context.subscriptions.push(commands.registerCommand('tads3.setMakefile', setMakeFile));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
