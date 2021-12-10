@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0-alpha
+
+### Added
+  - A command to add files and create makefile entries has been added
+
+### Fixed
+  - Fixed an issue with definitions of propertyset that weren't displayed correctly
+  - Fixed issue with the errors parser so it now displays the correct source file of the error
+  - Fixed issue so that all symbols are found with the workspace symbol search (CTRL-T)
+
 ## 0.3.0-alpha
 
 ### Added
