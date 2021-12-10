@@ -247,13 +247,26 @@ export class Tads3SymbolListener implements Tads3Listener {
 	}
 
 	enterPropertySet(ctx: PropertySetContext) {
-		let name = '';
-		const firstParameter = ctx.paramsWithWildcard()?._parameters[0];
-		if (firstParameter && firstParameter.children) {
-			name = firstParameter.children[0]?.toString();
-			name = name.substr(1, name.length - 2);
+		if(ctx._prefix === undefined) {
+			const firstParameter = ctx.paramsWithWildcard()?._parameters[0];
+			if (firstParameter && firstParameter.children) {
+				let name = firstParameter.children[0]?.toString();
+				if(name.length>2 && name.startsWith("'") && name .endsWith("'")) {
+					name = name.substring(1,name.length-1) ?? '';
+				}
+				this.currentPropertySetName = name;
+			}
+		} else {
+			let name = ctx._prefix?.text ?? '';
+			if(name.length>2 && name.startsWith("'") && name .endsWith("'")) {
+				name = name.substring(1,name.length-1);
+			}
+			const parameters = ctx.paramsWithWildcard()?.text
+			if(parameters) {
+				name += '(' +(ctx.paramsWithWildcard()?.text ?? '') + ')';
+			}
+			this.currentPropertySetName = name;
 		}
-		this.currentPropertySetName = name;
 	}
 	
 	enterMemberExpr(ctx: MemberExprContext) {
