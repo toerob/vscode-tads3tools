@@ -31,6 +31,8 @@ import { onDocumentLinks } from './modules/links';
 import { onHover } from './modules/hover';
 import { CaseInsensitiveMap } from './modules/CaseInsensitiveMap';
 import { onWorkspaceSymbol } from './modules/workspace-symbols';
+import { getDefineMacrosMap, markFileToBeCheckedForMacroDefinitions } from './parser/preprocessor';
+import { URI } from 'vscode-uri';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
@@ -93,6 +95,8 @@ connection.onInitialize((params: InitializeParams) => {
 			},
 			textDocumentSync: {
 				openClose: true,
+				willSave: true,
+				save: true,
 				change: TextDocumentSyncKind.Full,
 			},
 			hoverProvider: true,
@@ -186,7 +190,6 @@ connection.onInitialized(() => {
 			connection.console.error(`Cannot connect rooms: ${fromRoom.symbol?.name} with ${toRoom.symbol?.name} via ${validDirection1}/${validDirection2}`);
 		}
 	});
-
 });
 
 // The tads3 global settings
@@ -224,6 +227,7 @@ connection.onDidChangeConfiguration(change => {
 	documents.all().forEach(validateTextDocument);
 });
 
+
 // Only keep settings for open documents
 documents.onDidClose(e => {
 	documentSettings.delete(e.document.uri);
@@ -233,9 +237,12 @@ documents.onDidClose(e => {
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(async params => {
 	validateTextDocument(params.document);
-
 });
 
+documents.onWillSave(async params => {
+	const uri = URI.parse(params.document.uri);
+	markFileToBeCheckedForMacroDefinitions(uri.fsPath);
+});
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	const diagnostics: Diagnostic[] = [];

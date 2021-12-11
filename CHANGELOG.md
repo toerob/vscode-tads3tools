@@ -4,6 +4,7 @@
 
 ### Added
   - A command to add files and create makefile entries has been added
+  - Macro definitions are now also indexed and can be peeked upon and opened up with CTRL-click.
 
 ### Fixed
   - Fixed an issue with definitions of propertyset that weren't displayed correctly
