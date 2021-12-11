@@ -16,6 +16,9 @@ export async function addFileToProject(context: ExtensionContext) {
 		prompt: `Type (the relative location and) name of the new file, e.g: locations.t, locations/place.t etc... `,
 		validateInput: (str) => str.match(/^(?:([a-zA-Z][a-zA-Z0-9.\-_]*)\/)*[a-zA-Z][a-zA-Z0-9.\-_]*$/) ? null : `${str} is not a valid filename`
 	})
+	if(userInput === undefined) {
+		return;
+	}
 
 	// Add default .t extension if missing
 	if (!userInput.match(/.*[.][th]/)) {
