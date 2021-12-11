@@ -9,6 +9,7 @@
   - Fixed an issue with definitions of propertyset that weren't displayed correctly
   - Fixed issue with the errors parser so it now displays the correct source file of the error
   - Fixed issue so that all symbols are found with the workspace symbol search (CTRL-T)
+  - Fixed issue that was caused by auto closing quote pairs within strings
 
 ## 0.3.0-alpha
 
