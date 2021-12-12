@@ -1364,11 +1364,6 @@
   "resolved" "https://registry.npmjs.org/delegates/-/delegates-1.0.0.tgz"
   "version" "1.0.0"
 
-"denodeify@^1.2.1":
-  "integrity" "sha1-OjYof1A05pnnV3kBBSwubJQlFjE="
-  "resolved" "https://registry.npmjs.org/denodeify/-/denodeify-1.2.1.tgz"
-  "version" "1.2.1"
-
 "detect-libc@^1.0.3":
   "integrity" "sha1-+hN8S9aY7fVc1c0CrFWfkaTEups="
   "resolved" "https://registry.npmjs.org/detect-libc/-/detect-libc-1.0.3.tgz"
@@ -2755,7 +2750,7 @@
   "resolved" "https://registry.npmjs.org/lodash.truncate/-/lodash.truncate-4.4.2.tgz"
   "version" "4.4.2"
 
-"lodash@^4.17.15", "lodash@^4.7.0":
+"lodash@^4.7.0":
   "integrity" "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="
   "resolved" "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
   "version" "4.17.21"
@@ -3040,24 +3035,6 @@
     "prelude-ls" "^1.2.1"
     "type-check" "^0.4.0"
     "word-wrap" "^1.2.3"
-
-"os-homedir@^1.0.0":
-  "integrity" "sha1-/7xJiDNuDoM94MFox+8VISGqf7M="
-  "resolved" "https://registry.npmjs.org/os-homedir/-/os-homedir-1.0.2.tgz"
-  "version" "1.0.2"
-
-"os-tmpdir@^1.0.0":
-  "integrity" "sha1-u+Z0BseaqFxc/sdm/lc0VV36EnQ="
-  "resolved" "https://registry.npmjs.org/os-tmpdir/-/os-tmpdir-1.0.2.tgz"
-  "version" "1.0.2"
-
-"osenv@^0.1.3":
-  "integrity" "sha512-0CWcCECdMVc2Rw3U5w9ZjqX6ga6ubk1xDVKxtBQPK7wis/0F2r9T6k4ydGYhecl7YUBxBVxhL5oisPsNxAPe2g=="
-  "resolved" "https://registry.npmjs.org/osenv/-/osenv-0.1.5.tgz"
-  "version" "0.1.5"
-  dependencies:
-    "os-homedir" "^1.0.0"
-    "os-tmpdir" "^1.0.0"
 
 "p-limit@^2.2.0":
   "integrity" "sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w=="
@@ -3853,10 +3830,10 @@
   dependencies:
     "punycode" "^2.1.0"
 
-"url-join@^1.1.0":
-  "integrity" "sha1-dBxsL0WWxIMNZxhGCSDQySIC3Hg="
-  "resolved" "https://registry.npmjs.org/url-join/-/url-join-1.1.0.tgz"
-  "version" "1.1.0"
+"url-join@^4.0.1":
+  "integrity" "sha512-jk1+QP6ZJqyOiuEI9AEWQfju/nB2Pw466kbA0LEZljHwKeMgd9WrAEgEGxjPDD2+TNbbb37rTyhEfrCXfuKXnA=="
+  "resolved" "https://registry.npmjs.org/url-join/-/url-join-4.0.1.tgz"
+  "version" "4.0.1"
 
 "util-deprecate@^1.0.1", "util-deprecate@~1.0.1":
   "integrity" "sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8="
@@ -3877,31 +3854,28 @@
     "convert-source-map" "^1.6.0"
     "source-map" "^0.7.3"
 
-"vsce@^1.96.3":
-  "integrity" "sha512-98oKQKKRp7J/vTIk1cuzom5cezZpYpRHs3WlySdsrTCrAEipB/HvaPTc4VZ3hGZHzHXS9P5p2L0IllntJeXwiQ=="
-  "resolved" "https://registry.npmjs.org/vsce/-/vsce-1.103.1.tgz"
-  "version" "1.103.1"
+"vsce@^2.5.1":
+  "integrity" "sha512-vJ+xY93Wv3NhgeriMyIC2oMA+niifOI9XGIqEToIq/rFRoQnXlmO4PSyis/OxBl9hw8OKKC/VcI9CijfFufEkw=="
+  "resolved" "https://registry.npmjs.org/vsce/-/vsce-2.5.1.tgz"
+  "version" "2.5.1"
   dependencies:
     "azure-devops-node-api" "^11.0.1"
     "chalk" "^2.4.2"
     "cheerio" "^1.0.0-rc.9"
     "commander" "^6.1.0"
-    "denodeify" "^1.2.1"
     "glob" "^7.0.6"
     "hosted-git-info" "^4.0.2"
     "keytar" "^7.7.0"
     "leven" "^3.1.0"
-    "lodash" "^4.17.15"
     "markdown-it" "^10.0.0"
     "mime" "^1.3.4"
     "minimatch" "^3.0.3"
-    "osenv" "^0.1.3"
     "parse-semver" "^1.1.1"
     "read" "^1.0.7"
     "semver" "^5.1.0"
     "tmp" "^0.2.1"
     "typed-rest-client" "^1.8.4"
-    "url-join" "^1.1.0"
+    "url-join" "^4.0.1"
     "xml2js" "^0.4.23"
     "yauzl" "^2.3.1"
     "yazl" "^2.2.2"
