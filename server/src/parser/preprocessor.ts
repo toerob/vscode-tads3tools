@@ -216,9 +216,6 @@ function mapMacroDefinitions(filename: string) {
 				const result = defineRegExp.exec(row);
 				if(result !== null && result?.length >= 2) {
 					let macroDefAdditionalRows = 0;
-					if(row.includes('objFo')) {
-						console.error();
-					}
 					for(let nextRowIdx = idx; nextRowIdx<rows.length;nextRowIdx++) {
 						if(rows[nextRowIdx].endsWith('\\')) {
 							macroDefAdditionalRows++;
