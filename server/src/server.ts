@@ -31,14 +31,15 @@ import { onDocumentLinks } from './modules/links';
 import { onHover } from './modules/hover';
 import { CaseInsensitiveMap } from './modules/CaseInsensitiveMap';
 import { onWorkspaceSymbol } from './modules/workspace-symbols';
-import { getDefineMacrosMap, markFileToBeCheckedForMacroDefinitions } from './parser/preprocessor';
+import { markFileToBeCheckedForMacroDefinitions } from './parser/preprocessor';
 import { URI } from 'vscode-uri';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
 
+const onWindowsPlatform = (process.platform === 'win32');
 
-export const preprocessedFilesCacheMap = (process.platform === 'win32')? new CaseInsensitiveMap<string, string>() : new Map<string, string>();
+export const preprocessedFilesCacheMap = onWindowsPlatform? new CaseInsensitiveMap<string, string>() : new Map<string, string>();
 
 export const symbolManager = new Tads3SymbolManager();
 export const mapper = new MapObjectManager(symbolManager);
@@ -211,6 +212,8 @@ const defaultSettings: Tads3Settings = {
 	lib: "/usr/local/share/frobtads/tads3/lib/",
 };
 
+
+
 let globalSettings: Tads3Settings = defaultSettings;
 
 // Cache the settings of all open documents
@@ -240,8 +243,8 @@ documents.onDidChangeContent(async params => {
 });
 
 documents.onWillSave(async params => {
-	const uri = URI.parse(params.document.uri);
-	markFileToBeCheckedForMacroDefinitions(uri.fsPath);
+	const fp = URI.parse(params.document.uri).path ;
+	markFileToBeCheckedForMacroDefinitions(fp);
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
@@ -249,13 +252,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
-
-connection.onDidChangeWatchedFiles(_change => {
-	connection.console.log('We received an file change event');
-});
-
 connection.onWorkspaceSymbol(async (handler) => onWorkspaceSymbol(handler, documents, symbolManager));
-
 connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, documents, symbolManager));
 //connection.onReferences(async (handler) => onReferences(handler,documents, symbolManager));
 connection.onDefinition(async (handler) => onDefinition(handler,documents, symbolManager));

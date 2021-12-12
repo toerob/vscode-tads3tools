@@ -2,11 +2,13 @@
 import { exec } from 'child_process';
 import { readFile, readFileSync } from 'fs';
 import { URI } from 'vscode-uri';
-import { connection, documents, preprocessedFilesCacheMap } from '../server';
+import { CaseInsensitiveSet } from '../modules/CaseInsensitiveSet';
+import { connection, preprocessedFilesCacheMap } from '../server';
 
 const rowsMap = new Map<string, number>();
 const defineMacrosMap = new Map();
-const macrosChecked = new Set();
+const onWindowsPlatform = (process.platform === 'win32');
+const macrosChecked = (onWindowsPlatform)? new CaseInsensitiveSet() : new Set();
 
 export function getDefineMacrosMap(): Map<string, any> {
 	return defineMacrosMap;
@@ -16,7 +18,7 @@ export function markFileToBeCheckedForMacroDefinitions(uri: string) {
 	macrosChecked.delete(uri);
 }
 
-const defineRegExp = new RegExp(/^\s*[#]define\s+([^(\n]+)/);
+const defineRegExp = new RegExp(/^\s*[#]define\s+([^\(\s\n]+)[^(\n]*/);
 
 
 export function runCommand(command: string) {
@@ -189,8 +191,6 @@ function postProcessPreprocessedResult(unprocessedRowsMap: Map<string, number>) 
 	connection.console.log(`Postprocessing row lines done in ${elapsedTime} ms`);
 }
 
-
-
 /**
  * Determine if the file should be checked for define macros
  * This preferably done once for library files and each time 
@@ -200,37 +200,39 @@ function postProcessPreprocessedResult(unprocessedRowsMap: Map<string, number>) 
  * @returns 
  */
 function isFileDefinesToBeProcess(filename: string) {
-	return !macrosChecked?.has(filename);
+	const uriPath = onWindowsPlatform? URI.file(filename).path : filename; // Optimize for linux
+	return !macrosChecked?.has(uriPath);
 }
 
 function mapMacroDefinitions(filename: string) {
-	const uri = URI.parse(filename);
-	const fp = uri.fsPath;
+	const fp = onWindowsPlatform? URI.file(filename).fsPath: filename;
 	readFile(fp, (err, data) => {
 		if(!err) {
+			const fp = onWindowsPlatform? URI.file(filename).path : filename;
 			let rowIdx = 0;
 			const text = data.toString();
 			const rows = text.split(/\r?\n/) ?? [];
 			rows.forEach((row, idx)=> {
 				const result = defineRegExp.exec(row);
 				if(result !== null && result?.length >= 2) {
-					let macroRows = 1;
-					if(row.includes('objFor')) {
+					let macroDefAdditionalRows = 0;
+					if(row.includes('objFo')) {
 						console.error();
 					}
 					for(let nextRowIdx = idx; nextRowIdx<rows.length;nextRowIdx++) {
 						if(rows[nextRowIdx].endsWith('\\')) {
-							macroRows++;
+							macroDefAdditionalRows++;
 						} else {
 							break;
 						}
 					}
-					defineMacrosMap.set(result[1], {row: rowIdx, uri: fp, endLine: rowIdx+macroRows});
+					defineMacrosMap.set(result[1], {row: rowIdx, uri: fp, endLine: rowIdx+macroDefAdditionalRows});
 				}
 				rowIdx++;
-			})
+			});
+			macrosChecked.add(fp); // Cache result, only refresh on file changes			
+			connection.console.info(`${fp} scanned for macro definitions`);
 		}
-		connection.console.info(`${uri.fsPath} scanned for macro definitions`);
-		macrosChecked.add(uri.fsPath); // Cache result, only refresh on file changes
+
 	});
 }
