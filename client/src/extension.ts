@@ -15,7 +15,7 @@ import {
 	TransportKind
 } from 'vscode-languageclient/node';
 import { setupVisualEditorResponseHandler, visualEditorResponseHandlerMap, getHtmlForWebview } from './modules/visual-editor';
-import { Tads3CompileErrorParser } from './modules/tads3-error-parser';
+import { parseAndPopulateErrors } from './modules/tads3-error-parser';
 import { Subject, debounceTime } from 'rxjs';
 import { LocalStorageService } from './modules/local-storage-service';
 import { ensureDirSync } from 'fs-extra';
@@ -32,10 +32,10 @@ import { connectRoomsWithProperties } from './modules/map-editor-sync';
 import { runCommand } from './modules/run-command';
 import { analyzeTextAtPosition } from './modules/commands/analyzeTextAtPosition';
 import { findAndSelectMakefileUri } from './modules/findAndSelectMakefileUri';
+import { addFileToProject } from './modules/addFileToProject';
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
-const tads3CompileErrorParser = new Tads3CompileErrorParser();
 
 const preprocessedFilesMap: Map<string, string> = new Map();
 const persistedObjectPositions = new Map();
@@ -102,6 +102,8 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 
 	context.subscriptions.push(commands.registerCommand('tads3.createTads3TemplateProject', () => createTemplateProject(context)));
+	context.subscriptions.push(commands.registerCommand('tads3.addFileToProject', () => addFileToProject(context)));
+
 	context.subscriptions.push(commands.registerCommand('tads3.setMakefile', setMakeFile));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
@@ -588,8 +590,7 @@ async function diagnose(textDocument: TextDocument) {
 }
 
 function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocument) {
-	errorDiagnostics = tads3CompileErrorParser.parse(resultOfCompilation, textDocument);
-	collection.set(textDocument.uri, errorDiagnostics);
+	errorDiagnostics = parseAndPopulateErrors(resultOfCompilation, textDocument, collection);
 }
 
 async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefined = undefined) {

@@ -5,6 +5,8 @@ A language server/client for the Tads3 programming language and tailored made fo
 
 Prioritized to work on **linux** and **mac** platform but also supported on **windows**.
 
+<img src="screenshots/vscode-tads3tools-screenshot.png">
+
 ## First time users
 
 Install the extension via the marketplace by opening the extension tab within vscode and search for its partial/full name, select it and install.  

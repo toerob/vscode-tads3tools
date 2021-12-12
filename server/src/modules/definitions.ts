@@ -5,6 +5,7 @@ import { DefinitionParams, Location, Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { SymbolKind } from 'vscode-languageserver';
+import { getDefineMacrosMap } from '../parser/preprocessor';
 
 const interpolatedExpressionRegExp = /[<][<](.*)[>][>]/g;
 
@@ -103,6 +104,10 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 						locations.push(Location.create(filePath, symbol.range));
 					}
 				}
+			}
+			const macro = getDefineMacrosMap().get(symbolName);
+			if(macro) {
+				locations.push(Location.create(macro.uri, Range.create(macro.row,0, macro.endLine, macro.row + symbolName.length)));
 			}
 		}
 	}

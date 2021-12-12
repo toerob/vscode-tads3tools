@@ -31,12 +31,15 @@ import { onDocumentLinks } from './modules/links';
 import { onHover } from './modules/hover';
 import { CaseInsensitiveMap } from './modules/CaseInsensitiveMap';
 import { onWorkspaceSymbol } from './modules/workspace-symbols';
+import { markFileToBeCheckedForMacroDefinitions } from './parser/preprocessor';
+import { URI } from 'vscode-uri';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
 
+const onWindowsPlatform = (process.platform === 'win32');
 
-export const preprocessedFilesCacheMap = (process.platform === 'win32')? new CaseInsensitiveMap<string, string>() : new Map<string, string>();
+export const preprocessedFilesCacheMap = onWindowsPlatform? new CaseInsensitiveMap<string, string>() : new Map<string, string>();
 
 export const symbolManager = new Tads3SymbolManager();
 export const mapper = new MapObjectManager(symbolManager);
@@ -93,6 +96,8 @@ connection.onInitialize((params: InitializeParams) => {
 			},
 			textDocumentSync: {
 				openClose: true,
+				willSave: true,
+				save: true,
 				change: TextDocumentSyncKind.Full,
 			},
 			hoverProvider: true,
@@ -186,7 +191,6 @@ connection.onInitialized(() => {
 			connection.console.error(`Cannot connect rooms: ${fromRoom.symbol?.name} with ${toRoom.symbol?.name} via ${validDirection1}/${validDirection2}`);
 		}
 	});
-
 });
 
 // The tads3 global settings
@@ -208,6 +212,8 @@ const defaultSettings: Tads3Settings = {
 	lib: "/usr/local/share/frobtads/tads3/lib/",
 };
 
+
+
 let globalSettings: Tads3Settings = defaultSettings;
 
 // Cache the settings of all open documents
@@ -224,6 +230,7 @@ connection.onDidChangeConfiguration(change => {
 	documents.all().forEach(validateTextDocument);
 });
 
+
 // Only keep settings for open documents
 documents.onDidClose(e => {
 	documentSettings.delete(e.document.uri);
@@ -233,22 +240,19 @@ documents.onDidClose(e => {
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(async params => {
 	validateTextDocument(params.document);
-
 });
 
+documents.onWillSave(async params => {
+	const fp = URI.parse(params.document.uri).path ;
+	markFileToBeCheckedForMacroDefinitions(fp);
+});
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 	const diagnostics: Diagnostic[] = [];
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
-
-connection.onDidChangeWatchedFiles(_change => {
-	connection.console.log('We received an file change event');
-});
-
 connection.onWorkspaceSymbol(async (handler) => onWorkspaceSymbol(handler, documents, symbolManager));
-
 connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, documents, symbolManager));
 //connection.onReferences(async (handler) => onReferences(handler,documents, symbolManager));
 connection.onDefinition(async (handler) => onDefinition(handler,documents, symbolManager));

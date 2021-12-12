@@ -80,6 +80,11 @@
 				"category": "Edits"
 			},
 			{
+				"command": "tads3.addFileToProject",
+				"title": "Tads3 command: Adds a new file to the project",
+				"category": "Edits"
+			},
+			{
 				"command": "tads3.extractAllQuotes",
 				"title": "Tads3 command: extract unique strings from source code",
 				"category": "Editor"
