@@ -12,6 +12,16 @@
   - Fixed issue so that all symbols are found with the workspace symbol search (CTRL-T)
   - Fixed issue that was caused by auto closing quote pairs within strings
 
+  Many thanks to John Ziegler for the extensive bug reporting!
+
+### Notes
+
+ - If earlier versions has been used the library cache might need be cleared, or you will still suffer from numerical artefacts in the outliner on propertyset symbols.
+
+   - Run the command with ctrl-shift-P: "Tads3 command: Clear cache for standard libraries adv3/adv3Lite."
+   - Either: restart vscode, or run the following command with ctrl-shift-P: "Tads3 command: Set which makefile (.t3m)..." (this will trigger a complete reparse)
+
+
 ## 0.3.0-alpha
 
 ### Added
