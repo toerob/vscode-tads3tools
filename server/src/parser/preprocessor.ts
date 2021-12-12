@@ -18,7 +18,7 @@ export function markFileToBeCheckedForMacroDefinitions(uri: string) {
 	macrosChecked.delete(uri);
 }
 
-const defineRegExp = new RegExp(/^\s*[#]define\s+([^\(\s\n]+)[^(\n]*/);
+const defineRegExp = new RegExp(/^\s*[#]\s*define\s+([^\(\s\n]+)[^(\n]*/);
 
 
 export function runCommand(command: string) {
