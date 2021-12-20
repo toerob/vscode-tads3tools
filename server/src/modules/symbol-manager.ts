@@ -1,5 +1,6 @@
 import { Range, DocumentSymbol, Position, SymbolKind, SymbolInformation } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
+import { filterForLibraryFiles } from '../parse-workers-manager';
 import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 
 export class Tads3SymbolManager {
@@ -72,9 +73,20 @@ export class Tads3SymbolManager {
 		return symbolSearchResult;
 	}
 
-	getAllWorkspaceSymbols(): SymbolInformation[] {
+	getAllWorkspaceSymbols(onlyProjectFiles = true): SymbolInformation[] {
 		const symbolSearchResult: SymbolInformation[] = [];
-		for (const filePath of this.symbols.keys()) {
+
+		let filepathArray;
+		if(onlyProjectFiles) {
+			const filePathSubset = [...this.symbols.keys()];
+			const libraryFiles = filterForLibraryFiles(filePathSubset);
+			const projectfiles = filePathSubset.filter(x=>!libraryFiles.includes(x));
+			filepathArray = projectfiles;
+		} else {
+			filepathArray = [...this.symbols.keys()];
+		}
+
+		for (const filePath of filepathArray ?? []) {
 			const fp = this.onWindowsPlatform ? URI.file(filePath)?.path : filePath; // On Windows we need to convert this path
 			const fileLocalSymbols = flattenTreeToSymbolInformationArray(fp, this.symbols.get(filePath) ?? [])
 			if (fileLocalSymbols) {

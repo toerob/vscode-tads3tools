@@ -399,7 +399,7 @@ function importFromFileSuffix(fileSuffix: string, callback:any) {
 }*/
 
 
-function filterForLibraryFiles(array: string[]): string[] {
+export function filterForLibraryFiles(array: string[]): string[] {
 
 	// Locate a common file used in both an adv3 or adv3Lite project: "tads.h"
 	// Comparison needs to be done using URI to match windows file path system also.

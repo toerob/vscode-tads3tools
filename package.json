@@ -229,6 +229,12 @@
 					"default": "/usr/local/share/frobtads/tads3/include/",
 					"description": "Path the tads3 include files. "
 				},
+				"tads3.enableWorkspaceSymbolsProjectScope": {
+					"scope": "resource",
+					"type": "boolean",
+					"default": false,
+					"description": "If enabled the workspace symbol provider will return only symbols within the project files and not library files."
+				},
 				"tads3.enablePreprocessorCodeLens": {
 					"scope": "resource",
 					"type": "boolean",

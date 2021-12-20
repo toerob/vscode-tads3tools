@@ -1,4 +1,4 @@
-import { CompletionParams, Position, TextDocuments, Range, CompletionItem, CompletionList, CompletionItemKind, SymbolKind } from 'vscode-languageserver/node';
+import { CompletionParams, Position, TextDocuments, Range, CompletionItem, CompletionList, CompletionItemKind, SymbolKind, InsertTextMode, InsertTextFormat } from 'vscode-languageserver/node';
 import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { connection, symbolManager } from '../server';
@@ -204,6 +204,15 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 
 	const results = fuzzysort.go(word, [...cachedKeyWords], {key: 'label'});
 	
+	/*
+	results.forEach(x=> {
+		if(x.obj.kind === CompletionItemKind.Class) {
+			
+			x.obj.insertText = "classsyy $1";
+			x.obj.insertTextFormat = InsertTextFormat.Snippet;
+		}
+	})*/
+
 	return results.map((x:any)=>x.obj);
 }
 
