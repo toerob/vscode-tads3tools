@@ -1,4 +1,5 @@
 import { autorun, makeAutoObservable, observable, reaction } from "mobx";
+import { setFlagsFromString } from 'v8';
 import { Uri } from 'vscode';
 import { client } from '../extension';
 
@@ -8,14 +9,15 @@ class ExtensionStateStore {
 	diagnosing = false;
 	preprocessing = false;
 
-	isUsingAdv3Lite = false
+	isUsingAdv3Lite = undefined;
 	chosenMakefileUri: Uri | undefined;
 
 	constructor() {
 		makeAutoObservable(this, {
 			longProcessing: observable,
 			diagnosing: observable,
-			preprocessing: observable
+			preprocessing: observable,
+			isUsingAdv3Lite: observable
 		});
 		autorun(() => {
 			const text = [];
@@ -24,6 +26,7 @@ class ExtensionStateStore {
 			if (this.longProcessing) text.push('[Longprocessing]');
 			setTimeout(()=>reportState(text.length > 0 ? text.join(', ') : 'Done'));
 		});
+
 	}
 	setDiagnosing(state: boolean) { this.diagnosing = state; }
 

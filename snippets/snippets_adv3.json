@@ -2,7 +2,8 @@
 
 	"Tads3 template Makefile.t3m for adv3 snippet" : { 
 		"prefix": "makefile template", 
-		"body": [    
+		"body": [
+			"## Makefile for an adv3 library game template",
 			"-D LANGUAGE=en_us",
 			"-D MESSAGESTYLE=neu",
 			"-Fy obj",
@@ -21,7 +22,7 @@
 			"-res",
 			"GameInfo.txt"
 		],
-		"description": "Tads3 say statement snippet"
+		"description": "Tads3 makefile for adv3 snippet"
 	}, 
 
 	"Tads3 versionInfo snippet " : { 
@@ -49,16 +50,6 @@
 			""
 		],
 		"description": "Adds the typical headers for a adv3 source file. "
-	},
-	"Tads3 adv3Lite template new game file header" : { 
-		"prefix": "adv3Lite file template", 
-		"body": [    
-			"#charset \"us-ascii\"",
-			"#include <tads.h>",
-			"#include \"advlite.h\"",
-			""
-		],
-		"description": "Adds the typical headers for a adv3Lite source file. "
 	},
 	"Tads3 template game snippet. Creates a template for a minimum runnable game " : { 
 		"prefix": "template adv3 game", 
@@ -88,7 +79,7 @@
 			"+$6: Actor",
 			";"
 		],
-		"description": "Tads3 template game snippet"
+		"description": "Tads3 adv3 template game snippet"
 	}, 
 	"gameMain snippet" : { 
 		"prefix": "gameMain", 
@@ -102,33 +93,33 @@
 		"description": "Tads3 gameMain snippet"
 	},
 	"Tads3Lite VerbRule snippet" : { 
-		"prefix": ["VerbRule", "vr"], 
+		"prefix": "VerbRule", 
 		"body": [    
 			"VerbRule($1)",
 				"\t'${1/(.*)/${1:/downcase}/}' singleDobj",
-				"\t: VerbProduction",
-				"\taction = $1",
+				"\t: $1Action",
 				"\tverbPhrase = '${1/(.*)/${1:/downcase}/}/${1/(.*)/${1:/downcase}/}ing (what)'",
 				"\tmissingQ = 'what do you want to ${1/(.*)/${1:/downcase}/}'",
 			";"
 		],
 		"description": "Tads3Lite VerbRule snippet"
 	}, 
-    "Tads3 (adv3) Topic class implementation snippet" : { 
-		"prefix": ["Topic (adv3)"], 
+    "Tads3 (adv3Lite) Topic class implementation snippet" : { 
+		"prefix": "Topic", 
 		"body": [    
 			"${1|Topic,AltTopic,AskTopic,TellTopic,AskTellTopic,GiveTopic,ShowTopic,GiveShowTopic,AskForTopic,AskAboutForTopic,AskTellAboutForTopic,AskTellGiveShowTopic,AskTellShowTopic,HelloTopic,ActorHelloTopic,ImpHelloTopic,ByeTopic,ImpByeTopic,BoredByeTopic,LeaveByeTopic,ActorByeTopic,HelloGoodbyeTopic,DefaultAskTellTopic,DefaultAskTopic,DefaultTellTopic,DefaultGiveTopic,DefaultShowTopic,DefaultAskForTopic,DefaultAnyTopic,SuggestedAskTopic,SuggestedTellTopic,SuggestedGiveTopic,SuggestedShowTopic,SuggestedAskForTopic|} \"$2\"",
 			";",
 			"$0"
 		],
-		"description": "Tads3 (adv3) Topic implementation snippet"
+		"description": "Tads3 Topic implementation snippet"
 	},
-    "Tads3 actor class implementation snippet" : { 
-		"prefix": ["a", "actor"], 
+
+	"Tads3 actor class implementation snippet" : { 
+		"prefix": "Actor",
 		"body": [    
-			"$1: Actor '$1' '${1/(.*)/${1:/capitalize}/}' @$2",
+			"${1/(.*)/${1:/camelcase}/}:  Actor '$1' '${1/(.*)/${1:/capitalize}/}'",
 			"\t\"$3\"",
-			"\tisProperName = true",
+			"\tproper = true",
 			";"
 		],
 		"description": "Tads3 actor implementation snippet"
@@ -136,58 +127,28 @@
 
 
     "Tads3 ActorState class implementation snippet" : { 
-		"prefix": ["ActorState"], 
+		"prefix": "ActorState", 
 		"body": [    
-			"$1: ${2|ActorState,HermitActorState,AccompanyingState,GuidedTourState,ConversationReadyState,InConversationState,ConversationReadyState|} \"$3\"",
+			"$1: ${2|ActorState,HermitActorState,AccompanyingState,AccompanyingInTravelState,GuidedTourState,ConversationReadyState,InConversationState,ConversationReadyState|} \"${3:<<getActor.theName>> is here. }\"",
 			"\tisInitState = true",
 			";",
 			"$0"
 		],
 		"description": "Tads3 ActorState implementation snippet"
 	},
+
 	"Tads3 AgendaItem class implementation snippet" : { 
-		"prefix": ["AgendaItem"], 
+		"prefix": "AgendaItem", 
 		"body": [    
-			"$1: ${2|AgendaItem,DelayedAgendaItem,ConvAgendaItem|}",
+			"$1: ${2|AgendaItem,BoredomAgendaItem,ConvAgendaItem,DelayedAgendaItem|}",
 			"\tinitiallyActive = true",
-			"\t//isReady = Q.canSee(gPlayerChar,characterNameHere)",
+			"\t//isReady = gPlayerChar.canSee($3)",
 			"\tinvokeItem() {",
 			"\t\t$0",
 			"\t}",
 			";"
 		],
 		"description": "Tads3 AgendaItem implementation snippet"
-	},
-
-
-	"Tads3 DefineTAction snippet" : { 
-		"prefix": ["definetaction", "defT"], 
-		"body": [    
-			"DefineTAction($0);"
-		],
-		"description": "Tads3 DefineTAction snippet"
-	}, 
-	"Tads3 DefineTIAction snippet" : { 
-		"prefix": ["definetiaction", "defTI"], 
-		"body": [    
-			"DefineTIAction($0);"
-		],
-		"description": "Tads3 DefineTIAction snippet"
-	}, 
-
-	"Tads3 IFID snippet" : { 
-		"prefix": "ifid", 
-		"body": [    
-			"$UUID"
-		],
-		"description": "Tads3 say statement snippet"
-	}, 
-	"Tads3 say snippet" : { 
-		"prefix": "say", 
-		"body": [    
-			"say('$2');\n"
-		],
-		"description": "Tads3 say statement snippet"
 	},
 
 	"Tads3 atmosphereList snippet" : { 
@@ -199,26 +160,9 @@
 		],
 		"description": "Tads3 atmosphereList snippet"
 	},
-	"Tads3 eventList snippet" : { 
-		"prefix": "eventlist", 
-		"body": [    
-			"$1: ${2|EventList,StopEventList,CyclicEventList,RandomEventList,ShuffledEventList,SyncEventList,ExternalEventList|} {[",
-				 "\t'$3',",
-				 "\t'$4',",
-				 "\t'$5'",
-			"]}"
-		],
-		"description": "Tads3 eventList snippet"
-	},
-
-	"Tads3 local variable definition": {
-		"prefix": ["local", "local"],
-		"body": ["local ${1:variableName}=${2:'value'};\n$0"],
-		"description": "Tads3 local variable"
-	},
 
 	"Tads3 room (auto camelcased) snippet" : { 
-		"prefix": ["room auto camelcased"], 
+		"prefix": "Room (auto camelcased)",
 		"body": [    
 			"${1/(.*)/${1:/camelcase}/}: ${2|Room,OutdoorRoom,DarkRoom,FloorlessRoom,HighNestedRoom,NestedRoom,ShipboardRoom|} '${1/[']/\\'/g}' '${3:${1/[']/\\'/g}}'",
 			"\t\"$5\"",
@@ -228,7 +172,7 @@
 		"description": "Tads3 auto camelcased room snippet"
 	},
 	"Tads3 room (manually named) snippet" : { 
-		"prefix": ["room manually named"], 
+		"prefix": "Room (manually named)", 
 		"body": [    
 			"$1: ${2|Room,OutdoorRoom,DarkRoom,FloorlessRoom,HighNestedRoom,NestedRoom,ShipboardRoom|} '${3:$1}' '${4:$1}'",
 			"\t\"$5\"",
@@ -239,7 +183,7 @@
 	},
 
 	"Tads3 thing snippet" : { 
-		"prefix": ["thing manually named"], 
+		"prefix": "Thing (manually named)", 
 		"body": [    
 			"$1: ${2|Thing,Unthing,Heavy,Fixture,Immovable,Component,Container,OpenableContainer,Supporter|} '${3:$1}' '${4:$1}'",
 			"\t\"$5\"",
@@ -250,7 +194,7 @@
 	},
 
 	"Tads3 door pair snippet" : { 
-		"prefix": ["door pair", "d"], 
+		"prefix": "Door pair",
 		"body": [    
 			"+${0}${1}Outside: Door -> ${1}Inside '${2}${3:door*doors}' '${2}${4:door}';",
 			"+${0}${1}Inside: Door -> ${1}Outside '${2}${3:door*doors}' '${2}${4:door}';"
@@ -258,26 +202,24 @@
 		"description": "Tads3 door pair snippet"
 	},
 
-	"Tads3 function snippet" : { 
-		"prefix": ["function", "f"], 
-		"body": [    
-			"$1(${2:}) {",
-			"\t$3",
-			"}"
-		],
-		"description": "Tads3 function snippet"
-	},
-	"Tads3 anonymous function snippet" : { 
-		"prefix": ["anonymous function", "af"], 
-		"body": [    
-			"function (${2:}) {",
-			"\t$3",
-			"}$0"
-		],
-		"description": "Tads3 function snippet"
-	},
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	"Tads3 global function snippet" : { 
-		"prefix": ["gf", "global function"], 
+		"prefix": "global function", 
 		"body": [    
 			"${1|default_display_fn,_init,_main,_mainCommon,_mainRestore,_multiMethodBuildBindings,_multiMethodCall,_multiMethodCallInherited,_multiMethodInherit,_multiMethodInheritMain,_multiMethodRegister,_multiMethodSelect,_nestedAction,_newAction,_outputCapture,_preinit,_replaceAction,_tryImplicitAction,abs,addToScore,adjustBrightness,aHref,aHref,aHrefAlt,aHrefAlt,aioClearScreen,aioClearScreen,aioInputDialog,aioInputDialog,aioInputEvent,aioInputEvent,aioInputFile,aioInputFile,aioInputLineCancel,aioInputLineCancel,aioInputLineTimeout,aioInputLineTimeout,aioLogInputEvent,aioMorePrompt,aioMorePrompt,aioSay,aioSay,aioSetLogFile,aioSetLogFile,bannerClear,bannerCreate,bannerDelete,bannerFlush,bannerGetInfo,bannerGoTo,bannerSay,bannerSetScreenColor,bannerSetSize,bannerSetTextColor,bannerSizeToContents,buildParam,buildSynthParam,callFromPOV,callRoomAfterAction,callRoomBeforeAction,callWithSenseContext,checkHtmlMode,checkHtmlMode,clearPOV,clearScreen,cls,concat,connectWebUI,dataType,dataTypeXlat,enableSystemMenuCommand,evtCharForScript,execNestedAction,executeAction,executeCommand,failedRestoreOptions,findBestFacet,finishGame,finishGameMsg,firstObj,flexcall,flushOutput,forEachInstance,generateRandomKey,getArg,getFuncParams,getHostName,getLaunchHostAddr,getLocalCharSet,getLocalIP,getMultiMethodPointer,getNetEvent,getNetStorageURL,getPOV,getPOVActor,getPOVActorDefault,getPOVDefault,getResolvedObjects,getTime,infiniteLoop,initAfterLoad,initDisplay,initDisplay,initUI,initUI,inputDialog,inputEvent,inputFile,inputKey,inputLine,inputLineCancel,inputLineTimeout,instanceWhich,intersectNounLists,intOrdinal,intToBinary,intToDecimal,intToRoman,isListSubset,logConsoleClose,logConsoleCreate,logConsoleSay,logInputEvent,main,main,mainCommon,mainRestore,makeList,makeString,max,min,morePrompt,nestedActionAgain,newActionObj,nextObj,nilToList,overrides,parseInt,parseIntTokens,partitionList,popPOV,prepareNestedAction,processNetRequests,processOptions,pushPOV,rand,randomize,readingEventScript,readingScript,readMainCommand,readMainCommandTokens,remapAction,remapActionCreate,remapVerify,resExists,resolveAndReplaceAction,restartGame,restoreGame,rexGroup,rexMatch,rexReplace,rexSearch,rexSearchLast,runGame,runScheduler,saveGame,savepoint,say,sendNetRequest,senseInfoTableSubset,setLogFile,setPlayer,setPOV,setRootPOV,setScriptFile,sgn,showPopupMenu,spellInt,spellIntBelow,spellIntBelowExt,spellIntExt,spellIntOrdinal,spellIntOrdinalExt,spliceList,sprintf,statusHTML,statusHTML,statusMode,statusRight,stripQuotesFrom,systemInfo,t3AllocProp,t3DebugTrace,t3GetGlobalSymbols,t3GetNamedArg,t3GetNamedArgList,t3GetStackTrace,t3GetVMBanner,t3GetVMID,t3GetVMPreinitMode,t3GetVMVsn,t3RunGC,t3SetSay,t3test_get_charcode,t3test_get_obj_gc_state,t3test_get_obj_id,tadsSay,terminateUI,terminateUI,timeDelay,toInteger,toNumber,toString,transparencyAdd,transparencyCompare,tryAskingForObject,tryOops,tryOopsMain,undo,withActionEnv,withCommandTranscript,withParserGlobals,withQuotes,withTense,yesOrNo|}($2);",
 			"$0"
@@ -288,7 +230,7 @@
 
 
 	"Tads3 global template snippet" : { 
-		"prefix": ["gt", "global template"], 
+		"prefix": "global template", 
 		"body": [    
 			"${1|Achievement,Actor,AltTopic,AltTopic,ConvNode,DeadEndConnector,DefaultTopic,DefaultTopic,Enterable,EventList,Exitable,Footnote,Goal,Hint,MenuItem,MenuLongTopicItem,MenuTopicItem,MiscTopic,MiscTopic,MultiLoc,NoTravelMessage,OneWayRoomConnector,Passage,Room,ShuffledEventList,ShuffledList,SpecialTopic,SpecialTopic,StyleTag,SyncEventList,Thing,ThingState,Tip,TopicEntry,TopicEntry,TopicEntry,TopicEntry,TopicGroup,TravelMessage,Unthing,VocabObject|}"
 		],
@@ -296,7 +238,7 @@
 	},
 
 	"Tads3 grammar rule snippet" : { 
-		"prefix": ["ggr", "global grammar rule"], 
+		"prefix": "global grammar rule", 
 		"body": [    
 			"${1|aboutTopicPhrase,actorBadCommandPhrase,adjPhrase,adjWord,atSingleNoun,commandOnlyConjunction,commandOrNounConjunction,commandPhrase,completeNounPhrase,completeNounPhraseWithAll,completeNounPhraseWithoutAll,compoundNounPhrase,compoundPluralPhrase,detPluralNounPhrase,detPluralOnlyNounPhrase,directionName,disambigList,disambigListItem,disambigOrdinalList,disambigPhrase,exceptList,exceptNounPhrase,explicitDetPluralNounPhrase,explicitDetPluralOnlyNounPhrase,firstCommandPhrase,forSingleNoun,fromSingleNoun,implicitDetPluralOnlyNounPhrase,indetPluralNounPhrase,indetPluralOnlyNounPhrase,indetSingularNounPhrase,inSingleNoun,literalAdjPhrase,literalPhrase,mainDisambigPhrase,miscWordList,nonTerminalNounMultiList,nounConjunction,nounList,nounMultiList,nounPhrase,nounWord,numberPhrase,onSingleNoun,oopsCommand,oopsPhrase,outOfSingleNoun,pluralPhrase,possessiveAdjPhrase,possessiveNounPhrase,poundNumberPhrase,predicate,qualifiedNounPhrase,qualifiedPluralNounPhrase,qualifiedSingularNounPhrase,quotedStringPhrase,simpleNounPhrase,simplePluralPhrase,singleNoun,singleNounOnly,spelledHundred,spelledMillion,spelledNumber,spelledSmallNumber,spelledThousand,terminalNounPhrase,throughSingleNoun,topicPhrase,toSingleNoun,withSingleNoun|}"
 		],
@@ -305,7 +247,7 @@
 
 
 	"Tads3 enum snippet" : { 
-		"prefix": ["ge", "global enum"], 
+		"prefix": "global enum", 
 		"body": [    
 			"${1|ActorObject,AnnounceClear,AnnounceUnclear,attenuated,blockEndConv,DescribeClear,DirectObject,distant,endConvActor,endConvBoredom,endConvBye,endConvTravel,FootnotesFull,FootnotesMedium,FootnotesOff,IndirectObject,InventoryTall,InventoryWide,large,medium,obscured,opaque,OtherObject,PathFrom,PathIn,PathOut,PathPeer,PathThrough,PathTo,PronounHer,PronounHim,PronounIt,PronounMe,PronounThem,PronounYou,rmcAskLiteral,rmcAskObject,rmcCommand,rmcDisambig,rmcOops,small,transparent|}"
 		],
@@ -316,14 +258,14 @@
 	
 
 	"Tads3 global objects snippet" : { 
-		"prefix": ["go", "global object"], 
+		"prefix": "global object", 
 		"body": [    
 			"${1|_multiMethodEndOfList,_multiMethodNonObjectBindings,_multiMethodRegistry,aboardVehicleLister,actorByeTopicObj,actorCarryingSublister,actorDirectlyInRoom,actorHelloTopicObj,actorHoldingDescInventoryListerLong,actorHoldingDescInventoryListerShort,actorInventoryLister,actorReadyToEnterNestedRoom,actorSingleInventoryLister,actorStanding,actorTravelReady,actorWearingSublister,adv3LibInit,adv3LibPreinit,adventium,aftDirection,announceObjStyleTag,askAboutConvType,askForConvType,askingImpCtx,askTravelDown,askTravelIn,askTravelOut,assumeStyleTag,bannerInit,bannerTracker,bannerUITracker,basicDistinguisher,boredByeTopicObj,browserGlobals,byeConvType,byeTopicObj,canTalkToObj,checkStatusSuccess,cmdTokenizer,coarseMesh,commandConvType,commandSequencer,commandWin,commentPreParser,Compiler,complexMultiTransform,consultConvType,contentsMenuBanner,conversationManager,coverArtResource,darkRoomLister,defaultCeiling,defaultEastWall,defaultFloor,defaultGetVerbPhraseContext,defaultGround,defaultLogicalVerifyResult,defaultNorthWall,defaultReportTransform,defaultSky,defaultSouthWall,defaultWestWall,dobjTouchObj,doorOpen,downDirection,dropDestinationIsOuterRoom,dropTypeDrop,dummyTentativeInfo,dummyTentativeObject,eastDirection,enterOnWhatAsker,equivalentStateLister,eventManager,eventPage,exitLister,exitsMode,exitsTip,explicitExitLister,fineMesh,finishOptionAmusing,finishOptionCredits,finishOptionFullScore,finishOptionQuit,finishOptionRestart,finishOptionRestore,finishOptionScore,finishOptionsLister,finishOptionUndo,flushEventsPage,footnoteSettingsItem,footnotesTip,foreDirection,ftDeath,ftFailure,ftGameOver,ftVictory,fullScoreLister,fullScoreTip,gameHintStatus,gameInfoWriter,giveConvType,giveMeToAskFor,glass,guestConnectPage,helloConvType,helloTopicObj,hintManager,hyperlinkStyleTag,impHelloTopicObj,implicitAnnouncementGrouper,implicitGroupTransform,inDirection,initiateConvType,inlineListingContentsLister,inputDialogPage,inputEventPage,inputFileCancel,inputFilePage,inputLinePage,inputlineStyleTag,inputManager,inventoryListenLister,inventorySmellLister,iobjTouchObj,keyringExamineContentsLister,keyringInlineContentsLister,langMessageBuilder,languageGlobals,leaveByeTopicObj,libGlobal,libMessages,libScore,lightProbe,lightSourceStateOff,lightSourceStateOn,listenActionLister,litUnlitDistinguisher,locationDistinguisher,longTopicBanner,lookAroundExitLister,lookAroundTerseExitLister,lying,mainAtExit,mainGlobal,mainOutputStream,mainParagraphManager,mainWebGroup,matchStateLit,matchStateUnlit,menuOutputStream,menuParagraphManager,menuSysEventPage,moduleAdv3,morePromptDonePage,nearbyAttachableCond,nestedRoomOut,noConvType,northDirection,northeastDirection,northwestDirection,noShipTravel,notificationStyleTag,noTopicObj,noTravel,noTravelDown,noTravelIn,noTravelOut,npcActionMessages,npcDeferredMessages,npcDeferredMessagesDirect,npcMessages,npcMessagesDirect,nullDistinguisher,objAudible,objBurning,objClosed,objectLister,objectRelations,objEmpty,objHeld,objNotAttached,objNotWorn,objOpen,objSmellable,objUnlocked,objVisible,oopsTip,openableDescContentsLister,openableOpeningLister,otherExitLister,outDirection,outputManager,ownershipDistinguisher,paper,parserStyleTag,plainActorLister,plainLister,playerActionMessages,playerMessages,portDirection,rankByActorSpecified,rankByAllExcluded,rankByAmbiguity,rankByDisambigOrdinals,rankByEmptyBut,rankByEndAdj,rankByIndefinite,rankByInsufficient,rankByListForSingle,rankByLiteralLength,rankByMiscWordList,rankByMissing,rankByNonMatch,rankByNonMatchPoss,rankByPluralTrunc,rankByPronoun,rankBySubcommands,rankByTokenCount,rankByTrunc,rankByUnwantedPlural,rankByVerbStructure,rankByVocabNonMatch,rankByWeakness,realTimeManager,rearAbandonContentsLister,rearContentsLister,rearDescContentsLister,rearInlineContentsLister,rearLookBehindLister,reflectionServices,reportOrderTransform,resolvedTopicNothing,restoreOptionRestoreAnother,restoreOptionStartOver,roomdescStyleTag,roomListenLister,roomLister,roomnameStyleTag,roomparaStyleTag,roomPartContentsLister,roomPartDescContentsLister,roomPartLookInLister,roomSmellLister,roomToHoldObj,sameLocationAsDobj,sameLocationAsIobj,scoreChangeTip,scoreNotifier,scoreNotifySettingsItem,scriptStatus,senseContext,senseTmp,sessionHintStatus,setPrefsPage,setScreenNamePage,settingsManager,settingsUI,showConvType,sight,sitting,smell,smellActionLister,sound,southDirection,southeastDirection,southwestDirection,specialDescLister,specialTopicHistory,specialTopicPreParser,standardImpCtx,standing,starboardDirection,statusLeftOutputStream,statusLine,statuslineBanner,statuslineBanner,statuslineExitLister,statusRightOutputStream,statusroomStyleTag,statusscoreStyleTag,statusTagOutputStream,stringLister,styleTagFilter,suggestionAskForGroup,suggestionAskGroup,suggestionGiveGroup,suggestionShowGroup,suggestionTellGroup,suggestionYesNoGroup,surfaceContentsLister,surfaceDescContentsLister,surfaceInlineContentsLister,surfaceLookInLister,tellAboutConvType,tempFileDownloadPage,thingContentsLister,thingDescContentsLister,thingLookInLister,tipManager,tipMode,tipStyleTag,topMenuBanner,touch,touchObj,tryingImpCtx,typographicalOutputFilter,uiStatePage,undersideAbandonContentsLister,undersideContentsLister,undersideDescContentsLister,undersideInlineContentsLister,undersideLookUnderLister,undoTip,unwornState,upDirection,uploadFilePage,verboseModeSettingsItem,webMainWin,webSession,webuiResources,westDirection,wornState,yesConvType,yesTopicObj|}"
 		],
 		"description": "Tads3 global object snippet"
 	},
 	"Tads3 gMessageParams macro snippet" : { 
-		"prefix": ["gm", "global macro", "gMessageParams"], 
+		"prefix": "gMessageParams",
 		"body": [ 
 			"gMessageParams($1);",
 			"$0"
@@ -332,7 +274,7 @@
 	},
 
 	"Tads3 global macro snippet" : { 
-		"prefix": ["gm", "global macro"], 
+		"prefix": "global macro", 
 		"body": [    
 			"${1|_tads_io_say,abortImplicit,actorStateDobjFor,actorStateIobjFor,actorStateObjFor,ADV3_H,AHREF_Plain,AlwaysAnnounce,AnnouncedDefaultObject,asDobjFor,asDobjWithoutActionFor,asExit,asIobjFor,asIobjWithoutActionFor,askForDobj,askForIobj,askForLiteral,askForTopic,asObjFor,asObjWithoutActionFor,BannerAfter,BannerAlignBottom,BannerAlignLeft,BannerAlignRight,BannerAlignTop,BannerBefore,BannerFirst,BannerLast,BannerSizeAbsolute,BannerSizePercent,BannerStyleAutoHScroll,BannerStyleAutoVScroll,BannerStyleBorder,BannerStyleHScroll,BannerStyleHStrut,BannerStyleMoreMode,BannerStyleTabAlign,BannerStyleVScroll,BannerStyleVStrut,BannerTypeText,BannerTypeTextGrid,BaseDefineTopicTAction,BignumCommas,BignumCompact,BignumEuroStyle,BignumExp,BignumExpSign,BignumKeepTrailingZeros,BignumLeadingZero,BignumMaxSigDigits,BignumPoint,BignumPosSpace,BignumSign,breakLoop,canInherit,CharsetDisplay,CharsetFileCont,CharsetFileName,ClearDisambig,CloseCommand,ColorAqua,ColorBlack,ColorBlue,ColorCyan,ColorFuchsia,ColorGray,ColorGreen,ColorInput,ColorLime,ColorMagenta,ColorMaroon,ColorNavy,ColorOlive,ColorPurple,ColorRed,ColorRGB,ColorSilver,ColorStatusBg,ColorStatusText,ColorTeal,ColorText,ColorTextBg,ColorTransparent,ColorWhite,ColorYellow,cosmeticSpacingReport,dangerous,DateAMPM,DateEra,DateFmt12Hour,DateFmt24Hour,DateFmt24HourSecs,DateFmtDate,DateFmtShortDate,DateFmtTime,DateFmtTimestamp,DateMonthAbbrs,DateMonthNames,DateOrdSuffixes,DateParseFilter,DateWeekdayAbbrs,DateWeekdayNames,dbgShowGrammarList,dbgShowGrammarList,dbgShowGrammarWithCaption,dbgShowGrammarWithCaption,defaultDescReport,DefaultObject,defaultReport,DefineAction,DefineConvIAction,DefineConvTopicTAction,DefineIAction,DefineLiteralAction,DefineLiteralTAction,DefineSystemAction,DefineTAction,DefineTActionSub,DefineTIAction,DefineTIActionSub,DefineTopicAction,DefineTopicTAction,DigitFormatGroupComma,DigitFormatGroupPeriod,DigitFormatGroupSep,dobjFor,dobjList,dobjMsg,EndsWithAdj,exit,exitAction,extraReport,FileAccessRead,FileAccessReadWriteKeep,FileAccessReadWriteTrunc,FileAccessWrite,FileAttrHidden,FileAttrRead,FileAttrSystem,FileAttrWrite,FileModeData,FileModeRaw,FileModeText,FileTypeBin,FileTypeBlock,FileTypeChar,FileTypeCmd,FileTypeData,FileTypeDir,FileTypeFile,FileTypeLink,FileTypeLog,FileTypeParentLink,FileTypePipe,FileTypeSelfLink,FileTypeSocket,FileTypeT3Image,FileTypeT3Save,FileTypeText,FileTypeUnknown,FirstPerson,FmtBigEndian,FmtInt16BE,FmtInt16LE,FmtInt32BE,FmtInt32LE,FmtInt8,FmtLittleEndian,FmtSigned,FmtSize16,FmtSize32,FmtSize8,FmtUInt16BE,FmtUInt16LE,FmtUInt8,FmtUnsigned,gAction,gActionIn,gActionIs,gActor,gDobj,GetTimeDateAndTime,GetTimeTicks,getTokOrig,getTokType,getTokVal,gExitLister,gHintManager,gIobj,gIssuingActor,gLibMessages,gLiteral,gMessageParams,gPlayerChar,GramTokTypeLiteral,GramTokTypeNSpeech,GramTokTypeProd,GramTokTypeSpeech,GramTokTypeStar,GramTokTypeTokEnum,gReveal,gRevealed,gSetKnown,gSetSeen,gSynthMessageParam,gTentativeDobj,gTentativeIobj,gTopic,gTopicText,gTranscript,gVerifyResults,HelpCommand,HtmlifyTranslateNewlines,HtmlifyTranslateSpaces,HtmlifyTranslateTabs,HtmlifyTranslateWhitespace,illogical,illogicalAlready,illogicalNow,illogicalSelf,inaccessible,InDlgIconError,InDlgIconInfo,InDlgIconNone,InDlgIconQuestion,InDlgIconWarning,InDlgLblCancel,InDlgLblNo,InDlgLblOk,InDlgLblYes,InDlgOk,InDlgOkCancel,InDlgYesNo,InDlgYesNoCancel,InEvtEndQuietScript,InEvtEndScript,InEvtEof,InEvtHref,InEvtKey,InEvtLine,InEvtNoTimeout,InEvtNotimeout,InEvtSysCommand,InEvtTimeout,InFileCancel,InFileFailure,InFileOpen,InFileSave,InFileSuccess,iobjFor,iobjList,iobjMsg,LibraryDefaultsFile,ListContents,ListCustomFlag,ListerCustomFlag,ListLong,ListRecurse,ListTall,logical,logicalRank,logicalRankOrd,LogTypeCommand,LogTypeScript,LogTypeTranscript,LookListPortables,LookListSpecials,LookRoomDesc,LookRoomName,M_DOWN,M_PREV,M_QUIT,M_SEL,M_UP,mainReport,MainWindowLogHandle,mapPushTravelHandlers,mapPushTravelIobj,MatchedAll,maybeRemapTo,MenuStatEventDisable,MenuStatEventEnable,MenuStatLineDisable,MenuStatLineEnable,nestedAction,nestedActorAction,NetEvDebugBreak,NetEvReply,NetEvReplyDone,NetEvRequest,NetEvTimeout,NetEvUIClose,NetReqNoRedirect,newAction,newActorAction,nonObvious,NumTypeInf,NumTypeNAN,NumTypeNInf,NumTypeNum,NumTypeNZero,NumTypePInf,NumTypePZero,NumTypeZero,ObjAll,ObjClasses,objFor,objForCheck,objForCheck,ObjInstances,openableContentsLister,PARSER_DEBUG,perInstance,PluralTruncated,PopMenuCancel,PopMenuEof,PopMenuFail,PopMenuHRef,PropDefAny,PropDefDirectly,PropDefGetClass,PropDefInherits,QuitCommand,remapTo,replaceAction,replaceActorAction,ReplaceAll,ReplaceAll,ReplaceFollowCase,ReplaceFollowCase,ReplaceIgnoreCase,ReplaceIgnoreCase,ReplaceOnce,ReplaceOnce,ReplaceSerial,ReplaceSerial,reportAfter,reportBefore,reportFailure,reportQuestion,RestoreCommand,RNG_ISAAC,RNG_LCG,RNG_MT19937,SaveCommand,ScriptFileEvent,ScriptFileNonstop,ScriptFileQuiet,ScriptReqGetStatus,SecondPerson,setPastTense,singleDir,singleDobj,singleIobj,singleLiteral,singleNumber,singleTopic,SortAsc,SortDesc,SpellIntAndTens,SpellIntCommas,SpellIntTeenHundreds,StatModeNormal,StatModeStatus,StrCompCaseFold,StrCompMatch,StrCompTrunc,SysInfoAudioCrossfade,SysInfoAudioFade,SysInfoBanners,SysInfoFadeMIDI,SysInfoFadeMPEG,SysInfoFadeOGG,SysInfoFadeWAV,SysInfoIClassHTML,SysInfoIClassText,SysInfoIClassTextGUI,SysInfoInterpClass,SysInfoJpeg,SysInfoLinksFtp,SysInfoLinksHttp,SysInfoLinksMailto,SysInfoLinksNews,SysInfoLinksTelnet,SysInfoMidi,SysInfoMng,SysInfoMngAlpha,SysInfoMngTrans,SysInfoMpeg,SysInfoMpeg1,SysInfoMpeg2,SysInfoMpeg3,SysInfoOgg,SysInfoOsName,SysInfoPng,SysInfoPngAlpha,SysInfoPngTrans,SysInfoPrefImages,SysInfoPrefLinks,SysInfoPrefMusic,SysInfoPrefSounds,SysInfoTextColors,SysInfoTextHilite,SysInfoTxcAnsiFg,SysInfoTxcAnsiFgBg,SysInfoTxcNone,SysInfoTxcParam,SysInfoTxcRGB,SysInfoVersion,SysInfoWav,SysInfoWavMidiOvl,SysInfoWavOvl,T3DebugBreak,T3DebugCheck,T3DebugLog,T3GetStackDesc,T3GetStackLocals,T3GlobalSymbols,T3MacroHasArgs,T3MacroHasVarargs,T3PreprocMacros,T3SetSayNoFunc,T3SetSayNoMethod,TADS_IO_HEADER,ThirdPerson,tokRuleName,tokRulePat,tokRuleTest,tokRuleType,tokRuleVal,tryImplicitAction,tryImplicitActionMsg,tSel,TypeBifPtr,TypeCode,TypeDString,TypeEnum,TypeFuncPtr,TypeInt,TypeList,TypeNativeCode,TypeNil,TypeObject,TypeProp,TypeSString,TypeTrue,UnclearDisambig,UndoCommand,VerbRule,VocabTruncated,WebUIPrefsFile,withPast,withPresent|}",
 			"$0"
@@ -341,7 +283,7 @@
 	},
 	
 	"Tads3 dobjFor snippet" : { 
-		"prefix": ["dobjFor"], 
+		"prefix": "dobjFor", 
 		"body": [    
 			"dobjFor(${1|About,Aft,Again,AskAbout,AskFor,AskVague,AttachTo,Attack,AttackWith,Board,Break,Burn,BurnWith,Clean,CleanWith,Climb,ClimbDown,ClimbUp,Close,ConsultAbout,Consult,Credits,Cut,CutWith,Debug,Detach,DetachFrom,Dig,DigWith,Doff,Down,Drink,Drop,East,Eat,Enter,EnterOn,Examine,Exits,ExitsMode,Extinguish,Fasten,FastenTo,Feel,FileOp,Flip,Follow,Footnote,Footnotes,FootnotesFull,FootnotesMedium,FootnotesOff,FootnotesStatus,Fore,FullScore,GetOffOf,GetOut,GetOutOf,GiveTo,GoBack,Goodbye,GoThrough,Hello,Hint,HintsOff,In,Instructions,Inventory,InventoryTall,InventoryWide,Jump,JumpOff,JumpOffI,JumpOver,Kiss,Lie,LieOn,Light,ListenImplicit,ListenTo,Lock,LockWith,Look,LookBehind,LookIn,LookThrough,LookUnder,Move,MoveTo,MoveWith,No,North,Northeast,Northwest,NoteDarkness,Notify,NotifyOff,NotifyOn,Oops,OopsI,Open,Out,Pause,PlugIn,PlugInto,Port,Pour,PourInto,PourOnto,Pull,Push,PushAft,PushDown,PushEast,PushFore,PushIn,PushNorth,PushNortheast,PushNorthwest,PushOut,PushPort,PushSouth,PushSoutheast,PushSouthwest,PushStarboard,PushTravel,PushTravelClimbDown,PushTravelClimbUp,PushTravelDir,PushTravelEnter,PushTravelGetOutOf,PushTravelThrough,PushTravelViaIobj,PushUp,PushWest,PutBehind,PutIn,PutOn,PutUnder,Quit,Read,Record,RecordEvents,RecordEventsString,RecordOff,RecordString,Remove,Replay,ReplayString,Restart,Restore,RestoreDefaults,RestoreString,Save,SaveDefaults,SaveString,Score,Screw,ScrewWith,Script,ScriptOff,ScriptString,Search,SenseImplicit,Set,SetTo,ShowTo,Sit,SitOn,Sleep,Smell,SmellImplicit,South,Southeast,Southwest,SpecialTopic,Stand,StandOn,Starboard,Strike,Switch,Take,TakeFrom,TalkTo,Taste,TellAbout,TellVague,Terse,Throw,ThrowAt,ThrowDir,ThrowTo,TipMode,Topics,Travel,TravelDir,TravelVia,Turn,TurnOff,TurnOn,TurnTo,TurnWith,TypeLiteralOn,TypeOn,Undo,Unfasten,UnfastenFrom,Unlock,UnlockWith,Unplug,UnplugFrom,Unscrew,UnscrewWith,Up,VagueTravel,Verbose,Version,Wait,Wear,West,Yell,YesAction|}) {",
 			"\t$0",
@@ -350,7 +292,7 @@
 		"description": "Tads3 dobjFor snippet"
 	},
 	"Tads3 iobjFor snippet" : { 
-		"prefix": ["iobjFor"], 
+		"prefix": "iobjFor", 
 		"body": [    
 			"iobjFor(${1|About,Aft,Again,AskAbout,AskFor,AskVague,AttachTo,Attack,AttackWith,Board,Break,Burn,BurnWith,Clean,CleanWith,Climb,ClimbDown,ClimbUp,Close,ConsultAbout,Consult,Credits,Cut,CutWith,Debug,Detach,DetachFrom,Dig,DigWith,Doff,Down,Drink,Drop,East,Eat,Enter,EnterOn,Examine,Exits,ExitsMode,Extinguish,Fasten,FastenTo,Feel,FileOp,Flip,Follow,Footnote,Footnotes,FootnotesFull,FootnotesMedium,FootnotesOff,FootnotesStatus,Fore,FullScore,GetOffOf,GetOut,GetOutOf,GiveTo,GoBack,Goodbye,GoThrough,Hello,Hint,HintsOff,In,Instructions,Inventory,InventoryTall,InventoryWide,Jump,JumpOff,JumpOffI,JumpOver,Kiss,Lie,LieOn,Light,ListenImplicit,ListenTo,Lock,LockWith,Look,LookBehind,LookIn,LookThrough,LookUnder,Move,MoveTo,MoveWith,No,North,Northeast,Northwest,NoteDarkness,Notify,NotifyOff,NotifyOn,Oops,OopsI,Open,Out,Pause,PlugIn,PlugInto,Port,Pour,PourInto,PourOnto,Pull,Push,PushAft,PushDown,PushEast,PushFore,PushIn,PushNorth,PushNortheast,PushNorthwest,PushOut,PushPort,PushSouth,PushSoutheast,PushSouthwest,PushStarboard,PushTravel,PushTravelClimbDown,PushTravelClimbUp,PushTravelDir,PushTravelEnter,PushTravelGetOutOf,PushTravelThrough,PushTravelViaIobj,PushUp,PushWest,PutBehind,PutIn,PutOn,PutUnder,Quit,Read,Record,RecordEvents,RecordEventsString,RecordOff,RecordString,Remove,Replay,ReplayString,Restart,Restore,RestoreDefaults,RestoreString,Save,SaveDefaults,SaveString,Score,Screw,ScrewWith,Script,ScriptOff,ScriptString,Search,SenseImplicit,Set,SetTo,ShowTo,Sit,SitOn,Sleep,Smell,SmellImplicit,South,Southeast,Southwest,SpecialTopic,Stand,StandOn,Starboard,Strike,Switch,Take,TakeFrom,TalkTo,Taste,TellAbout,TellVague,Terse,Throw,ThrowAt,ThrowDir,ThrowTo,TipMode,Topics,Travel,TravelDir,TravelVia,Turn,TurnOff,TurnOn,TurnTo,TurnWith,TypeLiteralOn,TypeOn,Undo,Unfasten,UnfastenFrom,Unlock,UnlockWith,Unplug,UnplugFrom,Unscrew,UnscrewWith,Up,VagueTravel,Verbose,Version,Wait,Wear,West,Yell,YesAction|}) {",
 			"\t$0",
@@ -360,14 +302,14 @@
 	},
 
 	"Tads3 remapTo snippet" : { 
-		"prefix": ["remapTo"], 
+		"prefix": "remapTo", 
 		"body": [    
 			"remapTo(${1|About,Aft,Again,AskAbout,AskFor,AskVague,AttachTo,Attack,AttackWith,Board,Break,Burn,BurnWith,Clean,CleanWith,Climb,ClimbDown,ClimbUp,Close,ConsultAbout,Consult,Credits,Cut,CutWith,Debug,Detach,DetachFrom,Dig,DigWith,Doff,Down,Drink,Drop,East,Eat,Enter,EnterOn,Examine,Exits,ExitsMode,Extinguish,Fasten,FastenTo,Feel,FileOp,Flip,Follow,Footnote,Footnotes,FootnotesFull,FootnotesMedium,FootnotesOff,FootnotesStatus,Fore,FullScore,GetOffOf,GetOut,GetOutOf,GiveTo,GoBack,Goodbye,GoThrough,Hello,Hint,HintsOff,In,Instructions,Inventory,InventoryTall,InventoryWide,Jump,JumpOff,JumpOffI,JumpOver,Kiss,Lie,LieOn,Light,ListenImplicit,ListenTo,Lock,LockWith,Look,LookBehind,LookIn,LookThrough,LookUnder,Move,MoveTo,MoveWith,No,North,Northeast,Northwest,NoteDarkness,Notify,NotifyOff,NotifyOn,Oops,OopsI,Open,Out,Pause,PlugIn,PlugInto,Port,Pour,PourInto,PourOnto,Pull,Push,PushAft,PushDown,PushEast,PushFore,PushIn,PushNorth,PushNortheast,PushNorthwest,PushOut,PushPort,PushSouth,PushSoutheast,PushSouthwest,PushStarboard,PushTravel,PushTravelClimbDown,PushTravelClimbUp,PushTravelDir,PushTravelEnter,PushTravelGetOutOf,PushTravelThrough,PushTravelViaIobj,PushUp,PushWest,PutBehind,PutIn,PutOn,PutUnder,Quit,Read,Record,RecordEvents,RecordEventsString,RecordOff,RecordString,Remove,Replay,ReplayString,Restart,Restore,RestoreDefaults,RestoreString,Save,SaveDefaults,SaveString,Score,Screw,ScrewWith,Script,ScriptOff,ScriptString,Search,SenseImplicit,Set,SetTo,ShowTo,Sit,SitOn,Sleep,Smell,SmellImplicit,South,Southeast,Southwest,SpecialTopic,Stand,StandOn,Starboard,Strike,Switch,Take,TakeFrom,TalkTo,Taste,TellAbout,TellVague,Terse,Throw,ThrowAt,ThrowDir,ThrowTo,TipMode,Topics,Travel,TravelDir,TravelVia,Turn,TurnOff,TurnOn,TurnTo,TurnWith,TypeLiteralOn,TypeOn,Undo,Unfasten,UnfastenFrom,Unlock,UnlockWith,Unplug,UnplugFrom,Unscrew,UnscrewWith,Up,VagueTravel,Verbose,Version,Wait,Wear,West,Yell,YesAction|}, ${2:insertOtherObjectHere})", "$0"
 		],
 		"description": "Tads3 remapTo snippet"
 	},
 	"Tads3 preCond snippet" : { 
-		"prefix": ["preCondition array"], 
+		"prefix": "preCondition array", 
 		"body": [    
 			"preCond = [${1|doorOpen,touchObj,objVisible,objAudible,objSmellable,actorStanding,actorTravelReady,actorDirectlyInRoom,actorReadyToEnterNestedRoom,canTalkToObj,objHeld,roomToHoldObj,objNotWorn,objOpen,objClosed,objUnlocked,dropDestinationIsOuterRoom,objBurning,objEmpty|}]",
 			"$0"
@@ -375,185 +317,27 @@
 		"description": "Tads3 dobjFor snippet"
 	},
 	"Tads3 preCondition snippet" : { 
-		"prefix": ["preCondition"], 
+		"prefix": "preCondition", 
 		"body": [    
 			"${1|doorOpen,touchObj,objVisible,objAudible,objSmellable,actorStanding,actorTravelReady,actorDirectlyInRoom,actorReadyToEnterNestedRoom,canTalkToObj,objHeld,roomToHoldObj,objNotWorn,objOpen,objClosed,objUnlocked,dropDestinationIsOuterRoom,objBurning,objEmpty|}"
 		],
 		"description": "Tads3 single preCondition snippet"
 	},
-	"Tads3 for-loop": {
-		"prefix": ["for", "for-local"],
-		"body": ["for (local ${2:i=0}; ${3:i<=$4} ;${5:i++}) {", "\t$0", "}"],
-		"description": "Tads3 for-loop."
-	},
-	"Tads3 while-loop": {
-		"prefix": ["while", "while"],
-		"body": ["while (${1:i=0}) {", "\t$0", "}"],
-		"description": "Tads3 for-loop."
-	},
-	"Tads3 switch-case": {
-		"prefix": ["switch", "switch"],
-		"body": ["switch (${1:expression}) {", 
-			"\tcase $2:",
-				"\t\t$3",
-				"\t\tbreak;",
-			"\tdefault:",
-				"\t\t$4",
-				"\t\tbreak;", 
-			"}\n$0"],
-		"description": "Tads3 for-loop."
-	},
-	"Tads3 single-case": {
-		"prefix": ["case", "case"],
-		"body": ["case ${1:expression}:\t${2:}${3|break,return|}$4;$0"],
-		"description": "Tads3 single case (within switch statement)."
-	},
-	"Tads3 foreach loop": {
-		"prefix": ["foreach"],
-		"body": ["foreach(local ${1:x}=${:0} in ${2} ) {","$0}",""],
-		"description": "Tads3 foreach loop snippet"
-	},
 
 	
-	"Tads3 forEachInstance loop": {
-		"prefix": ["forEachInstance"],
-		"body": ["forEachInstance($1, function( ${1/(.*)/${1:/downcase}/} ) {","\t$2", "}","$0"],
-		"description": "Tads3 foreach loop snippet"
-	},
-	
-	"Tads3 .sort": {
-		"prefix": [".sort"],
-		"body": [".sort(${1|SortAsc,SortDesc|}, {a, b: $2a - b })","$0"],
-		"description": "Tads3 sort snippet"
-	},
 
-	"Tads3 .forEach": {
-		"prefix": [".forEach"],
-		"body": [".forEach(${1|{x:,function(x) {\n\t\n|}$2})$0;"],
-		"description": "Tads3 forEach snippet"
-	},
-	"Tads3 .valWhich": {
-		"prefix": [".valWhich"],
-		"body": [".valWhich(${1|{x:,function(x) {\n\t\n|}$2})$0;"],
-		"description": "Tads3 valWhich snippet"
-	},
-	"Tads3 .indexWhich": {
-		"prefix": [".indexWhich"],
-		"body": [".indexWhich(${1|{x:,function(x) {\n\t\n|}$2})$0;"],
-		"description": "Tads3 indexWhich snippet"
-	},
-	"Tads3 .subset": {
-		"prefix": [".subset"],
-		"body": [".subset(${1|{x:,function(x) {\n\t\n|}$2})$0;"],
-		"description": "Tads3 subset snippet"
-	},
-	"Tads3 .sublist": {
-		"prefix": [".sublist"],
-		"body": [".sublist(${1|{x:,function(x) {\n\t\n|}$2})$0;"],
-		"description": "Tads3 sublist snippet"
-	},
-	"Tads3 .mapAll": {
-		"prefix": [".mapAll"],
-		"body": [".mapAll(${1|{x:,function(x) {\n\t\n|}$2})$0;"],
-		"description": "Tads3 mapAll snippet"
-	},
-	
-	"Tads3 action function snippet" : { 
-		"prefix": ["action"], 
-		"body": [    
-			"action() {",
-			"\t$1",
-			"}"
-		],
-		"description": "Tads3 action function snippet"
-	},
 
-	"Tads3 verify function snippet" : { 
-		"prefix": ["verify"], 
-		"body": [    
-			"verify() {",
-			"\t$1",
-			"}"
-		],
-		"description": "Tads3 verify function snippet"
-	},
-	"Tads3 check function snippet" : { 
-		"prefix": ["check"], 
-		"body": [    
-			"check() {",
-			"\t$1",
-			"}"
-		],
-		"description": "Tads3 check function snippet"
-	},
-	"Tads3 if-expression" : { 
-		"prefix": "if", 
-		"body": [    
-			"if ($1) {",
-			"\t$2",
-			"}"
-		],
-		"description": "Tads3 if expression snippet"
-	},
-	"Tads3 else-expression" : { 
-		"prefix": "else", 
-		"body": [    
-			"else {",
-			"\t$2",
-			"}"
-		],
-		"description": "Tads3 else expression snippet"
-	},
-	"Tads3 else if-expression" : { 
-		"prefix": "else if", 
-		"body": [
-			"else if ($1) {",
-			"\t$2",
-			"}"
-		],
-		"description": "Tads3 if else expression snippet"
-	},
 
-	"Tads3 global gDobj" : { 
-		"prefix": "gDobj", 
-		"body": [
-			"gDobj"
-		],
-		"description": "Tads3 global gDobj"
-	},
-	"Tads3 global gIobj" : { 
-		"prefix": "gIobj", 
-		"body": [
-			"gIobj"
-		],
-		"description": "Tads3 global variable gIobj"
-	},
-	"Tads3 global gActor" : { 
-		"prefix": "gActor", 
-		"body": [
-			"gActor"
-		],
-		"description": "Tads3 global variable gActor"
-	},
-	"Tads3 global gActorIn" : { 
-		"prefix": "gActorIn", 
-		"body": [
-			"gActorIn($0)"
-		],
-		"description": "Tads3 global function gActorIn"
-	},
-	"Tads3 global gActorIs" : { 
-		"prefix": "gActorIs", 
-		"body": [
-			"gActorIs == $0"
-		],
-		"description": "Tads3 global function gActorIs"
-	},
+
+
+
+
+
 
 
 
     "Tads3 class definition snippet" : { 
-		"prefix": ["class", "def"], 
+		"prefix": "class", 
 		"body": [    
 		  "class $1: ${2|object,AbortImplicitSignal,AccompanyingInTravelState,AccompanyingState,Achievement,Action,ActionRemappingTooComplexError,Actor,ActorByeTopic,ActorHelloTopic,ActorResolver,ActorResolveResults,ActorState,ActorTopicDatabase,AdjPhraseWithVocab,AfterCommandReport,AgendaItem,AllAction,AllInContainerNounPhraseProd,AllPluralProd,AltTopic,AmbigObjectAnnouncement,AmbigResponseKeeper,AnonFuncPtr,ArbitraryNounProd,AskAboutForTopic,AskConnector,AskForTopic,AskTellAboutForTopic,AskTellGiveShowTopic,AskTellShowTopic,AskTellTopic,AskTopic,Attachable,AutoClosingDoor,BagAffinityInfo,BagOfHolding,BannerOutputStream,BannerUIWindow,BannerWindow,BaseContentsLister,BaseInlineContentsLister,BaseMultiLoc,BaseRearContentsLister,BaseSurfaceContentsLister,BaseThingContentsLister,BaseUndersideContentsLister,BasicBed,BasicChair,BasicContainer,BasicContainerResolver,BasicDoor,BasicEvent,BasicEventManager,BasicInputDef,BasicLocation,BasicOpenable,BasicPlatform,BasicPossessiveProd,BasicProd,BasicResolveResults,Bed,BeforeCommandReport,BigNumber,BinarySettingsItem,Booth,BoredByeTopic,BoredomAgendaItem,BothPluralProd,BreakLoopSignal,BulkLimiter,ButPossessiveProd,ButProd,Button,ByeTopic,ByteArray,CancelCommandLineException,Candle,CanTouchInfo,CaptureFilter,Chair,CharacterSet,CheckStatus,CheckStatusFailure,ChildNameAsOther,CircularExecException,ClientEventRequest,ClientSession,Collection,Collective,CollectiveGroup,CommandActorAction,CommandAnnouncement,CommandProd,CommandProdWithActor,CommandProdWithAmbiguousConj,CommandProdWithDefiniteConj,CommandRanking,CommandRankingByProblem,CommandRankingByWeakness,CommandRankingCriterion,CommandReport,CommandReportMessage,CommandSepAnnouncement,CommandTopic,CommandTranscript,CompassDirection,CompilerException,ComplexComponent,ComplexContainer,Component,Consultable,ConsultTopic,Container,ContainerDoor,ContainerNounPhraseProd,ContainerResolver,ContentsLister,ConvAgendaItem,ConvBeginReport,ConvBoundaryReport,ConvEndReport,ConversationReadyState,ConvIAction,ConvNode,ConvTopicResolver,ConvTopicTAction,ConvType,CosmeticSpacingCommandReport,CustomFixture,CustomImmovable,CustomRoomLister,CyclicEventList,Daemon,DangerousVerifyResult,DarkRoom,Date,DeadEndConnector,Decoration,DefaultAction,DefaultAnyTopic,DefaultAskConnector,DefaultAskForTopic,DefaultAskTellTopic,DefaultAskTopic,DefaultCommandReport,DefaultCommandTopic,DefaultConsultTopic,DefaultDescCommandReport,DefaultGiveShowTopic,DefaultGiveTopic,DefaultInitiateTopic,DefaultObjectAnnouncement,DefaultShowTopic,DefaultTellTopic,DefaultTopic,DefaultWall,DefiniteNounProd,DefinitePluralProd,DelayedAgendaItem,DescContentsLister,DestInfo,Dial,Dictionary,Direction,DirectionProd,DisambigException,DisambigOrdinalOutOfRangeException,DisambigOrdProd,DisambigPossessiveProd,DisambigProd,DisambigRanking,DisambigResolver,DisambigResults,DisambigVocabProd,Dispensable,Dispenser,DistanceConnector,Distant,Distinguisher,DividedInventoryLister,Door,DownloadTempFile,DropType,DropTypeShortThrow,DropTypeThrow,DynamicFunc,DynamicProd,EmptyLiteralPhraseProd,EmptyNounPhraseProd,EmptyTopicPhraseProd,EndOfDescReport,EndOfFileException,Enterable,EnTravelVia,EntryPortal,EquivalentStateInfo,Event,EventAction,EventList,EverythingButProd,EverythingProd,ExactQuantifiedPluralProd,ExactQuantifiedPossessivePluralProd,Exception,ExceptListProd,ExceptResolver,ExceptResults,Exitable,ExitActionSignal,ExitLister,ExitOnlyPassage,ExitPortal,ExitSignal,ExternalEventList,ExtraCommandReport,FailCommandMarker,FailCommandReport,FakeConnector,FakeDestination,File,FileClosedException,FileCreationException,FileException,FileInfo,FileIOException,FileModeException,FileName,FileNotFoundException,FileOpenException,FileSafetyException,FileSyncException,FileUpload,FillMedium,FinishOption,FinishType,FireSource,FirstCommandProd,FirstCommandProdWithActor,Fixture,Flashlight,Floor,Floorless,FloorlessRoom,FollowInfo,Food,Footnote,FueledLightSource,FullCommandReport,Fuse,GameID,GameInfoModuleID,GameMainDef,GetVerbPhraseContext,GiveShowTopic,GiveTopic,GlobalRemapping,Goal,GrammarAltInfo,GrammarAltTokInfo,GrammarProd,GroupSeparatorMessage,GroupSublister,GuidedInTravelState,GuidedTourState,Heavy,HelloGoodbyeTopic,HelloTopic,HerAdjProd,HermitActorState,HerProd,HerselfProd,HersNounProd,Hidden,HiddenDoor,HighNestedRoom,HimProd,HimselfProd,Hint,HintLongTopicItem,HintMenu,HintMenuObject,HisAdjProd,HisNounProd,HtmlStyleTag,HTTPRequest,HTTPServer,IAction,IllogicalAlreadyVerifyResult,IllogicalNowVerifyResult,IllogicalSelfVerifyResult,IllogicalVerifyResult,Immovable,ImpByeTopic,ImpHelloTopic,ImplicitActionAnnouncement,ImplicitAnnouncementContext,ImpliedActorNounPhraseProd,InaccessibleVerifyResult,InConversationState,IndefiniteNounButProd,IndefiniteNounProd,IndexedIterator,IndirectLockable,InitiateTopic,InitObject,InputDef,Intangible,InteractiveResolver,InternalSeparatorMessage,IntrinsicClass,IntrinsicClassModifier,InventoryLister,InventorySublister,IobjResolver,ItemizingCollectiveGroup,Iterator,ItProd,ItsAdjProd,ItselfProd,ItsNounProd,Key,KeyedContainer,Keyring,LabeledDial,LayeredNounPhraseProd,LeaveByeTopic,Lever,LightSource,Linkable,List,ListButProd,Lister,ListGroup,ListGroupCustom,ListGroupEquivalent,ListGroupParen,ListGroupPrefixSuffix,ListGroupSorted,ListImpCtx,LiteralAction,LiteralActionBase,LiteralProd,LiteralTAction,LocateInParent,Lockable,LockableContainer,LockableWithKey,LogConsole,LogicalVerifyResult,LookupTable,LookupTableIterator,LookWhereContentsLister,MainCommandReport,MajorAttachmentLister,MarkerReport,Matchbook,Matchstick,Material,MenuItem,MenuLongTopicItem,MenuObject,MenuTopicItem,MenuTopicSubItem,MeProd,MessageBuilder,MessageHelper,MessageResult,MetadataModuleID,MineNounProd,MiscTopic,MissingObjectRanking,ModuleExecObject,ModuleID,MonitorFilter,MultiFaceted,MultiFacetedFacet,MultiInstance,MultiInstanceInstance,MultiLoc,MultiObjectAnnouncement,MyAdjProd,NameAsOther,NameAsParent,NearbyAttachable,NestedRoom,NestedRoomFloor,NetEvent,NetException,NetReplyDoneEvent,NetReplyEvent,NetRequestEvent,NetSafetyException,NetTimeoutEvent,Noise,NominalPlatform,NonObviousVerifyResult,NonPortable,NoTopic,NoTravelMessage,NounListProd,NounPhraseProd,NounPhraseWithVocab,NounWordProd,NumberedDial,NumberProd,Object,ObjectPreCondition,ObjOpenCondition,Occluder,Odor,OneOfIndexGen,OneTimePromptDaemon,OneWayRoomConnector,OnOffControl,OopsResults,Openable,OpenableContainer,OutdoorRoom,OutOfReach,OutputFilter,OutputStream,OutputStreamWindow,ParagraphLister,ParagraphManager,ParseFailureException,ParserException,Passage,PathPassage,PendingCommandAction,PendingCommandInfo,PendingCommandMarker,PendingCommandToks,PendingConvInfo,PendingResponseInfo,PermanentAttachment,PermanentAttachmentChild,Person,Platform,PlugAttachable,PluralProd,PossessiveNounProd,PossessivePluralProd,PossessivePronounAdjProd,PossessivePronounNounProd,PossessiveResolver,PostRestoreObject,PostUndoObject,Posture,PreCondDesc,PreCondition,PreinitObject,PrepSingleNounProd,PrepSingleTopicProd,PreResolvedAmbigProd,PreResolvedLiteralProd,PreResolvedProd,PreRestartObject,PreSaveObject,PresentLater,ProgramException,PromptDaemon,PronounProd,ProxyResolver,PushTravelBarrier,PushTraveler,QuantifiedPluralProd,QuestionCommandReport,QuittingException,RandomEventList,RandomFiringScript,Readable,RealTimeDaemon,RealTimeEvent,RealTimeFuse,RealTimeSenseDaemon,RealTimeSenseFuse,RearContainer,RearSurface,ReflexivePronounProd,RelativeDirection,RemapActionSignal,RemappedActionAnnouncement,RemoteRoomLister,ReplacementCommandStringException,ResolveAsker,ResolvedTopic,ResolveInfo,Resolver,ResolveResults,RestartSignal,RestrictedContainer,RestrictedHolder,RestrictedRearContainer,RestrictedRearSurface,RestrictedSurface,RestrictedUnderside,RetryCommandTokensException,RexPattern,Room,RoomActorGrouper,RoomAutoConnector,RoomConnector,RoomPart,RoomPartItem,RuntimeError,SameLocationCondition,Schedulable,Script,SecretDoor,SecretFixture,Sense,SenseConnector,SenseDaemon,SenseFuse,SenseInfo,SenseLister,SensoryEmanation,SensoryEvent,Settable,SettingsFileComment,SettingsFileData,SettingsFileItem,SettingsItem,SettingsNotSupportedException,Shipboard,ShipboardDirection,ShipboardRoom,ShowTopic,ShuffledEventList,ShuffledIntegerList,ShuffledList,SightEvent,SightObserver,SightTouchInfo,SimpleAchievement,SimpleAttachmentLister,SimpleLister,SimpleNoise,SimpleOdor,SingleContainer,SingleNounProd,SingleNounWithListProd,SmellEvent,SmellObserver,SocketDisconnectException,SoundEvent,SoundObserver,SpaceOverlay,SpaceOverlayAbandonFinisher,SpecialDescContentsLister,SpecialsToHtmlState,SpecialTopic,SpringLever,StackFrameDesc,StackFrameRef,Stairway,StairwayDown,StairwayUp,StillAmbiguousException,StillToResolveItem,StopEventList,StorageServerError,StretchyContainer,String,StringBuffer,StringCaptureFilter,StringComparator,StringPreParser,StringSettingsItem,StyleTag,SuggestedAskForTopic,SuggestedAskTopic,SuggestedGiveTopic,SuggestedNoTopic,SuggestedShowTopic,SuggestedTellTopic,SuggestedTopic,SuggestedTopicLister,SuggestedTopicTree,SuggestedYesTopic,SuggestionListGroup,Surface,Switch,SwitchableCaptureFilter,SyncEventList,SystemAction,T3StackInfo,TAction,TActionTopicResolver,TadsObject,TellTopic,TemporaryFile,TentativeResolveResults,TerminateCommandException,TheirAdjProd,TheirsNounProd,ThemProd,ThemselvesProd,Thing,ThingMatchTopic,ThingState,ThroughPassage,TIAction,TimeZone,Tip,Tokenizer,TokenizerError,TokenListProd,TokErrorNoMatch,TopHintMenu,Topic,TopicAction,TopicActionBase,TopicDatabase,TopicEntry,TopicGroup,TopicMatchTopic,TopicOrThingMatchTopic,TopicProd,TopicQualifierResolver,TopicResolver,TopicTAction,TouchObjCondition,TourGuide,TranscriptTransform,TravelBarrier,TravelConnector,TravelConnectorLink,Traveler,TravelerDirectlyInRoom,TravelMessage,TravelMessageHandler,TravelPushable,TravelWithMessage,TryAsActorResolveResults,UnboundInheritedMultiMethod,UnboundMultiMethod,Underside,UnknownCharSetException,UnlistedProxyConnector,UnmatchedDisambigException,UntakeableActor,Unthing,VagueContainerDefiniteNounPhraseProd,VagueContainerIndefiniteNounPhraseProd,VagueContainerNounPhraseProd,VagueContainerResolver,Vaporous,Vector,Vehicle,VehicleBarrier,VerifyResult,VerifyResultList,VerticalDirection,VocabObject,WeakRefLookupTable,Wearable,WearingLister,WearingSublister,WebBannerWin,WebCommandWin,WebLayoutWindow,WebResource,WebResourceGroup,WebResourceInit,WebResourceResFile,WebStatusWin,WebUIPrefs,WebUIProfile,WebWindow,WebWinOutputStream,YesNoTopic,YesTopic,YouProd,YourAdjProd,YoursNounProd|} '${3:$1}' '${4:$1}'",
 		  "\t\"$5\"$6",
@@ -563,7 +347,7 @@
 	},
   
 	"Tads3 object snippet" : { 
-		  "prefix": ["object", "o"], 
+		  "prefix": "object", 
 		  "body": [    
 			"$1: ${2|object,AbortImplicitSignal,AccompanyingInTravelState,AccompanyingState,Achievement,Action,ActionRemappingTooComplexError,Actor,ActorByeTopic,ActorHelloTopic,ActorResolver,ActorResolveResults,ActorState,ActorTopicDatabase,AdjPhraseWithVocab,AfterCommandReport,AgendaItem,AllAction,AllInContainerNounPhraseProd,AllPluralProd,AltTopic,AmbigObjectAnnouncement,AmbigResponseKeeper,AnonFuncPtr,ArbitraryNounProd,AskAboutForTopic,AskConnector,AskForTopic,AskTellAboutForTopic,AskTellGiveShowTopic,AskTellShowTopic,AskTellTopic,AskTopic,Attachable,AutoClosingDoor,BagAffinityInfo,BagOfHolding,BannerOutputStream,BannerUIWindow,BannerWindow,BaseContentsLister,BaseInlineContentsLister,BaseMultiLoc,BaseRearContentsLister,BaseSurfaceContentsLister,BaseThingContentsLister,BaseUndersideContentsLister,BasicBed,BasicChair,BasicContainer,BasicContainerResolver,BasicDoor,BasicEvent,BasicEventManager,BasicInputDef,BasicLocation,BasicOpenable,BasicPlatform,BasicPossessiveProd,BasicProd,BasicResolveResults,Bed,BeforeCommandReport,BigNumber,BinarySettingsItem,Booth,BoredByeTopic,BoredomAgendaItem,BothPluralProd,BreakLoopSignal,BulkLimiter,ButPossessiveProd,ButProd,Button,ByeTopic,ByteArray,CancelCommandLineException,Candle,CanTouchInfo,CaptureFilter,Chair,CharacterSet,CheckStatus,CheckStatusFailure,ChildNameAsOther,CircularExecException,ClientEventRequest,ClientSession,Collection,Collective,CollectiveGroup,CommandActorAction,CommandAnnouncement,CommandProd,CommandProdWithActor,CommandProdWithAmbiguousConj,CommandProdWithDefiniteConj,CommandRanking,CommandRankingByProblem,CommandRankingByWeakness,CommandRankingCriterion,CommandReport,CommandReportMessage,CommandSepAnnouncement,CommandTopic,CommandTranscript,CompassDirection,CompilerException,ComplexComponent,ComplexContainer,Component,Consultable,ConsultTopic,Container,ContainerDoor,ContainerNounPhraseProd,ContainerResolver,ContentsLister,ConvAgendaItem,ConvBeginReport,ConvBoundaryReport,ConvEndReport,ConversationReadyState,ConvIAction,ConvNode,ConvTopicResolver,ConvTopicTAction,ConvType,CosmeticSpacingCommandReport,CustomFixture,CustomImmovable,CustomRoomLister,CyclicEventList,Daemon,DangerousVerifyResult,DarkRoom,Date,DeadEndConnector,Decoration,DefaultAction,DefaultAnyTopic,DefaultAskConnector,DefaultAskForTopic,DefaultAskTellTopic,DefaultAskTopic,DefaultCommandReport,DefaultCommandTopic,DefaultConsultTopic,DefaultDescCommandReport,DefaultGiveShowTopic,DefaultGiveTopic,DefaultInitiateTopic,DefaultObjectAnnouncement,DefaultShowTopic,DefaultTellTopic,DefaultTopic,DefaultWall,DefiniteNounProd,DefinitePluralProd,DelayedAgendaItem,DescContentsLister,DestInfo,Dial,Dictionary,Direction,DirectionProd,DisambigException,DisambigOrdinalOutOfRangeException,DisambigOrdProd,DisambigPossessiveProd,DisambigProd,DisambigRanking,DisambigResolver,DisambigResults,DisambigVocabProd,Dispensable,Dispenser,DistanceConnector,Distant,Distinguisher,DividedInventoryLister,Door,DownloadTempFile,DropType,DropTypeShortThrow,DropTypeThrow,DynamicFunc,DynamicProd,EmptyLiteralPhraseProd,EmptyNounPhraseProd,EmptyTopicPhraseProd,EndOfDescReport,EndOfFileException,Enterable,EnTravelVia,EntryPortal,EquivalentStateInfo,Event,EventAction,EventList,EverythingButProd,EverythingProd,ExactQuantifiedPluralProd,ExactQuantifiedPossessivePluralProd,Exception,ExceptListProd,ExceptResolver,ExceptResults,Exitable,ExitActionSignal,ExitLister,ExitOnlyPassage,ExitPortal,ExitSignal,ExternalEventList,ExtraCommandReport,FailCommandMarker,FailCommandReport,FakeConnector,FakeDestination,File,FileClosedException,FileCreationException,FileException,FileInfo,FileIOException,FileModeException,FileName,FileNotFoundException,FileOpenException,FileSafetyException,FileSyncException,FileUpload,FillMedium,FinishOption,FinishType,FireSource,FirstCommandProd,FirstCommandProdWithActor,Fixture,Flashlight,Floor,Floorless,FloorlessRoom,FollowInfo,Food,Footnote,FueledLightSource,FullCommandReport,Fuse,GameID,GameInfoModuleID,GameMainDef,GetVerbPhraseContext,GiveShowTopic,GiveTopic,GlobalRemapping,Goal,GrammarAltInfo,GrammarAltTokInfo,GrammarProd,GroupSeparatorMessage,GroupSublister,GuidedInTravelState,GuidedTourState,Heavy,HelloGoodbyeTopic,HelloTopic,HerAdjProd,HermitActorState,HerProd,HerselfProd,HersNounProd,Hidden,HiddenDoor,HighNestedRoom,HimProd,HimselfProd,Hint,HintLongTopicItem,HintMenu,HintMenuObject,HisAdjProd,HisNounProd,HtmlStyleTag,HTTPRequest,HTTPServer,IAction,IllogicalAlreadyVerifyResult,IllogicalNowVerifyResult,IllogicalSelfVerifyResult,IllogicalVerifyResult,Immovable,ImpByeTopic,ImpHelloTopic,ImplicitActionAnnouncement,ImplicitAnnouncementContext,ImpliedActorNounPhraseProd,InaccessibleVerifyResult,InConversationState,IndefiniteNounButProd,IndefiniteNounProd,IndexedIterator,IndirectLockable,InitiateTopic,InitObject,InputDef,Intangible,InteractiveResolver,InternalSeparatorMessage,IntrinsicClass,IntrinsicClassModifier,InventoryLister,InventorySublister,IobjResolver,ItemizingCollectiveGroup,Iterator,ItProd,ItsAdjProd,ItselfProd,ItsNounProd,Key,KeyedContainer,Keyring,LabeledDial,LayeredNounPhraseProd,LeaveByeTopic,Lever,LightSource,Linkable,List,ListButProd,Lister,ListGroup,ListGroupCustom,ListGroupEquivalent,ListGroupParen,ListGroupPrefixSuffix,ListGroupSorted,ListImpCtx,LiteralAction,LiteralActionBase,LiteralProd,LiteralTAction,LocateInParent,Lockable,LockableContainer,LockableWithKey,LogConsole,LogicalVerifyResult,LookupTable,LookupTableIterator,LookWhereContentsLister,MainCommandReport,MajorAttachmentLister,MarkerReport,Matchbook,Matchstick,Material,MenuItem,MenuLongTopicItem,MenuObject,MenuTopicItem,MenuTopicSubItem,MeProd,MessageBuilder,MessageHelper,MessageResult,MetadataModuleID,MineNounProd,MiscTopic,MissingObjectRanking,ModuleExecObject,ModuleID,MonitorFilter,MultiFaceted,MultiFacetedFacet,MultiInstance,MultiInstanceInstance,MultiLoc,MultiObjectAnnouncement,MyAdjProd,NameAsOther,NameAsParent,NearbyAttachable,NestedRoom,NestedRoomFloor,NetEvent,NetException,NetReplyDoneEvent,NetReplyEvent,NetRequestEvent,NetSafetyException,NetTimeoutEvent,Noise,NominalPlatform,NonObviousVerifyResult,NonPortable,NoTopic,NoTravelMessage,NounListProd,NounPhraseProd,NounPhraseWithVocab,NounWordProd,NumberedDial,NumberProd,Object,ObjectPreCondition,ObjOpenCondition,Occluder,Odor,OneOfIndexGen,OneTimePromptDaemon,OneWayRoomConnector,OnOffControl,OopsResults,Openable,OpenableContainer,OutdoorRoom,OutOfReach,OutputFilter,OutputStream,OutputStreamWindow,ParagraphLister,ParagraphManager,ParseFailureException,ParserException,Passage,PathPassage,PendingCommandAction,PendingCommandInfo,PendingCommandMarker,PendingCommandToks,PendingConvInfo,PendingResponseInfo,PermanentAttachment,PermanentAttachmentChild,Person,Platform,PlugAttachable,PluralProd,PossessiveNounProd,PossessivePluralProd,PossessivePronounAdjProd,PossessivePronounNounProd,PossessiveResolver,PostRestoreObject,PostUndoObject,Posture,PreCondDesc,PreCondition,PreinitObject,PrepSingleNounProd,PrepSingleTopicProd,PreResolvedAmbigProd,PreResolvedLiteralProd,PreResolvedProd,PreRestartObject,PreSaveObject,PresentLater,ProgramException,PromptDaemon,PronounProd,ProxyResolver,PushTravelBarrier,PushTraveler,QuantifiedPluralProd,QuestionCommandReport,QuittingException,RandomEventList,RandomFiringScript,Readable,RealTimeDaemon,RealTimeEvent,RealTimeFuse,RealTimeSenseDaemon,RealTimeSenseFuse,RearContainer,RearSurface,ReflexivePronounProd,RelativeDirection,RemapActionSignal,RemappedActionAnnouncement,RemoteRoomLister,ReplacementCommandStringException,ResolveAsker,ResolvedTopic,ResolveInfo,Resolver,ResolveResults,RestartSignal,RestrictedContainer,RestrictedHolder,RestrictedRearContainer,RestrictedRearSurface,RestrictedSurface,RestrictedUnderside,RetryCommandTokensException,RexPattern,Room,RoomActorGrouper,RoomAutoConnector,RoomConnector,RoomPart,RoomPartItem,RuntimeError,SameLocationCondition,Schedulable,Script,SecretDoor,SecretFixture,Sense,SenseConnector,SenseDaemon,SenseFuse,SenseInfo,SenseLister,SensoryEmanation,SensoryEvent,Settable,SettingsFileComment,SettingsFileData,SettingsFileItem,SettingsItem,SettingsNotSupportedException,Shipboard,ShipboardDirection,ShipboardRoom,ShowTopic,ShuffledEventList,ShuffledIntegerList,ShuffledList,SightEvent,SightObserver,SightTouchInfo,SimpleAchievement,SimpleAttachmentLister,SimpleLister,SimpleNoise,SimpleOdor,SingleContainer,SingleNounProd,SingleNounWithListProd,SmellEvent,SmellObserver,SocketDisconnectException,SoundEvent,SoundObserver,SpaceOverlay,SpaceOverlayAbandonFinisher,SpecialDescContentsLister,SpecialsToHtmlState,SpecialTopic,SpringLever,StackFrameDesc,StackFrameRef,Stairway,StairwayDown,StairwayUp,StillAmbiguousException,StillToResolveItem,StopEventList,StorageServerError,StretchyContainer,String,StringBuffer,StringCaptureFilter,StringComparator,StringPreParser,StringSettingsItem,StyleTag,SuggestedAskForTopic,SuggestedAskTopic,SuggestedGiveTopic,SuggestedNoTopic,SuggestedShowTopic,SuggestedTellTopic,SuggestedTopic,SuggestedTopicLister,SuggestedTopicTree,SuggestedYesTopic,SuggestionListGroup,Surface,Switch,SwitchableCaptureFilter,SyncEventList,SystemAction,T3StackInfo,TAction,TActionTopicResolver,TadsObject,TellTopic,TemporaryFile,TentativeResolveResults,TerminateCommandException,TheirAdjProd,TheirsNounProd,ThemProd,ThemselvesProd,Thing,ThingMatchTopic,ThingState,ThroughPassage,TIAction,TimeZone,Tip,Tokenizer,TokenizerError,TokenListProd,TokErrorNoMatch,TopHintMenu,Topic,TopicAction,TopicActionBase,TopicDatabase,TopicEntry,TopicGroup,TopicMatchTopic,TopicOrThingMatchTopic,TopicProd,TopicQualifierResolver,TopicResolver,TopicTAction,TouchObjCondition,TourGuide,TranscriptTransform,TravelBarrier,TravelConnector,TravelConnectorLink,Traveler,TravelerDirectlyInRoom,TravelMessage,TravelMessageHandler,TravelPushable,TravelWithMessage,TryAsActorResolveResults,UnboundInheritedMultiMethod,UnboundMultiMethod,Underside,UnknownCharSetException,UnlistedProxyConnector,UnmatchedDisambigException,UntakeableActor,Unthing,VagueContainerDefiniteNounPhraseProd,VagueContainerIndefiniteNounPhraseProd,VagueContainerNounPhraseProd,VagueContainerResolver,Vaporous,Vector,Vehicle,VehicleBarrier,VerifyResult,VerifyResultList,VerticalDirection,VocabObject,WeakRefLookupTable,Wearable,WearingLister,WearingSublister,WebBannerWin,WebCommandWin,WebLayoutWindow,WebResource,WebResourceGroup,WebResourceInit,WebResourceResFile,WebStatusWin,WebUIPrefs,WebUIProfile,WebWindow,WebWinOutputStream,YesNoTopic,YesTopic,YouProd,YourAdjProd,YoursNounProd|} ",
 			"\t$0",
@@ -574,7 +358,7 @@
   
 
     "Tads3 class with template implementation snippet" : { 
-		"prefix": ["i", "implement"], 
+		"prefix": "implement", 
 		"body": [    
 		  "$1: ${2|object,AbortImplicitSignal,AccompanyingInTravelState,AccompanyingState,Achievement,Action,ActionRemappingTooComplexError,Actor,ActorByeTopic,ActorHelloTopic,ActorResolver,ActorResolveResults,ActorState,ActorTopicDatabase,AdjPhraseWithVocab,AfterCommandReport,AgendaItem,AllAction,AllInContainerNounPhraseProd,AllPluralProd,AltTopic,AmbigObjectAnnouncement,AmbigResponseKeeper,AnonFuncPtr,ArbitraryNounProd,AskAboutForTopic,AskConnector,AskForTopic,AskTellAboutForTopic,AskTellGiveShowTopic,AskTellShowTopic,AskTellTopic,AskTopic,Attachable,AutoClosingDoor,BagAffinityInfo,BagOfHolding,BannerOutputStream,BannerUIWindow,BannerWindow,BaseContentsLister,BaseInlineContentsLister,BaseMultiLoc,BaseRearContentsLister,BaseSurfaceContentsLister,BaseThingContentsLister,BaseUndersideContentsLister,BasicBed,BasicChair,BasicContainer,BasicContainerResolver,BasicDoor,BasicEvent,BasicEventManager,BasicInputDef,BasicLocation,BasicOpenable,BasicPlatform,BasicPossessiveProd,BasicProd,BasicResolveResults,Bed,BeforeCommandReport,BigNumber,BinarySettingsItem,Booth,BoredByeTopic,BoredomAgendaItem,BothPluralProd,BreakLoopSignal,BulkLimiter,ButPossessiveProd,ButProd,Button,ByeTopic,ByteArray,CancelCommandLineException,Candle,CanTouchInfo,CaptureFilter,Chair,CharacterSet,CheckStatus,CheckStatusFailure,ChildNameAsOther,CircularExecException,ClientEventRequest,ClientSession,Collection,Collective,CollectiveGroup,CommandActorAction,CommandAnnouncement,CommandProd,CommandProdWithActor,CommandProdWithAmbiguousConj,CommandProdWithDefiniteConj,CommandRanking,CommandRankingByProblem,CommandRankingByWeakness,CommandRankingCriterion,CommandReport,CommandReportMessage,CommandSepAnnouncement,CommandTopic,CommandTranscript,CompassDirection,CompilerException,ComplexComponent,ComplexContainer,Component,Consultable,ConsultTopic,Container,ContainerDoor,ContainerNounPhraseProd,ContainerResolver,ContentsLister,ConvAgendaItem,ConvBeginReport,ConvBoundaryReport,ConvEndReport,ConversationReadyState,ConvIAction,ConvNode,ConvTopicResolver,ConvTopicTAction,ConvType,CosmeticSpacingCommandReport,CustomFixture,CustomImmovable,CustomRoomLister,CyclicEventList,Daemon,DangerousVerifyResult,DarkRoom,Date,DeadEndConnector,Decoration,DefaultAction,DefaultAnyTopic,DefaultAskConnector,DefaultAskForTopic,DefaultAskTellTopic,DefaultAskTopic,DefaultCommandReport,DefaultCommandTopic,DefaultConsultTopic,DefaultDescCommandReport,DefaultGiveShowTopic,DefaultGiveTopic,DefaultInitiateTopic,DefaultObjectAnnouncement,DefaultShowTopic,DefaultTellTopic,DefaultTopic,DefaultWall,DefiniteNounProd,DefinitePluralProd,DelayedAgendaItem,DescContentsLister,DestInfo,Dial,Dictionary,Direction,DirectionProd,DisambigException,DisambigOrdinalOutOfRangeException,DisambigOrdProd,DisambigPossessiveProd,DisambigProd,DisambigRanking,DisambigResolver,DisambigResults,DisambigVocabProd,Dispensable,Dispenser,DistanceConnector,Distant,Distinguisher,DividedInventoryLister,Door,DownloadTempFile,DropType,DropTypeShortThrow,DropTypeThrow,DynamicFunc,DynamicProd,EmptyLiteralPhraseProd,EmptyNounPhraseProd,EmptyTopicPhraseProd,EndOfDescReport,EndOfFileException,Enterable,EnTravelVia,EntryPortal,EquivalentStateInfo,Event,EventAction,EventList,EverythingButProd,EverythingProd,ExactQuantifiedPluralProd,ExactQuantifiedPossessivePluralProd,Exception,ExceptListProd,ExceptResolver,ExceptResults,Exitable,ExitActionSignal,ExitLister,ExitOnlyPassage,ExitPortal,ExitSignal,ExternalEventList,ExtraCommandReport,FailCommandMarker,FailCommandReport,FakeConnector,FakeDestination,File,FileClosedException,FileCreationException,FileException,FileInfo,FileIOException,FileModeException,FileName,FileNotFoundException,FileOpenException,FileSafetyException,FileSyncException,FileUpload,FillMedium,FinishOption,FinishType,FireSource,FirstCommandProd,FirstCommandProdWithActor,Fixture,Flashlight,Floor,Floorless,FloorlessRoom,FollowInfo,Food,Footnote,FueledLightSource,FullCommandReport,Fuse,GameID,GameInfoModuleID,GameMainDef,GetVerbPhraseContext,GiveShowTopic,GiveTopic,GlobalRemapping,Goal,GrammarAltInfo,GrammarAltTokInfo,GrammarProd,GroupSeparatorMessage,GroupSublister,GuidedInTravelState,GuidedTourState,Heavy,HelloGoodbyeTopic,HelloTopic,HerAdjProd,HermitActorState,HerProd,HerselfProd,HersNounProd,Hidden,HiddenDoor,HighNestedRoom,HimProd,HimselfProd,Hint,HintLongTopicItem,HintMenu,HintMenuObject,HisAdjProd,HisNounProd,HtmlStyleTag,HTTPRequest,HTTPServer,IAction,IllogicalAlreadyVerifyResult,IllogicalNowVerifyResult,IllogicalSelfVerifyResult,IllogicalVerifyResult,Immovable,ImpByeTopic,ImpHelloTopic,ImplicitActionAnnouncement,ImplicitAnnouncementContext,ImpliedActorNounPhraseProd,InaccessibleVerifyResult,InConversationState,IndefiniteNounButProd,IndefiniteNounProd,IndexedIterator,IndirectLockable,InitiateTopic,InitObject,InputDef,Intangible,InteractiveResolver,InternalSeparatorMessage,IntrinsicClass,IntrinsicClassModifier,InventoryLister,InventorySublister,IobjResolver,ItemizingCollectiveGroup,Iterator,ItProd,ItsAdjProd,ItselfProd,ItsNounProd,Key,KeyedContainer,Keyring,LabeledDial,LayeredNounPhraseProd,LeaveByeTopic,Lever,LightSource,Linkable,List,ListButProd,Lister,ListGroup,ListGroupCustom,ListGroupEquivalent,ListGroupParen,ListGroupPrefixSuffix,ListGroupSorted,ListImpCtx,LiteralAction,LiteralActionBase,LiteralProd,LiteralTAction,LocateInParent,Lockable,LockableContainer,LockableWithKey,LogConsole,LogicalVerifyResult,LookupTable,LookupTableIterator,LookWhereContentsLister,MainCommandReport,MajorAttachmentLister,MarkerReport,Matchbook,Matchstick,Material,MenuItem,MenuLongTopicItem,MenuObject,MenuTopicItem,MenuTopicSubItem,MeProd,MessageBuilder,MessageHelper,MessageResult,MetadataModuleID,MineNounProd,MiscTopic,MissingObjectRanking,ModuleExecObject,ModuleID,MonitorFilter,MultiFaceted,MultiFacetedFacet,MultiInstance,MultiInstanceInstance,MultiLoc,MultiObjectAnnouncement,MyAdjProd,NameAsOther,NameAsParent,NearbyAttachable,NestedRoom,NestedRoomFloor,NetEvent,NetException,NetReplyDoneEvent,NetReplyEvent,NetRequestEvent,NetSafetyException,NetTimeoutEvent,Noise,NominalPlatform,NonObviousVerifyResult,NonPortable,NoTopic,NoTravelMessage,NounListProd,NounPhraseProd,NounPhraseWithVocab,NounWordProd,NumberedDial,NumberProd,Object,ObjectPreCondition,ObjOpenCondition,Occluder,Odor,OneOfIndexGen,OneTimePromptDaemon,OneWayRoomConnector,OnOffControl,OopsResults,Openable,OpenableContainer,OutdoorRoom,OutOfReach,OutputFilter,OutputStream,OutputStreamWindow,ParagraphLister,ParagraphManager,ParseFailureException,ParserException,Passage,PathPassage,PendingCommandAction,PendingCommandInfo,PendingCommandMarker,PendingCommandToks,PendingConvInfo,PendingResponseInfo,PermanentAttachment,PermanentAttachmentChild,Person,Platform,PlugAttachable,PluralProd,PossessiveNounProd,PossessivePluralProd,PossessivePronounAdjProd,PossessivePronounNounProd,PossessiveResolver,PostRestoreObject,PostUndoObject,Posture,PreCondDesc,PreCondition,PreinitObject,PrepSingleNounProd,PrepSingleTopicProd,PreResolvedAmbigProd,PreResolvedLiteralProd,PreResolvedProd,PreRestartObject,PreSaveObject,PresentLater,ProgramException,PromptDaemon,PronounProd,ProxyResolver,PushTravelBarrier,PushTraveler,QuantifiedPluralProd,QuestionCommandReport,QuittingException,RandomEventList,RandomFiringScript,Readable,RealTimeDaemon,RealTimeEvent,RealTimeFuse,RealTimeSenseDaemon,RealTimeSenseFuse,RearContainer,RearSurface,ReflexivePronounProd,RelativeDirection,RemapActionSignal,RemappedActionAnnouncement,RemoteRoomLister,ReplacementCommandStringException,ResolveAsker,ResolvedTopic,ResolveInfo,Resolver,ResolveResults,RestartSignal,RestrictedContainer,RestrictedHolder,RestrictedRearContainer,RestrictedRearSurface,RestrictedSurface,RestrictedUnderside,RetryCommandTokensException,RexPattern,Room,RoomActorGrouper,RoomAutoConnector,RoomConnector,RoomPart,RoomPartItem,RuntimeError,SameLocationCondition,Schedulable,Script,SecretDoor,SecretFixture,Sense,SenseConnector,SenseDaemon,SenseFuse,SenseInfo,SenseLister,SensoryEmanation,SensoryEvent,Settable,SettingsFileComment,SettingsFileData,SettingsFileItem,SettingsItem,SettingsNotSupportedException,Shipboard,ShipboardDirection,ShipboardRoom,ShowTopic,ShuffledEventList,ShuffledIntegerList,ShuffledList,SightEvent,SightObserver,SightTouchInfo,SimpleAchievement,SimpleAttachmentLister,SimpleLister,SimpleNoise,SimpleOdor,SingleContainer,SingleNounProd,SingleNounWithListProd,SmellEvent,SmellObserver,SocketDisconnectException,SoundEvent,SoundObserver,SpaceOverlay,SpaceOverlayAbandonFinisher,SpecialDescContentsLister,SpecialsToHtmlState,SpecialTopic,SpringLever,StackFrameDesc,StackFrameRef,Stairway,StairwayDown,StairwayUp,StillAmbiguousException,StillToResolveItem,StopEventList,StorageServerError,StretchyContainer,String,StringBuffer,StringCaptureFilter,StringComparator,StringPreParser,StringSettingsItem,StyleTag,SuggestedAskForTopic,SuggestedAskTopic,SuggestedGiveTopic,SuggestedNoTopic,SuggestedShowTopic,SuggestedTellTopic,SuggestedTopic,SuggestedTopicLister,SuggestedTopicTree,SuggestedYesTopic,SuggestionListGroup,Surface,Switch,SwitchableCaptureFilter,SyncEventList,SystemAction,T3StackInfo,TAction,TActionTopicResolver,TadsObject,TellTopic,TemporaryFile,TentativeResolveResults,TerminateCommandException,TheirAdjProd,TheirsNounProd,ThemProd,ThemselvesProd,Thing,ThingMatchTopic,ThingState,ThroughPassage,TIAction,TimeZone,Tip,Tokenizer,TokenizerError,TokenListProd,TokErrorNoMatch,TopHintMenu,Topic,TopicAction,TopicActionBase,TopicDatabase,TopicEntry,TopicGroup,TopicMatchTopic,TopicOrThingMatchTopic,TopicProd,TopicQualifierResolver,TopicResolver,TopicTAction,TouchObjCondition,TourGuide,TranscriptTransform,TravelBarrier,TravelConnector,TravelConnectorLink,Traveler,TravelerDirectlyInRoom,TravelMessage,TravelMessageHandler,TravelPushable,TravelWithMessage,TryAsActorResolveResults,UnboundInheritedMultiMethod,UnboundMultiMethod,Underside,UnknownCharSetException,UnlistedProxyConnector,UnmatchedDisambigException,UntakeableActor,Unthing,VagueContainerDefiniteNounPhraseProd,VagueContainerIndefiniteNounPhraseProd,VagueContainerNounPhraseProd,VagueContainerResolver,Vaporous,Vector,Vehicle,VehicleBarrier,VerifyResult,VerifyResultList,VerticalDirection,VocabObject,WeakRefLookupTable,Wearable,WearingLister,WearingSublister,WebBannerWin,WebCommandWin,WebLayoutWindow,WebResource,WebResourceGroup,WebResourceInit,WebResourceResFile,WebStatusWin,WebUIPrefs,WebUIProfile,WebWindow,WebWinOutputStream,YesNoTopic,YesTopic,YouProd,YourAdjProd,YoursNounProd|} '${3:$1}'",
 		  "$0",
@@ -584,7 +368,7 @@
 	  },
 
     "Tads3 class with longer template implementation snippet" : { 
-		"prefix": ["ilt", "implement with longer template"], 
+		"prefix": "implement with longer template", 
 		"body": [    
 		  "$1: ${2|object,AbortImplicitSignal,AccompanyingInTravelState,AccompanyingState,Achievement,Action,ActionRemappingTooComplexError,Actor,ActorByeTopic,ActorHelloTopic,ActorResolver,ActorResolveResults,ActorState,ActorTopicDatabase,AdjPhraseWithVocab,AfterCommandReport,AgendaItem,AllAction,AllInContainerNounPhraseProd,AllPluralProd,AltTopic,AmbigObjectAnnouncement,AmbigResponseKeeper,AnonFuncPtr,ArbitraryNounProd,AskAboutForTopic,AskConnector,AskForTopic,AskTellAboutForTopic,AskTellGiveShowTopic,AskTellShowTopic,AskTellTopic,AskTopic,Attachable,AutoClosingDoor,BagAffinityInfo,BagOfHolding,BannerOutputStream,BannerUIWindow,BannerWindow,BaseContentsLister,BaseInlineContentsLister,BaseMultiLoc,BaseRearContentsLister,BaseSurfaceContentsLister,BaseThingContentsLister,BaseUndersideContentsLister,BasicBed,BasicChair,BasicContainer,BasicContainerResolver,BasicDoor,BasicEvent,BasicEventManager,BasicInputDef,BasicLocation,BasicOpenable,BasicPlatform,BasicPossessiveProd,BasicProd,BasicResolveResults,Bed,BeforeCommandReport,BigNumber,BinarySettingsItem,Booth,BoredByeTopic,BoredomAgendaItem,BothPluralProd,BreakLoopSignal,BulkLimiter,ButPossessiveProd,ButProd,Button,ByeTopic,ByteArray,CancelCommandLineException,Candle,CanTouchInfo,CaptureFilter,Chair,CharacterSet,CheckStatus,CheckStatusFailure,ChildNameAsOther,CircularExecException,ClientEventRequest,ClientSession,Collection,Collective,CollectiveGroup,CommandActorAction,CommandAnnouncement,CommandProd,CommandProdWithActor,CommandProdWithAmbiguousConj,CommandProdWithDefiniteConj,CommandRanking,CommandRankingByProblem,CommandRankingByWeakness,CommandRankingCriterion,CommandReport,CommandReportMessage,CommandSepAnnouncement,CommandTopic,CommandTranscript,CompassDirection,CompilerException,ComplexComponent,ComplexContainer,Component,Consultable,ConsultTopic,Container,ContainerDoor,ContainerNounPhraseProd,ContainerResolver,ContentsLister,ConvAgendaItem,ConvBeginReport,ConvBoundaryReport,ConvEndReport,ConversationReadyState,ConvIAction,ConvNode,ConvTopicResolver,ConvTopicTAction,ConvType,CosmeticSpacingCommandReport,CustomFixture,CustomImmovable,CustomRoomLister,CyclicEventList,Daemon,DangerousVerifyResult,DarkRoom,Date,DeadEndConnector,Decoration,DefaultAction,DefaultAnyTopic,DefaultAskConnector,DefaultAskForTopic,DefaultAskTellTopic,DefaultAskTopic,DefaultCommandReport,DefaultCommandTopic,DefaultConsultTopic,DefaultDescCommandReport,DefaultGiveShowTopic,DefaultGiveTopic,DefaultInitiateTopic,DefaultObjectAnnouncement,DefaultShowTopic,DefaultTellTopic,DefaultTopic,DefaultWall,DefiniteNounProd,DefinitePluralProd,DelayedAgendaItem,DescContentsLister,DestInfo,Dial,Dictionary,Direction,DirectionProd,DisambigException,DisambigOrdinalOutOfRangeException,DisambigOrdProd,DisambigPossessiveProd,DisambigProd,DisambigRanking,DisambigResolver,DisambigResults,DisambigVocabProd,Dispensable,Dispenser,DistanceConnector,Distant,Distinguisher,DividedInventoryLister,Door,DownloadTempFile,DropType,DropTypeShortThrow,DropTypeThrow,DynamicFunc,DynamicProd,EmptyLiteralPhraseProd,EmptyNounPhraseProd,EmptyTopicPhraseProd,EndOfDescReport,EndOfFileException,Enterable,EnTravelVia,EntryPortal,EquivalentStateInfo,Event,EventAction,EventList,EverythingButProd,EverythingProd,ExactQuantifiedPluralProd,ExactQuantifiedPossessivePluralProd,Exception,ExceptListProd,ExceptResolver,ExceptResults,Exitable,ExitActionSignal,ExitLister,ExitOnlyPassage,ExitPortal,ExitSignal,ExternalEventList,ExtraCommandReport,FailCommandMarker,FailCommandReport,FakeConnector,FakeDestination,File,FileClosedException,FileCreationException,FileException,FileInfo,FileIOException,FileModeException,FileName,FileNotFoundException,FileOpenException,FileSafetyException,FileSyncException,FileUpload,FillMedium,FinishOption,FinishType,FireSource,FirstCommandProd,FirstCommandProdWithActor,Fixture,Flashlight,Floor,Floorless,FloorlessRoom,FollowInfo,Food,Footnote,FueledLightSource,FullCommandReport,Fuse,GameID,GameInfoModuleID,GameMainDef,GetVerbPhraseContext,GiveShowTopic,GiveTopic,GlobalRemapping,Goal,GrammarAltInfo,GrammarAltTokInfo,GrammarProd,GroupSeparatorMessage,GroupSublister,GuidedInTravelState,GuidedTourState,Heavy,HelloGoodbyeTopic,HelloTopic,HerAdjProd,HermitActorState,HerProd,HerselfProd,HersNounProd,Hidden,HiddenDoor,HighNestedRoom,HimProd,HimselfProd,Hint,HintLongTopicItem,HintMenu,HintMenuObject,HisAdjProd,HisNounProd,HtmlStyleTag,HTTPRequest,HTTPServer,IAction,IllogicalAlreadyVerifyResult,IllogicalNowVerifyResult,IllogicalSelfVerifyResult,IllogicalVerifyResult,Immovable,ImpByeTopic,ImpHelloTopic,ImplicitActionAnnouncement,ImplicitAnnouncementContext,ImpliedActorNounPhraseProd,InaccessibleVerifyResult,InConversationState,IndefiniteNounButProd,IndefiniteNounProd,IndexedIterator,IndirectLockable,InitiateTopic,InitObject,InputDef,Intangible,InteractiveResolver,InternalSeparatorMessage,IntrinsicClass,IntrinsicClassModifier,InventoryLister,InventorySublister,IobjResolver,ItemizingCollectiveGroup,Iterator,ItProd,ItsAdjProd,ItselfProd,ItsNounProd,Key,KeyedContainer,Keyring,LabeledDial,LayeredNounPhraseProd,LeaveByeTopic,Lever,LightSource,Linkable,List,ListButProd,Lister,ListGroup,ListGroupCustom,ListGroupEquivalent,ListGroupParen,ListGroupPrefixSuffix,ListGroupSorted,ListImpCtx,LiteralAction,LiteralActionBase,LiteralProd,LiteralTAction,LocateInParent,Lockable,LockableContainer,LockableWithKey,LogConsole,LogicalVerifyResult,LookupTable,LookupTableIterator,LookWhereContentsLister,MainCommandReport,MajorAttachmentLister,MarkerReport,Matchbook,Matchstick,Material,MenuItem,MenuLongTopicItem,MenuObject,MenuTopicItem,MenuTopicSubItem,MeProd,MessageBuilder,MessageHelper,MessageResult,MetadataModuleID,MineNounProd,MiscTopic,MissingObjectRanking,ModuleExecObject,ModuleID,MonitorFilter,MultiFaceted,MultiFacetedFacet,MultiInstance,MultiInstanceInstance,MultiLoc,MultiObjectAnnouncement,MyAdjProd,NameAsOther,NameAsParent,NearbyAttachable,NestedRoom,NestedRoomFloor,NetEvent,NetException,NetReplyDoneEvent,NetReplyEvent,NetRequestEvent,NetSafetyException,NetTimeoutEvent,Noise,NominalPlatform,NonObviousVerifyResult,NonPortable,NoTopic,NoTravelMessage,NounListProd,NounPhraseProd,NounPhraseWithVocab,NounWordProd,NumberedDial,NumberProd,Object,ObjectPreCondition,ObjOpenCondition,Occluder,Odor,OneOfIndexGen,OneTimePromptDaemon,OneWayRoomConnector,OnOffControl,OopsResults,Openable,OpenableContainer,OutdoorRoom,OutOfReach,OutputFilter,OutputStream,OutputStreamWindow,ParagraphLister,ParagraphManager,ParseFailureException,ParserException,Passage,PathPassage,PendingCommandAction,PendingCommandInfo,PendingCommandMarker,PendingCommandToks,PendingConvInfo,PendingResponseInfo,PermanentAttachment,PermanentAttachmentChild,Person,Platform,PlugAttachable,PluralProd,PossessiveNounProd,PossessivePluralProd,PossessivePronounAdjProd,PossessivePronounNounProd,PossessiveResolver,PostRestoreObject,PostUndoObject,Posture,PreCondDesc,PreCondition,PreinitObject,PrepSingleNounProd,PrepSingleTopicProd,PreResolvedAmbigProd,PreResolvedLiteralProd,PreResolvedProd,PreRestartObject,PreSaveObject,PresentLater,ProgramException,PromptDaemon,PronounProd,ProxyResolver,PushTravelBarrier,PushTraveler,QuantifiedPluralProd,QuestionCommandReport,QuittingException,RandomEventList,RandomFiringScript,Readable,RealTimeDaemon,RealTimeEvent,RealTimeFuse,RealTimeSenseDaemon,RealTimeSenseFuse,RearContainer,RearSurface,ReflexivePronounProd,RelativeDirection,RemapActionSignal,RemappedActionAnnouncement,RemoteRoomLister,ReplacementCommandStringException,ResolveAsker,ResolvedTopic,ResolveInfo,Resolver,ResolveResults,RestartSignal,RestrictedContainer,RestrictedHolder,RestrictedRearContainer,RestrictedRearSurface,RestrictedSurface,RestrictedUnderside,RetryCommandTokensException,RexPattern,Room,RoomActorGrouper,RoomAutoConnector,RoomConnector,RoomPart,RoomPartItem,RuntimeError,SameLocationCondition,Schedulable,Script,SecretDoor,SecretFixture,Sense,SenseConnector,SenseDaemon,SenseFuse,SenseInfo,SenseLister,SensoryEmanation,SensoryEvent,Settable,SettingsFileComment,SettingsFileData,SettingsFileItem,SettingsItem,SettingsNotSupportedException,Shipboard,ShipboardDirection,ShipboardRoom,ShowTopic,ShuffledEventList,ShuffledIntegerList,ShuffledList,SightEvent,SightObserver,SightTouchInfo,SimpleAchievement,SimpleAttachmentLister,SimpleLister,SimpleNoise,SimpleOdor,SingleContainer,SingleNounProd,SingleNounWithListProd,SmellEvent,SmellObserver,SocketDisconnectException,SoundEvent,SoundObserver,SpaceOverlay,SpaceOverlayAbandonFinisher,SpecialDescContentsLister,SpecialsToHtmlState,SpecialTopic,SpringLever,StackFrameDesc,StackFrameRef,Stairway,StairwayDown,StairwayUp,StillAmbiguousException,StillToResolveItem,StopEventList,StorageServerError,StretchyContainer,String,StringBuffer,StringCaptureFilter,StringComparator,StringPreParser,StringSettingsItem,StyleTag,SuggestedAskForTopic,SuggestedAskTopic,SuggestedGiveTopic,SuggestedNoTopic,SuggestedShowTopic,SuggestedTellTopic,SuggestedTopic,SuggestedTopicLister,SuggestedTopicTree,SuggestedYesTopic,SuggestionListGroup,Surface,Switch,SwitchableCaptureFilter,SyncEventList,SystemAction,T3StackInfo,TAction,TActionTopicResolver,TadsObject,TellTopic,TemporaryFile,TentativeResolveResults,TerminateCommandException,TheirAdjProd,TheirsNounProd,ThemProd,ThemselvesProd,Thing,ThingMatchTopic,ThingState,ThroughPassage,TIAction,TimeZone,Tip,Tokenizer,TokenizerError,TokenListProd,TokErrorNoMatch,TopHintMenu,Topic,TopicAction,TopicActionBase,TopicDatabase,TopicEntry,TopicGroup,TopicMatchTopic,TopicOrThingMatchTopic,TopicProd,TopicQualifierResolver,TopicResolver,TopicTAction,TouchObjCondition,TourGuide,TranscriptTransform,TravelBarrier,TravelConnector,TravelConnectorLink,Traveler,TravelerDirectlyInRoom,TravelMessage,TravelMessageHandler,TravelPushable,TravelWithMessage,TryAsActorResolveResults,UnboundInheritedMultiMethod,UnboundMultiMethod,Underside,UnknownCharSetException,UnlistedProxyConnector,UnmatchedDisambigException,UntakeableActor,Unthing,VagueContainerDefiniteNounPhraseProd,VagueContainerIndefiniteNounPhraseProd,VagueContainerNounPhraseProd,VagueContainerResolver,Vaporous,Vector,Vehicle,VehicleBarrier,VerifyResult,VerifyResultList,VerticalDirection,VocabObject,WeakRefLookupTable,Wearable,WearingLister,WearingSublister,WebBannerWin,WebCommandWin,WebLayoutWindow,WebResource,WebResourceGroup,WebResourceInit,WebResourceResFile,WebStatusWin,WebUIPrefs,WebUIProfile,WebWindow,WebWinOutputStream,YesNoTopic,YesTopic,YouProd,YourAdjProd,YoursNounProd|} '${3:$1}' '${4:$1}'",
 		  "\t\"$5\"$6",
@@ -594,8 +378,8 @@
 	  },
 	  
 
-	"Tads3 std class definitions" : {
-		"prefix": ["std", "s"],
+	"Tads3 standard class definitions" : {
+		"prefix": "standard class definition",
 		"body":  [
 			"${1|object,AbortImplicitSignal,AccompanyingInTravelState,AccompanyingState,Achievement,Action,ActionRemappingTooComplexError,Actor,ActorByeTopic,ActorHelloTopic,ActorResolver,ActorResolveResults,ActorState,ActorTopicDatabase,AdjPhraseWithVocab,AfterCommandReport,AgendaItem,AllAction,AllInContainerNounPhraseProd,AllPluralProd,AltTopic,AmbigObjectAnnouncement,AmbigResponseKeeper,AnonFuncPtr,ArbitraryNounProd,AskAboutForTopic,AskConnector,AskForTopic,AskTellAboutForTopic,AskTellGiveShowTopic,AskTellShowTopic,AskTellTopic,AskTopic,Attachable,AutoClosingDoor,BagAffinityInfo,BagOfHolding,BannerOutputStream,BannerUIWindow,BannerWindow,BaseContentsLister,BaseInlineContentsLister,BaseMultiLoc,BaseRearContentsLister,BaseSurfaceContentsLister,BaseThingContentsLister,BaseUndersideContentsLister,BasicBed,BasicChair,BasicContainer,BasicContainerResolver,BasicDoor,BasicEvent,BasicEventManager,BasicInputDef,BasicLocation,BasicOpenable,BasicPlatform,BasicPossessiveProd,BasicProd,BasicResolveResults,Bed,BeforeCommandReport,BigNumber,BinarySettingsItem,Booth,BoredByeTopic,BoredomAgendaItem,BothPluralProd,BreakLoopSignal,BulkLimiter,ButPossessiveProd,ButProd,Button,ByeTopic,ByteArray,CancelCommandLineException,Candle,CanTouchInfo,CaptureFilter,Chair,CharacterSet,CheckStatus,CheckStatusFailure,ChildNameAsOther,CircularExecException,ClientEventRequest,ClientSession,Collection,Collective,CollectiveGroup,CommandActorAction,CommandAnnouncement,CommandProd,CommandProdWithActor,CommandProdWithAmbiguousConj,CommandProdWithDefiniteConj,CommandRanking,CommandRankingByProblem,CommandRankingByWeakness,CommandRankingCriterion,CommandReport,CommandReportMessage,CommandSepAnnouncement,CommandTopic,CommandTranscript,CompassDirection,CompilerException,ComplexComponent,ComplexContainer,Component,Consultable,ConsultTopic,Container,ContainerDoor,ContainerNounPhraseProd,ContainerResolver,ContentsLister,ConvAgendaItem,ConvBeginReport,ConvBoundaryReport,ConvEndReport,ConversationReadyState,ConvIAction,ConvNode,ConvTopicResolver,ConvTopicTAction,ConvType,CosmeticSpacingCommandReport,CustomFixture,CustomImmovable,CustomRoomLister,CyclicEventList,Daemon,DangerousVerifyResult,DarkRoom,Date,DeadEndConnector,Decoration,DefaultAction,DefaultAnyTopic,DefaultAskConnector,DefaultAskForTopic,DefaultAskTellTopic,DefaultAskTopic,DefaultCommandReport,DefaultCommandTopic,DefaultConsultTopic,DefaultDescCommandReport,DefaultGiveShowTopic,DefaultGiveTopic,DefaultInitiateTopic,DefaultObjectAnnouncement,DefaultShowTopic,DefaultTellTopic,DefaultTopic,DefaultWall,DefiniteNounProd,DefinitePluralProd,DelayedAgendaItem,DescContentsLister,DestInfo,Dial,Dictionary,Direction,DirectionProd,DisambigException,DisambigOrdinalOutOfRangeException,DisambigOrdProd,DisambigPossessiveProd,DisambigProd,DisambigRanking,DisambigResolver,DisambigResults,DisambigVocabProd,Dispensable,Dispenser,DistanceConnector,Distant,Distinguisher,DividedInventoryLister,Door,DownloadTempFile,DropType,DropTypeShortThrow,DropTypeThrow,DynamicFunc,DynamicProd,EmptyLiteralPhraseProd,EmptyNounPhraseProd,EmptyTopicPhraseProd,EndOfDescReport,EndOfFileException,Enterable,EnTravelVia,EntryPortal,EquivalentStateInfo,Event,EventAction,EventList,EverythingButProd,EverythingProd,ExactQuantifiedPluralProd,ExactQuantifiedPossessivePluralProd,Exception,ExceptListProd,ExceptResolver,ExceptResults,Exitable,ExitActionSignal,ExitLister,ExitOnlyPassage,ExitPortal,ExitSignal,ExternalEventList,ExtraCommandReport,FailCommandMarker,FailCommandReport,FakeConnector,FakeDestination,File,FileClosedException,FileCreationException,FileException,FileInfo,FileIOException,FileModeException,FileName,FileNotFoundException,FileOpenException,FileSafetyException,FileSyncException,FileUpload,FillMedium,FinishOption,FinishType,FireSource,FirstCommandProd,FirstCommandProdWithActor,Fixture,Flashlight,Floor,Floorless,FloorlessRoom,FollowInfo,Food,Footnote,FueledLightSource,FullCommandReport,Fuse,GameID,GameInfoModuleID,GameMainDef,GetVerbPhraseContext,GiveShowTopic,GiveTopic,GlobalRemapping,Goal,GrammarAltInfo,GrammarAltTokInfo,GrammarProd,GroupSeparatorMessage,GroupSublister,GuidedInTravelState,GuidedTourState,Heavy,HelloGoodbyeTopic,HelloTopic,HerAdjProd,HermitActorState,HerProd,HerselfProd,HersNounProd,Hidden,HiddenDoor,HighNestedRoom,HimProd,HimselfProd,Hint,HintLongTopicItem,HintMenu,HintMenuObject,HisAdjProd,HisNounProd,HtmlStyleTag,HTTPRequest,HTTPServer,IAction,IllogicalAlreadyVerifyResult,IllogicalNowVerifyResult,IllogicalSelfVerifyResult,IllogicalVerifyResult,Immovable,ImpByeTopic,ImpHelloTopic,ImplicitActionAnnouncement,ImplicitAnnouncementContext,ImpliedActorNounPhraseProd,InaccessibleVerifyResult,InConversationState,IndefiniteNounButProd,IndefiniteNounProd,IndexedIterator,IndirectLockable,InitiateTopic,InitObject,InputDef,Intangible,InteractiveResolver,InternalSeparatorMessage,IntrinsicClass,IntrinsicClassModifier,InventoryLister,InventorySublister,IobjResolver,ItemizingCollectiveGroup,Iterator,ItProd,ItsAdjProd,ItselfProd,ItsNounProd,Key,KeyedContainer,Keyring,LabeledDial,LayeredNounPhraseProd,LeaveByeTopic,Lever,LightSource,Linkable,List,ListButProd,Lister,ListGroup,ListGroupCustom,ListGroupEquivalent,ListGroupParen,ListGroupPrefixSuffix,ListGroupSorted,ListImpCtx,LiteralAction,LiteralActionBase,LiteralProd,LiteralTAction,LocateInParent,Lockable,LockableContainer,LockableWithKey,LogConsole,LogicalVerifyResult,LookupTable,LookupTableIterator,LookWhereContentsLister,MainCommandReport,MajorAttachmentLister,MarkerReport,Matchbook,Matchstick,Material,MenuItem,MenuLongTopicItem,MenuObject,MenuTopicItem,MenuTopicSubItem,MeProd,MessageBuilder,MessageHelper,MessageResult,MetadataModuleID,MineNounProd,MiscTopic,MissingObjectRanking,ModuleExecObject,ModuleID,MonitorFilter,MultiFaceted,MultiFacetedFacet,MultiInstance,MultiInstanceInstance,MultiLoc,MultiObjectAnnouncement,MyAdjProd,NameAsOther,NameAsParent,NearbyAttachable,NestedRoom,NestedRoomFloor,NetEvent,NetException,NetReplyDoneEvent,NetReplyEvent,NetRequestEvent,NetSafetyException,NetTimeoutEvent,Noise,NominalPlatform,NonObviousVerifyResult,NonPortable,NoTopic,NoTravelMessage,NounListProd,NounPhraseProd,NounPhraseWithVocab,NounWordProd,NumberedDial,NumberProd,Object,ObjectPreCondition,ObjOpenCondition,Occluder,Odor,OneOfIndexGen,OneTimePromptDaemon,OneWayRoomConnector,OnOffControl,OopsResults,Openable,OpenableContainer,OutdoorRoom,OutOfReach,OutputFilter,OutputStream,OutputStreamWindow,ParagraphLister,ParagraphManager,ParseFailureException,ParserException,Passage,PathPassage,PendingCommandAction,PendingCommandInfo,PendingCommandMarker,PendingCommandToks,PendingConvInfo,PendingResponseInfo,PermanentAttachment,PermanentAttachmentChild,Person,Platform,PlugAttachable,PluralProd,PossessiveNounProd,PossessivePluralProd,PossessivePronounAdjProd,PossessivePronounNounProd,PossessiveResolver,PostRestoreObject,PostUndoObject,Posture,PreCondDesc,PreCondition,PreinitObject,PrepSingleNounProd,PrepSingleTopicProd,PreResolvedAmbigProd,PreResolvedLiteralProd,PreResolvedProd,PreRestartObject,PreSaveObject,PresentLater,ProgramException,PromptDaemon,PronounProd,ProxyResolver,PushTravelBarrier,PushTraveler,QuantifiedPluralProd,QuestionCommandReport,QuittingException,RandomEventList,RandomFiringScript,Readable,RealTimeDaemon,RealTimeEvent,RealTimeFuse,RealTimeSenseDaemon,RealTimeSenseFuse,RearContainer,RearSurface,ReflexivePronounProd,RelativeDirection,RemapActionSignal,RemappedActionAnnouncement,RemoteRoomLister,ReplacementCommandStringException,ResolveAsker,ResolvedTopic,ResolveInfo,Resolver,ResolveResults,RestartSignal,RestrictedContainer,RestrictedHolder,RestrictedRearContainer,RestrictedRearSurface,RestrictedSurface,RestrictedUnderside,RetryCommandTokensException,RexPattern,Room,RoomActorGrouper,RoomAutoConnector,RoomConnector,RoomPart,RoomPartItem,RuntimeError,SameLocationCondition,Schedulable,Script,SecretDoor,SecretFixture,Sense,SenseConnector,SenseDaemon,SenseFuse,SenseInfo,SenseLister,SensoryEmanation,SensoryEvent,Settable,SettingsFileComment,SettingsFileData,SettingsFileItem,SettingsItem,SettingsNotSupportedException,Shipboard,ShipboardDirection,ShipboardRoom,ShowTopic,ShuffledEventList,ShuffledIntegerList,ShuffledList,SightEvent,SightObserver,SightTouchInfo,SimpleAchievement,SimpleAttachmentLister,SimpleLister,SimpleNoise,SimpleOdor,SingleContainer,SingleNounProd,SingleNounWithListProd,SmellEvent,SmellObserver,SocketDisconnectException,SoundEvent,SoundObserver,SpaceOverlay,SpaceOverlayAbandonFinisher,SpecialDescContentsLister,SpecialsToHtmlState,SpecialTopic,SpringLever,StackFrameDesc,StackFrameRef,Stairway,StairwayDown,StairwayUp,StillAmbiguousException,StillToResolveItem,StopEventList,StorageServerError,StretchyContainer,String,StringBuffer,StringCaptureFilter,StringComparator,StringPreParser,StringSettingsItem,StyleTag,SuggestedAskForTopic,SuggestedAskTopic,SuggestedGiveTopic,SuggestedNoTopic,SuggestedShowTopic,SuggestedTellTopic,SuggestedTopic,SuggestedTopicLister,SuggestedTopicTree,SuggestedYesTopic,SuggestionListGroup,Surface,Switch,SwitchableCaptureFilter,SyncEventList,SystemAction,T3StackInfo,TAction,TActionTopicResolver,TadsObject,TellTopic,TemporaryFile,TentativeResolveResults,TerminateCommandException,TheirAdjProd,TheirsNounProd,ThemProd,ThemselvesProd,Thing,ThingMatchTopic,ThingState,ThroughPassage,TIAction,TimeZone,Tip,Tokenizer,TokenizerError,TokenListProd,TokErrorNoMatch,TopHintMenu,Topic,TopicAction,TopicActionBase,TopicDatabase,TopicEntry,TopicGroup,TopicMatchTopic,TopicOrThingMatchTopic,TopicProd,TopicQualifierResolver,TopicResolver,TopicTAction,TouchObjCondition,TourGuide,TranscriptTransform,TravelBarrier,TravelConnector,TravelConnectorLink,Traveler,TravelerDirectlyInRoom,TravelMessage,TravelMessageHandler,TravelPushable,TravelWithMessage,TryAsActorResolveResults,UnboundInheritedMultiMethod,UnboundMultiMethod,Underside,UnknownCharSetException,UnlistedProxyConnector,UnmatchedDisambigException,UntakeableActor,Unthing,VagueContainerDefiniteNounPhraseProd,VagueContainerIndefiniteNounPhraseProd,VagueContainerNounPhraseProd,VagueContainerResolver,Vaporous,Vector,Vehicle,VehicleBarrier,VerifyResult,VerifyResultList,VerticalDirection,VocabObject,WeakRefLookupTable,Wearable,WearingLister,WearingSublister,WebBannerWin,WebCommandWin,WebLayoutWindow,WebResource,WebResourceGroup,WebResourceInit,WebResourceResFile,WebStatusWin,WebUIPrefs,WebUIProfile,WebWindow,WebWinOutputStream,YesNoTopic,YesTopic,YouProd,YourAdjProd,YoursNounProd|}"
 		],

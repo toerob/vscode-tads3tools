@@ -1,0 +1,254 @@
+{   
+	"Tads3 for-loop": {
+		"prefix": "for",
+		"body": ["for (local ${2:i=0}; ${3:i<=$4} ;${5:i++}) {", "\t$0", "}"],
+		"description": "Tads3 for-loop."
+	},
+	"Tads3 while-loop": {
+		"prefix": "while",
+		"body": ["while (${1:i=0}) {", "\t$0", "}"],
+		"description": "Tads3 for-loop."
+	},
+	"Tads3 switch-case": {
+		"prefix": "switch",
+		"body": ["switch (${1:expression}) {", 
+			"\tcase $2:",
+				"\t\t$3",
+				"\t\tbreak;",
+			"\tdefault:",
+				"\t\t$4",
+				"\t\tbreak;", 
+			"}\n$0"],
+		"description": "Tads3 for-loop."
+	},
+	
+	"Tads3 single-case": {
+		"prefix": "case",
+		"body": ["case ${1:expression}:\t${2:}${3|break,return|}$4;$0"],
+		"description": "Tads3 single case (within switch statement)."
+	},
+
+	"Tads3 foreach loop": {
+		"prefix": "foreach",
+		"body": ["foreach(local ${1:x}=${:0} in ${2} ) {","$0}",""],
+		"description": "Tads3 foreach loop snippet"
+	},
+
+	"Tads3 forEachInstance loop": {
+		"prefix": "forEachInstance",
+		"body": ["forEachInstance($1, function( ${1/(.*)/${1:/downcase}/} ) {","\t$2", "}","$0"],
+		"description": "Tads3 foreach loop snippet"
+	},
+	
+	"Tads3 .sort": {
+		"prefix": ".sort",
+		"body": [".sort(${1|SortAsc,SortDesc|}, {a, b: $2a - b })","$0"],
+		"description": "Tads3 sort snippet"
+	},
+
+	"Tads3 .forEach": {
+		"prefix": ".forEach",
+		"body": [".forEach(${1|{x:,function(x) {\n\t\n|}$2})$0;"],
+		"description": "Tads3 forEach snippet"
+	},
+
+	"Tads3 .valWhich": {
+		"prefix": ".valWhich",
+		"body": [".valWhich(${1|{x:,function(x) {\n\t\n|}$2})$0;"],
+		"description": "Tads3 valWhich snippet"
+	},
+
+	"Tads3 .indexWhich": {
+		"prefix": ".indexWhich",
+		"body": [".indexWhich(${1|{x:,function(x) {\n\t\n|}$2})$0;"],
+		"description": "Tads3 indexWhich snippet"
+	},
+
+	"Tads3 .subset": {
+		"prefix": ".subset",
+		"body": [".subset(${1|{x:,function(x) {\n\t\n|}$2})$0;"],
+		"description": "Tads3 subset snippet"
+	},
+
+	"Tads3 .sublist": {
+		"prefix": ".sublist",
+		"body": [".sublist(${1|{x:,function(x) {\n\t\n|}$2})$0;"],
+		"description": "Tads3 sublist snippet"
+	},
+
+	"Tads3 .mapAll": {
+		"prefix": ".mapAll",
+		"body": [".mapAll(${1|{x:,function(x) {\n\t\n|}$2})$0;"],
+		"description": "Tads3 mapAll snippet"
+	},
+
+	"Tads3 action function snippet" : { 
+		"prefix": "action",
+		"body": [    
+			"action() {",
+			"\t$1",
+			"}"
+		],
+		"description": "Tads3 action function snippet"
+	},
+
+	"Tads3 verify function snippet" : { 
+		"prefix": "verify", 
+		"body": [    
+			"verify() {",
+			"\t$1",
+			"}"
+		],
+		"description": "Tads3 verify function snippet"
+	},
+
+	"Tads3 check function snippet" : { 
+		"prefix": "check",
+		"body": [    
+			"check() {",
+			"\t$1",
+			"}"
+		],
+		"description": "Tads3 check function snippet"
+	},
+
+	"Tads3 if-expression" : { 
+		"prefix": "if", 
+		"body": [    
+			"if ($1) {",
+			"\t$2",
+			"}"
+		],
+		"description": "Tads3 if expression snippet"
+	},
+
+	"Tads3 else-expression" : { 
+		"prefix": "else", 
+		"body": [    
+			"else {",
+			"\t$2",
+			"}"
+		],
+		"description": "Tads3 else expression snippet"
+	},
+
+	"Tads3 else if-expression" : { 
+		"prefix": "else if", 
+		"body": [
+			"else if ($1) {",
+			"\t$2",
+			"}"
+		],
+		"description": "Tads3 if else expression snippet"
+	},
+
+	"Tads3 global gDobj" : { 
+		"prefix": "gDobj", 
+		"body": [
+			"gDobj"
+		],
+		"description": "Tads3 global gDobj"
+	},
+
+	"Tads3 global gIobj" : { 
+		"prefix": "gIobj", 
+		"body": [
+			"gIobj"
+		],
+		"description": "Tads3 global variable gIobj"
+	},
+	"Tads3 global gActor" : { 
+		"prefix": "gActor", 
+		"body": [
+			"gActor"
+		],
+		"description": "Tads3 global variable gActor"
+	},
+
+	"Tads3 global gActorIn" : { 
+		"prefix": "gActorIn", 
+		"body": [
+			"gActorIn($0)"
+		],
+		"description": "Tads3 global function gActorIn"
+	},
+
+	"Tads3 global gActorIs" : { 
+		"prefix": "gActorIs", 
+		"body": [
+			"gActorIs == $0"
+		],
+		"description": "Tads3 global function gActorIs"
+	},
+
+	"Tads3 eventList snippet" : { 
+		"prefix": "eventlist", 
+		"body": [    
+			"$1: ${2|EventList,StopEventList,CyclicEventList,RandomEventList,ShuffledEventList,SyncEventList,ExternalEventList|} {[",
+				 "\t'$3',",
+				 "\t'$4',",
+				 "\t'$5'",
+			"]}"
+		],
+		"description": "Tads3 eventList snippet"
+	},
+
+	"Tads3 IFID snippet" : { 
+		"prefix": "IFID", 
+		"body": [    
+			"$UUID"
+		],
+		"description": "Tads3 say statement snippet"
+	}, 
+
+	"Tads3 local variable definition": {
+		"prefix": "local",
+		"body": ["local ${1:variableName}=${2:'value'};\n$0"],
+		"description": "Tads3 local variable"
+	},
+
+	"Tads3 say snippet" : { 
+		"prefix": "say", 
+		"body": [    
+			"say('$2');\n"
+		],
+		"description": "Tads3 say statement snippet"
+	},
+
+	"Tads3 DefineTAction snippet" : { 
+		"prefix": "DefineTAction", 
+		"body": [    
+			"DefineTAction($0);"
+		],
+		"description": "Tads3 DefineTAction snippet"
+	}, 
+
+	"Tads3 DefineTIAction snippet" : { 
+		"prefix": "DefineTIAction", 
+		"body": [    
+			"DefineTIAction($0);"
+		],
+		"description": "Tads3 DefineTIAction snippet"
+	},
+
+	"Tads3 function snippet" : { 
+		"prefix": "function", 
+		"body": [    
+			"$1(${2:}) {",
+			"\t$3",
+			"}"
+		],
+		"description": "Tads3 function snippet"
+	},
+
+	"Tads3 anonymous function snippet" : { 
+		"prefix": "function (anonymous)", 
+		"body": [    
+			"function (${2:}) {",
+			"\t$3",
+			"}$0"
+		],
+		"description": "Tads3 function snippet"
+	}
+
+}

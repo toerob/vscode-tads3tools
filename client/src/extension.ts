@@ -4,10 +4,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { copyFileSync, createReadStream, createWriteStream, exists, existsSync, unlinkSync } from 'fs';
+import { copyFileSync, createReadStream, createWriteStream, existsSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, TextEditorRevealType, CancellationError } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, CancellationError } from 'vscode';
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -33,6 +33,7 @@ import { runCommand } from './modules/run-command';
 import { analyzeTextAtPosition } from './modules/commands/analyzeTextAtPosition';
 import { findAndSelectMakefileUri } from './modules/findAndSelectMakefileUri';
 import { addFileToProject } from './modules/addFileToProject';
+import { SnippetCompletionItemProvider } from './modules/snippet-completion-item-provider';
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -96,6 +97,9 @@ export function activate(context: ExtensionContext) {
 	client = new LanguageClient('Tads3languageServer', 'Tads3 Language Server', serverOptions, clientOptions);
 	client.start();
 	client.info(`Tads3 Language Client Activates`);
+
+	
+	context.subscriptions.push(languages.registerCompletionItemProvider('tads3', new SnippetCompletionItemProvider(context)));
 
 	storageManager = new LocalStorageService(context.workspaceState);
 

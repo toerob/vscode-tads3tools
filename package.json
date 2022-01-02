@@ -33,12 +33,6 @@
 		"virtualWorkspaces": false
 	},
 	"contributes": {
-		"snippets": [
-			{
-				"language": "tads3",
-				"path": "./snippets/snippets.json"
-			}
-		],
 		"languages": [
 			{
 				"id": "tads3",

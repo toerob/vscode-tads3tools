@@ -1,11 +1,10 @@
-import { CompletionParams, Position, TextDocuments, Range, CompletionItem, CompletionList, CompletionItemKind, SymbolKind, InsertTextMode, InsertTextFormat } from 'vscode-languageserver/node';
+import { CompletionParams, Position, TextDocuments, Range, CompletionItem, CompletionList, CompletionItemKind, SymbolKind } from 'vscode-languageserver/node';
 import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { connection, symbolManager } from '../server';
 
 import fuzzysort = require('fuzzysort');
 import { getWordAtPosition } from './text-utils';
-import {  } from 'vscode';
 import { URI } from 'vscode-uri';
 import { isUsingAdv3Lite } from '../parse-workers-manager';
 import { retrieveDocumentationForKeyword } from './documentation';
@@ -31,6 +30,7 @@ const tads3Keywords = ['grammar', 'switch', 'case', 'default', 'function', 'thro
 
 export function onCompletion(handler: CompletionParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager): CompletionList | CompletionItem[] { 
 	const suggestions:Set<CompletionItem> = new Set();
+	
 
 	const document = documents.get(handler.textDocument.uri);
 	const range = Range.create(handler.position.line, 0, handler.position.line, handler.position.character);
@@ -203,16 +203,6 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 	}
 
 	const results = fuzzysort.go(word, [...cachedKeyWords], {key: 'label'});
-	
-	/*
-	results.forEach(x=> {
-		if(x.obj.kind === CompletionItemKind.Class) {
-			
-			x.obj.insertText = "classsyy $1";
-			x.obj.insertTextFormat = InsertTextFormat.Snippet;
-		}
-	})*/
-
 	return results.map((x:any)=>x.obj);
 }
 
