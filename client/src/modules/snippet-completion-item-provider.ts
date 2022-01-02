@@ -6,13 +6,11 @@ import { extensionState } from './state';
 
 export class SnippetCompletionItemProvider implements CompletionItemProvider {
 
-	snippets = [];
+	private snippets = [];
 
 	constructor(private context: ExtensionContext) {
 		reaction(() => extensionState.isUsingAdv3Lite, usingAdv3Lite => {
-			const commonSnippetfileResourceFileUri = Uri.joinPath(this.context.extensionUri, 'snippets', 'snippets_common.json');
 			const liberarySnippetfileResourceFileUri = Uri.joinPath(this.context.extensionUri, 'snippets', usingAdv3Lite ? 'snippets_adv3Lite.json' : 'snippets_adv3.json');
-			this.populateSnippetsFromFileUri(commonSnippetfileResourceFileUri);
 			this.populateSnippetsFromFileUri(liberarySnippetfileResourceFileUri);
 		})
 	}

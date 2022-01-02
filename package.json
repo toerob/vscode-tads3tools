@@ -3,7 +3,7 @@
 	"description": "Language server extension for Tads3",
 	"author": "Tomas Öberg",
 	"license": "MIT",
-	"version": "0.4.0",
+	"version": "0.3.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/toerob/vscode-tads3tools.git"
@@ -33,6 +33,12 @@
 		"virtualWorkspaces": false
 	},
 	"contributes": {
+		"snippets": [
+			{
+				"language": "tads3",
+				"path": "./snippets/snippets_common.json"
+			}
+		],
 		"languages": [
 			{
 				"id": "tads3",
@@ -223,12 +229,6 @@
 					"default": "/usr/local/share/frobtads/tads3/include/",
 					"description": "Path the tads3 include files. "
 				},
-				"tads3.enableWorkspaceSymbolsProjectScope": {
-					"scope": "resource",
-					"type": "boolean",
-					"default": false,
-					"description": "If enabled the workspace symbol provider will return only symbols within the project files and not library files."
-				},
 				"tads3.enablePreprocessorCodeLens": {
 					"scope": "resource",
 					"type": "boolean",
@@ -248,6 +248,7 @@
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"antlr4ts": "antlr4ts -visitor server/src/parser/Tads3.g4",
+		"build": "vsce package --no-yarn",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
@@ -257,8 +258,7 @@
 		"esbuild-base": "esbuild ./client/src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
 		"esbuild": "npm run esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
-		"test-compile": "tsc -p ./",
-		"build": "vsce package --no-yarn"
+		"test-compile": "tsc -p ./"
 	},
 	"devDependencies": {
 		"@types/mocha": "^9.0.0",

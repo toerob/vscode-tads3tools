@@ -30,7 +30,9 @@
 
 	"Tads3 foreach loop": {
 		"prefix": "foreach",
-		"body": ["foreach(local ${1:x}=${:0} in ${2} ) {","$0}",""],
+		"body": ["foreach(local ${1:x}=${2:0} in ${3}) {",
+			"$0}",
+			""],
 		"description": "Tads3 foreach loop snippet"
 	},
 
@@ -249,6 +251,24 @@
 			"}$0"
 		],
 		"description": "Tads3 function snippet"
-	}
+	},
 
+	"Tads3 quote-in-string" : { 
+		"prefix": ["quote-in-string","q"], 
+		"body": ["<q>$1</q>$0"],
+		"description": "Tads3 quote-in-string snippet <q>...</q>"
+	},
+
+	"Tads3 oneof-or-stopping string interpolation" : { 
+		"prefix": ["one-of-or-stopping"], 
+		"body": [ "<<one of>>$1<<or>>$2<<${3|stopping,cycling,at random,shuffled|}>>$0"],
+		"description": "Tads3 <<oneof>><<or>><<stopping|at random|cycling|shuffled>> string interpolation"
+		
+	},
+
+	"Tads3 if-else-end string interpolation" : { 
+		"prefix": ["if-else-end"], 
+		"body": [ "<<if>>$1<<else>>$2<<end>>$0"],
+		"description": "Tads3 <<if>>$1<<else>>$2<<end>> string interpolation"
+	}
 }
