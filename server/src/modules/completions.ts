@@ -1,7 +1,8 @@
 import { CompletionParams, Position, TextDocuments, Range, CompletionItem, CompletionList, CompletionItemKind, SymbolKind } from 'vscode-languageserver/node';
-import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
+import { flattenTreeToArray, TadsSymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { connection, symbolManager } from '../server';
+import { connection } from '../server';
+import { symbolManager } from './symbol-manager';
 
 import fuzzysort = require('fuzzysort');
 import { getWordAtPosition } from './text-utils';
@@ -28,7 +29,7 @@ const tads3Keywords = ['grammar', 'switch', 'case', 'default', 'function', 'thro
 	'foreach', 'in', '...', '..', 'step',
 	'not', 'is', 'break', 'continue', 'goto', 'token', 'pragma', 'operator'];
 
-export function onCompletion(handler: CompletionParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager): CompletionList | CompletionItem[] { 
+export function onCompletion(handler: CompletionParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager): CompletionList | CompletionItem[] { 
 	const suggestions:Set<CompletionItem> = new Set();
 	
 

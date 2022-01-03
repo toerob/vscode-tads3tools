@@ -16,11 +16,11 @@ import {
 	CancellationTokenSource,
 	SymbolKind} from 'vscode-languageserver/node';
 
-import { Tads3SymbolManager } from './modules/symbol-manager';
+import { symbolManager, TadsSymbolManager } from './modules/symbol-manager';
 import { onDocumentSymbol } from './modules/symbols';
 //import { onReferences } from './modules/references';
 import { onDefinition } from './modules/definitions';
-import { preprocessAndParseFiles } from './parse-workers-manager';
+import { preprocessAndParseFiles, preprocessAndParseTads2Files } from './parse-workers-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DefaultMapObject } from './modules/mapcrawling/DefaultMapObject';
 import MapObjectManager from './modules/mapcrawling/map-mapping';
@@ -31,8 +31,9 @@ import { onDocumentLinks } from './modules/links';
 import { onHover } from './modules/hover';
 import { CaseInsensitiveMap } from './modules/CaseInsensitiveMap';
 import { onWorkspaceSymbol } from './modules/workspace-symbols';
-import { markFileToBeCheckedForMacroDefinitions } from './parser/preprocessor';
+import { markFileToBeCheckedForMacroDefinitions, preprocessAllFiles } from './parser/preprocessor';
 import { URI } from 'vscode-uri';
+import { serverState } from './state';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
@@ -41,10 +42,9 @@ const onWindowsPlatform = (process.platform === 'win32');
 
 export const preprocessedFilesCacheMap = onWindowsPlatform? new CaseInsensitiveMap<string, string>() : new Map<string, string>();
 
-export const symbolManager = new Tads3SymbolManager();
 export const mapper = new MapObjectManager(symbolManager);
 
-export default function processMapSymbols(symbolManager: Tads3SymbolManager, callback: any) {
+export default function processMapSymbols(symbolManager: TadsSymbolManager, callback: any) {
 	const symbols = mapper.mapGameObjectsToMapObjects();
 	callback(symbols);
 }
@@ -329,8 +329,15 @@ connection.onRequest('request/analyzeText/findNouns', async (params) => {
 });
 
 connection.onRequest('request/parseDocuments', async ({ globalStoragePath, makefileLocation, filePaths, token }) => {
+	serverState.tadsVersion = 3;
 	await preprocessAndParseFiles(globalStoragePath, makefileLocation, filePaths, token); 
 });
+
+connection.onRequest('request/parseTads2Documents', async ({ globalStoragePath, mainFileLocation, token }) => {
+	serverState.tadsVersion = 2;
+	await preprocessAndParseTads2Files(globalStoragePath, mainFileLocation, token); 
+});
+
 
 
 // Make the text document manager listen on the connection

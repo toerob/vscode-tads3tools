@@ -98,13 +98,15 @@ export function activate(context: ExtensionContext) {
 	client.start();
 	client.info(`Tads3 Language Client Activates`);
 
-	
+
 	context.subscriptions.push(languages.registerCompletionItemProvider('tads3', new SnippetCompletionItemProvider(context)));
 
 	storageManager = new LocalStorageService(context.workspaceState);
 
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 
+
+	context.subscriptions.push(commands.registerCommand('tads2.parseTads2Project', () => parseTads2Project(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.createTads3TemplateProject', () => createTemplateProject(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.addFileToProject', () => addFileToProject(context)));
 
@@ -287,7 +289,7 @@ export function activate(context: ExtensionContext) {
 			currentTextDocument = textDocument;
 
 			if (extensionState.getChosenMakefileUri() && !existsSync(extensionState.getChosenMakefileUri().fsPath)) {
-				extensionState.setChosenMakefileUri( undefined );
+				extensionState.setChosenMakefileUri(undefined);
 			}
 
 			if (extensionState.getChosenMakefileUri() === undefined) {
@@ -609,8 +611,8 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 			return false;
 		});
 		client.onNotification('symbolparsing/success', ([filePath, tracker, totalFiles, poolSize]) => {
-			if(allFilesBeenProcessed && !extensionState.isLongProcessingInAction()) {
-				if(tads3VisualEditorPanel) {
+			if (allFilesBeenProcessed && !extensionState.isLongProcessingInAction()) {
+				if (tads3VisualEditorPanel) {
 					client.info(`Refreshing the map view`);
 					client.sendNotification('request/mapsymbols');
 				}
@@ -786,10 +788,11 @@ async function initialParse() {
 		client.info(`Trying to locate a default tads3 makefile`);
 
 		if (extensionState.getChosenMakefileUri() === undefined) {
-			extensionState.setChosenMakefileUri( await findAndSelectMakefileUri() );
+			extensionState.setChosenMakefileUri(await findAndSelectMakefileUri());
 		}
 		if (extensionState.getChosenMakefileUri() === undefined) {
-			console.error(`No tads3 makefile could be found`);
+			client.info(`No tads3 makefile could be found`);
+			detectTads2Usage();
 			return;
 		}
 
@@ -831,4 +834,87 @@ export async function selectMakefileWithDialog() {
 		return file[0];
 	}
 	return undefined;
+}
+
+export async function parseTads2Project(context: ExtensionContext) {
+	const mainFile = await window.showOpenDialog({
+		title: 'Select the main file for the tads2 project'
+	});
+	serverProcessCancelTokenSource = new CancellationTokenSource();
+	extensionState.setPreprocessing(true);
+
+	if (mainFile && mainFile.length > 0) {
+		await client.sendRequest('request/parseTads2Documents', {
+			globalStoragePath,
+			mainFileLocation: mainFile[0].fsPath,
+			token: serverProcessCancelTokenSource.token
+		});
+
+	}
+
+}
+
+
+class DependencyNode {
+	filename: string
+	//parents: Set<string> = new Set();
+	includes: Set<string> = new Set();
+	constructor(public uri: Uri | undefined = undefined) {
+
+	}
+}
+
+/**
+ * Auto detects a Tads2 project's main file
+ */
+async function detectTads2Usage() {
+
+	// TODO: verify cpp
+	
+	client.info('Detecting Tads2 project');
+	const totalIncludeSet = new Set();
+	const nodes = new Map();
+	const includeRegexp = new RegExp(/[#]\s*include\s*[<"](.+)[">]/);
+	const files = await workspace.findFiles('**/*.{t,h}');
+	for (const currentFile of files) {
+		const doc = await workspace.openTextDocument(currentFile.fsPath);
+		nodes.set(basename(currentFile.fsPath), new DependencyNode(currentFile));
+		for (const row of doc.getText()?.split(/\r?\n/)) {
+			const result = includeRegexp.exec(row);
+			if (result && result.length === 2) {
+				const filename = result[1];
+				totalIncludeSet.add(filename);
+				const node = nodes.has(basename(currentFile.fsPath)) ? nodes.get(basename(currentFile.fsPath)) : new DependencyNode();
+				node.includes.add(filename);
+				nodes.set(basename(currentFile.fsPath), node);
+			}
+		}
+	};
+	if(files.length === 0) {
+		client.info('No Tads2 files found. Detection is over. ');
+		return;
+	}
+
+	// Look for root dependencies (files that none of the other project files includes):
+	// TODO: this may be improved even further
+
+	const roots = [...nodes.keys()].filter(x => !totalIncludeSet.has(x));
+	for (const root of roots) {
+		const rootNode = nodes.get(root);
+		console.log(`${root}: ${[...rootNode.includes.values()]}`);
+	}
+	const userChoice = roots.length === 1 ? roots[0] : await window.showQuickPick(roots, { 
+		title: `Which file is the project's main file?: ` 
+	});
+	const userChoiceAsNode = nodes.get(userChoice);
+
+	extensionState.setTads2MainFile(userChoice);
+	extensionState.setUsingTads2(true);
+	extensionState.setPreprocessing(true);
+	serverProcessCancelTokenSource = new CancellationTokenSource();
+	client.sendRequest('request/parseTads2Documents', {
+		globalStoragePath,
+		mainFileLocation: userChoiceAsNode.uri.fsPath,
+		token: serverProcessCancelTokenSource.token
+	});
 }

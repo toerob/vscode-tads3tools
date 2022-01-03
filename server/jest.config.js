@@ -3,5 +3,6 @@
 module.exports = {
 	preset: 'ts-jest',
 	testMatch: ['**/*.spec.ts'],
-	testPathIgnorePatterns: ['/__fixtures__/']
-  };
+	testPathIgnorePatterns: ['/__fixtures__/'],
+	
+};

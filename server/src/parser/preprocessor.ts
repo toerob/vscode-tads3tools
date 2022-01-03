@@ -2,6 +2,7 @@
 //import { URI } from 'vscode-languageserver';
 import { exec } from 'child_process';
 import { readFile, readFileSync } from 'fs';
+import { basename, dirname } from 'path';
 import { URI } from 'vscode-uri';
 import { CaseInsensitiveSet } from '../modules/CaseInsensitiveSet';
 import { connection, preprocessedFilesCacheMap } from '../server';
@@ -21,7 +22,6 @@ export function markFileToBeCheckedForMacroDefinitions(uri: string) {
 
 const defineRegExp = new RegExp(/^\s*[#]\s*define\s+([^\(\s\n]+)[^(\n]*/);
 
-
 export function runCommand(command: string) {
 	return new Promise( (resolve, reject) => {
 		let result = '';
@@ -40,6 +40,22 @@ export function runCommand(command: string) {
 	});
 }
 
+export async function preprocessTads2Files(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>) {
+	const t2PreprocessorPath: number = await connection.workspace.getConfiguration('tads2.preprocessor.path') ?? 'cpp';
+	const libFolder: string = await connection.workspace.getConfiguration('tads2.library.path') ?? '/usr/local/share/frobtads/tads2/';
+	preprocessedFilesCacheMap.clear();
+	rowsMap.clear();
+	const currentFolder = dirname(chosenMakefilePath);
+	const commandLine = `"${t2PreprocessorPath}" -I ${libFolder} -I ${currentFolder} -ds "${chosenMakefilePath}"`;
+	const result: any = await runCommand(commandLine);
+	if (result.match(/unable to open/i)) {
+		throw new Error(`Preprocessing failed: ${result}`);
+	}
+	processPreprocessedResult(result, preprocessedFilesCacheMap, true);
+	const unprocessedRowsMap = countRowsOfUnprocessedFiles([...preprocessedFilesCacheMap?.keys()] ?? []);
+	postProcessPreprocessedResult(unprocessedRowsMap);
+}
+
 export async function preprocessAllFiles(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>) {
 	const t3makeCompilerPath: number = await connection.workspace.getConfiguration('tads3.compiler.path') ?? 't3make';
 	preprocessedFilesCacheMap.clear();
@@ -50,29 +66,30 @@ export async function preprocessAllFiles(chosenMakefilePath: string, preprocesse
 		throw new Error(`Preprocessing failed: ${result}`);
 	}
 	processPreprocessedResult(result, preprocessedFilesCacheMap);
-
 	const unprocessedRowsMap = countRowsOfUnprocessedFiles([...preprocessedFilesCacheMap?.keys()] ?? []);
 	postProcessPreprocessedResult(unprocessedRowsMap);
 }
 
-function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<string, string>) {
+function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<string, string>, usingTads2=false) {
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
-	const pathRegexp = new RegExp("^#line ([0-9]+) \"(.*)\"");
+	const pathRegexp = usingTads2? new RegExp("^# ([0-9]+) \"(.*)\""): new RegExp("^#line ([0-9]+) \"(.*)\"");
 	const startTime = Date.now();
 	let totalLineCount = 0;
 	let currentCounter = 0;
 	let currentBuffer = '';
 	let currentFile = undefined;
-	
+	const tadsLineQuickMatchDelimiter = usingTads2? '#': '#line';
 	for (const line of result.split(/\n/)) {
 		totalLineCount++;
 		currentCounter++;
-		if (line.startsWith('#line')) {
+		if (line.startsWith(tadsLineQuickMatchDelimiter)) {
 			const match = pathRegexp.exec(line);
 			if (match) {
 				if (currentFile) {
-					storeCurrentBufferAndRows(currentFile, currentBuffer, currentCounter - 1, preprocessedFilesCacheMap);
+					if(!(usingTads2 && currentFile.startsWith('<'))) {
+						storeCurrentBufferAndRows(currentFile, currentBuffer, currentCounter - 1, preprocessedFilesCacheMap);
+					}
 				}
 				currentBuffer = '';
 				currentCounter = 0;

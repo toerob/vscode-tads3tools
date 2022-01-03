@@ -2,10 +2,9 @@
 import { TextDocuments } from 'vscode-languageserver';
 
 import { Location, ReferenceParams } from 'vscode-languageserver';
-import { Position, TextDocument } from 'vscode-languageserver-textdocument';
-import { URI } from 'vscode-uri';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { connection } from '../server';
-import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
+import { TadsSymbolManager } from './symbol-manager';
 import { getWordAtPosition } from './text-utils';
 
 const memberCallRegExp = new RegExp(/\s*(?:(.*)[.])(.*)\(\);/);
@@ -15,7 +14,7 @@ const memberCallRegExp = new RegExp(/\s*(?:(.*)[.])(.*)\(\);/);
 // Find a way to patch/sync the original by whitespace? 
 // - keeping track of lines that where skipped in each an every file?
 
-export async function onReferences(handler: ReferenceParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager) {
+export async function onReferences(handler: ReferenceParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
 	const {position, textDocument} = handler;
 	const locations: Location[] = [];
 

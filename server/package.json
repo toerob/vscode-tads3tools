@@ -17,6 +17,7 @@
 		"fs-extra": "^10.0.0",
 		"fuzzysort": "^1.1.4",
 		"lru-cache": "^6.0.0",
+		"mobx": "^6.3.10",
 		"node": "^17.0.1",
 		"threads": "^1.7.0",
 		"vscode-languageserver": "^7.0.0",

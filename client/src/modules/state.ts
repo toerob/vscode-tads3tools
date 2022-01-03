@@ -1,16 +1,17 @@
-import { autorun, makeAutoObservable, observable, reaction } from "mobx";
-import { setFlagsFromString } from 'v8';
+import { autorun, makeAutoObservable, observable } from "mobx";
 import { Uri } from 'vscode';
 import { client } from '../extension';
 
 class ExtensionStateStore {
-
 	longProcessing = false;
 	diagnosing = false;
 	preprocessing = false;
 
 	isUsingAdv3Lite = undefined;
 	chosenMakefileUri: Uri | undefined;
+	
+	tads2MainFile: Uri | undefined = undefined
+	isUsingTads2: boolean = undefined;
 
 	constructor() {
 		makeAutoObservable(this, {
@@ -24,10 +25,20 @@ class ExtensionStateStore {
 			if (this.preprocessing) text.push('[Preprocessing]');
 			if (this.diagnosing) text.push('[Diagnosing]');
 			if (this.longProcessing) text.push('[Longprocessing]');
+			if (this.isUsingTads2) text.push('[Detected using Tads2]');
+			if (this.tads2MainFile) text.push(`[Detected Tads2 main file: ${this.tads2MainFile}]`);
 			setTimeout(()=>reportState(text.length > 0 ? text.join(', ') : 'Done'));
 		});
-
 	}
+
+	setUsingTads2(state: boolean) {
+		this.isUsingTads2 = state;
+	}
+
+	setTads2MainFile(tads2MainFile: Uri) {
+		this.tads2MainFile = tads2MainFile;
+	}
+
 	setDiagnosing(state: boolean) { this.diagnosing = state; }
 
 	setLongProcessing(state: boolean) { this.longProcessing = state; }
@@ -52,7 +63,6 @@ class ExtensionStateStore {
 		this.chosenMakefileUri = chosenMakefileUri;
 	}
 
-	
 }
 
 export const extensionState = new ExtensionStateStore();

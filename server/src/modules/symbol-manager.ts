@@ -1,9 +1,9 @@
 import { Range, DocumentSymbol, Position, SymbolKind, SymbolInformation } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
-import { filterForLibraryFiles } from '../parse-workers-manager';
+import { filterForLibraryFiles } from './utils';
 import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 
-export class Tads3SymbolManager {
+export class TadsSymbolManager {
 	symbols: Map<string, DocumentSymbol[]>;
 	keywords: Map<string, Map<string, Range[]>>;
 	additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
@@ -12,6 +12,7 @@ export class Tads3SymbolManager {
 	onWindowsPlatform: boolean  = false;
 
 	constructor() {
+
 		// Windows doesn't recognize case differences in file paths, therefore we need to use case insensitive maps:
 		this.onWindowsPlatform = process.platform === 'win32';
 		if (this.onWindowsPlatform) {
@@ -200,6 +201,8 @@ export function addSymbolInformationRecursively(filepath:string, localSymbols: D
 		}
 	}
 }
+
+export const symbolManager = new TadsSymbolManager();
 
 /*
 export function swapParent(newParent: ExtendedDocumentSymbol, oldParent: ExtendedDocumentSymbol, symbolAsExtDocObj: ExtendedDocumentSymbol, symbols: any) {

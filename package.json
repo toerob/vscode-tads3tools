@@ -75,6 +75,12 @@
 		],
 		"commands": [
 			{
+				"command": "tads2.parseTads2Project",
+				"title": "Tads2 command: Parse a tads2 project",
+				"category": "Editor",
+				"enablement": "true"
+			},
+			{
 				"command": "tads3.createTads3TemplateProject",
 				"title": "Tads3 command: Create a new Tads3 template project",
 				"category": "Edits"
@@ -247,7 +253,9 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
-		"antlr4ts": "antlr4ts -visitor server/src/parser/Tads3.g4",
+		"antlr4ts": "npm run antlr4ts_t2;npm run antlr4ts_t3",
+		"antlr4ts_t2": "antlr4ts -visitor server/src/parser/Tads2.g4",
+		"antlr4ts_t3": "antlr4ts -visitor server/src/parser/Tads3.g4",
 		"build": "vsce package --no-yarn",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
@@ -266,7 +274,7 @@
 		"@typescript-eslint/eslint-plugin": "^4.28.5",
 		"@typescript-eslint/parser": "^4.28.5",
 		"antlr4ts-cli": "^0.5.0-alpha.4",
-		"esbuild": "^0.12.22",
+		"esbuild": "^0.14.10",
 		"eslint": "^7.31.0",
 		"jest": "^27.0.6",
 		"mocha": "^9.0.3",
@@ -274,6 +282,7 @@
 	},
 	"dependencies": {
 		"@types/vscode": "^1.58.1",
+		"ts-jest": "^27.1.2",
 		"vsce": "^2.5.1"
 	}
 }

@@ -1,5 +1,5 @@
 import { LocationLink, TextDocumentIdentifier, TextDocuments, Position } from 'vscode-languageserver';
-import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
+import { flattenTreeToArray, TadsSymbolManager } from './symbol-manager';
 import { getWordAtPosition, withinQuote } from './text-utils';
 import { DefinitionParams, Location, Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -11,7 +11,7 @@ const interpolatedExpressionRegExp = /[<][<](.*)[>][>]/g;
 
 const onWindowsPlatform = (process.platform === 'win32');
 
-export async function onDefinition({ textDocument, position }: DefinitionParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager) {
+export async function onDefinition({ textDocument, position }: DefinitionParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
 	const locations: Location[] = [];
 	const currentDoc = documents.get(textDocument.uri);
 	if (currentDoc) {

@@ -1,8 +1,8 @@
 import { DocumentSymbol, SymbolKind } from 'vscode-languageserver';
 import { isUsingAdv3Lite } from '../../parse-workers-manager';
 import { ExtendedDocumentSymbolProperties } from '../../parser/Tads3SymbolListener';
-import { symbolManager } from '../../server';
-import { flattenTreeToArray, Tads3SymbolManager } from '../symbol-manager';
+import { TadsSymbolManager } from '../symbol-manager';
+import { serverState } from '../../state';
 import { DefaultMapObject } from './DefaultMapObject';
 import { crawlRooms } from './map-crawling';
 
@@ -21,7 +21,7 @@ export default class MapObjectManager {
 	startRoom: string|undefined = undefined;
 
 	
-	constructor(private t3SymbolManager: Tads3SymbolManager) {
+	constructor(private symbolManager: TadsSymbolManager) {
 		
 	}
 
@@ -37,21 +37,21 @@ export default class MapObjectManager {
 		//const additionalProps: Map<string,ExtendedDocumentSymbolProperties> = new Map();
 		
 		if (this.showAllRooms || this.selectedEditor === EditorMode.NPC) {
-			for (const fileNameKey of this.t3SymbolManager.symbols.keys()) {
-				const localFileSymbols = this.t3SymbolManager.symbols.get(fileNameKey)  ?? [];
+			for (const fileNameKey of this.symbolManager.symbols.keys()) {
+				const localFileSymbols = this.symbolManager.symbols.get(fileNameKey)  ?? [];
 				for (const localSymbol of localFileSymbols) {
 					mappedSymbols.push(localSymbol);
 					//this.addAdditionalPropsToMap(localSymbol, fileNameKey, additionalProps);
 				}
 			}
 		} else if (fsPath) {
-			mappedSymbols = this.t3SymbolManager.symbols.get(fsPath) ?? [];
+			mappedSymbols = this.symbolManager.symbols.get(fsPath) ?? [];
 		}
 		// OR only the one that's in the current file:
 
 
 
-		const classInheritanceMap = this.t3SymbolManager.inheritanceMap;
+		const classInheritanceMap = this.symbolManager.inheritanceMap;
 
 
 		// Here begins the mapping for the NPC-editor
@@ -92,19 +92,26 @@ export default class MapObjectManager {
 		// Here begins the map-editor
 		let mapObjects: DefaultMapObject[] = [];
 
+
 		// Map default inheritance if not already mapped:
-		setupClassInheritanceDefaults(classInheritanceMap);
+		// TODO: tweak this for Tads2?
+		setupClassInheritanceDefaultsTads3(classInheritanceMap);
+
+
+		const roomOrDoorPredicate = serverState.tadsVersion === 3 ? this.isRoomOrDoorT3 : this.isRoomOrDoorT2;
 
 		if (mappedSymbols.length > 0) {
 
 			const objectsAsArray = Array.from(mappedSymbols);
 
-			const classList = new Set([...symbolManager.inheritanceMap.keys()]);
+			const classList = new Set([...this.symbolManager.inheritanceMap.keys()]);
 			// Filter out rooms and doors and then classes:
+
 			const roomsWithConnections = objectsAsArray
-				.filter(x => this.isRoomOrDoor(x))
+				.filter(x => roomOrDoorPredicate.bind(this)(x))
 				.filter(x => !classList.has(x.name))
 				.filter(x => !['unknownDest_','varDest_'].includes(x.name) && isUsingAdv3Lite);
+
 
 			// And the first level of children of each:
 			const childrenMap: DocumentSymbol[] = [];
@@ -185,8 +192,8 @@ export default class MapObjectManager {
 
 	private findAdditionalProps(symbol: DocumentSymbol): ExtendedDocumentSymbolProperties|undefined {
 		if (symbol) {
-			for(const eachFileKey of this.t3SymbolManager.additionalProperties.keys()) {
-				const symbolAdditionalProps = this.t3SymbolManager.additionalProperties.get(eachFileKey)?.get(symbol);
+			for(const eachFileKey of this.symbolManager.additionalProperties.keys()) {
+				const symbolAdditionalProps = this.symbolManager.additionalProperties.get(eachFileKey)?.get(symbol);
 				if (symbolAdditionalProps) {
 					return symbolAdditionalProps;
 				}
@@ -206,7 +213,7 @@ export default class MapObjectManager {
 
 	craftClassInheritanceArray(derivedClassName: string, collection: string[] = []) {
 		try {
-			const superClass = this.t3SymbolManager.inheritanceMap.get(derivedClassName);
+			const superClass = this.symbolManager.inheritanceMap.get(derivedClassName);
 			if (superClass && superClass.length>0 && superClass !== '__root__') {
 				collection.push(superClass);
 				this.craftClassInheritanceArray(superClass, collection);						
@@ -223,7 +230,7 @@ export default class MapObjectManager {
 	 * @returns True if so, false otherwise
 	 */
 	inheritesFrom(derivedClassName: string, className: string) {
-		const classInheritanceMap = this.t3SymbolManager.inheritanceMap;
+		const classInheritanceMap = this.symbolManager.inheritanceMap;
 		try {			
 			if (className === derivedClassName) {
 				return true;
@@ -250,7 +257,7 @@ export default class MapObjectManager {
 		return false;
 	}
 
-	isRoomOrDoor(o: DocumentSymbol) {
+	isRoomOrDoorT3(o: DocumentSymbol) {
 		//TODO: minor "hack" until all library files are being processed
 		// Should be removed once that is working perfectly
 		const a = this.findAdditionalProps(o);
@@ -271,6 +278,35 @@ export default class MapObjectManager {
 				}
 				if (this.inheritesFromAny(o.detail, 'Room')) {
 					if (a) { a.superClassRoot ??= 'Room'; }
+					return true;
+				}		
+				if (this.inheritesFromAny(o.detail, 'room')) {
+					if (a) { a.superClassRoot ??= 'room'; }
+					return true;
+				}		
+			} 
+
+		} catch(err) {
+			console.error(err);
+		}
+		return false;
+	}
+
+	isRoomOrDoorT2(o: DocumentSymbol) {
+		//TODO: minor "hack" until all library files are being processed
+		// Should be removed once that is working perfectly
+		const a = this.findAdditionalProps(o);
+		try {
+			if(a?.isClass) {
+				return false;
+			}
+			if (o.detail) {
+				if (o.detail.includes('doorway')) {
+					if (a) { a.superClassRoot ??= 'doorway'; }
+					return true;
+				}
+				if (this.inheritesFromAny(o.detail, 'room')) {
+					if (a) { a.superClassRoot ??= 'room'; }
 					return true;
 				}		
 			} 
@@ -307,41 +343,39 @@ export default class MapObjectManager {
 				}
 			}
 		}
-		if (symbol.name === 'mountainGate') {
-			console.log('h');
-		}
 		const props = this.findAdditionalProps(symbol);
-		
 		mapObj.parent = props?.parent?.name;
-
 		mapObj.shortName = props?.shortName;
 		mapObj.arrowConnection = props?.arrowConnection;
 		mapObj.kind = symbol.kind;
 		mapObj.detail = symbol.detail;
-
-
-		// TODO: check if property isAssignment somehow safe:
-		// additionalProps.get(x.name)?.isAssignment didn't work
 		
 		const isAssignment = (obj: DocumentSymbol) => {
 			const isAssignment = this.findAdditionalProps(obj)?.isAssignment;
 			return isAssignment;
 		};
 
-		if(mapObj.name === 'mountainGate') {
-			console.log(`Stop`);
-		}
-
 		mapObj.north = symbol.children?.find(x => isAssignment(x) && x.name === 'north')?.detail;
-		mapObj.northeast = symbol.children?.find(x => isAssignment(x) && x.name === 'northeast')?.detail;
-		mapObj.northwest = symbol.children?.find(x => isAssignment(x) && x.name === 'northwest')?.detail;
-
 		mapObj.south = symbol.children?.find(x => isAssignment(x) && x.name === 'south')?.detail;
-		mapObj.southeast = symbol.children?.find(x => isAssignment(x) && x.name === 'southeast')?.detail;
-		mapObj.southwest = symbol.children?.find(x => isAssignment(x) && x.name === 'southwest')?.detail;
+
+		if(serverState.tadsVersion === 3) {
+			mapObj.northeast = symbol.children?.find(x => isAssignment(x) && x.name === 'northeast')?.detail;
+			mapObj.northwest = symbol.children?.find(x => isAssignment(x) && x.name === 'northwest')?.detail;
+			mapObj.southeast = symbol.children?.find(x => isAssignment(x) && x.name === 'southeast')?.detail;
+			mapObj.southwest = symbol.children?.find(x => isAssignment(x) && x.name === 'southwest')?.detail;
+		} else {
+			mapObj.northeast = symbol.children?.find(x => isAssignment(x) && x.name === 'ne')?.detail;
+			mapObj.northwest = symbol.children?.find(x => isAssignment(x) && x.name === 'nw')?.detail;
+			mapObj.southeast = symbol.children?.find(x => isAssignment(x) && x.name === 'se')?.detail;
+			mapObj.southwest = symbol.children?.find(x => isAssignment(x) && x.name === 'sw')?.detail;
+
+
+			mapObj.doordest = symbol.children?.find(x => isAssignment(x) && x.name === 'doordest')?.detail;
+		}
 
 		mapObj.east = symbol.children?.find(x => isAssignment(x) && x.name === 'east')?.detail;
 		mapObj.west = symbol.children?.find(x => isAssignment(x) && x.name === 'west')?.detail;
+
 
 		mapObj.up = symbol.children?.find(x => isAssignment(x) && x.name === 'up')?.detail;
 		mapObj.down = symbol.children?.find(x => isAssignment(x) && x.name === 'down')?.detail;
@@ -384,7 +418,7 @@ function setExit(obj: any, dir: any, exit: any) {
 
 }
 
-function setupClassInheritanceDefaults(classInheritanceMap: Map<string, string>) {
+function setupClassInheritanceDefaultsTads3(classInheritanceMap: Map<string, string>) {
 	if (!classInheritanceMap.get('object')) {
 		classInheritanceMap.set('object', '__root__');
 	}

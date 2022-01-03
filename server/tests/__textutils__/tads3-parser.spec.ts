@@ -6,7 +6,7 @@ import { Tads3Listener } from '../../src/parser/Tads3Listener';
 import { ObjectDeclarationContext, PropertyContext, Tads3Parser, TemplateExprContext } from '../../src/parser/Tads3Parser';
 
 
-describe('Parser tests', () => {
+describe('Tads3 parser tests', () => {
 
 	function parseText(text: string) {
 		const input = CharStreams.fromString(text);
