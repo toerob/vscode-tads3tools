@@ -1,4 +1,4 @@
-import { LocationLink, TextDocuments } from 'vscode-languageserver';
+import { LocationLink, TextDocumentIdentifier, TextDocuments, Position } from 'vscode-languageserver';
 import { flattenTreeToArray, Tads3SymbolManager } from './symbol-manager';
 import { getWordAtPosition, withinQuote } from './text-utils';
 import { DefinitionParams, Location, Range } from 'vscode-languageserver';
@@ -9,13 +9,15 @@ import { getDefineMacrosMap } from '../parser/preprocessor';
 
 const interpolatedExpressionRegExp = /[<][<](.*)[>][>]/g;
 
+const onWindowsPlatform = (process.platform === 'win32');
+
 export async function onDefinition({ textDocument, position }: DefinitionParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager) {
 	const locations: Location[] = [];
 	const currentDoc = documents.get(textDocument.uri);
 	if (currentDoc) {
 
 		const quote = withinQuote(currentDoc, position);
-		if(quote) {
+		if (quote) {
 			// Left TODO: Quotes holds no definition per se. Unless it is an template inline expression  '<<' .* '>>'
 			// in which case we can parse that expression here.
 			/*
@@ -29,7 +31,7 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 				const parseTree = parser.expr();
 				console.log(parseTree.ruleContext);
 			}*/
-			
+
 			return locations;
 		}
 
@@ -48,7 +50,7 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 					const foundSuperTypes = [];
 					const superTypeSymbolNames = containingObject.detail.split(',');
 					for (const superTypeName of superTypeSymbolNames) {
-						if(superTypeName === 'object') {
+						if (superTypeName === 'object') {
 							continue;
 						}
 						foundSuperTypes.push(symbolManager.findSymbol(superTypeName));
@@ -75,29 +77,29 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 			}
 
 
-			
+
 			// Not sure if this should be here since it is a bit too hardwired and only works for
 			// adv3: If ctrl-clicking "Examine" in dobjFor(Examine) "Examine" will be replaced with
 			// what the preprocessed version of it is, e.g:  "sentinelDobjExamine"
 			// But leaving it as is for now.
 
-			const currentLine = currentDoc.getText(Range.create(position.line, 0, position.line+1, 0));
+			const currentLine = currentDoc.getText(Range.create(position.line, 0, position.line + 1, 0));
 			const dobjForRegexp = /[id]objFor[(](.*)[)]/;
 			const result = dobjForRegexp.exec(currentLine);
-			if(result && result[1] === symbolName) {
+			if (result && result[1] === symbolName) {
 				//const fsPath = URI.parse(textDocument.uri).fsPath;
 				//const prepRows = preprocessedFilesCacheMap.get(fsPath)?.split(/\n/) ?? [];
 				//const prepLine = (prepRows[position.line]) ?? '';
 				symbolName = "sentinelDobj" + symbolName;
 			}
-			
+
 
 
 			//connection.console.log(`Find definition(s) for word: ${symbolName}`);
 			for (const filePathKey of symbolManager.symbols.keys()) {
 				const localSymbols = symbolManager.symbols.get(filePathKey);
 				if (localSymbols) {
-					const symbol = flattenTreeToArray(localSymbols).find(x => x.name === symbolName);
+					const symbol = flattenTreeToArray(localSymbols).find(x => x.name === symbolName); 
 					if (symbol !== undefined) {
 						//connection.console.log(`Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`);
 						const filePath = URI.file(filePathKey).toString();
@@ -106,11 +108,22 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 				}
 			}
 			const macro = getDefineMacrosMap().get(symbolName);
-			if(macro) {
-				locations.push(Location.create(macro.uri, Range.create(macro.row,0, macro.endLine, macro.row + symbolName.length)));
+			if (macro) {
+				locations.push(Location.create(macro.uri, Range.create(macro.row, 0, macro.endLine, macro.row + symbolName.length)));
 			}
 		}
 	}
-	return locations;
+
+	// Filter out the current selection itself;
+	return locations.filter(location => !(sameDocumentPosition(textDocument, location, position)));
+}
+
+function sameDocumentPosition(textDocument: TextDocumentIdentifier, defMatchLocation: Location, cursorPosition: Position) {
+	const sameUri = onWindowsPlatform ? textDocument.uri.toLowerCase() === defMatchLocation.uri.toLowerCase() : textDocument.uri === defMatchLocation.uri;
+	return sameUri
+		&& defMatchLocation.range.start.line <= cursorPosition.line
+		&& defMatchLocation.range.end.line >= cursorPosition.line
+		&& defMatchLocation.range.start.character <= cursorPosition.character
+		&& defMatchLocation.range.end.character >= cursorPosition.character;
 }
 

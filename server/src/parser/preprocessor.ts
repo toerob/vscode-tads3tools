@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 //import { URI } from 'vscode-languageserver';
 import { exec } from 'child_process';
 import { readFile, readFileSync } from 'fs';
