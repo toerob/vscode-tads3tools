@@ -64,10 +64,12 @@ export function parseAndPopulateTads2Errors(text: string, textDocument: TextDocu
 			}
 		}
 	}
+	
 	diagnostics.forEach( (diagnostics, filename)=> {
 		collection.set(filename, [...diagnostics.values()]);
 	})
-	return [...diagnostics.values()];
+	const errors = [...diagnostics.values()].flatMap(x=>[...x]);
+	return errors;
 }
 
 function convertMessageToSeverity(str: string): DiagnosticSeverity {

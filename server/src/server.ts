@@ -333,19 +333,16 @@ connection.onRequest('request/parseDocuments', async ({ globalStoragePath, makef
 	await preprocessAndParseFiles(globalStoragePath, makefileLocation, filePaths, token); 
 });
 
-connection.onRequest('request/parseTads2Documents', async ({ globalStoragePath, mainFileLocation, token }) => {
+connection.onRequest('request/parseTads2Documents', async ({ globalStoragePath, mainFileLocation, filePaths, token }) => {
 	serverState.tadsVersion = 2;
-	await preprocessAndParseTads2Files(globalStoragePath, mainFileLocation, token); 
+	await preprocessAndParseTads2Files(globalStoragePath, mainFileLocation, filePaths, token); 
 });
-
 
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);
-
 connection.listen();
-
 
 function analyzeText(text: string) {
 	const tagger = posTagger();

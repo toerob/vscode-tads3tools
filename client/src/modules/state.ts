@@ -1,5 +1,5 @@
 import { autorun, makeAutoObservable, observable } from "mobx";
-import { Uri } from 'vscode';
+import { Progress, Uri } from 'vscode';
 import { client } from '../extension';
 
 // TODO: convert to properties
@@ -14,6 +14,14 @@ class ExtensionStateStore {
 	tads2MainFile: Uri | undefined = undefined
 	isUsingTads2: boolean = undefined;
 	_tads2ProjectFilesInfo: Map<any, any>;
+	
+	private _currentPreprocessAndParseProgress: Progress<any>;
+	public get currentPreprocessAndParseProgress(): Progress<any> {
+		return this._currentPreprocessAndParseProgress;
+	}
+	public set currentPreprocessAndParseProgress(value: Progress<any>) {
+		this._currentPreprocessAndParseProgress = value;
+	}
 
 	constructor() {
 		makeAutoObservable(this, {

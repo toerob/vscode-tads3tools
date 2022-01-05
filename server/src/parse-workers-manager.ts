@@ -56,16 +56,23 @@ const generalHeaderIncludeRegExp = RegExp(/tads3[/]include[/]|tads3\\include\\/)
 const useCachedLibrary = true;
 
 
-export async function preprocessAndParseTads2Files(globalStoragePath: string, mainFileLocation: string, token: any) {
+/**
+ * 
+ * @param globalStoragePath - no need yet, since tads2 projects are fairly fast to compile. We don't need to cache objects
+ * @param mainFileLocation 
+ * @param token 
+ * @returns 
+ */
+export async function preprocessAndParseTads2Files(globalStoragePath: string, mainFileLocation: string, filePaths: string[]|undefined, token: any) {
 	try {
-	await preprocessTads2Files(mainFileLocation, preprocessedFilesCacheMap);
-	connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);
+		await preprocessTads2Files(mainFileLocation, preprocessedFilesCacheMap);
+		connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);
 	} catch (error:any) {
 		connection.console.error(error.message);
 		connection.sendNotification('symbolparsing/allfiles/failed', { error: error.message });
 		return;
 	}
-	parseTads2Files();
+	parseTads2Files(filePaths);
 }
 
 /**
