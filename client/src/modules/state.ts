@@ -2,6 +2,7 @@ import { autorun, makeAutoObservable, observable } from "mobx";
 import { Uri } from 'vscode';
 import { client } from '../extension';
 
+// TODO: convert to properties
 class ExtensionStateStore {
 	longProcessing = false;
 	diagnosing = false;
@@ -9,9 +10,10 @@ class ExtensionStateStore {
 
 	isUsingAdv3Lite = undefined;
 	chosenMakefileUri: Uri | undefined;
-	
+
 	tads2MainFile: Uri | undefined = undefined
 	isUsingTads2: boolean = undefined;
+	_tads2ProjectFilesInfo: Map<any, any>;
 
 	constructor() {
 		makeAutoObservable(this, {
@@ -27,17 +29,20 @@ class ExtensionStateStore {
 			if (this.longProcessing) text.push('[Longprocessing]');
 			if (this.isUsingTads2) text.push('[Detected using Tads2]');
 			if (this.tads2MainFile) text.push(`[Detected Tads2 main file: ${this.tads2MainFile}]`);
-			setTimeout(()=>reportState(text.length > 0 ? text.join(', ') : 'Done'));
+			setTimeout(() => reportState(text.length > 0 ? text.join(', ') : 'Done'));
 		});
 	}
 
-	setUsingTads2(state: boolean) {
-		this.isUsingTads2 = state;
-	}
+	get tads2ProjectFilesInfo() { return this._tads2ProjectFilesInfo; }
+	set tads2ProjectFilesInfo(tads2ProjectFilesInfo) { this._tads2ProjectFilesInfo = tads2ProjectFilesInfo; }
 
-	setTads2MainFile(tads2MainFile: Uri) {
-		this.tads2MainFile = tads2MainFile;
-	}
+	setUsingTads2(state: boolean) { this.isUsingTads2 = state; }
+
+	getUsingTads2() { return this.isUsingTads2; }
+
+	setTads2MainFile(tads2MainFile: Uri) { this.tads2MainFile = tads2MainFile; }
+
+	getTads2MainFile() { return this.tads2MainFile; }
 
 	setDiagnosing(state: boolean) { this.diagnosing = state; }
 
@@ -48,20 +53,16 @@ class ExtensionStateStore {
 	isLongProcessingInAction() { return this.longProcessing; }
 
 	setPreprocessing(state: boolean) { this.preprocessing = state; }
-	
+
 	isPreprocessing() { return this.preprocessing; }
 
 	setUsingAdv3LiteStatus(state: boolean) { this.isUsingAdv3Lite = state }
 
-	getUsingAdv3LiteStatus() {return this.isUsingAdv3Lite; }
-	
-	getChosenMakefileUri(): Uri | undefined {
-		return this.chosenMakefileUri;
-	}
+	getUsingAdv3LiteStatus() { return this.isUsingAdv3Lite; }
 
-	setChosenMakefileUri(chosenMakefileUri :Uri | undefined) {
-		this.chosenMakefileUri = chosenMakefileUri;
-	}
+	getChosenMakefileUri(): Uri | undefined { return this.chosenMakefileUri; }
+
+	setChosenMakefileUri(chosenMakefileUri: Uri | undefined) { this.chosenMakefileUri = chosenMakefileUri; }
 
 }
 

@@ -39,4 +39,5 @@ export async function parseTads2Files() {
 	const elapsedTime = Date.now() - startTime;
 	console.log(`All files parsed within ${elapsedTime} ms`);
 	connection.sendNotification('symbolparsing/allfiles/success', { allFilePaths, elapsedTime });
+
 }
