@@ -205,6 +205,18 @@
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
 				},
+				"tads2.preprocessor.path": {
+					"scope": "window",
+					"type": "string",
+					"default": "cpp",
+					"description": "Path to the tads2 preprocessor (cpp). "
+				},
+				"tads2.compiler.path": {
+					"scope": "window",
+					"type": "string",
+					"default": "tadsc",
+					"description": "Path to the tads3 compiler (tadsc). "
+				},
 				"tads3.compiler.path": {
 					"scope": "window",
 					"type": "string",

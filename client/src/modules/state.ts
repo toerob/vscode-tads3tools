@@ -15,6 +15,10 @@ class ExtensionStateStore {
 	isUsingTads2: boolean = undefined;
 	_tads2ProjectFilesInfo: Map<any, any>;
 	
+	private _allFilesBeenProcessed: boolean = false;
+	public get allFilesBeenProcessed(): boolean { return this._allFilesBeenProcessed; }
+	public set allFilesBeenProcessed(value: boolean) { this._allFilesBeenProcessed = value; }
+	
 	private _currentPreprocessAndParseProgress: Progress<any>;
 	public get currentPreprocessAndParseProgress(): Progress<any> {
 		return this._currentPreprocessAndParseProgress;

@@ -25,8 +25,6 @@ export class ExtendedDocumentSymbolProperties {
 	travelConnectorMap = new Map();
 }
 
-//const additionalProperties = new Map<string, ExtendedDocumentSymbolProperties>();
-
 export class Tads2SymbolListener implements Tads2Listener {
 
 	symbols: DocumentSymbol[] = [];
@@ -337,14 +335,24 @@ export class Tads2SymbolListener implements Tads2Listener {
 				if (this.currentPropertySetName) {
 					name = this.currentPropertySetName.replace('*', name);
 				}
-				// Try evaluating the direction if it is in a method. 
-				// 
+
+				// Try evaluating the direction if it is evaluated inside a method. 
 				if(name.match(/(north|south|east|west|ne|nw|se|sw|up|down|in|out)/)) {
 					if(ctx.codeBlock()) {
 						const returnValues = getAllReturnValues(ctx.codeBlock() as ParseTree);
-						const filteredReturnValues = returnValues.filter(x=> x !== 'nil').join(',');
-						if(filteredReturnValues) {
-							detail = filteredReturnValues.length===1 ? filteredReturnValues[0] : filteredReturnValues;
+						const filteredReturnValues = returnValues.filter(x=> x !== 'nil') ?? [];
+						if(filteredReturnValues && filteredReturnValues.length===1) {
+							detail = filteredReturnValues.join(',');
+							if(detail.startsWith('(') && detail.endsWith(')')) {
+								detail = detail.substring(1, detail.length-1);
+							}
+							/*
+							TODO: the value found might point to another property function that 
+							needs to be evaluated to get the map location reference (room).
+							
+							This needs to be done in another pass after the listener is done 
+							so that all symbols are already parsed in beforehand.
+							*/
 						}
 					}
 				}

@@ -22,7 +22,7 @@ import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
-import { validateCompilerPath, validateUserSettings } from './modules/validations';
+import { validateCompilerPath, validatePreprocessorPath, validateTads2Settings, validateUserSettings } from './modules/validations';
 import { extensionState } from './modules/state';
 import { validateMakefile } from './modules/validate-makefile';
 import { extractAllQuotes } from './modules/extract-quotes';
@@ -52,7 +52,6 @@ let currentTextDocument: TextDocument | undefined;
 let extensionDownloadMap: Map<any, any>;
 
 let errorDiagnostics = [];
-let allFilesBeenProcessed = false;
 let serverProcessCancelTokenSource: CancellationTokenSource;
 let preprocessedList: string[];
 
@@ -256,7 +255,7 @@ export function activate(context: ExtensionContext) {
 		});
 
 		client.onNotification('symbolparsing/success', ([filePath, tracker, totalFiles, poolSize]) => {
-			if (allFilesBeenProcessed && !extensionState.isLongProcessingInAction()) {
+			if (extensionState.allFilesBeenProcessed && !extensionState.isLongProcessingInAction()) {
 				if (tads3VisualEditorPanel) {
 					client.info(`Refreshing the map view`);
 					client.sendNotification('request/mapsymbols');
@@ -279,19 +278,25 @@ export function activate(context: ExtensionContext) {
 			}
 			client.sendNotification('request/mapsymbols');
 			extensionState.setLongProcessing(false);
-			allFilesBeenProcessed = true;
+			extensionState.allFilesBeenProcessed = true;
 		});
 
 		client.onNotification("symbolparsing/allfiles/failed", ({ error }) => {
 			window.showErrorMessage(`Parsing all files via makefile ${basename(extensionState.getChosenMakefileUri().fsPath)} failed: ${error} `, { modal: true });
 			extensionState.setLongProcessing(false);
 			extensionState.setPreprocessing(false);
-			allFilesBeenProcessed = false;
+			extensionState.allFilesBeenProcessed = false;
 		});
 
 		workspace.onDidChangeConfiguration(async config => {
 			if (config.affectsConfiguration('tads3.compiler.path')) {
 				validateCompilerPath(workspace.getConfiguration("tads3").get('compiler.path'));
+			}
+			if (config.affectsConfiguration('tads2.preprocessor.path')) {
+				validateCompilerPath(workspace.getConfiguration("tads2").get('preprocessor.path'));
+			}
+			if (config.affectsConfiguration('tads2.compiler.path')) {
+				validateCompilerPath(workspace.getConfiguration("tads2").get('compiler.path'));
 			}
 		});
 
@@ -426,9 +431,9 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 		return;
 	}
 	client.info(`Diagnosing went by with no errors`);
-	if (!allFilesBeenProcessed) {
+	if (!extensionState.allFilesBeenProcessed) {
 		extensionState.setLongProcessing(true);
-		allFilesBeenProcessed = true;
+		extensionState.allFilesBeenProcessed = true;
 		client.info(`Preprocess and parse all documents`);
 		preprocessAndParseDocument();
 		return;
@@ -849,7 +854,7 @@ async function initiallyParseTadsProject() {
 		}
 		if (extensionState.getChosenMakefileUri() === undefined) {
 			client.info(`No tads3 makefile could be found`);
-			initiallyParseTads2Project();
+			detectAndInitiallyParseTads2Project();
 			return;
 		}
 
@@ -910,10 +915,10 @@ export async function selectTads2MainFile() {
  * all documents and then parses them for the first time.
  * 
  */
-async function initiallyParseTads2Project() {
+async function detectAndInitiallyParseTads2Project() {
 
-	// TODO: verify cpp binary location before running this.
-
+	if(!await validateTads2Settings()) { return; }
+	
 	client.info('Detecting Tads2 project');
 	const totalIncludeSet = new Set();
 	const nodes = new Map();
