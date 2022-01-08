@@ -534,7 +534,7 @@ async function downloadFile(requestUrl: string, folder: string, fileName: string
 
 
 async function downloadAndInstallExtension(context: ExtensionContext) {
-	const configuration = workspace.getConfiguration("tads3");
+	const configuration = workspace.getConfiguration(extensionState.isUsingTads2? "tads2": "tads3");
 	const ifarchiveTads3ContributionsURL: string = configuration.get("ifArchiveExtensionURL");
 	try {
 		if (extensionDownloadMap === undefined) {
@@ -574,7 +574,8 @@ async function downloadAndInstallExtension(context: ExtensionContext) {
 	const action = await window.showInformationMessage(infoEntries.join('\n\n***\n\n'), { modal: true }, option1, option2);
 	console.log(action);
 	if (action.title === 'Install') {
-		const makefileDir = dirname(extensionState.getChosenMakefileUri().fsPath);
+		
+		const makefileDir = dirname(extensionState.isUsingTads2 ? extensionState.getTads2MainFile().fsPath : extensionState.getChosenMakefileUri().fsPath);
 		for (const extKey of selections) {
 			const downloadURL = ifarchiveTads3ContributionsURL + extKey;
 			try {

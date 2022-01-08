@@ -265,6 +265,13 @@
 					"default": "http://ifarchive.org/if-archive/programming/tads3/library/contributions/",
 					"pattern": "https?://ifarchive.org/.*",
 					"description": "Path the ifarchive directory for tads3 contributions"
+				},
+				"tads2.ifArchiveExtensionURL": {
+					"scope": "window",
+					"type": "string",
+					"default": "http://ifarchive.org/if-archive/programming/tads2/examples/",
+					"pattern": "https?://ifarchive.org/.*",
+					"description": "Path the ifarchive directory for tads2 contributions"
 				}
 			}
 		}
