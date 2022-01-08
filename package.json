@@ -205,7 +205,7 @@
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
 				},
-				"tads2.preprocessor.path": {
+				"tads.preprocessor.path": {
 					"scope": "window",
 					"type": "string",
 					"default": "t3make",

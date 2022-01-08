@@ -2,11 +2,9 @@
 //import { URI } from 'vscode-languageserver';
 import { exec } from 'child_process';
 import { readFile, readFileSync } from 'fs';
-import { isGenerator } from 'mobx/dist/internal';
 import { basename, dirname } from 'path';
 import { URI } from 'vscode-uri';
 import { CaseInsensitiveSet } from '../modules/CaseInsensitiveSet';
-import { processPreprocessedResultTads2 } from './processPreprocessedResultTads2';
 
 
 const defineRegExp = new RegExp(/^\s*[#]\s*define\s+([^\(\s\n]+)[^(\n]*/);
@@ -59,7 +57,7 @@ export async function preprocessTads2Files(chosenMainfilePath: string, preproces
 	const includes = [libFolders, dirname(chosenMainfilePath)].map(x=>`-I "${x}"`).join(' ');
 	const commandLine = `${t2PreprocessorPath} -w0 ${includes} -P -q "${chosenMainfilePath}"`;
 	const result: any = await runCommand(commandLine);
-	connection.console.log(`command line: ${commandLine}`);
+	//connection?.console?.log(`command line: ${commandLine}`);
 	if (result.match(/unable to open/i)) {
 		throw new Error(`Preprocessing failed: ${result}`);
 	}
@@ -73,6 +71,7 @@ export async function preprocessTads3Files(chosenMakefilePath: string, preproces
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
 	const commandLine = `"${t3makeCompilerPath}" -P -q -f "${chosenMakefilePath}"`;
+	//connection?.console?.log(`command line: ${commandLine}`);
 	const result: any = await runCommand(commandLine);
 	if (result.match(/unable to open/i)) {
 		throw new Error(`Preprocessing failed: ${result}`);
@@ -240,76 +239,6 @@ function postProcessPreprocessedResultTads(unprocessedRowsMap: Map<string, numbe
 	connection?.console?.log(`Postprocessing row lines done in ${elapsedTime} ms`);
 }
 
-
-
-/**
- * Some preprocessed document gets duplicated several times during 
- * preprocessing and ends up very long, therefore they need trimming.
- * @param unprocessedRowsMap 
- */
- function postProcessPreprocessedResultTads2(unprocessedRowsMap: Map<string, number>, preprocessedFilesCacheMap: Map<string, string>, connection: any ) {
-	const startTime = Date.now();
-	for(const filename of preprocessedFilesCacheMap.keys()) {
-		if(filename.endsWith('/std.t')) {
-			console.log();
-		}
-		const preprocessedText = preprocessedFilesCacheMap.get(filename);
-		if(preprocessedText) {
-			const processedRowsArray = preprocessedText.split(wholeLineRegExp);
-			const unprocessedRows = unprocessedRowsMap.get(filename);
-			if(unprocessedRows) {
-
-				// In case the preprocessed document is longer than the original document.
-				// - Slice it where it matches the second pragma directive
-				// - Slice it so it matches the length of the unprocessed document
-				if(processedRowsArray.length > unprocessedRows) {
-
-					const slicedTextArray = processedRowsArray.slice(0, unprocessedRows-1);
-					const diff = processedRowsArray.length - unprocessedRows;
-					const slicedText = slicedTextArray.join('\n') ?? '';
-					preprocessedFilesCacheMap.set(filename, slicedText);
-					connection.console.log(`## slicing: ${filename} (row diff = ${diff})`);
-				
-					
-
-					/*
-					const pragmas = collectPragmaPositions(preprocessedText);
-					if(pragmas.length===2) {
-
-						const slicedText = preprocessedText.slice(0, pragmas[1]);
-						preprocessedFilesCacheMap.set(filename, slicedText);
-						connection.console.log(`## file: ${filename} has pragma directives at: [${pragmas.join(', ')}] `);
-	
-					} else {
-						const slicedTextArray = processedRowsArray.slice(0, unprocessedRows-1);
-						//slicedTextArray[slicedTextArray.length-1] = '';
-						
-						const slicedText = slicedTextArray.join('\n') ?? '';
-						const diff = processedRowsArray.length - unprocessedRows;
-						preprocessedFilesCacheMap.set(filename, slicedText);
-						connection.console.log(`## slicing: ${filename} without pragma directivess (row diff = ${diff})`);
-					}*/
-
-				}
-				// In case the original document is longer than the preprocessed.
-				// - Fill up the lost rows with blank rows
-				if(unprocessedRows > processedRowsArray.length) {
-					const blankRows = unprocessedRows - processedRowsArray.length;
-					for(let i=0; i<blankRows;i++) { processedRowsArray.push(``); }
-					preprocessedFilesCacheMap.set(filename, processedRowsArray.join('\n'));
-				}
-			}
-
-		}
-		if(isFileDefinesToBeProcess(filename)) {
-			mapMacroDefinitions(filename, connection);
-		}
-	}
-	const elapsedTime = Date.now() - startTime;
-	connection?.console?.log(`Postprocessing row lines done in ${elapsedTime} ms`);
-}
-
-
 /**
  * Determine if the file should be checked for define macros
  * This preferably done once for library files and each time 
@@ -353,15 +282,4 @@ function mapMacroDefinitions(filename: string, connection: any) {
 	});
 }
 
-
-
-
-function collectPragmaPositions(preprocessedText: string) {
-	let lastFoundPragma: number = 0;
-	const pragmas = []
-	while( (lastFoundPragma = preprocessedText.indexOf('#pragma C-', lastFoundPragma+1)) !== -1) {
-		pragmas.push(lastFoundPragma);
-	}
-	return pragmas;
-}
 

@@ -64,7 +64,7 @@ const useCachedLibrary = true;
  */
 export async function preprocessAndParseTads2Files(globalStoragePath: string, mainFileLocation: string, filePaths: string[]|undefined, token: any) {
 	try {
-		const t2PreprocessorPath: string = await connection.workspace.getConfiguration('tads2.preprocessor.path') ?? 't3make';
+		const t2PreprocessorPath: string = await connection.workspace.getConfiguration('tads.preprocessor.path') ?? 't3make';
 		const libFolder: string = await connection.workspace.getConfiguration('tads2.library.path') ?? '/usr/local/share/frobtads/tads2/';
 		await preprocessTads2Files(mainFileLocation, preprocessedFilesCacheMap, t2PreprocessorPath, [libFolder], connection);
 		connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);

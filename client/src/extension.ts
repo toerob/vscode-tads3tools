@@ -292,7 +292,7 @@ export function activate(context: ExtensionContext) {
 			if (config.affectsConfiguration('tads3.compiler.path')) {
 				validateCompilerPath(workspace.getConfiguration("tads3").get('compiler.path'));
 			}
-			if (config.affectsConfiguration('tads2.preprocessor.path')) {
+			if (config.affectsConfiguration('tads.preprocessor.path')) {
 				validateCompilerPath(workspace.getConfiguration("tads2").get('preprocessor.path'));
 			}
 			if (config.affectsConfiguration('tads2.compiler.path')) {

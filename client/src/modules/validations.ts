@@ -9,8 +9,7 @@ export async function validateUserSettings() {
 }
 
 export async function validateTads2Settings() {
-	//const preprocessorResult = await validatePreprocessorPath(workspace.getConfiguration("tads2").get('preprocessor.path'), false);
-	const preprocessorResult = await validateCompilerPath(workspace.getConfiguration("tads2").get('preprocessor.path'), false);
+	const preprocessorResult = await validateCompilerPath(workspace.getConfiguration("tads").get('preprocessor.path'), false);
 	const compilerResult = await validateCompilerPath(workspace.getConfiguration("tads2").get('compiler.path'), false);
 	return preprocessorResult && compilerResult;
 }
@@ -40,7 +39,7 @@ export async function validatePreprocessorPath(ppPath: string, showSuccess = tru
 			return true;
 		}
 	}
-	window.showErrorMessage(`Tads2 preprocessor path setting (t3make executable) couldn't execute properly. The extension won't work properly without a valid path/executable string. Examine the tads2.preprocessor.path setting, Set the path to a valid one and try saving any document in the project to trigger a new parse. `);
+	window.showErrorMessage(`Tads2 preprocessor path setting (t3make executable) couldn't execute properly. The extension won't work properly without a valid path/executable string. Examine the tads.preprocessor.path setting, Set the path to a valid one and try saving any document in the project to trigger a new parse. `);
 	return false;
 }
 
