@@ -18,8 +18,8 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
 	
     
     const preprocessedDocument = preprocessedFilesCacheMap.get(fsPath);
+    
 	const preprocessedDocumentArray = preprocessedDocument?.trimEnd().split(/\r?\n/);
-
 	if(!currentDoc || !preprocessedDocumentArray) {
 		return [];
     }

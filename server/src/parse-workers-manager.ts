@@ -1,5 +1,5 @@
 import { DocumentSymbol, Range } from 'vscode-languageserver/node';
-import { preprocessAllFiles, preprocessTads2Files } from './parser/preprocessor';
+import { preprocessTads3Files, preprocessTads2Files } from './parser/preprocessor';
 import { statSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { URI, Utils } from 'vscode-uri';
 import { spawn, Pool, Worker, Thread } from 'threads';
@@ -11,7 +11,6 @@ import { ensureDirSync } from 'fs-extra';
 import { parseTads2Files } from './parseTads2Files';
 import { symbolManager } from './modules/symbol-manager';
 import { filterForLibraryFiles } from './modules/utils';
-
 
 /**
  * Reads and parses the makefile to get additional information
@@ -65,7 +64,9 @@ const useCachedLibrary = true;
  */
 export async function preprocessAndParseTads2Files(globalStoragePath: string, mainFileLocation: string, filePaths: string[]|undefined, token: any) {
 	try {
-		await preprocessTads2Files(mainFileLocation, preprocessedFilesCacheMap);
+		const t2PreprocessorPath: string = await connection.workspace.getConfiguration('tads2.preprocessor.path') ?? 'cpp';
+		const libFolder: string = await connection.workspace.getConfiguration('tads2.library.path') ?? '/usr/local/share/frobtads/tads2/';
+		await preprocessTads2Files(mainFileLocation, preprocessedFilesCacheMap, t2PreprocessorPath, [libFolder], connection);
 		connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);
 	} catch (error:any) {
 		connection.console.error(error.message);
@@ -81,7 +82,7 @@ export async function preprocessAndParseTads2Files(globalStoragePath: string, ma
  * @param filePaths string array of files to parse, "undefined" means parse all files
  * @param token CancellationToken
  */
-export async function preprocessAndParseFiles(globalStoragePath: string, makefileLocation: string, filePaths: string[] | undefined, token: any) {
+export async function preprocessAndParseTads3Files(globalStoragePath: string, makefileLocation: string, filePaths: string[] | undefined, token: any) {
 
 	if (lastMakeFileLocation !== makefileLocation) {
 		lastMakeFileLocation = makefileLocation;
@@ -103,7 +104,8 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	}
 
 	try {
-		await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
+		const t3makeCompilerPath: string = await connection.workspace.getConfiguration('tads3.compiler.path') ?? 't3make';
+		await preprocessTads3Files(makefileLocation, preprocessedFilesCacheMap, t3makeCompilerPath, connection);
 	} catch (error:any) {
 		connection.console.error(error.message);
 		connection.sendNotification('symbolparsing/allfiles/failed', { error: error.message });

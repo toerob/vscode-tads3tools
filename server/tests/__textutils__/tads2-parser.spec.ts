@@ -3,7 +3,7 @@ import { CharStreams, CommonTokenStream } from 'antlr4ts';
 import { ParseTreeWalker } from 'antlr4ts/tree/ParseTreeWalker';
 import { Tads2Lexer } from '../../src/parser/Tads2Lexer';
 import { Tads2Listener } from '../../src/parser/Tads2Listener';
-import { CompoundWordDirectiveContext, FunctionDeclarationContext, MethodContext, ObjectDeclarationContext, PropertyContext, Tads2Parser } from '../../src/parser/Tads2Parser';
+import { AdditiveExprContext, CompoundWordDirectiveContext, FunctionDeclarationContext, MethodContext, ObjectDeclarationContext, PropertyContext, Tads2Parser } from '../../src/parser/Tads2Parser';
 
 
 describe('Tads2 parser tests', () => {
@@ -67,8 +67,36 @@ describe('Tads2 parser tests', () => {
 		visitErrorNode(ctx: any) {
 			assert.fail();
 		}
+		enterAdditiveExpr(ctx: AdditiveExprContext) {
+
+			/*
+			//const left = ctx.expr()[0].text;
+			const localExpression = (ctx?.expr()[0]?.children?[3]) ?? undefined;
+
+			if(localExpression) {
+				const left = (localExpression.text) ?? '';
+				//console.log(children+ '\n');
+	
+				const op = ctx._op.text ?? 'NOP';
+				const right = ctx.expr()[1].text;
+				console.log(left+op+right);
+	
+			}*/
+
+
+		}
 		
 	}
+	it('parses a simple expression correctly', () => {
+
+		parseText(`
+			singleFunction: function {
+				local a:= 3+5;
+			}
+		`);
+		
+	});
+
 
 	it('parses a simple game structure correctly', () => {
 

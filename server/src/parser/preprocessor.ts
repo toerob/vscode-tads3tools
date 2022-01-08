@@ -5,9 +5,20 @@ import { readFile, readFileSync } from 'fs';
 import { basename, dirname } from 'path';
 import { URI } from 'vscode-uri';
 import { CaseInsensitiveSet } from '../modules/CaseInsensitiveSet';
-import { connection, preprocessedFilesCacheMap } from '../server';
+import { processPreprocessedResultTads2 } from './processPreprocessedResultTads2';
 
-const rowsMap = new Map<string, number>();
+
+const defineRegExp = new RegExp(/^\s*[#]\s*define\s+([^\(\s\n]+)[^(\n]*/);
+
+/**
+ * It's not enough to just look for regular line breaks, e.g: \r?\n
+ * As a complement a look behind needs to be done to make sure we are 
+ * not parsing a quoted newline. Those we don't want to touch.
+ */
+export const wholeLineRegExp = new RegExp(/(?<=[^\\])\r?\n/); 
+
+
+export const rowsMap = new Map<string, number>();
 const defineMacrosMap = new Map();
 const onWindowsPlatform = (process.platform === 'win32');
 const macrosChecked = (onWindowsPlatform)? new CaseInsensitiveSet() : new Set();
@@ -20,7 +31,6 @@ export function markFileToBeCheckedForMacroDefinitions(uri: string) {
 	macrosChecked.delete(uri);
 }
 
-const defineRegExp = new RegExp(/^\s*[#]\s*define\s+([^\(\s\n]+)[^(\n]*/);
 
 export function runCommand(command: string) {
 	return new Promise( (resolve, reject) => {
@@ -39,25 +49,26 @@ export function runCommand(command: string) {
 		return result;
 	});
 }
+export async function preprocessTads2Files(chosenMainfilePath: string, preprocessedFilesCacheMap: Map<string, string>, 
+	t2PreprocessorPath: string  = 'cpp', libFolders: string[] = ['/usr/local/share/frobtads/tads2/'], connection:any = undefined) {
 
-export async function preprocessTads2Files(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>) {
-	const t2PreprocessorPath: number = await connection.workspace.getConfiguration('tads2.preprocessor.path') ?? 'cpp';
-	const libFolder: string = await connection.workspace.getConfiguration('tads2.library.path') ?? '/usr/local/share/frobtads/tads2/';
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
-	const currentFolder = dirname(chosenMakefilePath);
-	const commandLine = `"${t2PreprocessorPath}" -I ${libFolder} -I ${currentFolder} -ds "${chosenMakefilePath}"`;
+	
+	const includes = [libFolders, dirname(chosenMainfilePath)].map(x=>`-I ${x}`).join(' ');
+	const commandLine = `"${t2PreprocessorPath}" -w ${includes} -ds "${chosenMainfilePath}"`;
 	const result: any = await runCommand(commandLine);
+
 	if (result.match(/unable to open/i)) {
 		throw new Error(`Preprocessing failed: ${result}`);
 	}
-	processPreprocessedResult(result, preprocessedFilesCacheMap, true);
-	const unprocessedRowsMap = countRowsOfUnprocessedFiles([...preprocessedFilesCacheMap?.keys()] ?? []);
-	postProcessPreprocessedResult(unprocessedRowsMap);
+	processPreprocessedResultTads2(result, preprocessedFilesCacheMap, connection);
+	const unprocessedRowsMap = countRowsOfUnprocessedFiles([...preprocessedFilesCacheMap?.keys()] ?? [], connection);
+	postProcessPreprocessedResultTads2(unprocessedRowsMap, preprocessedFilesCacheMap, connection);
 }
 
-export async function preprocessAllFiles(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>) {
-	const t3makeCompilerPath: number = await connection.workspace.getConfiguration('tads3.compiler.path') ?? 't3make';
+export async function preprocessTads3Files(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>,
+	t3makeCompilerPath: string = 't3make', connection: any = undefined) {
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
 	const commandLine = `"${t3makeCompilerPath}" -P -q -f "${chosenMakefilePath}"`;
@@ -66,21 +77,28 @@ export async function preprocessAllFiles(chosenMakefilePath: string, preprocesse
 		throw new Error(`Preprocessing failed: ${result}`);
 	}
 	processPreprocessedResult(result, preprocessedFilesCacheMap);
-	const unprocessedRowsMap = countRowsOfUnprocessedFiles([...preprocessedFilesCacheMap?.keys()] ?? []);
-	postProcessPreprocessedResult(unprocessedRowsMap);
+	const unprocessedRowsMap = countRowsOfUnprocessedFiles([...preprocessedFilesCacheMap?.keys()] ?? [], connection);
+	postProcessPreprocessedResultTads3(unprocessedRowsMap, preprocessedFilesCacheMap, connection);
 }
 
-function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<string, string>, usingTads2=false) {
+// TODO: Check diff between this and tads2 version, if small, merge with conditionals.
+function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<string, string>, usingTads2=false, connection: any = undefined) {
+	
+	//TODO: std.t gets repeated in this process, so part of the beginning is tucked on at the end. 
+	//TODO: separate this completely for tads2?
+
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
+	
 	const pathRegexp = usingTads2? new RegExp("^# ([0-9]+) \"(.*)\""): new RegExp("^#line ([0-9]+) \"(.*)\"");
+	const tadsLineQuickMatchDelimiter = usingTads2? '#': '#line';
+
 	const startTime = Date.now();
 	let totalLineCount = 0;
 	let currentCounter = 0;
 	let currentBuffer = '';
 	let currentFile = undefined;
-	const tadsLineQuickMatchDelimiter = usingTads2? '#': '#line';
-	for (const line of result.split(/\n/)) {
+	for (const line of result.split(wholeLineRegExp)) { // Split only simple "\n", not "\\n" found within strings
 		totalLineCount++;
 		currentCounter++;
 		if (line.startsWith(tadsLineQuickMatchDelimiter)) {
@@ -143,10 +161,10 @@ function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<s
 	}
 
 	const elapsedTime = Date.now() - startTime;
-	connection.console.log(`${totalLineCount - 1} number of preprocessed lines mapped in ${elapsedTime} ms`);
+	connection?.console?.log(`${totalLineCount - 1} number of preprocessed lines mapped in ${elapsedTime} ms`);
 }
 
-function storeCurrentBufferAndRows(currentFile: string, currentBuffer: string, currentCounter: number, preprocessedFilesCacheMap: Map<string, string>) {
+export function storeCurrentBufferAndRows(currentFile: string, currentBuffer: string, currentCounter: number, preprocessedFilesCacheMap: Map<string, string>) {
 	try {
 		const previouslyCountedRows = rowsMap.get(currentFile);
 		if (previouslyCountedRows !== undefined) {
@@ -168,16 +186,16 @@ function storeCurrentBufferAndRows(currentFile: string, currentBuffer: string, c
 		console.error(err);
 	}
 }
-function countRowsOfUnprocessedFiles(filesArray: string[]) {
+function countRowsOfUnprocessedFiles(filesArray: string[],  connection: any = undefined) {
 	const startTime = Date.now();
 	const rowMap = new Map();
 	for(const f of filesArray) {
 		const contents = readFileSync(f).toString();
-		const countedLines = contents.split(/\r?\n/)?.length;
+		 const countedLines = contents.split(wholeLineRegExp)?.length;
 		rowMap.set(f,countedLines);
 	}
 	const elapsedTime = Date.now() - startTime;
-	connection.console.log(`Counting row lines done in ${elapsedTime} ms`);
+	connection?.console?.log(`Counting row lines done in ${elapsedTime} ms`);
 	return rowMap;
 }
 
@@ -187,27 +205,79 @@ function countRowsOfUnprocessedFiles(filesArray: string[]) {
  * preprocessing and ends up very long, therefore they need trimming.
  * @param unprocessedRowsMap 
  */
-function postProcessPreprocessedResult(unprocessedRowsMap: Map<string, number>) {
+function postProcessPreprocessedResultTads3(unprocessedRowsMap: Map<string, number>, preprocessedFilesCacheMap: Map<string, string>, connection: any) {
 	const startTime = Date.now();
 	for(const filename of preprocessedFilesCacheMap.keys()) {
 		const preprocessedText = preprocessedFilesCacheMap.get(filename);
 		if(preprocessedText) {
-			const processedRowsArray = preprocessedText.split(/\r?\n/);
+			const processedRowsArray = preprocessedText.split(wholeLineRegExp);
 			const unprocessedRows = unprocessedRowsMap.get(filename);
 			if(unprocessedRows) {
+				
+				// In case the preprocessed document is longer than the original document.
+				// - Slice it so it matches the length of the unprocessed document
 				if(processedRowsArray.length > unprocessedRows) {
 					const slicedText = processedRowsArray.slice(0, unprocessedRows).join('\n');
 					preprocessedFilesCacheMap.set(filename, slicedText);
 				}	
+
+				// In case the original document is longer than the preprocessed.
+				// - Fill up the lost rows with blank rows
+				if(unprocessedRows > processedRowsArray.length) {
+					const blankRows = unprocessedRows - processedRowsArray.length-1;
+					for(let i=0; i<blankRows;i++) { processedRowsArray.push(``); }
+					preprocessedFilesCacheMap.set(filename, processedRowsArray.join('\n'));
+				}
+
 			}
 		}
 		if(isFileDefinesToBeProcess(filename)) {
-			mapMacroDefinitions(filename);
+			mapMacroDefinitions(filename, connection);
 		}
 	}
 	const elapsedTime = Date.now() - startTime;
-	connection.console.log(`Postprocessing row lines done in ${elapsedTime} ms`);
+	connection?.console?.log(`Postprocessing row lines done in ${elapsedTime} ms`);
 }
+
+
+
+/**
+ * Some preprocessed document gets duplicated several times during 
+ * preprocessing and ends up very long, therefore they need trimming.
+ * @param unprocessedRowsMap 
+ */
+ function postProcessPreprocessedResultTads2(unprocessedRowsMap: Map<string, number>, preprocessedFilesCacheMap: Map<string, string>, connection: any ) {
+	const startTime = Date.now();
+	for(const filename of preprocessedFilesCacheMap.keys()) {
+		const preprocessedText = preprocessedFilesCacheMap.get(filename);
+		if(preprocessedText) {
+			const processedRowsArray = preprocessedText.split(wholeLineRegExp);
+			const unprocessedRows = unprocessedRowsMap.get(filename);
+			if(unprocessedRows) {
+				// In case the preprocessed document is longer than the original document.
+				// - Slice it so it matches the length of the unprocessed document
+				if(processedRowsArray.length > unprocessedRows) {
+					const slicedText = processedRowsArray.slice(0, unprocessedRows).join('\n');
+					preprocessedFilesCacheMap.set(filename, slicedText);
+				}
+				// In case the original document is longer than the preprocessed.
+				// - Fill up the lost rows with blank rows
+				if(unprocessedRows > processedRowsArray.length) {
+					const blankRows = unprocessedRows - processedRowsArray.length;
+					for(let i=0; i<blankRows;i++) { processedRowsArray.push(``); }
+					preprocessedFilesCacheMap.set(filename, processedRowsArray.join('\n'));
+				}
+			}
+
+		}
+		if(isFileDefinesToBeProcess(filename)) {
+			mapMacroDefinitions(filename, connection);
+		}
+	}
+	const elapsedTime = Date.now() - startTime;
+	connection?.console?.log(`Postprocessing row lines done in ${elapsedTime} ms`);
+}
+
 
 /**
  * Determine if the file should be checked for define macros
@@ -222,14 +292,14 @@ function isFileDefinesToBeProcess(filename: string) {
 	return !macrosChecked?.has(uriPath);
 }
 
-function mapMacroDefinitions(filename: string) {
+function mapMacroDefinitions(filename: string, connection: any) {
 	const fp = onWindowsPlatform? URI.file(filename).fsPath: filename;
 	readFile(fp, (err, data) => {
 		if(!err) {
 			const fp = onWindowsPlatform? URI.file(filename).path : filename;
 			let rowIdx = 0;
 			const text = data.toString();
-			const rows = text.split(/\r?\n/) ?? [];
+			const rows = text.split(wholeLineRegExp) ?? [];
 			rows.forEach((row, idx)=> {
 				const result = defineRegExp.exec(row);
 				if(result !== null && result?.length >= 2) {
@@ -246,8 +316,12 @@ function mapMacroDefinitions(filename: string) {
 				rowIdx++;
 			});
 			macrosChecked.add(fp); // Cache result, only refresh on file changes			
-			connection.console.info(`${fp} scanned for macro definitions`);
+			connection?.console?.info(`${fp} scanned for macro definitions`);
 		}
 
 	});
 }
+
+
+
+

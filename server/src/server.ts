@@ -20,7 +20,7 @@ import { symbolManager, TadsSymbolManager } from './modules/symbol-manager';
 import { onDocumentSymbol } from './modules/symbols';
 //import { onReferences } from './modules/references';
 import { onDefinition } from './modules/definitions';
-import { preprocessAndParseFiles, preprocessAndParseTads2Files } from './parse-workers-manager';
+import { preprocessAndParseTads3Files, preprocessAndParseTads2Files } from './parse-workers-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DefaultMapObject } from './modules/mapcrawling/DefaultMapObject';
 import MapObjectManager from './modules/mapcrawling/map-mapping';
@@ -31,7 +31,7 @@ import { onDocumentLinks } from './modules/links';
 import { onHover } from './modules/hover';
 import { CaseInsensitiveMap } from './modules/CaseInsensitiveMap';
 import { onWorkspaceSymbol } from './modules/workspace-symbols';
-import { markFileToBeCheckedForMacroDefinitions, preprocessAllFiles } from './parser/preprocessor';
+import { markFileToBeCheckedForMacroDefinitions, preprocessTads3Files } from './parser/preprocessor';
 import { URI } from 'vscode-uri';
 import { serverState } from './state';
 
@@ -330,7 +330,7 @@ connection.onRequest('request/analyzeText/findNouns', async (params) => {
 
 connection.onRequest('request/parseDocuments', async ({ globalStoragePath, makefileLocation, filePaths, token }) => {
 	serverState.tadsVersion = 3;
-	await preprocessAndParseFiles(globalStoragePath, makefileLocation, filePaths, token); 
+	await preprocessAndParseTads3Files(globalStoragePath, makefileLocation, filePaths, token); 
 });
 
 connection.onRequest('request/parseTads2Documents', async ({ globalStoragePath, mainFileLocation, filePaths, token }) => {
