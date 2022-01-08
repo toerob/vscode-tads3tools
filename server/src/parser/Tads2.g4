@@ -116,7 +116,8 @@ functionDeclaration:
 ;
 
 objectDeclaration:
-    (isModify=MODIFY? | isReplace=REPLACE? | isClass=CLASS?)
+    (isModify=MODIFY? | isReplace=REPLACE?)
+    isClass=CLASS?
     level+=PLUS*
     (superTypes| (isTransient=TRANSIENT? id=identifierAtom COLON superTypes) )
     (curlyObjectBody | semiColonEndedObjectBody)

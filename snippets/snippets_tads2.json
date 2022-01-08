@@ -1,0 +1,37 @@
+{   
+	"Tads2 room (auto camelcased) snippet" : { 
+		"prefix": "room (auto camelcased)",
+		"body": [    
+			"${1/(.*)/${1:/camelcase}/}: ${2|room,darkroom|}",
+			"\tsdesc = '${1/[']/\\'/g}'",
+			"\t$4",
+			";",
+			"$0"
+		],
+		"description": "Tads2 auto camelcased room snippet"
+	},
+	"Tads2 room (manually named) snippet" : { 
+		"prefix": "room (manually named)", 
+		"body": [    
+			"${1/(.*)/${1:/camelcase}/}: ${2|room,darkroom|}",
+			"\tsdesc = '${3:$1}'",
+			"\t$4",
+			";",
+			"$0"
+		],
+		"description": "Tads2 (manually named) room snippet"
+	},
+
+	"Tads2 thing snippet" : { 
+		"prefix": "item (manually named)", 
+		"body": [    
+			"${1/(.*)/${1:/camelcase}/}: ${2|thing,item,decoration,lightsource,fixeditem,readable,fooditem,dialItem,switchItem,hiddenItem,hider,underHider,behindHider,searchHider,chairitem,beditem,floatingItem|}",
+			"location = ${3}",
+			"\tsdesc = '${4:$1}'",
+			"\t$5",
+			";",
+			"$0"
+		],
+		"description": "Tads2 thing snippet"
+	}
+}
