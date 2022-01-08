@@ -215,7 +215,13 @@
 					"scope": "window",
 					"type": "string",
 					"default": "tadsc",
-					"description": "Path to the tads3 compiler (tadsc). "
+					"description": "Path to the tads3 compiler (tadsc or on windows: tc32.exe). "
+				},
+				"tads2.library.path": {
+					"scope": "window",
+					"type": "string",
+					"default": "/usr/local/share/frobtads/tads2/",
+					"description": "Path to the tads2 library. "
 				},
 				"tads3.compiler.path": {
 					"scope": "window",

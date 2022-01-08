@@ -51,7 +51,7 @@ export function runCommand(command: string) {
 
 
 export async function preprocessTads2Files(chosenMainfilePath: string, preprocessedFilesCacheMap: Map<string, string>, 
-	t2PreprocessorPath: string  = 't3make', libFolders: string[] = ['/usr/local/share/frobtads/tads2/'], connection:any = undefined) {
+	t2PreprocessorPath  = 't3make', libFolders: string[] = ['/usr/local/share/frobtads/tads2/'], connection:any = undefined) {
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
 	const includes = [libFolders, dirname(chosenMainfilePath)].map(x=>`-I "${x}"`).join(' ');
@@ -67,7 +67,7 @@ export async function preprocessTads2Files(chosenMainfilePath: string, preproces
 }
 
 export async function preprocessTads3Files(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>,
-	t3makeCompilerPath: string = 't3make', connection: any = undefined) {
+	t3makeCompilerPath = 't3make', connection: any = undefined) {
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
 	const commandLine = `"${t3makeCompilerPath}" -P -q -f "${chosenMakefilePath}"`;
@@ -191,7 +191,7 @@ function countRowsOfUnprocessedFiles(filesArray: string[],  connection: any = un
 	const rowMap = new Map();
 	for(const f of filesArray) {
 		const contents = readFileSync(f).toString();
-		 const countedLines = contents.split(wholeLineRegExp)?.length;
+		const countedLines = contents.split(wholeLineRegExp)?.length;
 		rowMap.set(f,countedLines);
 	}
 	const elapsedTime = Date.now() - startTime;

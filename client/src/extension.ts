@@ -454,7 +454,7 @@ function setupAndMonitorBinaryGamefileChanges(imageFormat) {
 	client.info(`setup and monitor binary game file changes. `);
 	
 	const workspaceFolder = extensionState.getUsingTads2()?
-	 	dirname(extensionState.getTads2MainFile().fsPath) 
+	dirname(extensionState.getTads2MainFile().fsPath) 
 		: dirname(extensionState.getChosenMakefileUri().fsPath);
 
 	gameFileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, imageFormat));
@@ -630,13 +630,10 @@ function ensureObjFolderExistsInProjectRoot() {
 
 async function diagnose(textDocument: TextDocument) {
 	if(extensionState.getUsingTads2()) {
-		//TODO:
-
 		extensionState.setDiagnosing(true);
 		const tads2ExtensionConfig = workspace.getConfiguration('tads2');
 		const compilerPath = tads2ExtensionConfig?.compiler?.path ?? 'tadsc';
-		const tads2libraryPath = tads2ExtensionConfig?.compiler?.library ?? '/usr/local/share/frobtads/tads2/';
-		//tadsc -i /usr/local/share/frobtads/tads2/ -i . -ds hell.t
+		const tads2libraryPath = tads2ExtensionConfig?.library?.path ?? '/usr/local/share/frobtads/tads2/'; 
 		const mainFilePath = extensionState.getTads2MainFile().fsPath;
 		const projectBaseFolder = dirname(mainFilePath);
 		const commandLine = `"${compilerPath}" -i "${tads2libraryPath}" -i "${projectBaseFolder}" -ds "${mainFilePath}"`;
@@ -901,7 +898,7 @@ export async function selectMakefileWithDialog() {
 export async function selectTads2MainFile() {
 	const userChoice = await window.showOpenDialog({
 		title: 'Select the main file for the tads2 project'
-	})
+	});
 	if(userChoice.length===1) {
 		extensionState.setTads2MainFile(userChoice[0]);
 		extensionState.setUsingTads2(true);
@@ -937,7 +934,7 @@ async function detectAndInitiallyParseTads2Project() {
 				nodes.set(basename(currentFile.fsPath), node);
 			}
 		}
-	};
+	}
 	if(files.length === 0) {
 		client.info('No Tads2 files found. Detection is over. ');
 		return;
