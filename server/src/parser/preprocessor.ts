@@ -2,6 +2,7 @@
 //import { URI } from 'vscode-languageserver';
 import { exec } from 'child_process';
 import { readFile, readFileSync } from 'fs';
+import { isGenerator } from 'mobx/dist/internal';
 import { basename, dirname } from 'path';
 import { URI } from 'vscode-uri';
 import { CaseInsensitiveSet } from '../modules/CaseInsensitiveSet';
@@ -49,22 +50,22 @@ export function runCommand(command: string) {
 		return result;
 	});
 }
-export async function preprocessTads2Files(chosenMainfilePath: string, preprocessedFilesCacheMap: Map<string, string>, 
-	t2PreprocessorPath: string  = 'cpp', libFolders: string[] = ['/usr/local/share/frobtads/tads2/'], connection:any = undefined) {
 
+
+export async function preprocessTads2Files(chosenMainfilePath: string, preprocessedFilesCacheMap: Map<string, string>, 
+	t2PreprocessorPath: string  = 't3make', libFolders: string[] = ['/usr/local/share/frobtads/tads2/'], connection:any = undefined) {
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
-	
-	const includes = [libFolders, dirname(chosenMainfilePath)].map(x=>`-I ${x}`).join(' ');
-	const commandLine = `"${t2PreprocessorPath}" -w ${includes} -ds "${chosenMainfilePath}"`;
+	const includes = [libFolders, dirname(chosenMainfilePath)].map(x=>`-I "${x}"`).join(' ');
+	const commandLine = `${t2PreprocessorPath} -w0 ${includes} -P -q "${chosenMainfilePath}"`;
 	const result: any = await runCommand(commandLine);
-
+	connection.console.log(`command line: ${commandLine}`);
 	if (result.match(/unable to open/i)) {
 		throw new Error(`Preprocessing failed: ${result}`);
 	}
-	processPreprocessedResultTads2(result, preprocessedFilesCacheMap, connection);
+	processPreprocessedResult(result, preprocessedFilesCacheMap);
 	const unprocessedRowsMap = countRowsOfUnprocessedFiles([...preprocessedFilesCacheMap?.keys()] ?? [], connection);
-	postProcessPreprocessedResultTads2(unprocessedRowsMap, preprocessedFilesCacheMap, connection);
+	postProcessPreprocessedResultTads(unprocessedRowsMap, preprocessedFilesCacheMap, connection);
 }
 
 export async function preprocessTads3Files(chosenMakefilePath: string, preprocessedFilesCacheMap: Map<string, string>,
@@ -78,7 +79,7 @@ export async function preprocessTads3Files(chosenMakefilePath: string, preproces
 	}
 	processPreprocessedResult(result, preprocessedFilesCacheMap);
 	const unprocessedRowsMap = countRowsOfUnprocessedFiles([...preprocessedFilesCacheMap?.keys()] ?? [], connection);
-	postProcessPreprocessedResultTads3(unprocessedRowsMap, preprocessedFilesCacheMap, connection);
+	postProcessPreprocessedResultTads(unprocessedRowsMap, preprocessedFilesCacheMap, connection);
 }
 
 // TODO: Check diff between this and tads2 version, if small, merge with conditionals.
@@ -205,7 +206,7 @@ function countRowsOfUnprocessedFiles(filesArray: string[],  connection: any = un
  * preprocessing and ends up very long, therefore they need trimming.
  * @param unprocessedRowsMap 
  */
-function postProcessPreprocessedResultTads3(unprocessedRowsMap: Map<string, number>, preprocessedFilesCacheMap: Map<string, string>, connection: any) {
+function postProcessPreprocessedResultTads(unprocessedRowsMap: Map<string, number>, preprocessedFilesCacheMap: Map<string, string>, connection: any) {
 	const startTime = Date.now();
 	for(const filename of preprocessedFilesCacheMap.keys()) {
 		const preprocessedText = preprocessedFilesCacheMap.get(filename);
@@ -249,16 +250,46 @@ function postProcessPreprocessedResultTads3(unprocessedRowsMap: Map<string, numb
  function postProcessPreprocessedResultTads2(unprocessedRowsMap: Map<string, number>, preprocessedFilesCacheMap: Map<string, string>, connection: any ) {
 	const startTime = Date.now();
 	for(const filename of preprocessedFilesCacheMap.keys()) {
+		if(filename.endsWith('/std.t')) {
+			console.log();
+		}
 		const preprocessedText = preprocessedFilesCacheMap.get(filename);
 		if(preprocessedText) {
 			const processedRowsArray = preprocessedText.split(wholeLineRegExp);
 			const unprocessedRows = unprocessedRowsMap.get(filename);
 			if(unprocessedRows) {
+
 				// In case the preprocessed document is longer than the original document.
+				// - Slice it where it matches the second pragma directive
 				// - Slice it so it matches the length of the unprocessed document
 				if(processedRowsArray.length > unprocessedRows) {
-					const slicedText = processedRowsArray.slice(0, unprocessedRows).join('\n');
+
+					const slicedTextArray = processedRowsArray.slice(0, unprocessedRows-1);
+					const diff = processedRowsArray.length - unprocessedRows;
+					const slicedText = slicedTextArray.join('\n') ?? '';
 					preprocessedFilesCacheMap.set(filename, slicedText);
+					connection.console.log(`## slicing: ${filename} (row diff = ${diff})`);
+				
+					
+
+					/*
+					const pragmas = collectPragmaPositions(preprocessedText);
+					if(pragmas.length===2) {
+
+						const slicedText = preprocessedText.slice(0, pragmas[1]);
+						preprocessedFilesCacheMap.set(filename, slicedText);
+						connection.console.log(`## file: ${filename} has pragma directives at: [${pragmas.join(', ')}] `);
+	
+					} else {
+						const slicedTextArray = processedRowsArray.slice(0, unprocessedRows-1);
+						//slicedTextArray[slicedTextArray.length-1] = '';
+						
+						const slicedText = slicedTextArray.join('\n') ?? '';
+						const diff = processedRowsArray.length - unprocessedRows;
+						preprocessedFilesCacheMap.set(filename, slicedText);
+						connection.console.log(`## slicing: ${filename} without pragma directivess (row diff = ${diff})`);
+					}*/
+
 				}
 				// In case the original document is longer than the preprocessed.
 				// - Fill up the lost rows with blank rows
@@ -324,4 +355,13 @@ function mapMacroDefinitions(filename: string, connection: any) {
 
 
 
+
+function collectPragmaPositions(preprocessedText: string) {
+	let lastFoundPragma: number = 0;
+	const pragmas = []
+	while( (lastFoundPragma = preprocessedText.indexOf('#pragma C-', lastFoundPragma+1)) !== -1) {
+		pragmas.push(lastFoundPragma);
+	}
+	return pragmas;
+}
 

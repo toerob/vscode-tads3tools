@@ -9,7 +9,8 @@ export async function validateUserSettings() {
 }
 
 export async function validateTads2Settings() {
-	const preprocessorResult = await validatePreprocessorPath(workspace.getConfiguration("tads2").get('preprocessor.path'), false);
+	//const preprocessorResult = await validatePreprocessorPath(workspace.getConfiguration("tads2").get('preprocessor.path'), false);
+	const preprocessorResult = await validateCompilerPath(workspace.getConfiguration("tads2").get('preprocessor.path'), false);
 	const compilerResult = await validateCompilerPath(workspace.getConfiguration("tads2").get('compiler.path'), false);
 	return preprocessorResult && compilerResult;
 }

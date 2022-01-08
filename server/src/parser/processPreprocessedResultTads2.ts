@@ -19,10 +19,8 @@ export function processPreprocessedResultTads2(result: any, preprocessedFilesCac
 		if (line.startsWith('#')) {
 			const match = pathRegexp.exec(line);
 			if (match) {
-				if (currentFile) {
-					if (!(currentFile.startsWith('<'))) {
-						storeCurrentBufferAndRows(currentFile, currentBuffer, currentCounter - 1, preprocessedFilesCacheMap);
-					}
+				if (currentFile && !(currentFile.startsWith('<'))) {
+					storeCurrentBufferAndRows(currentFile, currentBuffer, currentCounter - 1, preprocessedFilesCacheMap);
 				}
 				currentBuffer = '';
 				currentCounter = 0;
@@ -43,7 +41,7 @@ export function processPreprocessedResultTads2(result: any, preprocessedFilesCac
 					if(lastStored) {
 						const lastCharacter = lastStored[lastStored.length - 1];
 						if (lastCharacter === '\n') {
-							//console.error(`Salvaging negative diff in ${currentFile} ${diff} last line: ${lastLine}`);
+							console?.error(`Salvaging negative diff in ${currentFile} ${diff} last line: ${lastLine}`);
 							const removedLastLine = lastStored.slice(0, lastStored.length - 1);
 							preprocessedFilesCacheMap.set(currentFile, removedLastLine);
 							currentCounter--;
@@ -51,7 +49,7 @@ export function processPreprocessedResultTads2(result: any, preprocessedFilesCac
 					}
 				}
 				for (let x = 0; x < diff; x++) {
-					currentBuffer = currentBuffer.concat('\n');
+					currentBuffer = currentBuffer.concat('//**ROW**\n');
 					currentCounter++;
 				}
 				rowsMap.set(currentFile, lastLine);
@@ -59,6 +57,7 @@ export function processPreprocessedResultTads2(result: any, preprocessedFilesCac
 			}
 		}
 
+		
 		if (!line.startsWith('#charset')) {
 			currentBuffer = currentBuffer.concat(line).concat('\n');
 		} else {

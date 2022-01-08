@@ -208,8 +208,8 @@
 				"tads2.preprocessor.path": {
 					"scope": "window",
 					"type": "string",
-					"default": "cpp",
-					"description": "Path to the tads2 preprocessor (cpp). "
+					"default": "t3make",
+					"description": "Path to the tads2 preprocessor (t3make). "
 				},
 				"tads2.compiler.path": {
 					"scope": "window",
