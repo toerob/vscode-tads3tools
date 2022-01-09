@@ -31,7 +31,7 @@ import { onDocumentLinks } from './modules/links';
 import { onHover } from './modules/hover';
 import { CaseInsensitiveMap } from './modules/CaseInsensitiveMap';
 import { onWorkspaceSymbol } from './modules/workspace-symbols';
-import { markFileToBeCheckedForMacroDefinitions, preprocessTads3Files } from './parser/preprocessor';
+import { markFileToBeCheckedForMacroDefinitions } from './parser/preprocessor';
 import { URI } from 'vscode-uri';
 import { serverState } from './state';
 
@@ -361,10 +361,10 @@ function parseDirection(directionName: any): string|undefined {
 			case 's': return 'south';
 			case 'e': return 'east';
 			case 'w': return 'west';
-			case 'ne': return 'northeast';
-			case 'nw': return 'northwest';
-			case 'se': return 'southeast';
-			case 'sw': return 'southwest';
+			case 'ne': return serverState.tadsVersion===2?'ne':'northeast';
+			case 'nw': return serverState.tadsVersion===2?'nw':'northwest';
+			case 'se': return serverState.tadsVersion===2?'se':'southeast';
+			case 'sw': return serverState.tadsVersion===2?'sw':'southwest';
 		}
 	}
 	return undefined;

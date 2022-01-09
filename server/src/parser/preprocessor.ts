@@ -81,12 +81,7 @@ export async function preprocessTads3Files(chosenMakefilePath: string, preproces
 	postProcessPreprocessedResultTads(unprocessedRowsMap, preprocessedFilesCacheMap, connection);
 }
 
-// TODO: Check diff between this and tads2 version, if small, merge with conditionals.
 function processPreprocessedResult(result: any, preprocessedFilesCacheMap: Map<string, string>, usingTads2=false, connection: any = undefined) {
-	
-	//TODO: std.t gets repeated in this process, so part of the beginning is tucked on at the end. 
-	//TODO: separate this completely for tads2?
-
 	preprocessedFilesCacheMap.clear();
 	rowsMap.clear();
 	
@@ -177,9 +172,9 @@ export function storeCurrentBufferAndRows(currentFile: string, currentBuffer: st
 			preprocessedFilesCacheMap.set(currentFile, previousContent.concat(currentBuffer));
 		} else {
 			if (currentBuffer) {
-				preprocessedFilesCacheMap.set(currentFile, currentBuffer);		// Can't do this
+				preprocessedFilesCacheMap.set(currentFile, currentBuffer);
 			} else {
-				preprocessedFilesCacheMap.set(currentFile, '');		// Can't do this
+				preprocessedFilesCacheMap.set(currentFile, '');
 			}
 		}
 	} catch (err) {

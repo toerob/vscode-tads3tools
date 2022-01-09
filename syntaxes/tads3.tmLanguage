@@ -289,12 +289,6 @@
 				</dict>
 				<dict>
 					<key>match</key>
-					<string>\bin\b</string>
-					<key>name</key>
-					<string>keyword.control.in.tads3</string>
-				</dict>
-				<dict>
-					<key>match</key>
 					<string>\bgoto\b</string>
 					<key>name</key>
 					<string>keyword.control.goto.tads3</string>

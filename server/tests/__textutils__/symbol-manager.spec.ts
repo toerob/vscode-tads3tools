@@ -2,14 +2,10 @@ import { DocumentSymbol, Position, Range, SymbolKind } from 'vscode-languageserv
 import { flattenTreeToArray, symbolManager, TadsSymbolManager } from '../../../server/src/modules/symbol-manager';
 import assert = require('assert');
 
-
 const range = Range.create(10, 2, 14, 5); 
 const symbol1 = DocumentSymbol.create('symbol1', 'details here', SymbolKind.Class, range, range, []);
 
-
-
 describe('TadsSymbolManager', () => {
-
 	let sm: TadsSymbolManager = symbolManager;
 
 	beforeEach(()=> {

@@ -1,4 +1,3 @@
-
 /*
 
 Tads2 grammar defintion
@@ -36,8 +35,6 @@ program:
 
 directive:
     enumDeclaration
-    //| templateDeclaration
-    //| intrinsicDeclaration
     | exportDeclaration
     | objectDeclaration
     | propertyDeclaration
@@ -77,12 +74,6 @@ item:
     | STAR
 ;
 
-/*
-templateDeclaration:
-    className=identifierAtom TEMPLATE (properties+=expr isOptional+=OPTIONAL?)+ SEMICOLON
-    | STRING TEMPLATE ARITHMETIC_LEFT (identifierAtom|STAR|IS|IN)* ARITHMETIC_RIGHT templateId=identifierAtom SEMICOLON
-;*/
-
 enumDeclaration:
     ENUM isToken=TOKEN? identifierAtom (COMMA identifierAtom)* SEMICOLON
 ;
@@ -94,17 +85,6 @@ dictionaryDeclaration:
     level=PLUS* DICTIONARY isProperty=PROPERTY? identifiers+=identifierAtom (COMMA identifiers+=identifierAtom)* SEMICOLON;
 
 exportDeclaration: EXPORT identifierAtom SSTR? SEMICOLON;
-
-/*
-intrinsicDeclaration: INTRINSIC CLASS? name=identifierAtom? (SSTR|DSTR)? (COLON superTypes)?
-    LEFT_CURLY
-        methods+=intrinsicMethodDeclaration*
-    RIGHT_CURLY
-;*/
-
-/*
-intrinsicMethodDeclaration: STATIC? identifierAtom (LEFT_PAREN params? RIGHT_PAREN) SEMICOLON;
-*/
 
 functionDeclaration:
    (isModify=MODIFY?|isReplace=REPLACE?)
@@ -155,12 +135,6 @@ method:
         (identifierAtom(LEFT_PAREN params? RIGHT_PAREN)? ASSIGN
             (block=codeBlock|expressions+=expr+?) )
 ;
-
-/*
-functionHead:
-     identifierAtom COLON FUNCTION (LEFT_PAREN params? RIGHT_PAREN)? ASSIGN
- ;
-*/
 
 codeBlock:
    LEFT_CURLY stats* RIGHT_CURLY
@@ -291,14 +265,13 @@ expr:
             |ARITHMETIC_RIGHT
             | LOGICAL_RIGHT_SHIFT)
             isInc=ASSIGN? expr                      #bitwiseExpr
- | expr (ARROW) expr                                #arrowExpr //Is it enough with only arrowExpr2?
+ | expr (ARROW) expr                                #arrowExpr
  |  (ARROW) expr                                    #arrowExpr2
- | STAR ARROW expr                                  #arrowExpr3 // Special case, we could add STAR into the primary also, but since this can only happen inside an array(?) this seems safer to do
+ | STAR ARROW expr                                  #arrowExpr3
  | (AT|AMP|NOT|PLUS|MINUS|TILDE) expr               #unaryExpr
  |  expr (PLUS PLUS|MINUS MINUS)                      #postFixExpr
  |  expr OPTIONAL expr COLON expr                   #ternaryExpr
  | functionDeclaration                  #anonymousFunctionExpr
- //| expr params                          #callExpr // NOt sure about this
 
 ;
 
@@ -351,7 +324,6 @@ CLASS: 'class';
 TRANSIENT : 'transient';
 MODIFY: 'modify';
 REPLACE: 'replace';
-PROPERTYSET: 'propertyset';
 IF: 'if';
 DO : 'do';
 WHILE : 'while';
@@ -442,25 +414,11 @@ GT: '>';
 ARITHMETIC_RIGHT : '>>';
 LOGICAL_RIGHT_SHIFT : '>>>';
 
-
 COMMENT: '/*' .*? '*/' -> skip;
 LINE_COMMENT : '//' ~[\r\n]* -> skip;
 WS : [ \r\t\n]+ -> channel(HIDDEN) ;
 
 ANY: .;
-
-/*
-fragment SingleStringCharacter:
-    ~['\\\r\n]
-    | LineContinuation
-    ;
-fragment DoubleStringCharacter:
-    ~["\\\r\n]
-    | LineContinuation
-;
-
-fragment LineContinuation: '\\' [\r\n\u2028\u2029];
-*/
 
 fragment SINGLE_QUOTED_STRING: '\'' STRING_STRUCTURE '\'' | '\'\'\'' STRING_STRUCTURE '\'\'\'';
 fragment DOUBLE_QUOTED_STRING: '"' STRING_STRUCTURE '"' | '"""' STRING_STRUCTURE '"""';

@@ -14,7 +14,6 @@ describe('Preprocessing suite Tads2', () => {
 		assert.equal(array[3], "Up!\";");
 	})
 
-	//TODO: mock connection
 	it('unprocessed file and preprocessed file shall have the same number of rows', async () => {
 		const preprocessedFilesCacheMap: Map<string, string> = new Map();
 		const mainFilePath = `/home/reboto/repos/vscode-tads3tools/server/tests/__textutils__/t2testgames/hello.t`;
@@ -34,6 +33,5 @@ function assertSameLineCountBetweenOriginalAndPreprocessed(pathToFile: string, p
 	const fileStrAsArray = fileContentString?.split(wholeLineRegExp) ?? [];
 	const preprocessedFileContent = preprocessedFilesCacheMap.get(pathToFile);
 	const preprocessedFileStrArray = preprocessedFileContent?.split(wholeLineRegExp) ?? [];
-	//console.log(fileStrAsArray?.length +'/'+ preprocessedFileStrArray?.length);
 	assert.equal(fileStrAsArray?.length, preprocessedFileStrArray?.length);
 }

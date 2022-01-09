@@ -10,7 +10,7 @@
   - the property "in" is no longer called unnamed in the outliner.
   - Ctrl-clicking on a symbol name will not populate a (redundant) match from the same file and position any longer.
   - Snippets are now added differently depending on library used. Different snippets will appear depending on using Tads3 adv3/adv3Lite or Tads2.
-  - snippets for interpolated expressions such as <<if>> <<else>> <<end>> or as <<one of >><<or>><<stopping>> has been added. As well snippets and auto pairing for <q>quotes</q> 
+  - snippets for interpolated expressions such as \<\<if\>\> \<\<else\>\> \<\<end\>\> or as \<\<one of \>\>\<\<or\>\>\<\<stopping\>\> has been added. As well snippets and auto pairing for \<q\>quotes\</q\> 
   - Auto pairing quotes/aphostrophes/comments won't happen inside strings anymore.
 
 ### Notes
