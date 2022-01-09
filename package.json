@@ -3,7 +3,7 @@
 	"description": "Language server extension for Tads3",
 	"author": "Tomas Öberg",
 	"license": "MIT",
-	"version": "0.4.0",
+	"version": "0.5.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/toerob/vscode-tads3tools.git"
@@ -36,7 +36,7 @@
 		"snippets": [
 			{
 				"language": "tads3",
-				"path": "./snippets/snippets.json"
+				"path": "./snippets/snippets_common.json"
 			}
 		],
 		"languages": [
@@ -74,6 +74,12 @@
 			}
 		],
 		"commands": [
+			{
+				"command": "tads2.parseTads2Project",
+				"title": "Tads2 command: Parse a tads2 project",
+				"category": "Editor",
+				"enablement": "true"
+			},
 			{
 				"command": "tads3.createTads3TemplateProject",
 				"title": "Tads3 command: Create a new Tads3 template project",
@@ -199,6 +205,24 @@
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
 				},
+				"tads.preprocessor.path": {
+					"scope": "window",
+					"type": "string",
+					"default": "t3make",
+					"description": "Path to the tads2 preprocessor (t3make). "
+				},
+				"tads2.compiler.path": {
+					"scope": "window",
+					"type": "string",
+					"default": "tadsc",
+					"description": "Path to the tads3 compiler (tadsc or on windows: tc32.exe). "
+				},
+				"tads2.library.path": {
+					"scope": "window",
+					"type": "string",
+					"default": "/usr/local/share/frobtads/tads2/",
+					"description": "Path to the tads2 library. "
+				},
 				"tads3.compiler.path": {
 					"scope": "window",
 					"type": "string",
@@ -241,13 +265,23 @@
 					"default": "http://ifarchive.org/if-archive/programming/tads3/library/contributions/",
 					"pattern": "https?://ifarchive.org/.*",
 					"description": "Path the ifarchive directory for tads3 contributions"
+				},
+				"tads2.ifArchiveExtensionURL": {
+					"scope": "window",
+					"type": "string",
+					"default": "http://ifarchive.org/if-archive/programming/tads2/examples/",
+					"pattern": "https?://ifarchive.org/.*",
+					"description": "Path the ifarchive directory for tads2 contributions"
 				}
 			}
 		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
-		"antlr4ts": "antlr4ts -visitor server/src/parser/Tads3.g4",
+		"antlr4ts": "npm run antlr4ts_t2;npm run antlr4ts_t3",
+		"antlr4ts_t2": "antlr4ts -visitor server/src/parser/Tads2.g4",
+		"antlr4ts_t3": "antlr4ts -visitor server/src/parser/Tads3.g4",
+		"build": "vsce package --no-yarn",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
@@ -257,8 +291,7 @@
 		"esbuild-base": "esbuild ./client/src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
 		"esbuild": "npm run esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
-		"test-compile": "tsc -p ./",
-		"build": "vsce package --no-yarn"
+		"test-compile": "tsc -p ./"
 	},
 	"devDependencies": {
 		"@types/mocha": "^9.0.0",
@@ -266,7 +299,7 @@
 		"@typescript-eslint/eslint-plugin": "^4.28.5",
 		"@typescript-eslint/parser": "^4.28.5",
 		"antlr4ts-cli": "^0.5.0-alpha.4",
-		"esbuild": "^0.12.22",
+		"esbuild": "^0.14.10",
 		"eslint": "^7.31.0",
 		"jest": "^27.0.6",
 		"mocha": "^9.0.3",
@@ -274,6 +307,7 @@
 	},
 	"dependencies": {
 		"@types/vscode": "^1.58.1",
+		"ts-jest": "^27.1.2",
 		"vsce": "^2.5.1"
 	}
 }

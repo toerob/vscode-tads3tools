@@ -16,11 +16,11 @@ import {
 	CancellationTokenSource,
 	SymbolKind} from 'vscode-languageserver/node';
 
-import { Tads3SymbolManager } from './modules/symbol-manager';
+import { symbolManager, TadsSymbolManager } from './modules/symbol-manager';
 import { onDocumentSymbol } from './modules/symbols';
 //import { onReferences } from './modules/references';
 import { onDefinition } from './modules/definitions';
-import { preprocessAndParseFiles } from './parse-workers-manager';
+import { preprocessAndParseTads3Files, preprocessAndParseTads2Files } from './parse-workers-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DefaultMapObject } from './modules/mapcrawling/DefaultMapObject';
 import MapObjectManager from './modules/mapcrawling/map-mapping';
@@ -33,6 +33,7 @@ import { CaseInsensitiveMap } from './modules/CaseInsensitiveMap';
 import { onWorkspaceSymbol } from './modules/workspace-symbols';
 import { markFileToBeCheckedForMacroDefinitions } from './parser/preprocessor';
 import { URI } from 'vscode-uri';
+import { serverState } from './state';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
@@ -41,10 +42,9 @@ const onWindowsPlatform = (process.platform === 'win32');
 
 export const preprocessedFilesCacheMap = onWindowsPlatform? new CaseInsensitiveMap<string, string>() : new Map<string, string>();
 
-export const symbolManager = new Tads3SymbolManager();
 export const mapper = new MapObjectManager(symbolManager);
 
-export default function processMapSymbols(symbolManager: Tads3SymbolManager, callback: any) {
+export default function processMapSymbols(symbolManager: TadsSymbolManager, callback: any) {
 	const symbols = mapper.mapGameObjectsToMapObjects();
 	callback(symbols);
 }
@@ -329,16 +329,20 @@ connection.onRequest('request/analyzeText/findNouns', async (params) => {
 });
 
 connection.onRequest('request/parseDocuments', async ({ globalStoragePath, makefileLocation, filePaths, token }) => {
-	await preprocessAndParseFiles(globalStoragePath, makefileLocation, filePaths, token); 
+	serverState.tadsVersion = 3;
+	await preprocessAndParseTads3Files(globalStoragePath, makefileLocation, filePaths, token); 
+});
+
+connection.onRequest('request/parseTads2Documents', async ({ globalStoragePath, mainFileLocation, filePaths, token }) => {
+	serverState.tadsVersion = 2;
+	await preprocessAndParseTads2Files(globalStoragePath, mainFileLocation, filePaths, token); 
 });
 
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
 documents.listen(connection);
-
 connection.listen();
-
 
 function analyzeText(text: string) {
 	const tagger = posTagger();
@@ -357,10 +361,10 @@ function parseDirection(directionName: any): string|undefined {
 			case 's': return 'south';
 			case 'e': return 'east';
 			case 'w': return 'west';
-			case 'ne': return 'northeast';
-			case 'nw': return 'northwest';
-			case 'se': return 'southeast';
-			case 'sw': return 'southwest';
+			case 'ne': return serverState.tadsVersion===2?'ne':'northeast';
+			case 'nw': return serverState.tadsVersion===2?'nw':'northwest';
+			case 'se': return serverState.tadsVersion===2?'se':'southeast';
+			case 'sw': return serverState.tadsVersion===2?'sw':'southwest';
 		}
 	}
 	return undefined;

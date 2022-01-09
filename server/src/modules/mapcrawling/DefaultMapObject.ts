@@ -30,5 +30,7 @@ export class DefaultMapObject {
 	parent: string | undefined;
 	children: any[] = [];
 
+	doordest: string|undefined; //tads2 specific
+
 	constructor(public name: string) { }
 }

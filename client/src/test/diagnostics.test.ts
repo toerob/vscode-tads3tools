@@ -7,14 +7,14 @@ import * as vscode from 'vscode';
 import * as assert from 'assert';
 import { getDocUri, activate } from './helper';
 
-suite('Should get diagnostics', () => {
+suite.skip('Should get diagnostics', () => {
 	const docUri = getDocUri('diagnostics.t');
 	test('Makefile missing essential configuration', async () => {
 		await testDiagnostics(docUri, [
 			{
-				message: `unresolved external reference "main"`,
-				range: new vscode.Range(0, 0, 0, 0),
-				severity: vscode.DiagnosticSeverity.Error, source: ''
+				message: 'The symbol "wrong_ref" is undefined, but appears from context to be a propertyname.  The compiler is assuming that this is a property.  Check the spelling ofthe symbol.  If this assumption is correct, you can avoid this warning byexplicitly declaring a value to the property in an object definition ratherthan in method code.',
+				range: new vscode.Range(5, 5, 5, 5),
+				severity: vscode.DiagnosticSeverity.Warning, source: 'tads3'
 			}
 		]);
 	});

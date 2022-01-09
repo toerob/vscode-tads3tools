@@ -261,7 +261,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 			if(name.length>2 && name.startsWith("'") && name .endsWith("'")) {
 				name = name.substring(1,name.length-1);
 			}
-			const parameters = ctx.paramsWithWildcard()?.text
+			const parameters = ctx.paramsWithWildcard()?.text;
 			if(parameters) {
 				name += '(' +(ctx.paramsWithWildcard()?.text ?? '') + ')';
 			}
@@ -302,7 +302,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 	enterProperty(ctx: PropertyContext) {
 		let name: string;
 		if (ctx.identifierAtom()?.length > 0) {
-			name = (ctx.identifierAtom()[0]?.ID()?.toString()) ?? "unnamed";
+			name = ctx.identifierAtom()[0].text ?? "unnamed";
 		} else {
 			name =  "unnamed";
 		}

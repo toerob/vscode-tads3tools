@@ -2,9 +2,9 @@ import { CodeLens, TextDocuments , Range, CodeLensParams, Command} from 'vscode-
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { connection, preprocessedFilesCacheMap } from '../server';
-import { Tads3SymbolManager } from './symbol-manager';
+import { TadsSymbolManager } from './symbol-manager';
 
-export async function onCodeLens({textDocument}: CodeLensParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager) {
+export async function onCodeLens({textDocument}: CodeLensParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
 	const codeLenses: CodeLens[] = [];
     const enablePreprocessorCodeLens = await connection.workspace.getConfiguration("tads3.enablePreprocessorCodeLens");
     
@@ -18,8 +18,8 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
 	
     
     const preprocessedDocument = preprocessedFilesCacheMap.get(fsPath);
+    
 	const preprocessedDocumentArray = preprocessedDocument?.trimEnd().split(/\r?\n/);
-
 	if(!currentDoc || !preprocessedDocumentArray) {
 		return [];
     }

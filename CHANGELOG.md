@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.5.0-alpha
+
+### Added
+  - Tads2 support! Tads2 projects now has the same support for many of the features that Tads3 projects has, e.g the outliner, visual map, goto-definitions, workspace symbols, game runner etc. 
+  - A setting was added to only produce workspace symbol (CTRL-T) result from project files and not library files (might increase performance on larger projects).
+
+### Fixed
+  - the property "in" is no longer called unnamed in the outliner.
+  - Ctrl-clicking on a symbol name will not populate a (redundant) match from the same file and position any longer.
+  - Snippets are now added differently depending on library used. Different snippets will appear depending on using Tads3 adv3/adv3Lite or Tads2.
+  - snippets for interpolated expressions such as \<\<if\>\> \<\<else\>\> \<\<end\>\> or as \<\<one of \>\>\<\<or\>\>\<\<stopping\>\> has been added. As well snippets and auto pairing for \<q\>quotes\</q\> 
+  - Auto pairing quotes/aphostrophes/comments won't happen inside strings anymore.
+
+### Notes
+
+ - The requirements for Tads2 support is having access to the "t3make" compiler, the tads2 compiler ("tadsc"   on linux/mac or tc32.exe on windows) as well as the library path.
+
+    Modify if needed the following settings: 
+    - "tads.preprocessor.path"  
+        (default value: "t3make")
+
+    - "tads2.compiler.path"  
+        (default value: "tadsc" for usage with frobtads, use tc32.exe for windows)
+
+    - "tads2.library.path"
+        (default value: "/usr/local/share/frobtads/tads2/")
+
+    When opening up a folder containing a tads2 project the extension will automatially try to find the "main" file in order to preprocess all the other files. If it can't find a single such file it will give a quickpick menu showing the candidates. If escaping/cancelling that quickpick menu you'll receive a full open file window selection next time a file in the project is saved. 
+    
+    When a main file is found all the files are preprocessed and parsed. 
+    (This information is also added to README.md under the section "First time users - Tads2 notes")
+
 ## 0.4.0-alpha
 
 ### Added

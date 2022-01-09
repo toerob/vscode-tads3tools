@@ -359,6 +359,8 @@
 					<key>name</key>
 					<string>entity.other.invokee.tads3</string>
 				</dict>
+
+
 			</array>
 		</dict>
 		<key>literals-numeric</key>
@@ -502,6 +504,10 @@
 							<array>
 								<dict>
 									<key>include</key>
+									<string>#interpolated-expression-tokens</string>
+								</dict>
+								<dict>
+									<key>include</key>
 									<string>#tokens</string>
 								</dict>
 							</array>
@@ -540,6 +546,10 @@
 							<string>source.tads3.embedded.source</string>
 							<key>patterns</key>
 							<array>
+								<dict>
+									<key>include</key>
+									<string>#interpolated-expression-tokens</string>
+								</dict>
 								<dict>
 									<key>include</key>
 									<string>#tokens</string>
@@ -582,6 +592,10 @@
 							<array>
 								<dict>
 									<key>include</key>
+									<string>#interpolated-expression-tokens</string>
+								</dict>
+								<dict>
+									<key>include</key>
 									<string>#tokens</string>
 								</dict>
 							</array>
@@ -622,6 +636,10 @@
 							<string>source.tads3.embedded.source</string>
 							<key>patterns</key>
 							<array>
+								<dict>
+									<key>include</key>
+									<string>#interpolated-expression-tokens</string>
+								</dict>
 								<dict>
 									<key>include</key>
 									<string>#tokens</string>
@@ -1845,6 +1863,62 @@
 				</dict>
 			</array>
 		</dict>
+
+		<key>interpolated-expression-tokens</key>
+		<dict>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>match</key>
+					<string>if\s*[^>]+</string>
+					<key>name</key>
+					<string>keyword.control.interpolated.if.tads3</string>
+				</dict>
+				<dict>
+					<key>match</key>
+					<string>end</string>
+					<key>name</key>
+					<string>keyword.control.interpolated.end.tads3</string>
+				</dict>
+				<dict>
+					<key>match</key>
+					<string>one of</string>
+					<key>name</key>
+					<string>keyword.control.interpolated.oneof.tads3</string>
+				</dict>
+				<dict>
+					<key>match</key>
+					<string>or</string>
+					<key>name</key>
+					<string>keyword.control.interpolated.or.tads3</string>
+				</dict>
+				<dict>
+					<key>match</key>
+					<string>stopping</string>
+					<key>name</key>
+					<string>keyword.control.interpolated.stopping.tads3</string>
+				</dict>
+				<dict>
+					<key>match</key>
+					<string>at random</string>
+					<key>name</key>
+					<string>keyword.control.interpolated.atrandom.tads3</string>
+				</dict>
+				<dict>
+					<key>match</key>
+					<string>shuffled</string>
+					<key>name</key>
+					<string>keyword.control.interpolated.shuffled.tads3</string>
+				</dict>
+				<dict>
+					<key>match</key>
+					<string>cycling</string>
+					<key>name</key>
+					<string>keyword.control.interpolated.cycling.tads3</string>
+				</dict>
+			</array>
+		</dict>
+
 		<key>tokens</key>
 		<dict>
 			<key>patterns</key>

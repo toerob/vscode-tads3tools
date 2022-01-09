@@ -1,5 +1,5 @@
 import { TextDocuments, HoverParams, Hover, MarkupKind, SymbolKind, DocumentSymbol } from 'vscode-languageserver/node';
-import { Tads3SymbolManager } from './symbol-manager';
+import { TadsSymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { getWordAtPosition } from './text-utils';
 import { retrieveDocumentationForKeyword } from './documentation';
@@ -24,7 +24,7 @@ function checkSymbolsAllowingHoveringDocs(x: DocumentSymbol) {
 }
 
 
-export function onHover({ textDocument, position, workDoneToken }: HoverParams, documents: TextDocuments<TextDocument>, symbolManager: Tads3SymbolManager): Hover | undefined {
+export function onHover({ textDocument, position, workDoneToken }: HoverParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager): Hover | undefined {
 	const currentDoc = documents.get(textDocument.uri);
 	let documentation = '';
 	let templateText = '';

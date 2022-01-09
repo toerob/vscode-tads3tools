@@ -1,7 +1,7 @@
 
 # vscode-tads3tools
 
-A language server/client for the Tads3 programming language and tailored made for Visual Studio Code. 
+A language server/client for the Tads3/Tads2 programming language and tailored made for Visual Studio Code. 
 
 Prioritized to work on **linux** and **mac** platform but also supported on **windows**.
 
@@ -11,6 +11,7 @@ Prioritized to work on **linux** and **mac** platform but also supported on **wi
 
 Install the extension via the marketplace by opening the extension tab within vscode and search for its partial/full name, select it and install.  
 
+### Tads3 notes
 Once installed open up a tads3 project folder (use the open folder feature of vscode), or create a new project with the "Tads3 command: Create a new Tads3 template project" found in the general command menu _(CTRL-SHIFT-P)_. (See the movie below).
 
 Opening up a folder and/or saving a tads3 source code within an opened project will trigger a symbol parsing of that current file (or the whole project, if it hasn't already parsed all files). 
@@ -21,9 +22,27 @@ First time using the extension within a valid project, all the current library f
 
 After this initial parse, all library files will be cached and persisted, and only the project files will be parsed, which will reduce the parsing time to barely noticable. So expect a slightly longer initial parse the first time and then a immediate one the next time you open any project using the same libraries. 
 
+### Tads2 notes
+
+The requirements for Tads2 support is having access to the "t3make" compiler, the tads2 compiler ("tadsc" on linux/mac or tc32.exe on windows) as well as the library path.
+
+  Modify if needed the following settings: 
+  - "tads.preprocessor.path"  
+      (default value: "t3make")
+
+  - "tads2.compiler.path"  
+      (default value: "tadsc" for usage with frobtads, use tc32.exe for windows)
+
+  - "tads2.library.path"
+      (default value: "/usr/local/share/frobtads/tads2/")
+
+  When opening up a folder containing a tads2 project the extension will automatially try to find the "main" file in order to preprocess all the other files. If it can't find a single such file it will give a quickpick menu showing the candidates. If escaping/cancelling that quickpick menu you'll receive a full open file window selection next time a file in the project is saved. 
+  
+  When a main file is found all the files are preprocessed and parsed. 
+
 ### Note on compilation
 
-Compilation happens automatically on every save in the editor on files part of the project. In that process a new t3 game image is built if no errors are found and placed according to the specification of the project's Makefile. (Default is in the root of the project folder and can be overriden with the -o argument). If errors on the other hand were found, no new image will produced and diagnostics are shown with markers in the editor and detailed in the View/Problems section. 
+Compilation happens automatically on every save in the editor on files part of the project. In that process a new *.t3 or *.gam (if using Tads2) game image is built if no errors are found and placed according to the specification of the project's Makefile. (Default is in the root of the project folder and can be overriden with the -o argument). If errors on the other hand were found, no new image will produced and diagnostics are shown with markers in the editor and detailed in the View/Problems section. 
 
 Running the game file in an interpreter can be toggled to happen automatically using the (CTRL-SHIFT-P) command: ”Tads3 command: Toggles on/off if the game should restarted as soon as the t3 image game file changes” The extension monitors any t3 file within the project folder for changes and with this setting enabled launches the game with the frob interpreter in a terminal within vscode. (This is a feature primarily working on mac/linux right now.)
 

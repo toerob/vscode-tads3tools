@@ -1,14 +1,16 @@
 import { DocumentSymbol, Range } from 'vscode-languageserver/node';
-import { preprocessAllFiles } from './parser/preprocessor';
+import { preprocessTads3Files, preprocessTads2Files } from './parser/preprocessor';
 import { statSync, readFileSync, writeFileSync, existsSync } from 'fs';
 import { URI, Utils } from 'vscode-uri';
 import { spawn, Pool, Worker, Thread } from 'threads';
-import { preprocessedFilesCacheMap, connection, symbolManager } from './server';
+import { preprocessedFilesCacheMap, connection } from './server';
 import { clearCompletionCache } from './modules/completions';
-import { basename, dirname } from 'path';
+import { basename } from 'path';
 import * as path from 'path';
 import { ensureDirSync } from 'fs-extra';
-
+import { parseTads2Files } from './parseTads2Files';
+import { symbolManager } from './modules/symbol-manager';
+import { filterForLibraryFiles } from './modules/utils';
 
 /**
  * Reads and parses the makefile to get additional information
@@ -52,13 +54,35 @@ const generalHeaderIncludeRegExp = RegExp(/tads3[/]include[/]|tads3\\include\\/)
 
 const useCachedLibrary = true;
 
+
+/**
+ * 
+ * @param globalStoragePath - no need yet, since tads2 projects are fairly fast to compile. We don't need to cache objects
+ * @param mainFileLocation 
+ * @param token 
+ * @returns 
+ */
+export async function preprocessAndParseTads2Files(globalStoragePath: string, mainFileLocation: string, filePaths: string[]|undefined, token: any) {
+	try {
+		const t2PreprocessorPath: string = await connection.workspace.getConfiguration('tads.preprocessor.path') ?? 't3make';
+		const libFolder: string = await connection.workspace.getConfiguration('tads2.library.path') ?? '/usr/local/share/frobtads/tads2/';
+		await preprocessTads2Files(mainFileLocation, preprocessedFilesCacheMap, t2PreprocessorPath, [libFolder], connection);
+		connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);
+	} catch (error:any) {
+		connection.console.error(error.message);
+		connection.sendNotification('symbolparsing/allfiles/failed', { error: error.message });
+		return;
+	}
+	parseTads2Files(filePaths);
+}
+
 /**
  * 
  * @param makefileLocation string holding the file location of the makefile
  * @param filePaths string array of files to parse, "undefined" means parse all files
  * @param token CancellationToken
  */
-export async function preprocessAndParseFiles(globalStoragePath: string, makefileLocation: string, filePaths: string[] | undefined, token: any) {
+export async function preprocessAndParseTads3Files(globalStoragePath: string, makefileLocation: string, filePaths: string[] | undefined, token: any) {
 
 	if (lastMakeFileLocation !== makefileLocation) {
 		lastMakeFileLocation = makefileLocation;
@@ -80,7 +104,8 @@ export async function preprocessAndParseFiles(globalStoragePath: string, makefil
 	}
 
 	try {
-		await preprocessAllFiles(makefileLocation, preprocessedFilesCacheMap);
+		const t3makeCompilerPath: string = await connection.workspace.getConfiguration('tads3.compiler.path') ?? 't3make';
+		await preprocessTads3Files(makefileLocation, preprocessedFilesCacheMap, t3makeCompilerPath, connection);
 	} catch (error:any) {
 		connection.console.error(error.message);
 		connection.sendNotification('symbolparsing/allfiles/failed', { error: error.message });
@@ -375,49 +400,4 @@ function importInheritanceMap(callback: any) {
 	}
 }
 
-/*
-function importFromFileSuffix(fileSuffix: string, callback:any) {
-	const filePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
-	const cachedFiles = new Set();
-	if(globalStorageCachePath) {
-		for(const fp of filePaths) {
-			if(!existsSync(fp)) { continue;}
-			try {
-				const fileNameStr = `${basename(fp)}${fileSuffix}`;
-				const cachedFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
-				const data = readFileSync(cachedFilePath).toString();
-				callback(fp, data);
-				connection.console.log('Cached symbols filed used for' + fp);
-				cachedFiles.add(cachedFilePath);
-			} catch (err) {
-				connection.console.error(`Error happened during import: ${err}`);
-			}
 
-		}
-	}
-	return cachedFiles;
-}*/
-
-
-function filterForLibraryFiles(array: string[]): string[] {
-
-	// Locate a common file used in both an adv3 or adv3Lite project: "tads.h"
-	// Comparison needs to be done using URI to match windows file path system also.
-
-	const fileFoundInBothAdv3AndAdv3Lite = array.find(x => URI.file(x).path.match(/include[/]tads.h$/));
-
-	// Now that we know the location of that file, we can better guess 
-	// the location of all tads3 standard library files by using the parent directory
-	// as a base directory.
-
-	if (fileFoundInBothAdv3AndAdv3Lite) {
-		const commonIncludePath = dirname(fileFoundInBothAdv3AndAdv3Lite);
-		const commonBaseDirectory = path.join(commonIncludePath, '..');
-		return array.filter((x: string) => x.startsWith(commonBaseDirectory));
-	} 
-
-	// If no library files were found, return an empty array so they at least have the chance of 
-	// getting parsed.
-
-	return [];
-}

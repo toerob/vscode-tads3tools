@@ -4,10 +4,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { copyFileSync, createReadStream, createWriteStream, exists, existsSync, unlinkSync } from 'fs';
+import { copyFileSync, createReadStream, createWriteStream, existsSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, TextEditorRevealType, CancellationError } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, CancellationError, DiagnosticSeverity, Diagnostic } from 'vscode';
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -15,14 +15,14 @@ import {
 	TransportKind
 } from 'vscode-languageclient/node';
 import { setupVisualEditorResponseHandler, visualEditorResponseHandlerMap, getHtmlForWebview } from './modules/visual-editor';
-import { parseAndPopulateErrors } from './modules/tads3-error-parser';
+import { parseAndPopulateErrors, parseAndPopulateTads2Errors } from './modules/tads3-error-parser';
 import { Subject, debounceTime } from 'rxjs';
 import { LocalStorageService } from './modules/local-storage-service';
 import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
-import { validateCompilerPath, validateUserSettings } from './modules/validations';
+import { validateCompilerPath, validatePreprocessorPath, validateTads2Settings, validateUserSettings } from './modules/validations';
 import { extensionState } from './modules/state';
 import { validateMakefile } from './modules/validate-makefile';
 import { extractAllQuotes } from './modules/extract-quotes';
@@ -33,6 +33,8 @@ import { runCommand } from './modules/run-command';
 import { analyzeTextAtPosition } from './modules/commands/analyzeTextAtPosition';
 import { findAndSelectMakefileUri } from './modules/findAndSelectMakefileUri';
 import { addFileToProject } from './modules/addFileToProject';
+import { SnippetCompletionItemProvider } from './modules/snippet-completion-item-provider';
+import { DependencyNode } from './modules/DependencyNode';
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -50,13 +52,12 @@ let currentTextDocument: TextDocument | undefined;
 let extensionDownloadMap: Map<any, any>;
 
 let errorDiagnostics = [];
-let allFilesBeenProcessed = false;
 let serverProcessCancelTokenSource: CancellationTokenSource;
 let preprocessedList: string[];
 
 let preprocessDocument: TextDocument;
 
-let t3FileSystemWatcher: FileSystemWatcher = undefined;
+let gameFileSystemWatcher: FileSystemWatcher = undefined;
 
 const diagnoseAndCompileSubject = new Subject();
 
@@ -97,10 +98,15 @@ export function activate(context: ExtensionContext) {
 	client.start();
 	client.info(`Tads3 Language Client Activates`);
 
+
+	context.subscriptions.push(languages.registerCompletionItemProvider('tads3', new SnippetCompletionItemProvider(context)));
+
 	storageManager = new LocalStorageService(context.workspaceState);
 
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 
+
+	context.subscriptions.push(commands.registerCommand('tads2.parseTads2Project', () => selectTads2MainFile()));
 	context.subscriptions.push(commands.registerCommand('tads3.createTads3TemplateProject', () => createTemplateProject(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.addFileToProject', () => addFileToProject(context)));
 
@@ -248,6 +254,22 @@ export function activate(context: ExtensionContext) {
 			preprocessedList = filesNames;
 		});
 
+		client.onNotification('symbolparsing/success', ([filePath, tracker, totalFiles, poolSize]) => {
+			if (extensionState.allFilesBeenProcessed && !extensionState.isLongProcessingInAction()) {
+				if (tads3VisualEditorPanel) {
+					client.info(`Refreshing the map view`);
+					client.sendNotification('request/mapsymbols');
+				}
+			}
+			const filename = basename(Uri.parse(filePath).path);
+			if(extensionState.currentPreprocessAndParseProgress) {
+				extensionState.currentPreprocessAndParseProgress.report({ message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}` });
+			}
+			//progress.report({ message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}` });
+		});
+
+
+
 		client.onNotification("symbolparsing/allfiles/success", ({ elapsedTime }) => {
 			if (extensionState.isLongProcessingInAction()) {
 				window.showInformationMessage(`All project and library files are now parsed (elapsed time: ${elapsedTime} ms)`);
@@ -256,23 +278,30 @@ export function activate(context: ExtensionContext) {
 			}
 			client.sendNotification('request/mapsymbols');
 			extensionState.setLongProcessing(false);
+			extensionState.allFilesBeenProcessed = true;
 		});
 
 		client.onNotification("symbolparsing/allfiles/failed", ({ error }) => {
 			window.showErrorMessage(`Parsing all files via makefile ${basename(extensionState.getChosenMakefileUri().fsPath)} failed: ${error} `, { modal: true });
 			extensionState.setLongProcessing(false);
 			extensionState.setPreprocessing(false);
-			allFilesBeenProcessed = false;
+			extensionState.allFilesBeenProcessed = false;
 		});
 
 		workspace.onDidChangeConfiguration(async config => {
 			if (config.affectsConfiguration('tads3.compiler.path')) {
 				validateCompilerPath(workspace.getConfiguration("tads3").get('compiler.path'));
 			}
+			if (config.affectsConfiguration('tads.preprocessor.path')) {
+				validateCompilerPath(workspace.getConfiguration("tads2").get('preprocessor.path'));
+			}
+			if (config.affectsConfiguration('tads2.compiler.path')) {
+				validateCompilerPath(workspace.getConfiguration("tads2").get('compiler.path'));
+			}
 		});
 
 		if (await validateUserSettings()) {
-			initialParse();
+			initiallyParseTadsProject();
 		}
 
 		/**
@@ -282,8 +311,27 @@ export function activate(context: ExtensionContext) {
 			client.info(`Debounce time of ${DEBOUNCE_TIME} has passed.`);
 			currentTextDocument = textDocument;
 
+			if(extensionState.getUsingTads2()) {
+				const mainFile = extensionState.getTads2MainFile();
+				if (mainFile && !existsSync(mainFile.fsPath)) {
+					extensionState.setTads2MainFile(undefined);
+				}
+				if (mainFile === undefined) {
+					await selectTads2MainFile();
+				}
+				if (mainFile === undefined) {
+					console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
+					return;
+				}
+				if (!gameFileSystemWatcher) {
+					setupAndMonitorBinaryGamefileChanges('*.gam');
+				}
+				await diagnosePreprocessAndParse(textDocument);
+				return;
+			} 
+
 			if (extensionState.getChosenMakefileUri() && !existsSync(extensionState.getChosenMakefileUri().fsPath)) {
-				extensionState.setChosenMakefileUri( undefined );
+				extensionState.setChosenMakefileUri(undefined);
 			}
 
 			if (extensionState.getChosenMakefileUri() === undefined) {
@@ -294,8 +342,8 @@ export function activate(context: ExtensionContext) {
 				console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
 				return;
 			}
-			if (!t3FileSystemWatcher) {
-				setupAndMonitorBinaryGamefileChanges();
+			if (!gameFileSystemWatcher) {
+				setupAndMonitorBinaryGamefileChanges('*.t3');
 			}
 			await diagnosePreprocessAndParse(textDocument);
 		});
@@ -376,38 +424,40 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 		extensionState.setDiagnosing(false);
 		return;
 	}
-	if (errorDiagnostics.length > 0) {
+	//const warnings = errorDiagnostics.filter((x:Diagnostic) => x.severity === DiagnosticSeverity.Warning);
+	const errors = errorDiagnostics.filter((x:Diagnostic) => x.severity === DiagnosticSeverity.Error);
+	if (errors.length > 0) {
 		client.warn(`Could not assemble outliner symbols due to error(s): \n${errorDiagnostics.map(e => e.message).join('\n')}`);
 		return;
 	}
-	//allFilesBeenProcessed = true;
 	client.info(`Diagnosing went by with no errors`);
-	if (!allFilesBeenProcessed) {
+	if (!extensionState.allFilesBeenProcessed) {
 		extensionState.setLongProcessing(true);
-		allFilesBeenProcessed = true;
+		extensionState.allFilesBeenProcessed = true;
 		client.info(`Preprocess and parse all documents`);
 		preprocessAndParseDocument();
 		return;
 	} else {
-
 		if (extensionState.isLongProcessingInAction()) {
 			client.info(`Skipping parsing since long processing is in action`);
 		} else {
 			client.info(`Preprocess and parse ${textDocument.uri.fsPath}`);
 			preprocessAndParseDocument([textDocument]);
 		}
-
-
 	}
 }
 
 
 
 
-function setupAndMonitorBinaryGamefileChanges() {
+function setupAndMonitorBinaryGamefileChanges(imageFormat) {
 	client.info(`setup and monitor binary game file changes. `);
-	const workspaceFolder = dirname(extensionState.getChosenMakefileUri().fsPath);
-	t3FileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, "*.t3"));
+	
+	const workspaceFolder = extensionState.getUsingTads2()?
+	dirname(extensionState.getTads2MainFile().fsPath) 
+		: dirname(extensionState.getChosenMakefileUri().fsPath);
+
+	gameFileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, imageFormat));
 
 	runGameInTerminalSubject.pipe(debounceTime(DEBOUNCE_TIME)).subscribe((event: any) => {
 		const configuration = workspace.getConfiguration("tads3");
@@ -443,7 +493,7 @@ function setupAndMonitorBinaryGamefileChanges() {
 		setTimeout(() => window.showTextDocument(documentWorkingOn), 500);
 	});
 
-	t3FileSystemWatcher.onDidChange(event => runGameInTerminalSubject.next(event));
+	gameFileSystemWatcher.onDidChange(event => runGameInTerminalSubject.next(event));
 }
 
 
@@ -484,7 +534,7 @@ async function downloadFile(requestUrl: string, folder: string, fileName: string
 
 
 async function downloadAndInstallExtension(context: ExtensionContext) {
-	const configuration = workspace.getConfiguration("tads3");
+	const configuration = workspace.getConfiguration(extensionState.isUsingTads2? "tads2": "tads3");
 	const ifarchiveTads3ContributionsURL: string = configuration.get("ifArchiveExtensionURL");
 	try {
 		if (extensionDownloadMap === undefined) {
@@ -524,7 +574,8 @@ async function downloadAndInstallExtension(context: ExtensionContext) {
 	const action = await window.showInformationMessage(infoEntries.join('\n\n***\n\n'), { modal: true }, option1, option2);
 	console.log(action);
 	if (action.title === 'Install') {
-		const makefileDir = dirname(extensionState.getChosenMakefileUri().fsPath);
+		
+		const makefileDir = dirname(extensionState.isUsingTads2 ? extensionState.getTads2MainFile().fsPath : extensionState.getChosenMakefileUri().fsPath);
 		for (const extKey of selections) {
 			const downloadURL = ifarchiveTads3ContributionsURL + extKey;
 			try {
@@ -579,18 +630,37 @@ function ensureObjFolderExistsInProjectRoot() {
 }
 
 async function diagnose(textDocument: TextDocument) {
+	if(extensionState.getUsingTads2()) {
+		extensionState.setDiagnosing(true);
+		const tads2ExtensionConfig = workspace.getConfiguration('tads2');
+		const compilerPath = tads2ExtensionConfig?.compiler?.path ?? 'tadsc';
+		const tads2libraryPath = tads2ExtensionConfig?.library?.path ?? '/usr/local/share/frobtads/tads2/'; 
+		const mainFilePath = extensionState.getTads2MainFile().fsPath;
+		const projectBaseFolder = dirname(mainFilePath);
+		const commandLine = `"${compilerPath}" -i "${tads2libraryPath}" -i "${projectBaseFolder}" -ds "${mainFilePath}"`;
+		console.log(commandLine);
+		const resultOfCompilation = await runCommand(commandLine);
+		parseDiagnostics(resultOfCompilation.toString(), textDocument, 2);
+		extensionState.setDiagnosing(false);
+		return;
+	}
+
 	await validateMakefile(extensionState.getChosenMakefileUri());
 	extensionState.setDiagnosing(true);
 	ensureObjFolderExistsInProjectRoot();
-	const tads3ExtensionConfig = workspace.getConfiguration('tads3');
-	const compilerPath = tads3ExtensionConfig?.compiler?.path ?? 't3make';
+	const tads3ExtensionConfig = workspace.getConfiguration('tads3'); // TODO: add configuration
+	const compilerPath = tads3ExtensionConfig?.compiler?.path ?? 't3make'; // TODO: add configuration
 	const resultOfCompilation = await runCommand(`${compilerPath} -nobanner -q -f "${extensionState.getChosenMakefileUri().fsPath}"`);
 	parseDiagnostics(resultOfCompilation.toString(), textDocument);
 	extensionState.setDiagnosing(false);
 }
 
-function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocument) {
-	errorDiagnostics = parseAndPopulateErrors(resultOfCompilation, textDocument, collection);
+function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocument, tadsVersion = 3) {
+	if(tadsVersion===3) {
+		errorDiagnostics = parseAndPopulateErrors(resultOfCompilation, textDocument, collection);
+	} else {
+		errorDiagnostics = parseAndPopulateTads2Errors(resultOfCompilation, textDocument, collection);
+	}
 }
 
 async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefined = undefined) {
@@ -600,38 +670,34 @@ async function preprocessAndParseDocument(textDocuments: TextDocument[] | undefi
 		title: 'Parsing symbols',
 		cancellable: false
 	}, async (progress, withProgressToken) => {
+		extensionState.currentPreprocessAndParseProgress = progress;
 		withProgressToken.onCancellationRequested(async () => {
 			await cancelParse();
 			return false;
 		});
-		client.onNotification('symbolparsing/success', ([filePath, tracker, totalFiles, poolSize]) => {
-			if(allFilesBeenProcessed && !extensionState.isLongProcessingInAction()) {
-				if(tads3VisualEditorPanel) {
-					client.info(`Refreshing the map view`);
-					client.sendNotification('request/mapsymbols');
-				}
-			}
-			const filename = basename(Uri.parse(filePath).path);
-			progress.report({ message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}` });
-			// TODO: maybe show "stale data" indicator instead
-			/*if (tads3VisualEditorPanel) {
-				client.info(`Since new symbols have been parsed and the webviewpanel is open, ask for new mapsymbols `);
-				client.sendNotification('request/mapsymbols');			
-			}*/
-		});
-
-		await executeParse(extensionState.getChosenMakefileUri().fsPath, filePaths);
+		await executeParse(filePaths);
 		return true;
 	});
 }
 
-export async function executeParse(makefileLocation: string, filePaths: string[]): Promise<any> {
+export async function executeParse(filePaths: string[]): Promise<any> {
 	await client.onReady();
 	serverProcessCancelTokenSource = new CancellationTokenSource();
 	extensionState.setPreprocessing(true);
+	if(extensionState.getUsingTads2()) {
+		await client.sendRequest('request/parseTads2Documents', {
+			globalStoragePath,
+			mainFileLocation: extensionState.getTads2MainFile().fsPath,
+			filePaths,
+			token: serverProcessCancelTokenSource.token
+		});
+	
+		return;
+	}
+	
 	await client.sendRequest('request/parseDocuments', {
 		globalStoragePath,
-		makefileLocation: makefileLocation,
+		makefileLocation: extensionState.getChosenMakefileUri().fsPath,
 		filePaths: filePaths,
 		token: serverProcessCancelTokenSource.token
 	});
@@ -776,24 +842,25 @@ function overridePositionWithPersistedCoordinates(mapObjects: any[]) {
 	}
 }
 
-async function initialParse() {
+async function initiallyParseTadsProject() {
 	if (window.activeTextEditor.document) {
 		const textDocument = window.activeTextEditor.document;
 		client.info(`Trying to locate a default tads3 makefile`);
 
 		if (extensionState.getChosenMakefileUri() === undefined) {
-			extensionState.setChosenMakefileUri( await findAndSelectMakefileUri() );
+			extensionState.setChosenMakefileUri(await findAndSelectMakefileUri());
 		}
 		if (extensionState.getChosenMakefileUri() === undefined) {
-			console.error(`No tads3 makefile could be found`);
+			client.info(`No tads3 makefile could be found`);
+			detectAndInitiallyParseTads2Project();
 			return;
 		}
 
 		client.info(`Found a makefile: ${extensionState.getChosenMakefileUri().fsPath}`);
-		if (!t3FileSystemWatcher) {
+		if (!gameFileSystemWatcher) {
 			client.info(`Setting up t3 image monitor `);
-			if (!t3FileSystemWatcher) {
-				setupAndMonitorBinaryGamefileChanges();
+			if (!gameFileSystemWatcher) {
+				setupAndMonitorBinaryGamefileChanges('*.t3');
 			}
 		}
 		await diagnosePreprocessAndParse(textDocument);
@@ -827,4 +894,71 @@ export async function selectMakefileWithDialog() {
 		return file[0];
 	}
 	return undefined;
+}
+
+export async function selectTads2MainFile() {
+	const userChoice = await window.showOpenDialog({
+		title: 'Select the main file for the tads2 project'
+	});
+	if(userChoice.length===1) {
+		extensionState.setTads2MainFile(userChoice[0]);
+		extensionState.setUsingTads2(true);
+	}
+}
+
+
+/**
+ * Auto detects a Tads2 project's main file and stores it in extensionState.
+ * Then it triggers a "request/parseTads2Documents" to the server which preprocesses 
+ * all documents and then parses them for the first time.
+ * 
+ */
+async function detectAndInitiallyParseTads2Project() {
+
+	if(!await validateTads2Settings()) { return; }
+	
+	client.info('Detecting Tads2 project');
+	const totalIncludeSet = new Set();
+	const nodes = new Map();
+	const includeRegexp = new RegExp(/[#]\s*include\s*[<"](.+)[">]/);
+	const files = await workspace.findFiles('**/*.{t,h}');
+	for (const currentFile of files) {
+		const doc = await workspace.openTextDocument(currentFile.fsPath);
+		nodes.set(basename(currentFile.fsPath), new DependencyNode(currentFile));
+		for (const row of doc.getText()?.split(/\r?\n/)) {
+			const result = includeRegexp.exec(row);
+			if (result && result.length === 2) {
+				const filename = result[1];
+				totalIncludeSet.add(filename);
+				const node = nodes.has(basename(currentFile.fsPath)) ? nodes.get(basename(currentFile.fsPath)) : new DependencyNode();
+				node.includes.add(filename);
+				nodes.set(basename(currentFile.fsPath), node);
+			}
+		}
+	}
+	if(files.length === 0) {
+		client.info('No Tads2 files found. Detection is over. ');
+		return;
+	}
+
+	extensionState.setUsingTads2(true);
+	extensionState.tads2ProjectFilesInfo = nodes;
+
+	// Look for files that none of the other project files includes:
+	const roots = [...nodes.keys()].filter(x => !totalIncludeSet.has(x));
+	for (const root of roots) {
+		const rootNode = nodes.get(root);
+		console.log(`${root}: ${[...rootNode.includes.values()]}`);
+	}
+
+	const userChoice = roots.length === 1 ? roots[0] : await window.showQuickPick(roots, { 
+		title: `Which file is the Tads2 project's main file?: ` 
+	});
+
+	if(userChoice) {
+		const userChoiceAsNode = nodes.get(userChoice);
+		extensionState.setTads2MainFile(userChoiceAsNode.uri);
+		const mainText:TextDocument = workspace.textDocuments.find(x=>x.fileName === (userChoiceAsNode.uri.fsPath));
+		await diagnosePreprocessAndParse(mainText);
+	}
 }
