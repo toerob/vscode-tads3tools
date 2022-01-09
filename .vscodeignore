@@ -9,12 +9,22 @@
 contributing.md
 .travis.yml
 
+node_modules/typescript/**
+node_modules/esbuild/**
+node_modules/esbuild-linux-64/**
+node_modules/@babel/**
+#node_modules/azure-devops-node-api/**
+node_modules/jsdom/**
+node_modules/caniuse-lite/**
+node_modules/lodash/**
+
 server/node_modules/node
 server/node_modules/.bin
 server/node_modules/typescript/**
 server/node_modules/npm/**
 server/node_modules/@babel/**
 server/node_modules/antlr4ts-cli/**
+server/tests/**
 
 
 
