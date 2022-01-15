@@ -317,10 +317,7 @@ export function activate(context: ExtensionContext) {
 					extensionState.setTads2MainFile(undefined);
 				}
 				if (mainFile === undefined) {
-					await selectTads2MainFile();
-				}
-				if (mainFile === undefined) {
-					console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
+					console.error(`No main file could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
 					return;
 				}
 				if (!gameFileSystemWatcher) {

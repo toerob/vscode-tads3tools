@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1-alpha
+
+### Fixed
+  - Removes the dialog for tads2 project, so it won't show up on other types of projects.
+
 ## 0.5.0-alpha
 
 ### Added
