@@ -36,9 +36,7 @@ The requirements for Tads2 support is having access to the "t3make" compiler, th
   - "tads2.library.path"
       (default value: "/usr/local/share/frobtads/tads2/")
 
-  When opening up a folder containing a tads2 project the extension will automatially try to find the "main" file in order to preprocess all the other files. If it can't find a single such file it will give a quickpick menu showing the candidates. If escaping/cancelling that quickpick menu you'll receive a full open file window selection next time a file in the project is saved. 
-  
-  When a main file is found all the files are preprocessed and parsed. 
+  When opening up a folder containing a tads2 project the extension will automatially try to find the "main" file in order to preprocess all the other files. If it can't find a single such file it will give a quickpick menu showing the candidates. When a main file is found all the files are preprocessed and parsed. 
 
 ### Note on compilation
 
