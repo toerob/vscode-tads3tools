@@ -58,7 +58,7 @@
 			{
 				"language": "tads3",
 				"scopeName": "source.tads3",
-				"path": "./syntaxes/tads3.tmLanguage"
+				"path": "./syntaxes/tads3.tmLanguage.json"
 			}
 		],
 		"customEditors": [
