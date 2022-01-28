@@ -849,6 +849,7 @@ async function initiallyParseTadsProject() {
 		}
 		if (extensionState.getChosenMakefileUri() === undefined) {
 			client.info(`No tads3 makefile could be found`);
+
 			detectAndInitiallyParseTads2Project();
 			return;
 		}
@@ -919,6 +920,13 @@ async function detectAndInitiallyParseTads2Project() {
 	const nodes = new Map();
 	const includeRegexp = new RegExp(/[#]\s*include\s*[<"](.+)[">]/);
 	const files = await workspace.findFiles('**/*.{t,h}');
+
+	const result = files.filter(x=>x.fsPath.endsWith('.t'));
+	if(result.length === 0) {
+		client.info(`No tads source files found at all, won\'t assume Tads2 project`);
+		return;
+	}
+
 	for (const currentFile of files) {
 		const doc = await workspace.openTextDocument(currentFile.fsPath);
 		nodes.set(basename(currentFile.fsPath), new DependencyNode(currentFile));
