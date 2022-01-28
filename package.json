@@ -285,7 +285,7 @@
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-		"e2e-test": "npm run compile && sh ./scripts/e2e.sh",
+		"e2e-test": "npm run compile && sh ./scnpm aripts/e2e.sh",
 		"test": "cd server; jest",
 		"rebuild": "rm package-lock.json;rm client/package-lock.json;rm server/package-lock.json;rm -r node_modules;rm -r client/node_modules;rm -r server/node_modules;npm install",
 		"esbuild-base": "esbuild ./client/src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
@@ -306,8 +306,8 @@
 		"typescript": "^4.3.5"
 	},
 	"dependencies": {
-		"@types/vscode": "^1.58.1",
-		"ts-jest": "^27.1.2",
-		"vsce": "^2.5.1"
+		"@types/vscode": "^1.63.1",
+		"ts-jest": "^27.1.3",
+		"vsce": "^2.6.5"
 	}
 }
