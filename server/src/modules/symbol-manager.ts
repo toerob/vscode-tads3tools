@@ -1,4 +1,4 @@
-import { Range, DocumentSymbol, Position, SymbolKind, SymbolInformation } from 'vscode-languageserver';
+import { Range, DocumentSymbol, Position, SymbolKind, SymbolInformation, Location } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
 import { filterForLibraryFiles } from './utils';
 import { CaseInsensitiveMap } from './CaseInsensitiveMap';
@@ -8,8 +8,8 @@ export class TadsSymbolManager {
 	keywords: Map<string, Map<string, Range[]>>;
 	additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
 	inheritanceMap: Map<string, string> = new Map();
-	
-	onWindowsPlatform: boolean  = false;
+
+	onWindowsPlatform: boolean = false;
 
 	constructor() {
 
@@ -78,10 +78,10 @@ export class TadsSymbolManager {
 		const symbolSearchResult: SymbolInformation[] = [];
 
 		let filepathArray;
-		if(onlyProjectFiles) {
+		if (onlyProjectFiles) {
 			const filePathSubset = [...this.symbols.keys()];
 			const libraryFiles = filterForLibraryFiles(filePathSubset);
-			const projectfiles = filePathSubset.filter(x=>!libraryFiles.includes(x));
+			const projectfiles = filePathSubset.filter(x => !libraryFiles.includes(x));
 			filepathArray = projectfiles;
 		} else {
 			filepathArray = [...this.symbols.keys()];
@@ -97,6 +97,33 @@ export class TadsSymbolManager {
 			}
 		}
 		return symbolSearchResult;
+	}
+
+
+	getAllWorkspaceKeywordLocations(keyword: string, onlyProjectFiles = true): Location[] {
+		const symbolSearchResult: SymbolInformation[] = [];
+		let filepathArray;
+
+		if (onlyProjectFiles) {
+			const filePathSubset = [...this.keywords.keys()];
+			const libraryFiles = filterForLibraryFiles(filePathSubset);
+			const projectfiles = filePathSubset.filter(x => !libraryFiles.includes(x));
+			filepathArray = projectfiles;
+		} else {
+			filepathArray = [...this.keywords.keys()];
+		}
+
+		const locations: Location[] = [];
+
+		for (const filePath of symbolManager.keywords.keys()) {
+			const fp = this.onWindowsPlatform ? URI.file(filePath)?.path : filePath; // On Windows we need to convert this path
+			const keywordCollectionPerFile = symbolManager.keywords.get(fp);
+			const ranges = keywordCollectionPerFile?.get(keyword) ?? [];
+			for (const range of ranges) {
+				locations.push(Location.create(fp, translateRangeByLineOffset(range, -1)));
+			}
+		}
+		return locations;
 	}
 
 	getTemplates(): Set<DocumentSymbol> {
@@ -187,13 +214,13 @@ export function addRecursively(localSymbols: DocumentSymbol[], basketOfSymbols: 
 	}
 }
 
-export function flattenTreeToSymbolInformationArray(filepath:string, localSymbols: DocumentSymbol[]) : SymbolInformation[] {
+export function flattenTreeToSymbolInformationArray(filepath: string, localSymbols: DocumentSymbol[]): SymbolInformation[] {
 	const basketOfSymbols: SymbolInformation[] = [];
 	addSymbolInformationRecursively(filepath, localSymbols, basketOfSymbols);
 	return basketOfSymbols;
 }
 
-export function addSymbolInformationRecursively(filepath:string, localSymbols: DocumentSymbol[], basketOfSymbols: any, containerName?: string) {
+export function addSymbolInformationRecursively(filepath: string, localSymbols: DocumentSymbol[], basketOfSymbols: any, containerName?: string) {
 	for (const symbol of localSymbols) {
 		basketOfSymbols.push(SymbolInformation.create(symbol.name, symbol.kind, symbol.range, filepath, containerName));
 		if (symbol.children) {
@@ -222,3 +249,9 @@ export function swapParent(newParent: ExtendedDocumentSymbol, oldParent: Extende
 		symbolAsExtDocObj.parent = newParent;
 	}
 }*/
+function translateRangeByLineOffset(range: Range, offsetLine: number = 0) {
+	return Range.create(
+		Position.create(range.start.line + offsetLine, range.start.character),
+		Position.create(range.end.line + offsetLine, range.end.character)
+	);
+}
