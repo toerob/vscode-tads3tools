@@ -266,8 +266,8 @@ connection.onDocumentLinks(async (handler) => onDocumentLinks(handler, documents
 connection.onCodeLens(async (handler) => onCodeLens(handler, documents, symbolManager));
 connection.onHover(async (handler) => onHover(handler, documents, symbolManager));
 
-connection.onDocumentFormatting(async (handler) => onDocumentFormatting(handler, documents, symbolManager));
-connection.onDocumentRangeFormatting(async (handler) => onDocumentRangeFormatting(handler, documents, symbolManager));
+connection.onDocumentFormatting(async (handler) => onDocumentFormatting(handler, documents));
+connection.onDocumentRangeFormatting(async (handler) => onDocumentRangeFormatting(handler, documents));
 
 connection.onRequest('request/extractQuotes', async (params) => {
 	if(params.fsPath === undefined) {

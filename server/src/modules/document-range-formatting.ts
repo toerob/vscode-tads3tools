@@ -1,27 +1,25 @@
-
-
-import { TadsSymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { ResponseError, TextDocuments, DocumentRangeFormattingParams } from 'vscode-languageserver';
+import { TextDocuments, DocumentRangeFormattingParams } from 'vscode-languageserver';
 import { TextEdit } from 'vscode-languageserver-types';
 import { wholeLineRegExp } from '../parser/preprocessor';
+
+export function onDocumentRangeFormatting(handler: DocumentRangeFormattingParams, documents: TextDocuments<TextDocument>): TextEdit[] {
+	const edits: TextEdit[] = [];
+	const { textDocument, range } = handler;
+	const currentDocument = documents.get(textDocument.uri);
+	const rows = currentDocument?.getText(range).split(wholeLineRegExp) ?? [];
+	const formattedDocumentArray = formatDocument(rows);
+	edits.push(TextEdit.replace(range, formattedDocumentArray.join(`\n`)));
+	return edits;
+}
 
 enum LEVEL { BEGIN_OBJECT, BEGIN_BLOCK, UNCHANGED, EXIT_BLOCK };
 
 let formatStack: LEVEL[] = [];
 
-const tabIndentation = "\t"; 
-
-export function onDocumentRangeFormatting(handler: DocumentRangeFormattingParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager): ResponseError<void> | TextEdit[] | PromiseLike<ResponseError<void> | TextEdit[] | null | undefined> | null | undefined {
-	const edits: TextEdit[] = [];
-
-	
-	const { textDocument, range } = handler;
-	const currentDocument = documents.get(textDocument.uri);
+export function formatDocument(rows: string[], tabIndentation = "\t") {
 	const formattedDocumentArray = [];
-	const rows = currentDocument?.getText(range).split(wholeLineRegExp) ?? [];
 	formatStack = [];
-	
 	for (const row of rows) {
 		let padding = tabIndentation.repeat(formatStack.length);
 		const result = decideNextRowIndentation(row);
@@ -47,11 +45,10 @@ export function onDocumentRangeFormatting(handler: DocumentRangeFormattingParams
 
 		formattedDocumentArray.push(`${padding + currentTrimmedRow}`);
 	}
-	edits.push(TextEdit.replace(range, formattedDocumentArray.join(`\n`)));
-	return edits;
+	return formattedDocumentArray;
 }
 
-function decideNextRowIndentation(row: string = ''): number {
+export function decideNextRowIndentation(row: string = ''): number {
 	// Anything that begins like a class/object and doesn't end with ;
 	if (formatStack.length === 0 && row.trimEnd().match(/\s*(class\s*)?(.*)\s*[:]\s*.*[^;]$/)) {
 		return LEVEL.BEGIN_OBJECT;
@@ -71,4 +68,3 @@ function decideNextRowIndentation(row: string = ''): number {
 
 	return LEVEL.UNCHANGED;
 }
-
