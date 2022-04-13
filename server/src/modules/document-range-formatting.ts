@@ -1,8 +1,10 @@
-import { TadsSymbolManager } from './modules/symbol-manager';
+
+
+import { TadsSymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { DocumentFormattingParams, ResponseError, TextDocuments, Range } from 'vscode-languageserver';
+import { ResponseError, TextDocuments, DocumentRangeFormattingParams } from 'vscode-languageserver';
 import { TextEdit } from 'vscode-languageserver-types';
-import { wholeLineRegExp } from './parser/preprocessor';
+import { wholeLineRegExp } from '../parser/preprocessor';
 
 enum LEVEL { BEGIN_OBJECT, BEGIN_BLOCK, UNCHANGED, EXIT_BLOCK };
 
@@ -10,14 +12,16 @@ let formatStack: LEVEL[] = [];
 
 const tabIndentation = "\t"; 
 
-export function onDocumentFormatting(handler: DocumentFormattingParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager): ResponseError<void> | TextEdit[] | PromiseLike<ResponseError<void> | TextEdit[] | null | undefined> | null | undefined {
+export function onDocumentRangeFormatting(handler: DocumentRangeFormattingParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager): ResponseError<void> | TextEdit[] | PromiseLike<ResponseError<void> | TextEdit[] | null | undefined> | null | undefined {
 	const edits: TextEdit[] = [];
 
-	const { textDocument } = handler;
+	
+	const { textDocument, range } = handler;
 	const currentDocument = documents.get(textDocument.uri);
 	const formattedDocumentArray = [];
-	const rows = currentDocument?.getText().split(wholeLineRegExp) ?? [];
+	const rows = currentDocument?.getText(range).split(wholeLineRegExp) ?? [];
 	formatStack = [];
+	
 	for (const row of rows) {
 		let padding = tabIndentation.repeat(formatStack.length);
 		const result = decideNextRowIndentation(row);
@@ -43,10 +47,7 @@ export function onDocumentFormatting(handler: DocumentFormattingParams, document
 
 		formattedDocumentArray.push(`${padding + currentTrimmedRow}`);
 	}
-
-	const lastRowLength = rows[rows.length - 1].length;
-	const edit = TextEdit.replace(Range.create(0, 0, rows.length, lastRowLength), formattedDocumentArray.join(`\n`));
-	edits.push(edit);
+	edits.push(TextEdit.replace(range, formattedDocumentArray.join(`\n`)));
 	return edits;
 }
 

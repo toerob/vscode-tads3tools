@@ -34,7 +34,8 @@ import { onWorkspaceSymbol } from './modules/workspace-symbols';
 import { markFileToBeCheckedForMacroDefinitions } from './parser/preprocessor';
 import { URI } from 'vscode-uri';
 import { serverState } from './state';
-import { onDocumentFormatting } from './onDocumentFormatting';
+import { onDocumentFormatting } from './modules/document-formatting';
+import { onDocumentRangeFormatting } from './modules/document-range-formatting';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
@@ -105,7 +106,8 @@ connection.onInitialize((params: InitializeParams) => {
 			completionProvider: {
 				resolveProvider: false
 			},
-			documentFormattingProvider: true
+			documentFormattingProvider: true,
+			documentRangeFormattingProvider: true
 			
 		}
 	};
@@ -265,6 +267,7 @@ connection.onCodeLens(async (handler) => onCodeLens(handler, documents, symbolMa
 connection.onHover(async (handler) => onHover(handler, documents, symbolManager));
 
 connection.onDocumentFormatting(async (handler) => onDocumentFormatting(handler, documents, symbolManager));
+connection.onDocumentRangeFormatting(async (handler) => onDocumentRangeFormatting(handler, documents, symbolManager));
 
 connection.onRequest('request/extractQuotes', async (params) => {
 	if(params.fsPath === undefined) {
@@ -372,5 +375,6 @@ function parseDirection(directionName: any): string|undefined {
 	return undefined;
 	//throw new Error(`Not a valid direction`);
 }
+
 
 
