@@ -2,6 +2,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { TextDocuments, DocumentRangeFormattingParams } from 'vscode-languageserver';
 import { TextEdit } from 'vscode-languageserver-types';
 import { wholeLineRegExp } from '../parser/preprocessor';
+import { unchangedTextChangeRange } from 'typescript';
 
 export function onDocumentRangeFormatting(handler: DocumentRangeFormattingParams, documents: TextDocuments<TextDocument>): TextEdit[] {
 	const edits: TextEdit[] = [];
@@ -13,7 +14,10 @@ export function onDocumentRangeFormatting(handler: DocumentRangeFormattingParams
 	return edits;
 }
 
-enum LEVEL { BEGIN_OBJECT, BEGIN_BLOCK, UNCHANGED, EXIT_BLOCK };
+enum LEVEL {
+	BEGIN_OBJECT, BEGIN_BLOCK, UNCHANGED, EXIT_BLOCK,
+	WITHIN_COMMENT
+};
 
 let formatStack: LEVEL[] = [];
 
@@ -22,7 +26,13 @@ export function formatDocument(rows: string[], tabIndentation = "\t") {
 	formatStack = [];
 	for (const row of rows) {
 		let padding = tabIndentation.repeat(formatStack.length);
+		
 		const result = decideNextRowIndentation(row);
+
+		if(result === LEVEL.WITHIN_COMMENT) {
+			formattedDocumentArray.push(`row`);
+			continue;
+		}
 
 		if (result !== LEVEL.UNCHANGED && result !== LEVEL.EXIT_BLOCK) {
 			formatStack.push(result);
@@ -50,11 +60,21 @@ export function formatDocument(rows: string[], tabIndentation = "\t") {
 
 export function decideNextRowIndentation(row: string = ''): number {
 	// Anything that begins like a class/object and doesn't end with ;
+	const topOfStack = formatStack[formatStack.length - 1];
+
+	// While within a comment, return WITHIN_COMMENT
+	if(topOfStack === LEVEL.WITHIN_COMMENT) {
+		return row.match(/\*\//) ? LEVEL.EXIT_BLOCK : LEVEL.WITHIN_COMMENT;
+	}
+	
+	if(row.match(/\s*\/\*/)) {
+		return LEVEL.WITHIN_COMMENT;
+	}
+
 	if (formatStack.length === 0 && row.trimEnd().match(/\s*(class\s*)?(.*)\s*[:]\s*.*[^;]$/)) {
 		return LEVEL.BEGIN_OBJECT;
 	}
 	if (formatStack.length > 0) {
-		const topOfStack = formatStack[formatStack.length - 1];
 		if (row.match(/[{]\s*$/)) {
 			return LEVEL.BEGIN_BLOCK;
 		}

@@ -35,6 +35,7 @@ import { findAndSelectMakefileUri } from './modules/findAndSelectMakefileUri';
 import { addFileToProject } from './modules/addFileToProject';
 import { SnippetCompletionItemProvider } from './modules/snippet-completion-item-provider';
 import { DependencyNode } from './modules/DependencyNode';
+import { fileURLToPath } from 'url';
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -105,7 +106,7 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 
-
+	
 	context.subscriptions.push(commands.registerCommand('tads2.parseTads2Project', () => selectTads2MainFile()));
 	context.subscriptions.push(commands.registerCommand('tads3.createTads3TemplateProject', () => createTemplateProject(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.addFileToProject', () => addFileToProject(context)));
@@ -113,6 +114,9 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('tads3.setMakefile', setMakeFile));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
+	context.subscriptions.push(commands.registerCommand('tads3.openFile', (params) => openFile(params ?? undefined)));
+	
+
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextForCurrentFile', showPreprocessedTextForCurrentFile));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.openProjectFileQuickPick', openProjectFileQuickPick));
@@ -392,7 +396,7 @@ async function setMakeFile() {
 	await preprocessAndParseDocument();
 }
 
-async function onDidSaveTextDocument(textDocument: any) {
+async function onDidSaveTextDocument(textDocument: TextDocument) {
 
 	if (extensionState.isDiagnosing()) {
 		client.warn(`Still diagnosing, parsing is skipped this time around`);
@@ -403,7 +407,6 @@ async function onDidSaveTextDocument(textDocument: any) {
 		client.warn(`Still preprocessing, parsing is skipped this time around`);
 		return;
 	}
-
 
 	diagnoseAndCompileSubject.next(textDocument);
 }
@@ -730,6 +733,19 @@ async function showPreprocessedTextAction(params: [any, any, any]) {
 	}
 }
 
+function openFile(uri:string) {
+	if(uri.match(/[.]([th]|tl)$/i)) {
+		workspace
+		.openTextDocument(uri)
+		.then(doc=>window.showTextDocument(doc, {
+			viewColumn: ViewColumn.Beside,
+			preserveFocus: true,
+			preview: true,
+		}));
+	} else {
+		//window.showInformationMessage('Directory');
+	}
+}
 
 function showPreprocessedTextForCurrentFile() {
 	const fsPath = window.activeTextEditor.document.uri.fsPath;

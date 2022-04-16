@@ -29,6 +29,10 @@ export async function validateMakefile(chosenMakefileUri: Uri) {
 					{ title: 'Continue anyway' });
 				return result === undefined;
 			}
+
+
+
+			
 		});
 	if (abortsDueToMissingDefinitionInMakefile) {
 		throw new CancellationError();

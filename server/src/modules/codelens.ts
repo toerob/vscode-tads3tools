@@ -1,29 +1,71 @@
-import { CodeLens, TextDocuments , Range, CodeLensParams, Command} from 'vscode-languageserver';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { URI } from 'vscode-uri';
+import { exists, existsSync } from 'fs';
+import { memoryUsage } from 'process';
+import { CodeLens, TextDocuments, Range, CodeLensParams, Command, DocumentSymbol } from 'vscode-languageserver';
+import { DocumentUri, TextDocument } from 'vscode-languageserver-textdocument';
+import { URI, Utils } from 'vscode-uri';
 import { connection, preprocessedFilesCacheMap } from '../server';
-import { TadsSymbolManager } from './symbol-manager';
+import { symbolManager, TadsSymbolManager } from './symbol-manager';
 
-export async function onCodeLens({textDocument}: CodeLensParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
-	const codeLenses: CodeLens[] = [];
+const cachedFileLocation = new Map<string|undefined,string>();
+
+
+export async function onCodeLens({ textDocument }: CodeLensParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
+    const codeLenses: CodeLens[] = [];
     const enablePreprocessorCodeLens = await connection.workspace.getConfiguration("tads3.enablePreprocessorCodeLens");
-    
-    if(!enablePreprocessorCodeLens) {
+
+    const uri = URI.parse(textDocument.uri);
+    const fsPath = uri.fsPath;
+    const currentDoc = documents.get(textDocument.uri);
+
+    if (textDocument.uri.endsWith('.t3m')) {
+        const symbols = symbolManager.symbols.get(fsPath) ?? [];
+        const makefileLocationURI = URI.parse(textDocument.uri);
+        const makefileLocation = URI.parse(Utils.dirname(makefileLocationURI).fsPath);
+        
+        const fileBasePaths = [
+            makefileLocation,
+            ...symbols
+                .filter(x => x.name.match(/^f[li]$/i))
+                .map(x => x.detail && URI.parse(x.detail))
+                .filter(x => x && existsSync(x.fsPath))
+        ];
+
+        for (const symbol of symbols) {
+            const fileLocations = symbol.name.match(/^f[liyo]$/i);
+            const relativeSourceFile = symbol.name.match(/source/);
+            const relativeLibraryFile = symbol.name.match(/lib/);
+            if (fileLocations || relativeSourceFile || relativeLibraryFile) {
+
+                const absolutePath = cachedFileLocation.get(symbol.detail) ?? toAbsoluteUrl(symbol.detail, symbol, fileBasePaths);
+                cachedFileLocation.set(symbol.detail ?? '', absolutePath);
+                codeLenses.push({
+                    range: symbol.range,
+                    command:
+                        // TODO: find another solution so the preprocessed text
+                        // doesn't need to be sent until the player clicks the CodeLens
+                        Command.create(
+                            `[File location: ${absolutePath}]`,
+                            'tads3.openFile', 
+                            absolutePath
+                        )
+                })
+            }
+        }
         return codeLenses;
     }
 
-    const uri = URI.parse(textDocument.uri);
-	const fsPath = uri.fsPath;
-	const currentDoc = documents.get(textDocument.uri);
-	
-    
-    const preprocessedDocument = preprocessedFilesCacheMap.get(fsPath);
-    
-	const preprocessedDocumentArray = preprocessedDocument?.trimEnd().split(/\r?\n/);
-	if(!currentDoc || !preprocessedDocumentArray) {
-		return [];
+
+    if (!enablePreprocessorCodeLens) {
+        return codeLenses;
     }
-	const currentDocArray = currentDoc?.getText().trimEnd().split(/\r?\n/);
+
+    const preprocessedDocument = preprocessedFilesCacheMap.get(fsPath);
+
+    const preprocessedDocumentArray = preprocessedDocument?.trimEnd().split(/\r?\n/);
+    if (!currentDoc || !preprocessedDocumentArray) {
+        return [];
+    }
+    const currentDocArray = currentDoc?.getText().trimEnd().split(/\r?\n/);
 
     // If the files has diverged more than the last line in length
     // (happens during preprocessing)
@@ -36,32 +78,32 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
         return [];
     }
 
-	for(let row=0; row<currentDoc.lineCount; row++) {
-		const preprocessedLine = preprocessedDocumentArray[row];
-		if(preprocessedLine === undefined) {
-			continue;
-		}
-		if(preprocessedLine.match(/^\s*$/)) {
-			continue;
-		}
+    for (let row = 0; row < currentDoc.lineCount; row++) {
+        const preprocessedLine = preprocessedDocumentArray[row];
+        if (preprocessedLine === undefined) {
+            continue;
+        }
+        if (preprocessedLine.match(/^\s*$/)) {
+            continue;
+        }
 
-		//const t = currentDoc.lineAt(row).text;
-		const t = currentDocArray[row];
-		if (t.match('#\\s*include')) {
-			continue;
-		}
-		if(t === preprocessedLine) {
-			continue;
-		}
-		// Skip lines that is broken up into several rows so we won't drown in 
-		// CodeLens text.
-		if(preprocessedLine.includes(t)) {
-			continue;
-		}
+        //const t = currentDoc.lineAt(row).text;
+        const t = currentDocArray[row];
+        if (t.match('#\\s*include')) {
+            continue;
+        }
+        if (t === preprocessedLine) {
+            continue;
+        }
+        // Skip lines that is broken up into several rows so we won't drown in 
+        // CodeLens text.
+        if (preprocessedLine.includes(t)) {
+            continue;
+        }
 
-		if(preprocessedLine !== '' && preprocessedLine !== ';' ) {
-			const range = Range.create(row,0,row,t.length);
-			if (range) {
+        if (preprocessedLine !== '' && preprocessedLine !== ';') {
+            const range = Range.create(row, 0, row, t.length);
+            if (range) {
                 codeLenses.push({
                     range: range,
                     command:
@@ -70,14 +112,86 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
                         Command.create(
                             `preprocessed to: ${preprocessedLine}`,
                             'tads3.showPreprocessedTextAction',
-                            [range, currentDoc.uri,preprocessedDocument]
+                            [range, currentDoc.uri, preprocessedDocument]
                         )
                 });
-			}
-		}
-	}
-	return codeLenses;
+            }
+        }
+    }
+    return codeLenses;
 }
+
+
+
+/**
+ * Determines if input path is relative or absolute, in case it is relative it 
+ * uses the makefileLocation uri to determine
+ * the absolute path.
+ * 
+ * @param relativePath the relative or absolute address
+ * @param makefileLocation the makefile location uri
+ * @returns an absolute path, regardless input was relative or absolute
+ */
+function toAbsoluteUrl(relativePath: string = '', symbol: any, basePaths: any): string {
+    if (existsSync(relativePath)) {
+        /*const basePath =  URI.file(basePaths[0]);
+        const absolutePath = Utils.joinPath(basePath, relativePath).fsPath;
+        if(existsSync(absolutePath)) {
+            return absolutePath;
+        }*/
+        return relativePath;
+    }
+    const ext = symbol.name === 'lib'? '.tl' : '.t';
+    const result = basePaths
+        .map( (basePath:URI)=>Utils.joinPath(basePath, relativePath + ext))
+        .find( (x:URI) => {
+            if(existsSync(x.fsPath)) {
+                return x;
+            }
+        });
+    
+    if(relativePath.includes('furniture')) {
+        console.log('HEY');
+    }
+    if(result) {
+        return result.fsPath;
+    }
+
+    //const absolutePath = Utils.joinPath(baseDir, relativePath);
+    //return absolutePath.path;
+    return relativePath;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*import { window } from 'rxjs/operators';
