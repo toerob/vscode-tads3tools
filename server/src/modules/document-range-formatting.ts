@@ -1,90 +1,27 @@
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { TextDocuments, DocumentRangeFormattingParams } from 'vscode-languageserver';
 import { TextEdit } from 'vscode-languageserver-types';
-import { wholeLineRegExp } from '../parser/preprocessor';
-import { unchangedTextChangeRange } from 'typescript';
+import { preprocessedFilesCacheMap } from '../server';
+import { URI } from 'vscode-uri';
+import { formatDocument } from './document-formatting';
+import { Range } from 'vscode-languageserver';
 
 export function onDocumentRangeFormatting(handler: DocumentRangeFormattingParams, documents: TextDocuments<TextDocument>): TextEdit[] {
 	const edits: TextEdit[] = [];
 	const { textDocument, range } = handler;
 	const currentDocument = documents.get(textDocument.uri);
-	const rows = currentDocument?.getText(range).split(wholeLineRegExp) ?? [];
-	const formattedDocumentArray = formatDocument(rows);
-	edits.push(TextEdit.replace(range, formattedDocumentArray.join(`\n`)));
+	const path = URI.parse(textDocument.uri).path;
+	const preprocessedText = preprocessedFilesCacheMap.get(path) ?? "";
+
+	// Only whole lines formatting are (as of yet) supported.
+	// So first a complete format of the document is done:
+	const formattedDocumentArray = formatDocument(preprocessedText, currentDocument?.getText() ?? "", currentDocument?.lineCount ?? 0);
+
+	// Then a slice per row basis:
+	let rangedFormattedDocumentArray = formattedDocumentArray.slice(range.start.line, range.end.line + 1);
+
+	// And then replacement is done on whole rows:
+	const wholeLineRange = Range.create(range.start.line, 0, range.end.line, range.end.character);
+	edits.push(TextEdit.replace(wholeLineRange, rangedFormattedDocumentArray.join(`\n`)));
 	return edits;
-}
-
-enum LEVEL {
-	BEGIN_OBJECT, BEGIN_BLOCK, UNCHANGED, EXIT_BLOCK,
-	WITHIN_COMMENT
-};
-
-let formatStack: LEVEL[] = [];
-
-export function formatDocument(rows: string[], tabIndentation = "\t") {
-	const formattedDocumentArray = [];
-	formatStack = [];
-	for (const row of rows) {
-		let padding = tabIndentation.repeat(formatStack.length);
-		
-		const result = decideNextRowIndentation(row);
-
-		if(result === LEVEL.WITHIN_COMMENT) {
-			formattedDocumentArray.push(`row`);
-			continue;
-		}
-
-		if (result !== LEVEL.UNCHANGED && result !== LEVEL.EXIT_BLOCK) {
-			formatStack.push(result);
-		} else if (result === LEVEL.EXIT_BLOCK) {
-			formatStack.pop();
-			padding = tabIndentation.repeat(formatStack.length); // In this case, redo padding
-		}
-
-		// FIXME: don't change spaces within strings
-		// FIXME: In case of stacked member calls, remove all blanks. 
-		// e,g:      new Vector(10)    .fillValue(nil, 1, 10)
-		// becomes:  new Vector(10).fillValue(nil, 1, 10)
-
-		// FIXME: In case of stacked member calls, make sure extra indentation is added, e.g:
-		// local vec = new Vector(10)
-		//				.fillValue(nil, 1, 10)
-		//				.applyAll({x: i++});
-
-		const currentTrimmedRow = row.trim().replace(/\s{2,}/g, ' ');
-
-		formattedDocumentArray.push(`${padding + currentTrimmedRow}`);
-	}
-	return formattedDocumentArray;
-}
-
-export function decideNextRowIndentation(row: string = ''): number {
-	// Anything that begins like a class/object and doesn't end with ;
-	const topOfStack = formatStack[formatStack.length - 1];
-
-	// While within a comment, return WITHIN_COMMENT
-	if(topOfStack === LEVEL.WITHIN_COMMENT) {
-		return row.match(/\*\//) ? LEVEL.EXIT_BLOCK : LEVEL.WITHIN_COMMENT;
-	}
-	
-	if(row.match(/\s*\/\*/)) {
-		return LEVEL.WITHIN_COMMENT;
-	}
-
-	if (formatStack.length === 0 && row.trimEnd().match(/\s*(class\s*)?(.*)\s*[:]\s*.*[^;]$/)) {
-		return LEVEL.BEGIN_OBJECT;
-	}
-	if (formatStack.length > 0) {
-		if (row.match(/[{]\s*$/)) {
-			return LEVEL.BEGIN_BLOCK;
-		}
-		// If at object/class level and semicolon is found. 
-		if (topOfStack === LEVEL.BEGIN_OBJECT && row.match(/[;]/)) { return LEVEL.EXIT_BLOCK; }
-
-		if (row.match(/[}]\s*$/)) {
-			return LEVEL.EXIT_BLOCK;
-		}
-	}
-
-	return LEVEL.UNCHANGED;
 }

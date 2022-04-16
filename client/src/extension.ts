@@ -115,6 +115,7 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
 	context.subscriptions.push(commands.registerCommand('tads3.openFile', (params) => openFile(params ?? undefined)));
+	context.subscriptions.push(commands.registerCommand('tads3.toggleURLCodeLensesInT3Makefile', toggleURLCodeLensesInT3Makefile));
 	
 
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextForCurrentFile', showPreprocessedTextForCurrentFile));
@@ -504,6 +505,15 @@ async function toggleGameRunnerOnT3ImageChanges() {
 	const oldValue = configuration.get("restartGameRunnerOnT3ImageChanges");
 	configuration.update("restartGameRunnerOnT3ImageChanges", !oldValue, true);
 }
+
+async function toggleURLCodeLensesInT3Makefile() {
+	const configuration = workspace.getConfiguration("tads3");
+	const oldValue = configuration.get("showURLCodeLensesInT3Makefile");
+	configuration.update("showURLCodeLensesInT3Makefile", !oldValue, true);
+}
+
+
+
 
 async function downloadFile(requestUrl: string, folder: string, fileName: string) {
 	ensureDirSync(extensionCacheDirectory);
