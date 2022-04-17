@@ -103,7 +103,7 @@ function getCodeLensesForTads3Makefile(showURLCodeLensesInT3Makefile:boolean, sy
     ];
     codeLenses.push({
         range: Range.create(0,0,0,0),
-        command: Command.create(`Toggle CodeLenses [on/off] for URL links`, 'tads3.toggleURLCodeLensesInT3Makefile')
+        command: Command.create(`Toggle CodeLenses [on/off]`, 'tads3.toggleURLCodeLensesInT3Makefile')
     });
     if(!showURLCodeLensesInT3Makefile) {
         return codeLenses;
