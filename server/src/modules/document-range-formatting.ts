@@ -10,7 +10,7 @@ export function onDocumentRangeFormatting(handler: DocumentRangeFormattingParams
 	const edits: TextEdit[] = [];
 	const { textDocument, range } = handler;
 	const currentDocument = documents.get(textDocument.uri);
-	const path = URI.parse(textDocument.uri).path;
+	const path = URI.parse(textDocument.uri).fsPath;
 	const preprocessedText = preprocessedFilesCacheMap.get(path) ?? "";
 
 	// Only whole lines formatting are (as of yet) supported.
@@ -18,7 +18,7 @@ export function onDocumentRangeFormatting(handler: DocumentRangeFormattingParams
 	const formattedDocumentArray = formatDocument(preprocessedText, currentDocument?.getText() ?? "", currentDocument?.lineCount ?? 0);
 
 	// Then a slice per row basis:
-	let rangedFormattedDocumentArray = formattedDocumentArray.slice(range.start.line, range.end.line + 1);
+	const rangedFormattedDocumentArray = formattedDocumentArray.slice(range.start.line, range.end.line + 1);
 
 	// And then replacement is done on whole rows:
 	const wholeLineRange = Range.create(range.start.line, 0, range.end.line, range.end.character);

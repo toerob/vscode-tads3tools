@@ -948,7 +948,7 @@ async function detectAndInitiallyParseTads2Project() {
 	for (const currentFile of files) {
 		const doc = await workspace.openTextDocument(currentFile.fsPath);
 		nodes.set(basename(currentFile.fsPath), new DependencyNode(currentFile));
-		for (const row of doc.getText()?.split(/\r?\n/)) {
+		for (const row of doc.getText()?.split(/\r?\n/) ?? []) {
 			const result = includeRegexp.exec(row);
 			if (result && result.length === 2) {
 				const filename = result[1];

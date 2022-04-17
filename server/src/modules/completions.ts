@@ -158,7 +158,7 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 		for(const file of symbolManager.keywords.keys()) {
 			const localKeys = symbolManager.keywords.get(file);
 			if(localKeys) {
-				for(const key of localKeys?.keys()) {
+				for(const key of localKeys?.keys() ?? []) {
 					if(usedUpKeys.has(key)) {
 						continue;
 					}
@@ -179,7 +179,7 @@ export function onCompletion(handler: CompletionParams, documents: TextDocuments
 			if(localKeys) {
 				const flattened = flattenTreeToArray(localKeys); //.filter(x=>x.kind === SymbolKind.Object)
 				if(flattened) {
-					for(const value of flattened?.values()) {
+					for(const value of flattened?.values() ?? []) {
 						if(usedUpKeys.has(value.name)) {
 							continue;
 						}

@@ -19,7 +19,7 @@ import { getWordAtPosition } from './text-utils';
  */
 
 function allowedSymbolAsKeywordPredicate(symbol: SymbolInformation): boolean {
-	return symbol.kind === SymbolKind.Property.valueOf()
+	return symbol.kind === SymbolKind.Property.valueOf();
 	//return true;
 }
 

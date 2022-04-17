@@ -16,7 +16,7 @@ export function onDocumentFormatting(handler: DocumentFormattingParams, document
 	const { textDocument } = handler;
 	const currentDocument = documents.get(textDocument.uri);
 	const rows = currentDocument?.getText().split(wholeLineRegExp) ?? [];
-	const path = URI.parse(textDocument.uri).path;
+	const path = URI.parse(textDocument.uri).fsPath;
 	const preprocessedText = preprocessedFilesCacheMap.get(path) ?? "";
 	const formattedDocumentArray = formatDocument(preprocessedText, currentDocument?.getText() ?? "", currentDocument?.lineCount ?? 0);
 	const lastRowLength = rows[rows.length - 1].length;
@@ -31,7 +31,7 @@ export function formatDocument(preprocessedText: string, orgInput: string, lineC
 	const tokenStream = new CommonTokenStream(lexer);
 	const parser = new Tads3Parser(tokenStream);
 	const parseTree = parser.program();
-	const listener = new Tads3FormatterSymbolListener()
+	const listener = new Tads3FormatterSymbolListener();
 	const parseTreeWalker = new ParseTreeWalker();
 	parseTreeWalker.walk<Tads3Listener>(listener, parseTree);
 	let indentation = 0;
