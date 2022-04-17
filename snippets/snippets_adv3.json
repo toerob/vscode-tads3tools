@@ -162,7 +162,7 @@
 	},
 
 	"Tads3 room (auto camelcased) snippet" : { 
-		"prefix": "Room (auto camelcased)",
+		"prefix": "room snippet (auto camelcased)",
 		"body": [    
 			"${1/(.*)/${1:/camelcase}/}: ${2|Room,OutdoorRoom,DarkRoom,FloorlessRoom,HighNestedRoom,NestedRoom,ShipboardRoom|} '${1/[']/\\'/g}' '${3:${1/[']/\\'/g}}'",
 			"\t\"$5\"",
@@ -172,7 +172,7 @@
 		"description": "Tads3 auto camelcased room snippet"
 	},
 	"Tads3 room (manually named) snippet" : { 
-		"prefix": "Room (manually named)", 
+		"prefix": "room snippet (manually named)", 
 		"body": [    
 			"$1: ${2|Room,OutdoorRoom,DarkRoom,FloorlessRoom,HighNestedRoom,NestedRoom,ShipboardRoom|} '${3:$1}' '${4:$1}'",
 			"\t\"$5\"",
@@ -183,7 +183,7 @@
 	},
 
 	"Tads3 thing snippet" : { 
-		"prefix": "Thing (manually named)", 
+		"prefix": "thing snippet (manually named)", 
 		"body": [    
 			"$1: ${2|Thing,Unthing,Heavy,Fixture,Immovable,Component,Container,OpenableContainer,Supporter|} '${3:$1}' '${4:$1}'",
 			"\t\"$5\"",
@@ -194,7 +194,7 @@
 	},
 
 	"Tads3 door pair snippet" : { 
-		"prefix": "Door pair",
+		"prefix": "door pair snippet",
 		"body": [    
 			"+${0}${1}Outside: Door -> ${1}Inside '${2}${3:door*doors}' '${2}${4:door}';",
 			"+${0}${1}Inside: Door -> ${1}Outside '${2}${3:door*doors}' '${2}${4:door}';"
