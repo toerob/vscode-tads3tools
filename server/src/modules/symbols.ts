@@ -1,4 +1,3 @@
-import { parse } from 'path';
 import { promisify } from 'util';
 import { DocumentSymbolParams, TextDocuments, DocumentSymbol,SymbolKind,Range } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';

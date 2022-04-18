@@ -6,9 +6,9 @@ import { URI, Utils } from 'vscode-uri';
 import { connection, preprocessedFilesCacheMap } from '../server';
 import { existsSync } from 'fs-extra';
 import { isAbsolute } from 'path';
+import { serverState } from '../state';
 
 const includeRegexp = new RegExp(/(#\s*include\s*)(?:[<]|\")(.*)(?:[>]|\")/);
-const cachedFileLocation = new Map<string | undefined, string>();
 
 export async function onDocumentLinks({ textDocument }: DocumentLinkParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
 	const links: DocumentLink[] = [];
@@ -48,26 +48,30 @@ export async function onDocumentLinks({ textDocument }: DocumentLinkParams, docu
 
 function getLinksForTads3Makefile(symbolManager: TadsSymbolManager, fsPath: any, textDocument: TextDocumentIdentifier, links: DocumentLink[]) {
 	const symbols = symbolManager.symbols.get(fsPath) ?? [];
-	
     const makefileLocationURI = URI.parse(textDocument.uri);
     const directoryName = Utils.dirname(makefileLocationURI);
     const makefileLocation = URI.file(directoryName.fsPath);
-    const fileBasePaths = [
-        makefileLocation,
-        ...symbols
+	
+	const uris:any = symbols
             .filter(x => x.name.match(/^f[li]$/i))
             .map(x => x.detail && URI.file(x.detail))
-            .filter(x => x && existsSync(x.fsPath))
-    ];
-    for (const symbol of symbols) {
+            .filter(x => x && existsSync(x.fsPath));
+
+	serverState.makefileLocation = makefileLocation;
+	serverState.fileBasePaths  = new Set([
+        makefileLocation,
+        ...uris
+    ]);
+
+	for (const symbol of symbols) {
         const isDirectory = symbol.name.match(/^f[liyo]$/i) ? true : false;
         const relativeSourceFile = symbol.name.match(/source/) ? true : false;
         const relativeLibraryFile = symbol.name.match(/lib/) ? true : false;
         if (relativeSourceFile || relativeLibraryFile) {
-			const absolutePath = cachedFileLocation.get(symbol.detail) ?? toAbsoluteUrl(symbol.detail, symbol, fileBasePaths, isDirectory);
+			const absolutePath = serverState.cachedFileLocation.get(symbol.detail) ?? toAbsoluteUrl(symbol.detail, symbol, serverState.fileBasePaths, isDirectory);
 			const range = Range.create(symbol.range.start.line, symbol.name.length+2,  symbol.range.end.line, symbol.range.end.character);
 			const documentLink = DocumentLink.create(range, URI.file(absolutePath).path);
-            cachedFileLocation.set(symbol.detail ?? '', absolutePath);
+            serverState.cachedFileLocation.set(symbol.detail ?? '', absolutePath);
 			links.push(documentLink);
         }
     }
@@ -84,22 +88,15 @@ function getLinksForTads3Makefile(symbolManager: TadsSymbolManager, fsPath: any,
  * @param makefileLocation the makefile location uri
  * @returns an absolute path, regardless input was relative or absolute
  */
- function toAbsoluteUrl(relativePath = '', symbol: any, basePaths: any, isDirectory: boolean): string {
+ function toAbsoluteUrl(relativePath = '', symbol: any, basePaths: Set<URI>, isDirectory: boolean): string {
     if (isAbsolute(relativePath) && existsSync(relativePath)) {
         return relativePath;
     }
-
     const hasExtensionAtEnd = relativePath.match(/[.](lib|tl|t)$/) ? true : false;
     const ext = (hasExtensionAtEnd || isDirectory) ? '' : symbol.name === 'lib' ? '.tl' : '.t';
-    const result = basePaths
-        .map((basePath: URI) => {
-            return Utils.joinPath(basePath, relativePath + ext);
-        })
-        .find((x: URI) => {
-            if (existsSync(x.fsPath)) {
-                return x;
-            }
-        });
+    const result = [...basePaths]
+        .map((basePath: URI) => Utils.joinPath(basePath, relativePath + ext))
+        .find((x: URI) => existsSync(x.fsPath)? x : undefined);
     if (result) {
         return result.fsPath;
     }
