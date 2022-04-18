@@ -115,7 +115,7 @@
 	},
 
 	"Tads3 actor class implementation snippet" : { 
-		"prefix": "Actor",
+		"prefix": ["actor snippet", "Actor"],
 		"body": [    
 			"${1/(.*)/${1:/camelcase}/}:  Actor '$1' '${1/(.*)/${1:/capitalize}/}'",
 			"\t\"$3\"",
@@ -127,7 +127,7 @@
 
 
     "Tads3 ActorState class implementation snippet" : { 
-		"prefix": "ActorState", 
+		"prefix": ["actorstate snippet", "ActorState"], 
 		"body": [    
 			"$1: ${2|ActorState,HermitActorState,AccompanyingState,AccompanyingInTravelState,GuidedTourState,ConversationReadyState,InConversationState,ConversationReadyState|} \"${3:<<getActor.theName>> is here. }\"",
 			"\tisInitState = true",
@@ -138,7 +138,7 @@
 	},
 
 	"Tads3 AgendaItem class implementation snippet" : { 
-		"prefix": "AgendaItem", 
+		"prefix": ["agendaitem snippet", "AgendaItem"],
 		"body": [    
 			"$1: ${2|AgendaItem,BoredomAgendaItem,ConvAgendaItem,DelayedAgendaItem|}",
 			"\tinitiallyActive = true",

@@ -114,7 +114,7 @@
 		"description": "Tads3 (adv3) Topic implementation snippet"
 	},
     "Tads3 (adv3Lite) actor class implementation snippet" : { 
-		"prefix": "Actor", 
+		"prefix": ["actor snippet", "Actor"],
 		"body": [    
 			"${1/(.*)/${1:/camelcase}/}:  Actor '${1/(.*)/${1:/capitalize}/}'",
 			"\t\"$3\"",
@@ -124,7 +124,7 @@
 	},
 
     "Tads3 ActorState class implementation snippet" : { 
-		"prefix": "ActorState", 
+		"prefix": ["actorstate snippet", "ActorState"], 
 		"body": [    
 			"$1: ActorState \"${3:<<getActor.theName>> is here. }\"",
 			"\tisInitState = true",
@@ -134,7 +134,7 @@
 		"description": "Tads3 ActorState implementation snippet"
 	},
 	"Tads3 AgendaItem class implementation snippet" : { 
-		"prefix": "AgendaItem", 
+		"prefix": ["agendaitem snippet", "AgendaItem"],
 		"body": [    
 			"$1: ${2|AgendaItem,ConvAgendaItem,FollowAgendaItem,BoredomConvAgendaItem,DelayedAgendaItem|}",
 			"\tinitiallyActive = true",
