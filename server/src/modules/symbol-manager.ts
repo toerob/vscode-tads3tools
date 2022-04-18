@@ -2,6 +2,7 @@ import { Range, DocumentSymbol, Position, SymbolKind, SymbolInformation, Locatio
 import { URI } from 'vscode-uri';
 import { filterForLibraryFiles } from './utils';
 import { CaseInsensitiveMap } from './CaseInsensitiveMap';
+import { pathExistsSync } from 'fs-extra';
 
 export class TadsSymbolManager {
 	symbols: Map<string, DocumentSymbol[]>;
@@ -197,7 +198,19 @@ export class TadsSymbolManager {
 		}
 		return undefined;
 	}
+
+	pruneFile(uriString: string): boolean {
+		return symbolManager.symbols.delete(uriString);
+	}
+
+	pruneFiles() {
+		[...this.symbols.keys()]
+		.filter(x => !pathExistsSync(x))
+		.forEach(x => symbolManager.symbols.delete(x));
+	}
+
 }
+
 
 export function flattenTreeToArray(localSymbols: DocumentSymbol[]) {
 	const basketOfSymbols: DocumentSymbol[] = [];

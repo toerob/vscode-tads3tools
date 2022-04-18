@@ -3,6 +3,7 @@ import { TadsSymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { getWordAtPosition } from './text-utils';
 import { retrieveDocumentationForKeyword } from './documentation';
+import { ensureFileSync, pathExistsSync } from 'fs-extra';
 
 const symbolsAllowingHoveringDocs = [
 	SymbolKind.Class,
@@ -40,11 +41,19 @@ export function onHover({ textDocument, position, workDoneToken }: HoverParams, 
 						templateText += `Templates for ${symbolName ?? 'unknown'}: \n\n${templateSummary}\n\n`;
 					}
 				}
-				const foundPathAndSymbolResult = symbolSearchResult.filter(x => x.symbols.find(checkSymbolsAllowingHoveringDocs));
+				const foundPathAndSymbolResult = symbolSearchResult
+					.filter(x => x.symbols.find(checkSymbolsAllowingHoveringDocs))
+
+				const nonExistant = foundPathAndSymbolResult.filter(x=>!pathExistsSync(x.filePath)? x: undefined) ?? [];
+
+				// Prune non-existant files (can happen if they are moved to another location within the project)
+				nonExistant.forEach(x=>symbolManager.pruneFile(x.filePath))
+
+				const prunedFoundPathAndSymbolResult = foundPathAndSymbolResult.filter(s => nonExistant.find(x=> s.filePath !== x.filePath));
 				if (foundPathAndSymbolResult && foundPathAndSymbolResult.length > 0) {
-					for (const eachPathAndSymbolResult of foundPathAndSymbolResult) {
+					for (const eachPathAndSymbolResult of prunedFoundPathAndSymbolResult) {
 						const filePath = eachPathAndSymbolResult.filePath;
-						if (filePath) {
+						if (filePath && pathExistsSync(filePath)) {
 							for (const symbol of eachPathAndSymbolResult.symbols) {
 								const classDoc = retrieveDocumentationForKeyword(symbol, filePath);
 								if (classDoc) {

@@ -7,7 +7,7 @@
 import { copyFileSync, createReadStream, createWriteStream, existsSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, CancellationError, DiagnosticSeverity, Diagnostic } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, CancellationError, DiagnosticSeverity, Diagnostic, FileDeleteEvent, FileChangeEvent, TextDocumentChangeEvent, WorkspaceFoldersChangeEvent } from 'vscode';
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -105,7 +105,6 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 
-
 	context.subscriptions.push(commands.registerCommand('tads2.parseTads2Project', () => selectTads2MainFile()));
 	context.subscriptions.push(commands.registerCommand('tads3.createTads3TemplateProject', () => createTemplateProject(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.addFileToProject', () => addFileToProject(context)));
@@ -135,6 +134,8 @@ export function activate(context: ExtensionContext) {
 			}
 		}
 	});
+
+
 
 
 	setupVisualEditorResponseHandler();
@@ -453,7 +454,6 @@ function setupAndMonitorBinaryGamefileChanges(imageFormat) {
 		: dirname(extensionState.getChosenMakefileUri().fsPath);
 
 	gameFileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, imageFormat));
-
 	runGameInTerminalSubject.pipe(debounceTime(DEBOUNCE_TIME)).subscribe((event: any) => {
 		const configuration = workspace.getConfiguration("tads3");
 		if (!configuration.get("restartGameRunnerOnT3ImageChanges")) {
