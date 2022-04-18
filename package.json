@@ -169,12 +169,6 @@
 					"default": false,
 					"description": "Restarts the t3 game image in the interpreter whenever it is recompiled."
 				},
-				"tads3.showURLCodeLensesInT3Makefile": {
-					"scope": "window",
-					"type": "boolean",
-					"default": false,
-					"description": "Show clickable URL links above the makefile properties. "
-				},
 				"tads3.gameRunnerInterpreter": {
 					"scope": "window",
 					"type": "string",

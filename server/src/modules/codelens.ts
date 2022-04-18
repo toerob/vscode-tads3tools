@@ -1,25 +1,16 @@
-import { existsSync } from 'fs';
-import path = require('path');
-import { CodeLens, TextDocuments, Range, CodeLensParams, Command, TextDocumentIdentifier } from 'vscode-languageserver';
+import { CodeLens, TextDocuments, Range, CodeLensParams, Command } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { URI, Utils } from 'vscode-uri';
+import { URI } from 'vscode-uri';
 import { connection, preprocessedFilesCacheMap } from '../server';
 import { TadsSymbolManager } from './symbol-manager';
-
-const cachedFileLocation = new Map<string | undefined, string>();
 
 export async function onCodeLens({ textDocument }: CodeLensParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
     const codeLenses: CodeLens[] = [];
     const enablePreprocessorCodeLens = await connection.workspace.getConfiguration("tads3.enablePreprocessorCodeLens");
-    const showURLCodeLensesInT3Makefile = await connection.workspace.getConfiguration("tads3.showURLCodeLensesInT3Makefile");
 
     const uri = URI.parse(textDocument.uri);
     const fsPath = uri.fsPath;
     const currentDoc = documents.get(textDocument.uri);
-
-    if (textDocument.uri.endsWith('.t3m')) {
-        return getCodeLensesForTads3Makefile(showURLCodeLensesInT3Makefile, symbolManager, fsPath, textDocument, codeLenses);
-    }
 
     if (!enablePreprocessorCodeLens) {
         return await codeLenses;
@@ -87,77 +78,6 @@ export async function onCodeLens({ textDocument }: CodeLensParams, documents: Te
     }
     return codeLenses;
 }
-
-
-
-function getCodeLensesForTads3Makefile(showURLCodeLensesInT3Makefile:boolean, symbolManager: TadsSymbolManager, fsPath: string, textDocument: TextDocumentIdentifier, codeLenses: CodeLens[]): CodeLens[] {
-    const symbols = symbolManager.symbols.get(fsPath) ?? [];
-    const makefileLocationURI = URI.parse(textDocument.uri);
-    const directoryName = Utils.dirname(makefileLocationURI);
-    const makefileLocation = URI.file(directoryName.fsPath);
-    const fileBasePaths = [
-        makefileLocation,
-        ...symbols
-            .filter(x => x.name.match(/^f[li]$/i))
-            .map(x => x.detail && URI.file(x.detail))
-            .filter(x => x && existsSync(x.fsPath))
-    ];
-    codeLenses.push({
-        range: Range.create(0,0,0,0),
-        command: Command.create(`Toggle CodeLenses [on/off]`, 'tads3.toggleURLCodeLensesInT3Makefile')
-    });
-    if(!showURLCodeLensesInT3Makefile) {
-        return codeLenses;
-    }
-
-    for (const symbol of symbols) {
-        // TODO: maybe handle LANGUAGE variable also
-        const isDirectory = symbol.name.match(/^f[liyo]$/i) ? true : false;
-        const relativeSourceFile = symbol.name.match(/source/) ? true : false;
-        const relativeLibraryFile = symbol.name.match(/lib/) ? true : false;
-        if (isDirectory || relativeSourceFile || relativeLibraryFile) {
-            const absolutePath = cachedFileLocation.get(symbol.detail) ?? toAbsoluteUrl(symbol.detail, symbol, fileBasePaths, isDirectory);
-            cachedFileLocation.set(symbol.detail ?? '', absolutePath);
-            codeLenses.push({
-                range: symbol.range,
-                command: Command.create(`[File location: ${absolutePath}]`, 'tads3.openFile', absolutePath)
-            });
-        }
-    }
-    return codeLenses;
-}
-
-/**
- * Determines if input path is relative or absolute, in case it is relative it 
- * uses the makefileLocation uri to determine
- * the absolute path.
- * 
- * @param relativePath the relative or absolute address
- * @param makefileLocation the makefile location uri
- * @returns an absolute path, regardless input was relative or absolute
- */
-function toAbsoluteUrl(relativePath = '', symbol: any, basePaths: any, isDirectory: boolean): string {
-    if (path.isAbsolute(relativePath) && existsSync(relativePath)) {
-        return relativePath;
-    }
-
-    const hasExtensionAtEnd = relativePath.match(/[.](lib|tl|t)$/) ? true : false;
-    const ext = (hasExtensionAtEnd || isDirectory) ? '' : symbol.name === 'lib' ? '.tl' : '.t';
-    const result = basePaths
-        .map((basePath: URI) => {
-            return Utils.joinPath(basePath, relativePath + ext);
-        })
-        .find((x: URI) => {
-            if (existsSync(x.fsPath)) {
-                return x;
-            }
-        });
-    if (result) {
-        return result.fsPath;
-    }
-    return relativePath;
-}
-
 
 
 

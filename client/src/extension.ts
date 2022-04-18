@@ -22,7 +22,7 @@ import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
-import { validateCompilerPath, validatePreprocessorPath, validateTads2Settings, validateUserSettings } from './modules/validations';
+import { validateCompilerPath, validateTads2Settings, validateUserSettings } from './modules/validations';
 import { extensionState } from './modules/state';
 import { validateMakefile } from './modules/validate-makefile';
 import { extractAllQuotes } from './modules/extract-quotes';
@@ -35,7 +35,6 @@ import { findAndSelectMakefileUri } from './modules/findAndSelectMakefileUri';
 import { addFileToProject } from './modules/addFileToProject';
 import { SnippetCompletionItemProvider } from './modules/snippet-completion-item-provider';
 import { DependencyNode } from './modules/DependencyNode';
-import { fileURLToPath } from 'url';
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -106,18 +105,13 @@ export function activate(context: ExtensionContext) {
 
 	context.subscriptions.push(workspace.onDidSaveTextDocument(async (textDocument: TextDocument) => onDidSaveTextDocument(textDocument)));
 
-	
+
 	context.subscriptions.push(commands.registerCommand('tads2.parseTads2Project', () => selectTads2MainFile()));
 	context.subscriptions.push(commands.registerCommand('tads3.createTads3TemplateProject', () => createTemplateProject(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.addFileToProject', () => addFileToProject(context)));
-
 	context.subscriptions.push(commands.registerCommand('tads3.setMakefile', setMakeFile));
 	context.subscriptions.push(commands.registerCommand('tads3.enablePreprocessorCodeLens', enablePreprocessorCodeLens));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextAction', (params) => showPreprocessedTextAction(params ?? undefined)));
-	context.subscriptions.push(commands.registerCommand('tads3.openFile', (params) => openFile(params ?? undefined)));
-	context.subscriptions.push(commands.registerCommand('tads3.toggleURLCodeLensesInT3Makefile', toggleURLCodeLensesInT3Makefile));
-	
-
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedTextForCurrentFile', showPreprocessedTextForCurrentFile));
 	context.subscriptions.push(commands.registerCommand('tads3.showPreprocessedFileQuickPick', showPreprocessedFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.openProjectFileQuickPick', openProjectFileQuickPick));
@@ -267,7 +261,7 @@ export function activate(context: ExtensionContext) {
 				}
 			}
 			const filename = basename(Uri.parse(filePath).path);
-			if(extensionState.currentPreprocessAndParseProgress) {
+			if (extensionState.currentPreprocessAndParseProgress) {
 				extensionState.currentPreprocessAndParseProgress.report({ message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}` });
 			}
 			//progress.report({ message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}` });
@@ -316,7 +310,7 @@ export function activate(context: ExtensionContext) {
 			client.info(`Debounce time of ${DEBOUNCE_TIME} has passed.`);
 			currentTextDocument = textDocument;
 
-			if(extensionState.getUsingTads2()) {
+			if (extensionState.getUsingTads2()) {
 				const mainFile = extensionState.getTads2MainFile();
 				if (mainFile && !existsSync(mainFile.fsPath)) {
 					extensionState.setTads2MainFile(undefined);
@@ -330,7 +324,7 @@ export function activate(context: ExtensionContext) {
 				}
 				await diagnosePreprocessAndParse(textDocument);
 				return;
-			} 
+			}
 
 			if (extensionState.getChosenMakefileUri() && !existsSync(extensionState.getChosenMakefileUri().fsPath)) {
 				extensionState.setChosenMakefileUri(undefined);
@@ -426,7 +420,7 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 		return;
 	}
 	//const warnings = errorDiagnostics.filter((x:Diagnostic) => x.severity === DiagnosticSeverity.Warning);
-	const errors = errorDiagnostics.filter((x:Diagnostic) => x.severity === DiagnosticSeverity.Error);
+	const errors = errorDiagnostics.filter((x: Diagnostic) => x.severity === DiagnosticSeverity.Error);
 	if (errors.length > 0) {
 		client.warn(`Could not assemble outliner symbols due to error(s): \n${errorDiagnostics.map(e => e.message).join('\n')}`);
 		return;
@@ -453,9 +447,9 @@ async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 
 function setupAndMonitorBinaryGamefileChanges(imageFormat) {
 	client.info(`setup and monitor binary game file changes. `);
-	
-	const workspaceFolder = extensionState.getUsingTads2()?
-	dirname(extensionState.getTads2MainFile().fsPath) 
+
+	const workspaceFolder = extensionState.getUsingTads2() ?
+		dirname(extensionState.getTads2MainFile().fsPath)
 		: dirname(extensionState.getChosenMakefileUri().fsPath);
 
 	gameFileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, imageFormat));
@@ -543,8 +537,9 @@ async function downloadFile(requestUrl: string, folder: string, fileName: string
 
 
 
+
 async function downloadAndInstallExtension(context: ExtensionContext) {
-	const configuration = workspace.getConfiguration(extensionState.isUsingTads2? "tads2": "tads3");
+	const configuration = workspace.getConfiguration(extensionState.isUsingTads2 ? "tads2" : "tads3");
 	const ifarchiveTads3ContributionsURL: string = configuration.get("ifArchiveExtensionURL");
 	try {
 		if (extensionDownloadMap === undefined) {
@@ -584,7 +579,7 @@ async function downloadAndInstallExtension(context: ExtensionContext) {
 	const action = await window.showInformationMessage(infoEntries.join('\n\n***\n\n'), { modal: true }, option1, option2);
 	console.log(action);
 	if (action.title === 'Install') {
-		
+
 		const makefileDir = dirname(extensionState.isUsingTads2 ? extensionState.getTads2MainFile().fsPath : extensionState.getChosenMakefileUri().fsPath);
 		for (const extKey of selections) {
 			const downloadURL = ifarchiveTads3ContributionsURL + extKey;
@@ -640,11 +635,11 @@ function ensureObjFolderExistsInProjectRoot() {
 }
 
 async function diagnose(textDocument: TextDocument) {
-	if(extensionState.getUsingTads2()) {
+	if (extensionState.getUsingTads2()) {
 		extensionState.setDiagnosing(true);
 		const tads2ExtensionConfig = workspace.getConfiguration('tads2');
 		const compilerPath = tads2ExtensionConfig?.compiler?.path ?? 'tadsc';
-		const tads2libraryPath = tads2ExtensionConfig?.library?.path ?? '/usr/local/share/frobtads/tads2/'; 
+		const tads2libraryPath = tads2ExtensionConfig?.library?.path ?? '/usr/local/share/frobtads/tads2/';
 		const mainFilePath = extensionState.getTads2MainFile().fsPath;
 		const projectBaseFolder = dirname(mainFilePath);
 		const commandLine = `"${compilerPath}" -i "${tads2libraryPath}" -i "${projectBaseFolder}" -ds "${mainFilePath}"`;
@@ -666,7 +661,7 @@ async function diagnose(textDocument: TextDocument) {
 }
 
 function parseDiagnostics(resultOfCompilation: string, textDocument: TextDocument, tadsVersion = 3) {
-	if(tadsVersion===3) {
+	if (tadsVersion === 3) {
 		errorDiagnostics = parseAndPopulateErrors(resultOfCompilation, textDocument, collection);
 	} else {
 		errorDiagnostics = parseAndPopulateTads2Errors(resultOfCompilation, textDocument, collection);
@@ -694,17 +689,17 @@ export async function executeParse(filePaths: string[]): Promise<any> {
 	await client.onReady();
 	serverProcessCancelTokenSource = new CancellationTokenSource();
 	extensionState.setPreprocessing(true);
-	if(extensionState.getUsingTads2()) {
+	if (extensionState.getUsingTads2()) {
 		await client.sendRequest('request/parseTads2Documents', {
 			globalStoragePath,
 			mainFileLocation: extensionState.getTads2MainFile().fsPath,
 			filePaths,
 			token: serverProcessCancelTokenSource.token
 		});
-	
+
 		return;
 	}
-	
+
 	await client.sendRequest('request/parseDocuments', {
 		globalStoragePath,
 		makefileLocation: extensionState.getChosenMakefileUri().fsPath,
@@ -740,20 +735,6 @@ async function showPreprocessedTextAction(params: [any, any, any]) {
 		const doc = await workspace.openTextDocument({ language: 'tads3', content: preprocessedText });
 		preprocessDocument = doc;
 		showAndScrollToRange(doc, range);
-	}
-}
-
-function openFile(uri:string) {
-	if(uri.match(/[.]([th]|tl)$/i)) {
-		workspace
-		.openTextDocument(uri)
-		.then(doc=>window.showTextDocument(doc, {
-			viewColumn: ViewColumn.Beside,
-			preserveFocus: true,
-			preview: true,
-		}));
-	} else {
-		//window.showInformationMessage('Directory');
 	}
 }
 
@@ -923,7 +904,7 @@ export async function selectTads2MainFile() {
 	const userChoice = await window.showOpenDialog({
 		title: 'Select the main file for the tads2 project'
 	});
-	if(userChoice.length===1) {
+	if (userChoice.length === 1) {
 		extensionState.setTads2MainFile(userChoice[0]);
 		extensionState.setUsingTads2(true);
 	}
@@ -938,8 +919,8 @@ export async function selectTads2MainFile() {
  */
 async function detectAndInitiallyParseTads2Project() {
 
-	if(!await validateTads2Settings()) { return; }
-	
+	if (!await validateTads2Settings()) { return; }
+
 	client.info('Detecting Tads2 project');
 	const totalIncludeSet = new Set();
 	const nodes = new Map();
@@ -959,7 +940,7 @@ async function detectAndInitiallyParseTads2Project() {
 			}
 		}
 	}
-	if(files.length === 0) {
+	if (files.length === 0) {
 		client.info('No Tads2 files found. Detection is over. ');
 		return;
 	}
@@ -974,14 +955,14 @@ async function detectAndInitiallyParseTads2Project() {
 		console.log(`${root}: ${[...rootNode.includes.values()]}`);
 	}
 
-	const userChoice = roots.length === 1 ? roots[0] : await window.showQuickPick(roots, { 
-		title: `Which file is the Tads2 project's main file?: ` 
+	const userChoice = roots.length === 1 ? roots[0] : await window.showQuickPick(roots, {
+		title: `Which file is the Tads2 project's main file?: `
 	});
 
-	if(userChoice) {
+	if (userChoice) {
 		const userChoiceAsNode = nodes.get(userChoice);
 		extensionState.setTads2MainFile(userChoiceAsNode.uri);
-		const mainText:TextDocument = workspace.textDocuments.find(x=>x.fileName === (userChoiceAsNode.uri.fsPath));
+		const mainText: TextDocument = workspace.textDocuments.find(x => x.fileName === (userChoiceAsNode.uri.fsPath));
 		await diagnosePreprocessAndParse(mainText);
 	}
 }
