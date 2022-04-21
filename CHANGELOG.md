@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.0-alpha
+### Added
+  - Signature help provider for functions/methods. Now a help dialog will appear above when writing function/method calls where documenation, total parameters per signature and current parameter are visualized.
+  - Implementation provider, get easily access to all classes inheriting the specified class. To use: right click on the name of the class and select "Go to Implementations"/"Find all Implementations".
+  - References provider, easy access to all references of a certain keyword, To use: right click on the keyword and select "Go to References"/"Find all References".
+  - Document formatter provider, formats the current document. To use: right click in the document and select "Format document".
+  - Document range formatter provider, formats a selected range within a document. To use: select lines and right click in the document and select "Format Selection".
+  - File completions are now available for the tads3 makefile. File uri's are collected based on the project's structure and directories specified via -FL -FI flags in the makefile.
+  - Links are added to the makefile so every (valid) tads source file uri can be opened up with a ctrl-click.
+  - Added icon for the extension for the marketplace.
+
+### Fixed
+  - Snippets renamed to be easier accessable for Room, Things, Actor, ActorState  
+  - Fixes/tweaks here and there. 
+
 ## 0.5.1-alpha
 
 ### Fixed

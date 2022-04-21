@@ -38,6 +38,8 @@ import { onDocumentFormatting } from './modules/document-formatting';
 import { onDocumentRangeFormatting } from './modules/document-range-formatting';
 import { onImplementation } from './modules/implementation';
 
+import {onSignatureHelp} from './modules/onSignatureHelp';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
 
@@ -109,10 +111,14 @@ connection.onInitialize((params: InitializeParams) => {
 			},
 			implementationProvider: true,
 			documentFormattingProvider: true,
-			documentRangeFormattingProvider: true
-			
+			documentRangeFormattingProvider: true,
+			callHierarchyProvider: true,
+			signatureHelpProvider: {
+				triggerCharacters: ['(', ','],
+			}
 		}
 	};
+	
 	if (hasWorkspaceFolderCapability) {
 		result.capabilities.workspace = {
 			workspaceFolders: {
@@ -270,7 +276,7 @@ connection.onHover(async (handler) => onHover(handler, documents, symbolManager)
 connection.onDocumentFormatting(async (handler) => onDocumentFormatting(handler, documents));
 connection.onDocumentRangeFormatting(async (handler) => onDocumentRangeFormatting(handler, documents));
 connection.onImplementation(async (handler) => onImplementation(handler, documents, symbolManager));
-
+connection.onSignatureHelp(async (handler) => onSignatureHelp(handler, documents, symbolManager));
 
 connection.onRequest('request/extractQuotes', async (params) => {
 	if(params.fsPath === undefined) {
@@ -378,7 +384,4 @@ function parseDirection(directionName: any): string|undefined {
 	return undefined;
 	//throw new Error(`Not a valid direction`);
 }
-
-
-
 

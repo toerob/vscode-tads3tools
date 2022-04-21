@@ -22,7 +22,7 @@ const documentationDontCheckCachedKeywords = new LRUCache({ max: 500 });
  * @param filePath string - the filepath to check for information
  * @returns a string - possibly a string of suitable documentation or at least an empty string
  */
-export function retrieveDocumentationForKeyword(symbol: DocumentSymbol, filePath: string) {
+export function retrieveDocumentationForKeyword(symbol: DocumentSymbol, filePath: string) : string {
 	const keyword = symbol?.name;
 	if (keyword) {
 
@@ -36,7 +36,7 @@ export function retrieveDocumentationForKeyword(symbol: DocumentSymbol, filePath
 
 		if (documentationCachedKeywords.has(symbolHash)) {
 			//connection.console.log(`Reading from cache: ${filePath}`);
-			return documentationCachedKeywords.get(symbolHash);
+			return documentationCachedKeywords.get(symbolHash) ?? '';
 		}
 		if (filePath) {
 			//connection.console.log(`Reading from disc: ${filePath}`);

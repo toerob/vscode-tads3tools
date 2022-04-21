@@ -1,7 +1,7 @@
 {
 	"name": "vscode-tads3tools-server",
 	"description": "Language server implementation for Tads3 written for node.js",
-	"version": "0.5.1",
+	"version": "0.6.0",
 	"author": "Tomas Öberg",
 	"license": "MIT",
 	"engines": {

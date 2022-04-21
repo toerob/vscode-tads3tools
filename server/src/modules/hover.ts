@@ -42,14 +42,14 @@ export function onHover({ textDocument, position, workDoneToken }: HoverParams, 
 					}
 				}
 				const foundPathAndSymbolResult = symbolSearchResult
-					.filter(x => x.symbols.find(checkSymbolsAllowingHoveringDocs))
+					.filter( (x: any) => x.symbols.find(checkSymbolsAllowingHoveringDocs))
 
-				const nonExistant = foundPathAndSymbolResult.filter(x=>!pathExistsSync(x.filePath)? x: undefined) ?? [];
+				const nonExistant = foundPathAndSymbolResult.filter( (x:any) =>!pathExistsSync(x.filePath)? x: undefined) ?? [];
 
 				// Prune non-existant files (can happen if they are moved to another location within the project)
-				nonExistant.forEach(x=>symbolManager.pruneFile(x.filePath))
+				nonExistant.forEach((x:any)=>symbolManager.pruneFile(x.filePath))
 
-				const prunedFoundPathAndSymbolResult = foundPathAndSymbolResult.filter(s => nonExistant.find(x=> s.filePath !== x.filePath));
+				const prunedFoundPathAndSymbolResult = foundPathAndSymbolResult.filter( (s:any) => nonExistant.find( (x:any) => s.filePath !== x.filePath));
 				if (foundPathAndSymbolResult && foundPathAndSymbolResult.length > 0) {
 					for (const eachPathAndSymbolResult of prunedFoundPathAndSymbolResult) {
 						const filePath = eachPathAndSymbolResult.filePath;

@@ -4,6 +4,11 @@ import { filterForLibraryFiles } from './utils';
 import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 import { pathExistsSync } from 'fs-extra';
 
+export type FilePathAndSymbols = {
+	filePath: string;
+	symbols: DocumentSymbol[];
+};
+
 export class TadsSymbolManager {
 	symbols: Map<string, DocumentSymbol[]>;
 	keywords: Map<string, Map<string, Range[]>>;
@@ -77,8 +82,8 @@ export class TadsSymbolManager {
 
 
 
-	findSymbols(name: string, allowedKind: SymbolKind[] | undefined = undefined, deepSearch = true) {
-		const symbolSearchResult = [];
+	findSymbols(name: string, allowedKind: SymbolKind[] | undefined = undefined, deepSearch = true): FilePathAndSymbols[] {
+		const symbolSearchResult:FilePathAndSymbols[] = [];
 		if (name) {
 			for (const filePath of this.symbols.keys()) {
 				const fileLocalSymbols = deepSearch ?
