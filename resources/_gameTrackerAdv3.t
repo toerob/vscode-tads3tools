@@ -35,10 +35,10 @@ preLoader: InitObject
                         gPlayerChar.moveIntoForTravel(r);
                     }
                 });
-                
-            }            
+
+            }
         }
-    }    
+    }
 ;
 
 function storeLastLocation(location) {
@@ -47,7 +47,7 @@ function storeLastLocation(location) {
             storeDataToFile([location.name]);
         }
     } catch(Exception e) {
-        "File expection occured when trying to store last location to <<TRACKER_FILENAME>>: <<e.exceptionMessage>> ";
+        "File exception occured when trying to store last location to <<TRACKER_FILENAME>>: <<e.exceptionMessage>> ";
     }
 
 }
@@ -75,7 +75,7 @@ function readDataFileToArray() {
     catch(FileNotFoundException e) {
        // Noop - since no file has been created yet, this exception is expected first time around.
     } catch(FileException e) {
-        "File expection occured when trying read last location from <<TRACKER_FILENAME>>: <<e.exceptionMessage>> ";
+        "File exception occured when trying read last location from <<TRACKER_FILENAME>>: <<e.exceptionMessage>> ";
     }
     return result;
 }
