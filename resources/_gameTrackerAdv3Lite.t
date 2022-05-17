@@ -10,7 +10,7 @@
  * Useful when crafting out the game world and in usage with the vscode extension for tads3
  */
 
-trackerObject: Thing 'last location tracker' 
+trackerObject: Thing 'last location tracker'
     "The display reads: <<lastLocation.name>>"
     lastLocation = nil
     afterAction() {
@@ -35,10 +35,10 @@ preLoader: InitObject
                         gPlayerChar.moveInto(r);
                     }
                 });
-                
-            }            
+
+            }
         }
-    }    
+    }
 ;
 
 function storeLastLocation(location) {
@@ -47,7 +47,7 @@ function storeLastLocation(location) {
             storeDataToFile([location.name]);
         }
     } catch(Exception e) {
-        "File expection occured when trying to store last location to <<TRACKER_FILENAME>>: <<e.exceptionMessage>> ";
+        "File exception occured when trying to store last location to <<TRACKER_FILENAME>>: <<e.exceptionMessage>> ";
     }
 
 }
@@ -75,7 +75,7 @@ function readDataFileToArray() {
     catch(FileNotFoundException e) {
        // Noop - since no file has been created yet, this exception is expected first time around.
     } catch(FileException e) {
-        "File expection occured when trying read last location from <<TRACKER_FILENAME>>: <<e.exceptionMessage>> ";
+        "File exception occured when trying read last location from <<TRACKER_FILENAME>>: <<e.exceptionMessage>> ";
     }
     return result;
 }
