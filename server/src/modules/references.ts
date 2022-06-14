@@ -1,11 +1,9 @@
 
-import { SymbolKind, TextDocuments, SymbolInformation, Range, Position, Location } from 'vscode-languageserver';
+import { SymbolKind, TextDocuments, SymbolInformation, Location } from 'vscode-languageserver';
 
 import { ReferenceParams } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { URI } from 'vscode-uri';
-import { wholeLineRegExp } from '../parser/preprocessor';
-import { connection, preprocessedFilesCacheMap } from '../server';
+import { connection } from '../server';
 import { TadsSymbolManager } from './symbol-manager';
 import { getWordAtPosition } from './text-utils';
 
