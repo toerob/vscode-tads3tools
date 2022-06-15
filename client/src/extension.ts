@@ -4,10 +4,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { copyFileSync, createReadStream, createWriteStream, existsSync, unlinkSync } from 'fs';
+import { copyFileSync, createReadStream, createWriteStream, existsSync, fstat, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, CancellationError, DiagnosticSeverity, Diagnostic, FileDeleteEvent, FileChangeEvent, TextDocumentChangeEvent, WorkspaceFoldersChangeEvent } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, CancellationError, DiagnosticSeverity, Diagnostic, FileDeleteEvent, FileChangeEvent, TextDocumentChangeEvent, WorkspaceFoldersChangeEvent, CancellationToken } from 'vscode';
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -23,7 +23,7 @@ import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
 import { validateCompilerPath, validateTads2Settings, validateUserSettings } from './modules/validations';
-import { extensionState } from './modules/state';
+import { extensionState, ScriptInfo } from './modules/state';
 import { validateMakefile } from './modules/validate-makefile';
 import { extractAllQuotes } from './modules/extract-quotes';
 import { createTemplateProject } from './modules/create-template-project';
@@ -35,6 +35,8 @@ import { findAndSelectMakefileUri } from './modules/findAndSelectMakefileUri';
 import { addFileToProject } from './modules/addFileToProject';
 import { SnippetCompletionItemProvider } from './modules/snippet-completion-item-provider';
 import { DependencyNode } from './modules/DependencyNode';
+import { deleteReplayScript, openReplayScript, replayScript, ReplayScriptTreeDataProvider } from './modules/replay-script';
+import { sleep } from './test/helper';
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -63,7 +65,7 @@ const diagnoseAndCompileSubject = new Subject();
 
 const runGameInTerminalSubject = new Subject();
 
-export let makefileKeyMapValues = [];
+
 export let tads3VisualEditorPanel: WebviewPanel | undefined = undefined;
 export let client: LanguageClient;
 
@@ -72,6 +74,7 @@ export function getProcessedFileList(): string[] {
 }
 
 export function getLastChosenTextEditor() { return lastChosenTextEditor; }
+
 
 export function activate(context: ExtensionContext) {
 	const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
@@ -121,26 +124,31 @@ export function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('tads3.extractAllQuotes', () => extractAllQuotes(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.installTracker', () => installTracker(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.clearCache', () => clearCache(context)));
+	context.subscriptions.push(commands.registerCommand('tads3.replayScript', (params) => replayScript(params)));
+	context.subscriptions.push(commands.registerCommand('tads3.restartReplayScript', (params) => replayScript(params, true)));
+	context.subscriptions.push(commands.registerCommand('tads3.openReplayScript', (params) => openReplayScript(params)));
+	context.subscriptions.push(commands.registerCommand('tads3.deleteReplayScript', (params) => deleteReplayScript(params)));
 
-	window.onDidChangeTextEditorSelection(e => {
-		lastChosenTextEditor = e.textEditor;
-	});
+	context.subscriptions.push(window.onDidChangeTextEditorSelection(textEditorSelectionChange => {
+		lastChosenTextEditor = textEditorSelectionChange.textEditor;
+	}));
 
-	window.onDidChangeActiveTextEditor((event: any) => {
+	context.subscriptions.push(window.onDidChangeActiveTextEditor((event: any) => {
 		if (event.document !== undefined) {
 			lastChosenTextDocument = event.document;
 			if (lastChosenTextDocument) {
 				client.info(`Last chosen editor changed to: ${lastChosenTextDocument.uri}`);
 			}
 		}
-	});
+	}));
 
-
-
+	context.subscriptions.push(window.createTreeView('tads3ScriptTree', { treeDataProvider: new ReplayScriptTreeDataProvider(context) }));
 
 	setupVisualEditorResponseHandler();
 
 	globalStoragePath = context.globalStorageUri.fsPath;
+
+	extensionState.scriptsFolder = Uri.file(context.asAbsolutePath('scripts'));
 
 	extensionCacheDirectory = path.join(context.globalStorageUri.fsPath, 'extensions');
 
@@ -153,7 +161,9 @@ export function activate(context: ExtensionContext) {
 		});
 
 		client.onNotification('response/makefile/keyvaluemap', ({ makefileStructure, usingAdv3Lite }) => {
-			makefileKeyMapValues = makefileStructure;
+			// A map can't be used here since there might be several identical keys
+			//extensionState.makefileKeyMapValues = new Map<string,string>(makefileStructure.map(i => [i.key, i.value] ));
+			extensionState.makefileKeyMapValues = makefileStructure;
 			extensionState.setUsingAdv3LiteStatus(usingAdv3Lite);
 		});
 
@@ -323,6 +333,7 @@ export function activate(context: ExtensionContext) {
 				if (!gameFileSystemWatcher) {
 					setupAndMonitorBinaryGamefileChanges('*.gam');
 				}
+
 				await diagnosePreprocessAndParse(textDocument);
 				return;
 			}
@@ -342,6 +353,7 @@ export function activate(context: ExtensionContext) {
 			if (!gameFileSystemWatcher) {
 				setupAndMonitorBinaryGamefileChanges('*.t3');
 			}
+
 			await diagnosePreprocessAndParse(textDocument);
 		});
 
@@ -394,6 +406,8 @@ async function setMakeFile() {
 
 async function onDidSaveTextDocument(textDocument: TextDocument) {
 
+	//updateScriptFolder();
+
 	if (extensionState.isDiagnosing()) {
 		client.warn(`Still diagnosing, parsing is skipped this time around`);
 		return;
@@ -404,9 +418,16 @@ async function onDidSaveTextDocument(textDocument: TextDocument) {
 		return;
 	}
 
+	// If on windows platform and using the interpreter t3run.exe we need to 
+	// first shut down the interpreter in due time, otherwise the output file 
+	// is locked and prevents further compilation. 
+	const configuration:string = workspace.getConfiguration("tads3").get("gameRunnerInterpreter") ?? ''; 
+	if(process.platform === 'win32' && configuration.startsWith('t3run.exe')) {
+		closeAllTerminalsNamed("Tads3 Game runner terminal");
+	}
+
 	diagnoseAndCompileSubject.next(textDocument);
 }
-
 
 async function diagnosePreprocessAndParse(textDocument: TextDocument) {
 	client.info(`Diagnosing`);
@@ -454,41 +475,64 @@ function setupAndMonitorBinaryGamefileChanges(imageFormat) {
 		: dirname(extensionState.getChosenMakefileUri().fsPath);
 
 	gameFileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, imageFormat));
-	runGameInTerminalSubject.pipe(debounceTime(DEBOUNCE_TIME)).subscribe((event: any) => {
-		const configuration = workspace.getConfiguration("tads3");
-		if (!configuration.get("restartGameRunnerOnT3ImageChanges")) {
-			return;
-		}
-
-		const interpreter = configuration.get("gameRunnerInterpreter");
-		if (!interpreter) {
-			return;
-		}
-
-		const fileBaseName = basename(event.fsPath);
-		const gameRunnerTerminals = window.terminals.filter(x => x.name === 'Tads3 Game runner terminal');
-		for (const gameRunnerTerminal of gameRunnerTerminals) {
-			client.info(`Dispose previous game runner terminal`);
-			gameRunnerTerminal.sendText(`quit`);
-			gameRunnerTerminal.sendText(`y`);
-			gameRunnerTerminal.sendText(``);
-			gameRunnerTerminal.dispose();
-		}
-
-		const gameRunnerTerminal = window.createTerminal('Tads3 Game runner terminal');
-		client.info(`${event.fsPath} changed, restarting ${fileBaseName} in game runner terminal`);
-
-		// FIXME: preserveFocus doesn't work, the terminal takes focus anyway (might be because of sendText)
-		gameRunnerTerminal.show(true);
-		gameRunnerTerminal.sendText(`${interpreter} ${fileBaseName}`);
-
-		// FIXME: Interim hack to make preserveFocus work even when there's a slow startup of the interpreter
-		// (This won't always work, especially on a slow machine)
-		const documentWorkingOn = window.activeTextEditor.document;
-		setTimeout(() => window.showTextDocument(documentWorkingOn), 500);
-	});
+	
+	runGameInTerminalSubject
+		.pipe(debounceTime(DEBOUNCE_TIME))
+		.subscribe((event: any) => {
+			const configuration = workspace.getConfiguration("tads3");
+			
+			if (!configuration.get("restartGameRunnerOnT3ImageChanges")) {
+				return;
+			}
+			// TODO: right now autmatic script generation is only compatible with t3run.exe (windows) 
+			// which has the -o flag to capture both input to a file. Frob misses that.
+			// Closest yet with frob is logging output but i doesn't capture input regardless plain mode etc:
+			// "frob -p -c  -i plain -R scripts/tmp.cmd gameMain.t3 1>&1 | tee scripts/auto.cmd"
+			const gameRunnerInterpreter: string = configuration.get("gameRunnerInterpreter") ?? '';
+			const logToFileEnabled = process.platform === 'win32' && gameRunnerInterpreter.match('t3run.exe');
+			const logToFileOption =  logToFileEnabled ? `-o "scripts/Auto ${extensionState.autoScriptFileSerial + 1}.cmd"` : '';
+			startGameWithInterpreter(event.fsPath, logToFileOption);
+		});
 
 	gameFileSystemWatcher.onDidChange(event => runGameInTerminalSubject.next(event));
+}
+
+export function closeAllTerminalsNamed(name: string) {
+	const gameRunnerTerminals = window.terminals.filter(x => x.name === name);
+	for (const gameRunnerTerminal of gameRunnerTerminals) {
+		client.info(`Dispose previous game runner terminal`);
+		gameRunnerTerminal.sendText(`quit`);
+		gameRunnerTerminal.sendText(`y`);
+		gameRunnerTerminal.sendText(``);
+		//gameRunnerTerminal.sendText(`\u001c`);
+		gameRunnerTerminal.dispose();
+	}
+}
+
+export function startGameWithInterpreter(filepath: string, interpreterArgs = ''): void {
+	const configuration = workspace.getConfiguration("tads3");
+	const interpreter = configuration.get("gameRunnerInterpreter");
+
+	if (!interpreter) {
+		window.showErrorMessage(`Interpreter setting missing. Examine setting tads3.gameRunnerInterpreter`);
+		return;
+	}
+
+	const fileBaseName = `"${basename(filepath)}"`;
+	closeAllTerminalsNamed("Tads3 Game runner terminal");
+
+	const gameRunnerTerminal = window.createTerminal('Tads3 Game runner terminal');
+	client.info(`${filepath} changed, restarting ${fileBaseName} in game runner terminal`);
+
+	// FIXME: preserveFocus doesn't work, the terminal takes focus anyway (might be because of sendText)
+	gameRunnerTerminal.show(true);
+	const commandLine = `${interpreter} ${interpreterArgs} ${fileBaseName}`;
+	gameRunnerTerminal.sendText(commandLine);
+
+	// FIXME: Interim hack to make preserveFocus work even when there's a slow startup of the interpreter
+	// (This won't always work, especially on a slow machine)
+	const documentWorkingOn = window.activeTextEditor.document;
+	setTimeout(() => window.showTextDocument(documentWorkingOn), 500);
 }
 
 
@@ -966,3 +1010,4 @@ async function detectAndInitiallyParseTads2Project() {
 		await diagnosePreprocessAndParse(mainText);
 	}
 }
+
