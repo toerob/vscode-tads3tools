@@ -4,10 +4,10 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { copyFileSync, createReadStream, createWriteStream, existsSync, fstat, unlinkSync } from 'fs';
+import { copyFileSync, createReadStream, createWriteStream, existsSync, unlinkSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
-import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, CancellationError, DiagnosticSeverity, Diagnostic, FileDeleteEvent, FileChangeEvent, TextDocumentChangeEvent, WorkspaceFoldersChangeEvent, CancellationToken } from 'vscode';
+import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, CancellationError, DiagnosticSeverity, Diagnostic } from 'vscode';
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -23,7 +23,7 @@ import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
 import { validateCompilerPath, validateTads2Settings, validateUserSettings } from './modules/validations';
-import { extensionState, ScriptInfo } from './modules/state';
+import { extensionState } from './modules/state';
 import { validateMakefile } from './modules/validate-makefile';
 import { extractAllQuotes } from './modules/extract-quotes';
 import { createTemplateProject } from './modules/create-template-project';
@@ -36,7 +36,6 @@ import { addFileToProject } from './modules/addFileToProject';
 import { SnippetCompletionItemProvider } from './modules/snippet-completion-item-provider';
 import { DependencyNode } from './modules/DependencyNode';
 import { deleteReplayScript, openReplayScript, replayScript, ReplayScriptTreeDataProvider } from './modules/replay-script';
-import { sleep } from './test/helper';
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -142,7 +141,9 @@ export function activate(context: ExtensionContext) {
 		}
 	}));
 
-	context.subscriptions.push(window.createTreeView('tads3ScriptTree', { treeDataProvider: new ReplayScriptTreeDataProvider(context) }));
+	if (workspace.getConfiguration("tads3").get('enableScriptFiles')) {
+		context.subscriptions.push(window.createTreeView('tads3ScriptTree', { treeDataProvider: new ReplayScriptTreeDataProvider(context) }));
+	}
 
 	setupVisualEditorResponseHandler();
 
@@ -421,8 +422,8 @@ async function onDidSaveTextDocument(textDocument: TextDocument) {
 	// If on windows platform and using the interpreter t3run.exe we need to 
 	// first shut down the interpreter in due time, otherwise the output file 
 	// is locked and prevents further compilation. 
-	const configuration:string = workspace.getConfiguration("tads3").get("gameRunnerInterpreter") ?? ''; 
-	if(process.platform === 'win32' && configuration.startsWith('t3run.exe')) {
+	const configuration: string = workspace.getConfiguration("tads3").get("gameRunnerInterpreter") ?? '';
+	if (process.platform === 'win32' && configuration.startsWith('t3run.exe')) {
 		closeAllTerminalsNamed("Tads3 Game runner terminal");
 	}
 
@@ -475,12 +476,12 @@ function setupAndMonitorBinaryGamefileChanges(imageFormat) {
 		: dirname(extensionState.getChosenMakefileUri().fsPath);
 
 	gameFileSystemWatcher = workspace.createFileSystemWatcher(new RelativePattern(workspaceFolder, imageFormat));
-	
+
 	runGameInTerminalSubject
 		.pipe(debounceTime(DEBOUNCE_TIME))
 		.subscribe((event: any) => {
 			const configuration = workspace.getConfiguration("tads3");
-			
+
 			if (!configuration.get("restartGameRunnerOnT3ImageChanges")) {
 				return;
 			}
@@ -488,9 +489,10 @@ function setupAndMonitorBinaryGamefileChanges(imageFormat) {
 			// which has the -o flag to capture both input to a file. Frob misses that.
 			// Closest yet with frob is logging output but i doesn't capture input regardless plain mode etc:
 			// "frob -p -c  -i plain -R scripts/tmp.cmd gameMain.t3 1>&1 | tee scripts/auto.cmd"
+			const enableScriptFiles: boolean = configuration.get('enableScriptFiles');
 			const gameRunnerInterpreter: string = configuration.get("gameRunnerInterpreter") ?? '';
 			const logToFileEnabled = process.platform === 'win32' && gameRunnerInterpreter.match('t3run.exe');
-			const logToFileOption =  logToFileEnabled ? `-o "scripts/Auto ${extensionState.autoScriptFileSerial + 1}.cmd"` : '';
+			const logToFileOption = (enableScriptFiles && logToFileEnabled) ? `-o "scripts/Auto ${extensionState.autoScriptFileSerial + 1}.cmd"` : '';
 			startGameWithInterpreter(event.fsPath, logToFileOption);
 		});
 

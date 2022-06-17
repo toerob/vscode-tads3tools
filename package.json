@@ -105,18 +105,20 @@
 		],
 		"commands": [
 			{
-				"command": "tads3.replayScript",
-				"title": "1. Run script in running game",
+				"command": "tads3.restartReplayScript",
+				"title": "1. Restart & run script",
 				"category": "Interpreter",
 				"enablement": "true",
-				"shortTitle": "Run"
+				"shortTitle": "Restart & run",
+				"icon": "resources/icons/script.svg"
 			},
 			{
-				"command": "tads3.restartReplayScript",
-				"title": "2. Restart and run complete script",
+				"command": "tads3.replayScript",
+				"title": "2. Run script",
 				"category": "Interpreter",
 				"enablement": "true",
-				"shortTitle": "Restart & run"
+				"shortTitle": "Run",
+				"icon": "resources/icons/script.svg"
 			},
 			{
 				"command": "tads3.openReplayScript",

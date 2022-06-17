@@ -1,11 +1,12 @@
 import { basename } from 'path';
-import { TreeDataProvider, Event, ProviderResult, TreeItem, workspace, EventEmitter, Uri, window, ExtensionContext, ViewColumn, FileSystemWatcher, FileSystemError } from 'vscode';
+import { TreeDataProvider, Event, ProviderResult, TreeItem, workspace, EventEmitter, Uri, window, ExtensionContext, ViewColumn, FileSystemWatcher } from 'vscode';
 import { extensionState, ScriptInfo } from './state';
 import { closeAllTerminalsNamed, startGameWithInterpreter } from '../extension';
 
 import path = require('path');
 import { unlinkSync } from 'fs';
 import { sleep } from '../test/helper';
+import { ensureDirSync } from 'fs-extra';
 
 const lineScriptRegExp = new RegExp(/[<]line[>](.*)/);
 const autoScriptFileRegExp = new RegExp(/(Auto) ([0-9]+)(.cmd)$/);
@@ -25,7 +26,12 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
 
 	constructor(context: ExtensionContext) {
 		this.context = context;
-		this.scriptFileSystemWatcher = workspace.createFileSystemWatcher('**/*.cmd');
+
+		const wp = workspace.workspaceFolders[0].uri;
+		const scriptsPath = Uri.joinPath(wp, 'scripts');
+		ensureDirSync(scriptsPath.path);
+
+		this.scriptFileSystemWatcher = workspace.createFileSystemWatcher('**/scripts/*.cmd');
 		this.scriptFileSystemWatcher.onDidChange((_) => this.updateFiles());
 		this.scriptFileSystemWatcher.onDidDelete((_) => this.updateFiles());
 		this.scriptFileSystemWatcher.onDidCreate(async (_) => {
@@ -57,7 +63,7 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
 	async updateFiles() {
 		configuredInterpreter = workspace.getConfiguration("tads3").get("gameRunnerInterpreter") ?? undefined;
 		extensionState.scriptFolderContent.clear();
-		const files = await workspace.findFiles('**/*.cmd');
+		const files = await workspace.findFiles('**/scripts/*.cmd');
 		if (files.length === 0) {
 			extensionState.autoScriptFileSerial = 0;
 		}
@@ -77,7 +83,7 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
 
 	async trimToMaxFiles() {
 		const maxScriptFiles: number = workspace.getConfiguration("tads3").get("maximumScriptFiles");
-		const files = await workspace.findFiles('**/*.cmd');
+		const files = await workspace.findFiles('**/scripts/*.cmd');
 		if (files.length > maxScriptFiles) {
 			const customFilesNotToTrim = files.filter(f => !autoScriptRegExp.test(f.fsPath));
 			const autoScriptFilesNotToTrim = files

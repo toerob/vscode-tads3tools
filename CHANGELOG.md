@@ -10,11 +10,13 @@
   - File completions are now available for the tads3 makefile. File uri's are collected based on the project's structure and directories specified via -FL -FI flags in the makefile.
   - Links are added to the makefile so every (valid) tads source file uri can be opened up with a ctrl-click.
   - Added icon for the extension for the marketplace.
-  - Added a view for game scripts in the explorer pane. Now scripts can be run by right clicking it and selecting either: "restart and run script" / "run script"
+  - Added a view for game scripts in the explorer pane. Now scripts can be run by right clicking it and selecting either: "Restart & run script" / "Run script"
+    (Automatic script generation is only possible in the windows version right now. )
 
 ### Fixed
   - Snippets renamed to be easier accessable for Room, Things, Actor, ActorState  
   - Fixes/tweaks here and there. 
+  - Spell fix (Thanks to StridingDragon)
 
 ## 0.5.1-alpha
 

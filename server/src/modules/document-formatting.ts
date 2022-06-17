@@ -1,5 +1,5 @@
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { DocumentFormattingParams, TextDocuments, Range, combineWindowFeatures } from 'vscode-languageserver';
+import { DocumentFormattingParams, TextDocuments, Range } from 'vscode-languageserver';
 import { TextEdit } from 'vscode-languageserver-types';
 import { wholeLineRegExp } from '../parser/preprocessor';
 import { preprocessedFilesCacheMap } from '../server';
@@ -56,18 +56,20 @@ export function formatDocument(preprocessedText: string, orgInput: string, lineC
 		// Make sure indentation is never less than zero:
 		indentation = indentation >= 0 ? indentation : 0;
 
-
 		const trimmedOriginalRow = originalRow.trim();
+
 		const withinString = listener.withinString.get(row + 1);
 		if (withinString) {
 			// FIXME: take care of rows with strings better than this, 
 			// but for now just ignore formatting spaces between them
 			const formattedRow = "\t".repeat(indentation) + trimmedOriginalRow;
 			formattedDocumentArray.push(formattedRow);
+			//connection.console.log(`Current indentation: ${indentation}: ${formattedRow}`);
 		} else {
 			const prunedWhiteSpaceOriginalRow = trimmedOriginalRow.replace(/\s{2,}/g, ' ');
 			const formattedRow = "\t".repeat(indentation) + prunedWhiteSpaceOriginalRow;
 			formattedDocumentArray.push(formattedRow);
+			//connection.console.log(`Current indentation: ${indentation}: ${formattedRow}`);
 		}
 
 	}
