@@ -3,12 +3,13 @@
 	"description": "Language server extension for Tads3",
 	"author": "Tomas Öberg",
 	"license": "MIT",
-	"version": "0.5.1",
+	"version": "0.6.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/toerob/vscode-tads3tools.git"
 	},
 	"publisher": "toerob",
+	"icon": "resources/icons/logo.png",
 	"categories": [
 		"Programming Languages",
 		"Snippets"
@@ -33,6 +34,35 @@
 		"virtualWorkspaces": false
 	},
 	"contributes": {
+		"views": {
+			"explorer": [
+				{
+					"id": "tads3ScriptTree",
+					"name": "Tads3 Game Scripts",
+					"type": "tree"
+				}
+			]
+		},
+		"menus": {
+			"view/item/context": [
+				{
+					"command": "tads3.replayScript",
+					"when": "viewItem == string"
+				},
+				{
+					"command": "tads3.restartReplayScript",
+					"when": "viewItem == string"
+				},
+				{
+					"command": "tads3.openReplayScript",
+					"when": "viewItem == string"
+				},
+				{
+					"command": "tads3.deleteReplayScript",
+					"when": "viewItem == string"
+				}
+			]
+		},
 		"snippets": [
 			{
 				"language": "tads3",
@@ -74,6 +104,34 @@
 			}
 		],
 		"commands": [
+			{
+				"command": "tads3.restartReplayScript",
+				"title": "1. Restart & run script",
+				"category": "Interpreter",
+				"enablement": "true",
+				"shortTitle": "Restart & run"
+			},
+			{
+				"command": "tads3.replayScript",
+				"title": "2. Run script",
+				"category": "Interpreter",
+				"enablement": "true",
+				"shortTitle": "Run"
+			},
+			{
+				"command": "tads3.openReplayScript",
+				"title": "3. Open script in editor",
+				"category": "Interpreter",
+				"enablement": "true",
+				"shortTitle": "Open script"
+			},
+			{
+				"command": "tads3.deleteReplayScript",
+				"title": "4. Delete script",
+				"category": "Interpreter",
+				"enablement": "true",
+				"shortTitle": "Delete script"
+			},
 			{
 				"command": "tads2.parseTads2Project",
 				"title": "Tads2 command: Parse a tads2 project",
@@ -162,6 +220,19 @@
 			"type": "object",
 			"title": "Tads3",
 			"properties": {
+				"tads3.enableScriptFiles": {
+					"scope": "application",
+					"type": "boolean",
+					"default": true,
+					"description": "Enable script files to be shown as separate pane and interacted with. Setting requires a restart of vscode in order to take effect. "
+				},
+				"tads3.maximumScriptFiles": {
+					"scope": "resource",
+					"type": "number",
+					"default": 25,
+					"minimum": 1,
+					"description": "Set the maximum number of script files allowed in the scripts folder. Default is 25."
+				},
 				"tads3.restartGameRunnerOnT3ImageChanges": {
 					"scope": "window",
 					"type": "boolean",
@@ -294,20 +365,22 @@
 		"test-compile": "tsc -p ./"
 	},
 	"devDependencies": {
-		"@types/mocha": "^9.0.0",
-		"@types/node": "^16.4.7",
-		"@typescript-eslint/eslint-plugin": "^4.28.5",
-		"@typescript-eslint/parser": "^4.28.5",
+		"npm": "^8.12.2",
+		"@types/mocha": "^9.1.1",
+		"@types/node": "^18.0.0",
+		"@typescript-eslint/eslint-plugin": "^5.28.0",
+		"@typescript-eslint/parser": "^5.28.0",
 		"antlr4ts-cli": "^0.5.0-alpha.4",
-		"esbuild": "^0.14.10",
-		"eslint": "^7.31.0",
-		"jest": "^27.0.6",
-		"mocha": "^9.0.3",
-		"typescript": "^4.3.5"
+		"esbuild": "^0.14.45",
+		"eslint": "^8.17.0",
+		"jest": "^28.1.1",
+		"mocha": "^10.0.0",
+		"typescript": "^4.7.3"
 	},
 	"dependencies": {
-		"@types/vscode": "^1.58.1",
-		"ts-jest": "^27.1.2",
-		"vsce": "^2.5.1"
+		"npm": "^8.12.2",
+		"@types/vscode": "^1.68.0",
+		"ts-jest": "^28.0.5",
+		"vsce": "^2.9.1"
 	}
 }

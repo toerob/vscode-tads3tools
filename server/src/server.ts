@@ -18,7 +18,7 @@ import {
 
 import { symbolManager, TadsSymbolManager } from './modules/symbol-manager';
 import { onDocumentSymbol } from './modules/symbols';
-//import { onReferences } from './modules/references';
+import { onReferences } from './modules/references';
 import { onDefinition } from './modules/definitions';
 import { preprocessAndParseTads3Files, preprocessAndParseTads2Files } from './parse-workers-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -34,6 +34,11 @@ import { onWorkspaceSymbol } from './modules/workspace-symbols';
 import { markFileToBeCheckedForMacroDefinitions } from './parser/preprocessor';
 import { URI } from 'vscode-uri';
 import { serverState } from './state';
+import { onDocumentFormatting } from './modules/document-formatting';
+import { onDocumentRangeFormatting } from './modules/document-range-formatting';
+import { onImplementation } from './modules/implementation';
+
+import {onSignatureHelp} from './modules/onSignatureHelp';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require('wink-pos-tagger');
@@ -86,7 +91,7 @@ connection.onInitialize((params: InitializeParams) => {
 		capabilities: {
 			documentSymbolProvider: true,
 			workspaceSymbolProvider: true,
-			referencesProvider: false, // TODO: need to fix the row synchronization issue
+			referencesProvider: true, // TODO: need to fix the row synchronization issue
 			definitionProvider: true,
 			documentLinkProvider: {
 				resolveProvider: true,
@@ -103,9 +108,17 @@ connection.onInitialize((params: InitializeParams) => {
 			hoverProvider: true,
 			completionProvider: {
 				resolveProvider: false
+			},
+			implementationProvider: true,
+			documentFormattingProvider: true,
+			documentRangeFormattingProvider: true,
+			callHierarchyProvider: true,
+			signatureHelpProvider: {
+				triggerCharacters: ['(', ','],
 			}
 		}
 	};
+	
 	if (hasWorkspaceFolderCapability) {
 		result.capabilities.workspace = {
 			workspaceFolders: {
@@ -254,15 +267,16 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
 connection.onWorkspaceSymbol(async (handler) => onWorkspaceSymbol(handler, documents, symbolManager));
 connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, documents, symbolManager));
-//connection.onReferences(async (handler) => onReferences(handler,documents, symbolManager));
+connection.onReferences(async (handler) => onReferences(handler,documents, symbolManager, preprocessedFilesCacheMap));
 connection.onDefinition(async (handler) => onDefinition(handler,documents, symbolManager));
 connection.onCompletion(async (handler) => onCompletion(handler, documents, symbolManager));
 connection.onDocumentLinks(async (handler) => onDocumentLinks(handler, documents, symbolManager));
+connection.onCodeLens(async (handler) => onCodeLens(handler, documents, symbolManager));
 connection.onHover(async (handler) => onHover(handler, documents, symbolManager));
-
-connection.onCodeLens(async (handler) => {
-	return onCodeLens(handler, documents, symbolManager);
-});
+connection.onDocumentFormatting(async (handler) => onDocumentFormatting(handler, documents));
+connection.onDocumentRangeFormatting(async (handler) => onDocumentRangeFormatting(handler, documents));
+connection.onImplementation(async (handler) => onImplementation(handler, documents, symbolManager));
+connection.onSignatureHelp(async (handler) => onSignatureHelp(handler, documents, symbolManager));
 
 connection.onRequest('request/extractQuotes', async (params) => {
 	if(params.fsPath === undefined) {
@@ -370,3 +384,4 @@ function parseDirection(directionName: any): string|undefined {
 	return undefined;
 	//throw new Error(`Not a valid direction`);
 }
+

@@ -3,13 +3,13 @@ import * as path from 'path';
 import { dirname } from 'path';
 import { workspace, ExtensionContext, window, Uri, Range, ViewColumn } from 'vscode';
 import { writeFileSync } from 'fs';
-import { makefileKeyMapValues } from '../extension';
 import { extensionState } from './state';
 
 export async function installTracker(context: ExtensionContext) {
 	const filePath = extensionState.getUsingAdv3LiteStatus() ? '_gameTrackerAdv3Lite.t' : '_gameTrackerAdv3.t';
 	let trackerFileContents = readFileSync(Uri.joinPath(context.extensionUri, 'resources', filePath).fsPath).toString();
-	const keyvalue = makefileKeyMapValues?.find(keyvalue => keyvalue?.key === '-D' && keyvalue.value?.startsWith(`LANGUAGE`));
+
+	const keyvalue = extensionState.makefileKeyMapValues?.find(keyvalue => keyvalue?.key === '-D' && keyvalue.value?.startsWith(`LANGUAGE`));
 	if (keyvalue) {
 		const languageValue = keyvalue.value?.split('=');
 		if (languageValue.length === 2) {

@@ -1,29 +1,29 @@
-import { CodeLens, TextDocuments , Range, CodeLensParams, Command} from 'vscode-languageserver';
+import { CodeLens, TextDocuments, Range, CodeLensParams, Command } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { connection, preprocessedFilesCacheMap } from '../server';
 import { TadsSymbolManager } from './symbol-manager';
 
-export async function onCodeLens({textDocument}: CodeLensParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
-	const codeLenses: CodeLens[] = [];
+export async function onCodeLens({ textDocument }: CodeLensParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
+    const codeLenses: CodeLens[] = [];
     const enablePreprocessorCodeLens = await connection.workspace.getConfiguration("tads3.enablePreprocessorCodeLens");
-    
-    if(!enablePreprocessorCodeLens) {
-        return codeLenses;
-    }
 
     const uri = URI.parse(textDocument.uri);
-	const fsPath = uri.fsPath;
-	const currentDoc = documents.get(textDocument.uri);
-	
-    
-    const preprocessedDocument = preprocessedFilesCacheMap.get(fsPath);
-    
-	const preprocessedDocumentArray = preprocessedDocument?.trimEnd().split(/\r?\n/);
-	if(!currentDoc || !preprocessedDocumentArray) {
-		return [];
+    const fsPath = uri.fsPath;
+    const currentDoc = documents.get(textDocument.uri);
+
+    if (!enablePreprocessorCodeLens) {
+        return await codeLenses;
     }
-	const currentDocArray = currentDoc?.getText().trimEnd().split(/\r?\n/);
+
+    const preprocessedDocument = preprocessedFilesCacheMap.get(fsPath);
+    const preprocessedDocumentArray = preprocessedDocument?.trimEnd().split(/\r?\n/);
+
+    if (!currentDoc || !preprocessedDocumentArray) {
+        return [];
+    }
+
+    const currentDocArray = currentDoc?.getText().trimEnd().split(/\r?\n/);
 
     // If the files has diverged more than the last line in length
     // (happens during preprocessing)
@@ -36,32 +36,32 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
         return [];
     }
 
-	for(let row=0; row<currentDoc.lineCount; row++) {
-		const preprocessedLine = preprocessedDocumentArray[row];
-		if(preprocessedLine === undefined) {
-			continue;
-		}
-		if(preprocessedLine.match(/^\s*$/)) {
-			continue;
-		}
+    for (let row = 0; row < currentDoc.lineCount; row++) {
+        const preprocessedLine = preprocessedDocumentArray[row];
+        if (preprocessedLine === undefined) {
+            continue;
+        }
+        if (preprocessedLine.match(/^\s*$/)) {
+            continue;
+        }
 
-		//const t = currentDoc.lineAt(row).text;
-		const t = currentDocArray[row];
-		if (t.match('#\\s*include')) {
-			continue;
-		}
-		if(t === preprocessedLine) {
-			continue;
-		}
-		// Skip lines that is broken up into several rows so we won't drown in 
-		// CodeLens text.
-		if(preprocessedLine.includes(t)) {
-			continue;
-		}
+        //const t = currentDoc.lineAt(row).text;
+        const t = currentDocArray[row];
+        if (t.match('#\\s*include')) {
+            continue;
+        }
+        if (t === preprocessedLine) {
+            continue;
+        }
+        // Skip lines that is broken up into several rows so we won't drown in 
+        // CodeLens text.
+        if (preprocessedLine.includes(t)) {
+            continue;
+        }
 
-		if(preprocessedLine !== '' && preprocessedLine !== ';' ) {
-			const range = Range.create(row,0,row,t.length);
-			if (range) {
+        if (preprocessedLine !== '' && preprocessedLine !== ';') {
+            const range = Range.create(row, 0, row, t.length);
+            if (range) {
                 codeLenses.push({
                     range: range,
                     command:
@@ -70,14 +70,44 @@ export async function onCodeLens({textDocument}: CodeLensParams, documents: Text
                         Command.create(
                             `preprocessed to: ${preprocessedLine}`,
                             'tads3.showPreprocessedTextAction',
-                            [range, currentDoc.uri,preprocessedDocument]
+                            [range, currentDoc.uri, preprocessedDocument]
                         )
                 });
-			}
-		}
-	}
-	return codeLenses;
+            }
+        }
+    }
+    return codeLenses;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*import { window } from 'rxjs/operators';
