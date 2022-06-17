@@ -15,7 +15,7 @@ export class TadsSymbolManager {
 	additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
 	inheritanceMap: Map<string, string> = new Map();
 
-	onWindowsPlatform: boolean = false;
+	onWindowsPlatform = false;
 
 	constructor() {
 
@@ -119,7 +119,7 @@ export class TadsSymbolManager {
 
 		for (const filePath of filepathArray ?? []) {
 			const fp = this.onWindowsPlatform ? URI.file(filePath)?.path : filePath; // On Windows we need to convert this path
-			const fileLocalSymbols = flattenTreeToSymbolInformationArray(fp, this.symbols.get(filePath) ?? [])
+			const fileLocalSymbols = flattenTreeToSymbolInformationArray(fp, this.symbols.get(filePath) ?? []);
 			if (fileLocalSymbols) {
 				for (const fileLocalSymbol of fileLocalSymbols) {
 					symbolSearchResult.push(fileLocalSymbol);
@@ -131,7 +131,6 @@ export class TadsSymbolManager {
 
 
 	getAllWorkspaceKeywordLocations(keyword: string, onlyProjectFiles = true): Location[] {
-		const symbolSearchResult: SymbolInformation[] = [];
 		let filepathArray;
 
 		if (onlyProjectFiles) {
@@ -145,9 +144,9 @@ export class TadsSymbolManager {
 
 		const locations: Location[] = [];
 
-		for (const filePath of symbolManager.keywords.keys()) {
+		for (const filePath of this.keywords.keys()) {
 			const fp = this.onWindowsPlatform ? URI.file(filePath)?.path : filePath; // On Windows we need to convert this path
-			const keywordCollectionPerFile = symbolManager.keywords.get(fp);
+			const keywordCollectionPerFile = this.keywords.get(filePath);
 			const ranges = keywordCollectionPerFile?.get(keyword) ?? [];
 			for (const range of ranges) {
 				locations.push(Location.create(fp, translateRangeByLineOffset(range, -1)));
@@ -291,7 +290,7 @@ export function swapParent(newParent: ExtendedDocumentSymbol, oldParent: Extende
 		symbolAsExtDocObj.parent = newParent;
 	}
 }*/
-function translateRangeByLineOffset(range: Range, offsetLine: number = 0) {
+function translateRangeByLineOffset(range: Range, offsetLine = 0) {
 	return Range.create(
 		Position.create(range.start.line + offsetLine, range.start.character),
 		Position.create(range.end.line + offsetLine, range.end.character)

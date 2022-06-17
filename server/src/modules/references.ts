@@ -16,10 +16,11 @@ import { getWordAtPosition } from './text-utils';
  * @returns true/false
  */
 
+/*
 function allowedSymbolAsKeywordPredicate(symbol: SymbolInformation): boolean {
 	return symbol.kind === SymbolKind.Property.valueOf();
 	//return true;
-}
+}*/
 
 /**
  * Given the word at the position (captured within the ReferenceParams object)

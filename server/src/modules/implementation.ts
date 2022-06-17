@@ -2,6 +2,7 @@ import { TadsSymbolManager } from './symbol-manager';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { ImplementationParams, TextDocuments, Location } from 'vscode-languageserver';
 import { getWordAtPosition } from './text-utils';
+import { URI } from 'vscode-uri';
 
 export async function onImplementation(handler: ImplementationParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager): Promise<Location[]> {
 	const locations: Location[] = [];
@@ -12,7 +13,8 @@ export async function onImplementation(handler: ImplementationParams, documents:
 		if (symbolName) {
 			for(const loc of symbolManager.findSymbolsByDetail(symbolName)) {				
 				for(const symb of loc.symbols) {
-					locations.push(Location.create(loc.filePath, symb.range));
+					const path = process.platform === 'win32'? URI.file(loc.filePath).path : loc.filePath;
+					locations.push(Location.create(path, symb.range));
 				}
 			}
 		}
