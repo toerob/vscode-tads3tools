@@ -13,29 +13,29 @@
 	},
 	"dependencies": {
 		"@types/glob": "^7.2.0",
-		"@types/lru-cache": "^7.6.1",
+		"@types/lru-cache": "^7.10.10",
 		"antlr4ts": "^0.5.0-alpha.4",
-		"fs-extra": "^10.0.1",
-		"fuzzysort": "^1.2.1",
-		"glob": "^8.0.1",
-		"lru-cache": "^7.8.1",
-		"mobx": "^6.5.0",
+		"fs-extra": "^10.1.0",
+		"fuzzysort": "^2.0.1",
+		"glob": "^8.0.3",
+		"lru-cache": "^7.10.1",
+		"mobx": "^6.6.0",
 		"node": "^17.7.2",
 		"threads": "^1.7.0",
-		"vscode-languageserver": "^7.0.0",
-		"vscode-languageserver-textdocument": "^1.0.4",
+		"vscode-languageserver": "^8.0.1",
+		"vscode-languageserver-textdocument": "^1.0.5",
 		"vscode-uri": "^3.0.3",
 		"wink-pos-tagger": "^2.2.2"
 	},
 	"devDependencies": {
 		"@types/fs-extra": "^9.0.13",
 		"@types/jasmine": "^4.0.2",
-		"@types/jest": "^27.4.1",
+		"@types/jest": "^28.1.2",
 		"install": "^0.13.0",
 		"jasmine-spec-reporter": "^7.0.0",
 		"jasmine-ts": "^0.4.0",
-		"npm": "^8.6.0",
-		"ts-jest": "^27.1.4",
-		"ts-node": "^10.7.0"
+		"npm": "^8.12.2",
+		"ts-jest": "^28.0.5",
+		"ts-node": "^10.8.1"
 	}
 }
