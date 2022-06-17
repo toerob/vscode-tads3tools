@@ -23,7 +23,7 @@ export async function onSignatureHelp(handler: SignatureHelpParams, documents: T
 	const signatures: SignatureInformation[] = [];
 
 	if (currentDocument === undefined) {
-		return { signatures, activeSignature, activeParameter }
+		return { signatures, activeSignature, activeParameter };
 	}
 
 	const currentLineAtPos = currentDocument.getText().split(wholeLineRegExp)[position.line];	// Get current line from editor
@@ -81,7 +81,7 @@ export async function onSignatureHelp(handler: SignatureHelpParams, documents: T
 		signatures,
 		activeSignature,
 		activeParameter
-	}
+	};
 }
 
 
@@ -100,7 +100,7 @@ function getParametersFromSignature(params: string[], signatureLine: string) {
 			const parameterName = isTyped[2];
 			console.log(`Type: ${type}, parameter name: ${parameterName}`);
 		}*/
-		p = p.replace('[','\\[').replace('&', '\\&').replace('?','\\?').replace(':','\\:');;
+		p = p.replace('[','\\[').replace('&', '\\&').replace('?','\\?').replace(':','\\:');
 		const regexpExpressionForParam = `\\s*${p}\\s*`;
 		const result = new RegExp(regexpExpressionForParam).exec(signatureLine);
 		if (result) {

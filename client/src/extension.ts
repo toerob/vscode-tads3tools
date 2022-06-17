@@ -153,211 +153,212 @@ export async function activate(context: ExtensionContext) {
 
 	extensionCacheDirectory = path.join(context.globalStorageUri.fsPath, 'extensions');
 
-	await client.start();
-	
-	client.onNotification('response/extractQuotes', (payload) => {
-		workspace
-			.openTextDocument({ language: 'tads3', content: payload.resultArray.join('\n') })
-			.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
-	});
+	client.onReady().then(async () => {
+		
+		client.onNotification('response/extractQuotes', (payload) => {
+			workspace
+				.openTextDocument({ language: 'tads3', content: payload.resultArray.join('\n') })
+				.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
+		});
 
-	client.onNotification('response/makefile/keyvaluemap', ({ makefileStructure, usingAdv3Lite }) => {
-		// A map can't be used here since there might be several identical keys
-		//extensionState.makefileKeyMapValues = new Map<string,string>(makefileStructure.map(i => [i.key, i.value] ));
-		extensionState.makefileKeyMapValues = makefileStructure;
-		extensionState.setUsingAdv3LiteStatus(usingAdv3Lite);
-	});
+		client.onNotification('response/makefile/keyvaluemap', ({ makefileStructure, usingAdv3Lite }) => {
+			// A map can't be used here since there might be several identical keys
+			//extensionState.makefileKeyMapValues = new Map<string,string>(makefileStructure.map(i => [i.key, i.value] ));
+			extensionState.makefileKeyMapValues = makefileStructure;
+			extensionState.setUsingAdv3LiteStatus(usingAdv3Lite);
+		});
 
-	client.onNotification('response/connectrooms', async ({ fromRoom, toRoom, validDirection1, validDirection2 }) => {
-		client.info(`Connect from  ${fromRoom.symbol.name}  (${fromRoom.filePath}) to ${toRoom.symbol.name} (${toRoom.filePath}) via ${validDirection1 / validDirection2} to (${toRoom.filePath})?`);
-		await connectRoomsWithProperties(fromRoom, toRoom, validDirection1, validDirection2);
-	});
+		client.onNotification('response/connectrooms', async ({ fromRoom, toRoom, validDirection1, validDirection2 }) => {
+			client.info(`Connect from  ${fromRoom.symbol.name}  (${fromRoom.filePath}) to ${toRoom.symbol.name} (${toRoom.filePath}) via ${validDirection1 / validDirection2} to (${toRoom.filePath})?`);
+			await connectRoomsWithProperties(fromRoom, toRoom, validDirection1, validDirection2);
+		});
 
 
-	client.onNotification('response/analyzeText/findNouns', async ({ tree, range, level }) => {
-		client.info(tree);
-		const options = tree;
-		if (options.length === 0) {
-			window.showInformationMessage(`No suggestions for that line`);
-			return;
+		client.onNotification('response/analyzeText/findNouns', async ({ tree, range, level }) => {
+			client.info(tree);
+			const options = tree;
+			if (options.length === 0) {
+				window.showInformationMessage(`No suggestions for that line`);
+				return;
+			}
+			const result = await window.showQuickPick(options, { canPickMany: true });
+
+			// Build up a SnippetString with all the props identified in the text:
+
+			let stringBuffer = '';
+			for (const noun of result) {
+				await window.activeTextEditor.edit(editor => {
+					const levelArray = [];
+					for (let i = 0; i < level; i++) {
+						levelArray.push('+');
+					}
+
+					const text = extensionState.getUsingAdv3LiteStatus() ?
+						`${levelArray.join('')} ${noun} : \${1:Decoration} '${noun}';\n` 				// Adv3Lite style
+						: `${levelArray.join('')} ${noun} : \${1:Decoration} '${noun}' '${noun}';\n`; 	// Adv3 style
+
+					stringBuffer += text;
+				});
+			}
+			stringBuffer += '$0';
+
+			// Inserts the line after the closing range of the current object
+			const pos = new Position(range.end.line + 1, 0);
+			window.activeTextEditor.insertSnippet(new SnippetString(stringBuffer), pos);
+		});
+
+		client.onNotification('response/mapsymbols', symbols => {
+			if (tads3VisualEditorPanel && symbols && symbols.length > 0) {
+				client.info(`Updating webview with new symbols`);
+				try {
+					overridePositionWithPersistedCoordinates(symbols);
+					tads3VisualEditorPanel.webview.postMessage({ command: 'tads3.addNode', objects: symbols });
+				} catch (err) {
+					console.error(err);
+				}
+			}
+		});
+
+		// This is used by the map handler:
+		// If the client has asked the server to locate a symbol,
+		// The server responds by sending the client the symbol and filepath back
+		// The postAction is something the client originally defines
+		// and is supposed to be brought into action here.
+		// It is done this way so request/findsymbol can be reused for different purposes
+		client.onNotification('response/foundsymbol', ({ symbol, filePath, postAction }): void => {
+			if (symbol && filePath) {
+				selectedObject = symbol as DocumentSymbol; // keep track of the last selected object
+
+				workspace.openTextDocument(filePath)
+					.then(textDocument => {
+						window.showTextDocument(textDocument, {
+							preserveFocus: true,
+							selection: selectedObject.range,
+							viewColumn: ViewColumn.One,
+						});
+					});
+				// TODO: there's an issue here, due to all items being triggered with onRemoved whenever the map gets updated,
+				// thus all rooms would be deleted in their textdocument's equivalence whenever that happens. 
+				/*.then(()=> {
+					if(postAction === 'remove') {
+						client.info(`Removing via map is not yet implemented. `);
+						//editor.edit(editorBuilder => editorBuilder.delete(selectedObject.range));
+					}	
+				});*/
+
+
+
+			}
+		});
+
+
+		client.onNotification('response/preprocessed/file', ({ path, text }) => {
+			preprocessedFilesMap.set(path, text);
+			client.info(`Server response for ${path}: ` + text);
+			workspace
+				.openTextDocument({ language: 'tads3', content: text })
+				.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
+		});
+
+		client.onNotification('response/preprocessed/list', (filesNames: string[]) => {
+			extensionState.setPreprocessing(false);
+			preprocessedList = filesNames;
+		});
+
+		client.onNotification('symbolparsing/success', ([filePath, tracker, totalFiles, poolSize]) => {
+			if (extensionState.allFilesBeenProcessed && !extensionState.isLongProcessingInAction()) {
+				if (tads3VisualEditorPanel) {
+					client.info(`Refreshing the map view`);
+					client.sendNotification('request/mapsymbols');
+				}
+			}
+			const filename = basename(Uri.parse(filePath).path);
+			if (extensionState.currentPreprocessAndParseProgress) {
+				extensionState.currentPreprocessAndParseProgress.report({ message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}` });
+			}
+			//progress.report({ message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}` });
+		});
+
+
+
+		client.onNotification("symbolparsing/allfiles/success", ({ elapsedTime }) => {
+			if (extensionState.isLongProcessingInAction()) {
+				window.showInformationMessage(`All project and library files are now parsed (elapsed time: ${elapsedTime} ms)`);
+			} else {
+				client.info(`File parsed (elapsed time: ${elapsedTime} ms)`);
+			}
+			client.sendNotification('request/mapsymbols');
+			extensionState.setLongProcessing(false);
+			extensionState.allFilesBeenProcessed = true;
+		});
+
+		client.onNotification("symbolparsing/allfiles/failed", ({ error }) => {
+			window.showErrorMessage(`Parsing all files via makefile ${basename(extensionState.getChosenMakefileUri().fsPath)} failed: ${error} `, { modal: true });
+			extensionState.setLongProcessing(false);
+			extensionState.setPreprocessing(false);
+			extensionState.allFilesBeenProcessed = false;
+		});
+
+		workspace.onDidChangeConfiguration(async config => {
+			if (config.affectsConfiguration('tads3.compiler.path')) {
+				validateCompilerPath(workspace.getConfiguration("tads3").get('compiler.path'));
+			}
+			if (config.affectsConfiguration('tads.preprocessor.path')) {
+				validateCompilerPath(workspace.getConfiguration("tads2").get('preprocessor.path'));
+			}
+			if (config.affectsConfiguration('tads2.compiler.path')) {
+				validateCompilerPath(workspace.getConfiguration("tads2").get('compiler.path'));
+			}
+		});
+
+		if (await validateUserSettings()) {
+			initiallyParseTadsProject();
 		}
-		const result = await window.showQuickPick(options, { canPickMany: true });
 
-		// Build up a SnippetString with all the props identified in the text:
+		/**
+		 * This will be trigger by onDidSaveTextDocument:
+		 */
+		diagnoseAndCompileSubject.pipe(debounceTime(DEBOUNCE_TIME)).subscribe(async (textDocument: TextDocument) => {
+			client.info(`Debounce time of ${DEBOUNCE_TIME} has passed.`);
+			currentTextDocument = textDocument;
 
-		let stringBuffer = '';
-		for (const noun of result) {
-			await window.activeTextEditor.edit(editor => {
-				const levelArray = [];
-				for (let i = 0; i < level; i++) {
-					levelArray.push('+');
+			if (extensionState.getUsingTads2()) {
+				const mainFile = extensionState.getTads2MainFile();
+				if (mainFile && !existsSync(mainFile.fsPath)) {
+					extensionState.setTads2MainFile(undefined);
+				}
+				if (mainFile === undefined) {
+					console.error(`No main file could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
+					return;
+				}
+				if (!gameFileSystemWatcher) {
+					setupAndMonitorBinaryGamefileChanges('*.gam');
 				}
 
-				const text = extensionState.getUsingAdv3LiteStatus() ?
-					`${levelArray.join('')} ${noun} : \${1:Decoration} '${noun}';\n` 				// Adv3Lite style
-					: `${levelArray.join('')} ${noun} : \${1:Decoration} '${noun}' '${noun}';\n`; 	// Adv3 style
-
-				stringBuffer += text;
-			});
-		}
-		stringBuffer += '$0';
-
-		// Inserts the line after the closing range of the current object
-		const pos = new Position(range.end.line + 1, 0);
-		window.activeTextEditor.insertSnippet(new SnippetString(stringBuffer), pos);
-	});
-
-	client.onNotification('response/mapsymbols', symbols => {
-		if (tads3VisualEditorPanel && symbols && symbols.length > 0) {
-			client.info(`Updating webview with new symbols`);
-			try {
-				overridePositionWithPersistedCoordinates(symbols);
-				tads3VisualEditorPanel.webview.postMessage({ command: 'tads3.addNode', objects: symbols });
-			} catch (err) {
-				console.error(err);
+				await diagnosePreprocessAndParse(textDocument);
+				return;
 			}
-		}
-	});
 
-	// This is used by the map handler:
-	// If the client has asked the server to locate a symbol,
-	// The server responds by sending the client the symbol and filepath back
-	// The postAction is something the client originally defines
-	// and is supposed to be brought into action here.
-	// It is done this way so request/findsymbol can be reused for different purposes
-	client.onNotification('response/foundsymbol', ({ symbol, filePath, postAction }): void => {
-		if (symbol && filePath) {
-			selectedObject = symbol as DocumentSymbol; // keep track of the last selected object
-
-			workspace.openTextDocument(filePath)
-				.then(textDocument => {
-					window.showTextDocument(textDocument, {
-						preserveFocus: true,
-						selection: selectedObject.range,
-						viewColumn: ViewColumn.One,
-					});
-				});
-			// TODO: there's an issue here, due to all items being triggered with onRemoved whenever the map gets updated,
-			// thus all rooms would be deleted in their textdocument's equivalence whenever that happens. 
-			/*.then(()=> {
-				if(postAction === 'remove') {
-					client.info(`Removing via map is not yet implemented. `);
-					//editor.edit(editorBuilder => editorBuilder.delete(selectedObject.range));
-				}	
-			});*/
-
-
-
-		}
-	});
-
-
-	client.onNotification('response/preprocessed/file', ({ path, text }) => {
-		preprocessedFilesMap.set(path, text);
-		client.info(`Server response for ${path}: ` + text);
-		workspace
-			.openTextDocument({ language: 'tads3', content: text })
-			.then(doc => window.showTextDocument(doc, ViewColumn.Beside));
-	});
-
-	client.onNotification('response/preprocessed/list', (filesNames: string[]) => {
-		extensionState.setPreprocessing(false);
-		preprocessedList = filesNames;
-	});
-
-	client.onNotification('symbolparsing/success', ([filePath, tracker, totalFiles, poolSize]) => {
-		if (extensionState.allFilesBeenProcessed && !extensionState.isLongProcessingInAction()) {
-			if (tads3VisualEditorPanel) {
-				client.info(`Refreshing the map view`);
-				client.sendNotification('request/mapsymbols');
+			if (extensionState.getChosenMakefileUri() && !existsSync(extensionState.getChosenMakefileUri().fsPath)) {
+				extensionState.setChosenMakefileUri(undefined);
 			}
-		}
-		const filename = basename(Uri.parse(filePath).path);
-		if (extensionState.currentPreprocessAndParseProgress) {
-			extensionState.currentPreprocessAndParseProgress.report({ message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}` });
-		}
-		//progress.report({ message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}` });
-	});
 
-
-
-	client.onNotification("symbolparsing/allfiles/success", ({ elapsedTime }) => {
-		if (extensionState.isLongProcessingInAction()) {
-			window.showInformationMessage(`All project and library files are now parsed (elapsed time: ${elapsedTime} ms)`);
-		} else {
-			client.info(`File parsed (elapsed time: ${elapsedTime} ms)`);
-		}
-		client.sendNotification('request/mapsymbols');
-		extensionState.setLongProcessing(false);
-		extensionState.allFilesBeenProcessed = true;
-	});
-
-	client.onNotification("symbolparsing/allfiles/failed", ({ error }) => {
-		window.showErrorMessage(`Parsing all files via makefile ${basename(extensionState.getChosenMakefileUri().fsPath)} failed: ${error} `, { modal: true });
-		extensionState.setLongProcessing(false);
-		extensionState.setPreprocessing(false);
-		extensionState.allFilesBeenProcessed = false;
-	});
-
-	workspace.onDidChangeConfiguration(async config => {
-		if (config.affectsConfiguration('tads3.compiler.path')) {
-			validateCompilerPath(workspace.getConfiguration("tads3").get('compiler.path'));
-		}
-		if (config.affectsConfiguration('tads.preprocessor.path')) {
-			validateCompilerPath(workspace.getConfiguration("tads2").get('preprocessor.path'));
-		}
-		if (config.affectsConfiguration('tads2.compiler.path')) {
-			validateCompilerPath(workspace.getConfiguration("tads2").get('compiler.path'));
-		}
-	});
-
-	if (await validateUserSettings()) {
-		initiallyParseTadsProject();
-	}
-
-	/**
-	 * This will be trigger by onDidSaveTextDocument:
-	 */
-	diagnoseAndCompileSubject.pipe(debounceTime(DEBOUNCE_TIME)).subscribe(async (textDocument: TextDocument) => {
-		client.info(`Debounce time of ${DEBOUNCE_TIME} has passed.`);
-		currentTextDocument = textDocument;
-
-		if (extensionState.getUsingTads2()) {
-			const mainFile = extensionState.getTads2MainFile();
-			if (mainFile && !existsSync(mainFile.fsPath)) {
-				extensionState.setTads2MainFile(undefined);
+			if (extensionState.getChosenMakefileUri() === undefined) {
+				extensionState.setChosenMakefileUri(await findAndSelectMakefileUri());
 			}
-			if (mainFile === undefined) {
-				console.error(`No main file could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
+
+			if (extensionState.getChosenMakefileUri() === undefined) {
+				console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
 				return;
 			}
 			if (!gameFileSystemWatcher) {
-				setupAndMonitorBinaryGamefileChanges('*.gam');
+				setupAndMonitorBinaryGamefileChanges('*.t3');
 			}
 
 			await diagnosePreprocessAndParse(textDocument);
-			return;
-		}
+		});
 
-		if (extensionState.getChosenMakefileUri() && !existsSync(extensionState.getChosenMakefileUri().fsPath)) {
-			extensionState.setChosenMakefileUri(undefined);
-		}
-
-		if (extensionState.getChosenMakefileUri() === undefined) {
-			extensionState.setChosenMakefileUri(await findAndSelectMakefileUri());
-		}
-
-		if (extensionState.getChosenMakefileUri() === undefined) {
-			console.error(`No makefile could be found for ${dirname(currentTextDocument.uri.fsPath)}`);
-			return;
-		}
-		if (!gameFileSystemWatcher) {
-			setupAndMonitorBinaryGamefileChanges('*.t3');
-		}
-
-		await diagnosePreprocessAndParse(textDocument);
 	});
-
 
 
 }
