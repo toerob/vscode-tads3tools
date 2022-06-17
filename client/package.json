@@ -13,6 +13,7 @@
 		"vscode": "^1.52.0"
 	},
 	"dependencies": {
+		"minimist": ">=1.2.6",
 		"@types/unzipper": "^0.10.5",
 		"axios": "^0.27.2",
 		"fs-extra": "^10.1.0",
@@ -21,6 +22,7 @@
 		"vscode-languageclient": "^8.0.1"
 	},
 	"devDependencies": {
+		"minimist": ">=1.2.6",
 		"@types/vscode": "^1.68.0",
 		"@vscode/test-electron": "^2.1.4"
 	}
