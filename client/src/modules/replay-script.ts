@@ -29,7 +29,7 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
 
 		const wp = workspace.workspaceFolders[0].uri;
 		const scriptsPath = Uri.joinPath(wp, 'scripts');
-		ensureDirSync(scriptsPath.path);
+		ensureDirSync(scriptsPath.fsPath);
 
 		this.scriptFileSystemWatcher = workspace.createFileSystemWatcher('**/scripts/*.cmd');
 		this.scriptFileSystemWatcher.onDidChange((_) => this.updateFiles());
