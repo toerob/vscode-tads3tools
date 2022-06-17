@@ -114,7 +114,7 @@ export async function replayScript(scriptName: string, restart = false) {
 	if (restart) {
 		closeAllTerminalsNamed('Tads3 Game runner terminal');
 		await findAndStartGameFile();
-		await sleep(500);
+		await sleep(1000);
 	}
 	const currentTerminal = window.terminals.filter(x => x.name === 'Tads3 Game runner terminal')[0];
 	if (currentTerminal) {
