@@ -420,11 +420,14 @@ async function onDidSaveTextDocument(textDocument: TextDocument) {
 		return;
 	}
 
-	// If on windows platform and using the interpreter t3run.exe we need to 
-	// first shut down the interpreter in due time, otherwise the output file 
-	// is locked and prevents further compilation. 
-	const configuration: string = workspace.getConfiguration("tads3").get("gameRunnerInterpreter") ?? '';
-	if (process.platform === 'win32' && configuration.startsWith('t3run.exe')) {
+	// If setting restartGameRunnerOnT3ImageChanges is on,and on windows using the 
+	// interpreter t3run.exe we need to first shut down the interpreter in due time, 
+	// otherwise the output file is locked and prevents further compilation. 
+	const gameRunnerInterpreter: string = workspace.getConfiguration("tads3").get("gameRunnerInterpreter") ?? '';
+	const restartGameRunnerOnT3ImageChanges: string = workspace.getConfiguration("tads3").get("restartGameRunnerOnT3ImageChanges") ?? '';
+	if (restartGameRunnerOnT3ImageChanges 
+			&& process.platform === 'win32' 
+			&& gameRunnerInterpreter.startsWith('t3run.exe')) {
 		closeAllTerminalsNamed("Tads3 Game runner terminal");
 	}
 
