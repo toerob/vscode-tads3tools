@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.1-alpha
+### Added
+### Fixed
+  - Configuration for name of script folder
+  - link provider fix
+  - hover provider fix
+  - signature provider fix
+  - replay script fix
+  - XML->JSON conversion of textmate language syntax
+
 ## 0.6.0-alpha
 ### Added
   - Signature help provider for functions/methods. Now a help dialog will appear above when writing function/method calls where documenation, total parameters per signature and current parameter are visualized.
