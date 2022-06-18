@@ -226,6 +226,12 @@
 					"default": true,
 					"description": "Enable script files to be shown as separate pane and interacted with. Setting requires a restart of vscode in order to take effect. "
 				},
+				"tads3.scriptFolderName": {
+					"scope": "resource",
+					"type": "string",
+					"default": "Scripts",
+					"description": "The name of the folder within the project that holds the script files. Default is 'Scripts'. "
+				},
 				"tads3.maximumScriptFiles": {
 					"scope": "resource",
 					"type": "number",

@@ -1,5 +1,5 @@
 import { basename } from 'path';
-import { TreeDataProvider, Event, ProviderResult, TreeItem, workspace, EventEmitter, Uri, window, ExtensionContext, ViewColumn, FileSystemWatcher } from 'vscode';
+import { TreeDataProvider, Event, ProviderResult, TreeItem, workspace, EventEmitter, Uri, window, ExtensionContext, ViewColumn, FileSystemWatcher, RelativePattern } from 'vscode';
 import { extensionState, ScriptInfo } from './state';
 import { closeAllTerminalsNamed, startGameWithInterpreter } from '../extension';
 
@@ -13,6 +13,7 @@ const autoScriptFileRegExp = new RegExp(/(Auto) ([0-9]+)(.cmd)$/);
 const autoScriptRegExp = new RegExp(/Auto [0-9].cmd$/);
 let configuredInterpreter: string | undefined;
 
+
 export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
 
 
@@ -24,14 +25,22 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
 
 	scriptFileSystemWatcher: FileSystemWatcher;
 
+	scriptFolderPattern: RelativePattern;
+	scriptFolderName: string;
+
 	constructor(context: ExtensionContext) {
 		this.context = context;
-
 		const wp = workspace.workspaceFolders[0].uri;
-		const scriptsPath = Uri.joinPath(wp, 'scripts');
-		ensureDirSync(scriptsPath.fsPath);
+		if (wp === undefined) {
+			return;
+		}
 
-		this.scriptFileSystemWatcher = workspace.createFileSystemWatcher('**/scripts/*.cmd');
+		this.scriptFolderName = workspace.getConfiguration("tads3").get('scriptFolderName');
+		const scriptsPath = Uri.joinPath(wp, this.scriptFolderName);
+		ensureDirSync(scriptsPath.fsPath);
+		this.scriptFolderPattern = new RelativePattern(scriptsPath, '**/*.cmd');
+
+		this.scriptFileSystemWatcher = workspace.createFileSystemWatcher(this.scriptFolderPattern);
 		this.scriptFileSystemWatcher.onDidChange((_) => this.updateFiles());
 		this.scriptFileSystemWatcher.onDidDelete((_) => this.updateFiles());
 		this.scriptFileSystemWatcher.onDidCreate(async (_) => {
@@ -48,7 +57,7 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
 	getTreeItem(element: string): TreeItem | Thenable<TreeItem> {
 		const treeItem = new TreeItem(element);
 		treeItem.contextValue = "string";
-		treeItem.iconPath = this.context.asAbsolutePath(path.join('resources','icons', 'script.svg'));
+		treeItem.iconPath = this.context.asAbsolutePath(path.join('resources', 'icons', 'script.svg'));
 		return treeItem;
 	}
 
@@ -63,7 +72,7 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
 	async updateFiles() {
 		configuredInterpreter = workspace.getConfiguration("tads3").get("gameRunnerInterpreter") ?? undefined;
 		extensionState.scriptFolderContent.clear();
-		const files = await workspace.findFiles('**/scripts/*.cmd');
+		const files = await workspace.findFiles(this.scriptFolderPattern);
 		if (files.length === 0) {
 			extensionState.autoScriptFileSerial = 0;
 		}
@@ -83,7 +92,7 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
 
 	async trimToMaxFiles() {
 		const maxScriptFiles: number = workspace.getConfiguration("tads3").get("maximumScriptFiles");
-		const files = await workspace.findFiles('**/scripts/*.cmd');
+		const files = await workspace.findFiles(this.scriptFolderPattern);
 		if (files.length > maxScriptFiles) {
 			const customFilesNotToTrim = files.filter(f => !autoScriptRegExp.test(f.fsPath));
 			const autoScriptFilesNotToTrim = files
