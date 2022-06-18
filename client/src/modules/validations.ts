@@ -1,5 +1,6 @@
 import { window, workspace } from 'vscode';
 import { runCommand } from "./run-command";
+import { extensionState } from './state';
 
 export const versionRegexp = new RegExp(`TADS Compiler (.*) Copyright `);
 
@@ -27,6 +28,18 @@ export async function validateCompilerPath(compilerPath: string, showSuccess = t
 	window.showErrorMessage(`Compiler path setting (${compilerPath} executable) couldn't execute properly. The extension won't work properly without a valid path/executable string. Examine the ${compilerPath} setting, Set the path to a valid one and try saving any document in the project to trigger a new parse. `);
 	return false;
 }
+
+export async function analyzeInterpreterCapabilities(interpreterPath: string) {
+	const supportedInterpreterAnalysis = interpreterPath.match('frob|t3run[.]exe');
+	if(supportedInterpreterAnalysis) {
+		const output = await runCommand(`"${interpreterPath}" --help`);
+		const nixSupport = !!(output.includes('frob') && output?.match(/--log-input/));
+		const winSuppport = !!(output.includes('t3run') && output?.match(/-o/));
+		extensionState.interpreterCapabilites.cmdInputToFileFlag = nixSupport? '-L' : winSuppport? '-o' : undefined;
+		window.showInformationMessage(`Interpreter supports logging of command input to file.`);
+	}
+}
+
 
 
 export async function validatePreprocessorPath(ppPath: string, showSuccess = true) {

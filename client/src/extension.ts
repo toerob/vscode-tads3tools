@@ -22,7 +22,7 @@ import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
-import { validateCompilerPath, validateTads2Settings, validateUserSettings } from './modules/validations';
+import { analyzeInterpreterCapabilities, validateCompilerPath, validateTads2Settings, validateUserSettings } from './modules/validations';
 import { extensionState } from './modules/state';
 import { validateMakefile } from './modules/validate-makefile';
 import { extractAllQuotes } from './modules/extract-quotes';
@@ -154,6 +154,8 @@ export async function activate(context: ExtensionContext) {
 	extensionCacheDirectory = path.join(context.globalStorageUri.fsPath, 'extensions');
 
 	client.onReady().then(async () => {
+
+		analyzeInterpreterCapabilities(workspace.getConfiguration("tads3").get('gameRunnerInterpreter'));
 		
 		client.onNotification('response/extractQuotes', (payload) => {
 			workspace
@@ -302,6 +304,9 @@ export async function activate(context: ExtensionContext) {
 		workspace.onDidChangeConfiguration(async config => {
 			if (config.affectsConfiguration('tads3.compiler.path')) {
 				validateCompilerPath(workspace.getConfiguration("tads3").get('compiler.path'));
+			}
+			if (config.affectsConfiguration('tads3.gameRunnerInterpreter')) {
+				analyzeInterpreterCapabilities(workspace.getConfiguration("tads3").get('gameRunnerInterpreter'));
 			}
 			if (config.affectsConfiguration('tads.preprocessor.path')) {
 				validateCompilerPath(workspace.getConfiguration("tads2").get('preprocessor.path'));
@@ -485,18 +490,10 @@ function setupAndMonitorBinaryGamefileChanges(imageFormat) {
 		.pipe(debounceTime(DEBOUNCE_TIME))
 		.subscribe((event: any) => {
 			const configuration = workspace.getConfiguration("tads3");
-
-			if (!configuration.get("restartGameRunnerOnT3ImageChanges")) {
-				return;
-			}
-			// TODO: right now autmatic script generation is only compatible with t3run.exe (windows) 
-			// which has the -o flag to capture both input to a file. Frob misses that.
-			// Closest yet with frob is logging output but i doesn't capture input regardless plain mode etc:
-			// "frob -p -c  -i plain -R scripts/tmp.cmd gameMain.t3 1>&1 | tee scripts/auto.cmd"
+			if (!configuration.get("restartGameRunnerOnT3ImageChanges")) { return; }
 			const enableScriptFiles: boolean = configuration.get('enableScriptFiles');
-			const gameRunnerInterpreter: string = configuration.get("gameRunnerInterpreter") ?? '';
-			const logToFileEnabled = process.platform === 'win32' && gameRunnerInterpreter.match('t3run.exe');
-			const logToFileOption = (enableScriptFiles && logToFileEnabled) ? `-o "scripts/Auto ${extensionState.autoScriptFileSerial + 1}.cmd"` : '';
+			const logFlag = extensionState.interpreterCapabilites.cmdInputToFileFlag;
+			const logToFileOption = (enableScriptFiles && logFlag) ? `${logFlag} "Scripts/Auto ${extensionState.autoScriptFileSerial + 1}.cmd"` : '';
 			startGameWithInterpreter(event.fsPath, logToFileOption);
 		});
 
@@ -1022,4 +1019,3 @@ async function detectAndInitiallyParseTads2Project() {
 		await diagnosePreprocessAndParse(mainText);
 	}
 }
-

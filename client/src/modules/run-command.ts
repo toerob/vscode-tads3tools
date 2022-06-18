@@ -2,8 +2,8 @@ import { exec } from 'child_process';
 
 
 export function runCommand(command: string) {
-	return new Promise((resolve, reject) => {
-		let result = '';
+	return new Promise<string>((resolve, reject) => {
+		let result: string = '';
 		const childProcess = exec(command);
 		try {
 			childProcess.stdout.on('data', (data: any) => {

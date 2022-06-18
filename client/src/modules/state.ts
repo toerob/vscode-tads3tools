@@ -8,6 +8,10 @@ export type ScriptInfo = {
 	content: string
 }
 
+export type InterpreterCapabilites = {
+	cmdInputToFileFlag: any;
+}
+
 // TODO: convert to properties
 class ExtensionStateStore {
 	longProcessing = false;
@@ -28,6 +32,9 @@ class ExtensionStateStore {
 	private _currentPreprocessAndParseProgress: Progress<any>;
 	
 	private _projectRootPath: Uri;
+	interpreterCapabilites: InterpreterCapabilites = {
+		cmdInputToFileFlag: undefined
+	};
 
 	constructor() {
 		makeAutoObservable(this, {
