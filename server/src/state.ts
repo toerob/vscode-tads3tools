@@ -4,7 +4,6 @@ import { URI } from 'vscode-uri';
 
 export class ServerState {
 	_tadsVersion = 3;
-	_cachedFileLocation = new Map<string | undefined, string>();
 	_fileBasePaths: Set<URI> = new Set();
 	private _makefileLocation: URI | undefined;
 	
@@ -18,11 +17,6 @@ export class ServerState {
 			throw new Error(`Incompatible tads version number`);
 		}
 		this._tadsVersion = nr;
-	}
-
-	get cachedFileLocation() { return this._cachedFileLocation; }
-	set cachedFileLocation(cachedFileLocation: Map<string | undefined, string>) {
-		this._cachedFileLocation = cachedFileLocation;
 	}
 
 	public get fileBasePaths() { return this._fileBasePaths; }

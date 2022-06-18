@@ -58,20 +58,30 @@ function getLinksForTads3Makefile(symbolManager: TadsSymbolManager, fsPath: any,
             .filter(x => x && existsSync(x.fsPath));
 
 	serverState.makefileLocation = makefileLocation;
+
+	// Look for additional environment paths that includes the keyword tads3
+	// This will find include and library paths not specified in the t3 makefile.
+	const onWinPlatform = process.platform === 'win32';
+	const envPaths:any = process.env.path?.split(onWinPlatform? ';' : ':')
+		.filter(x=>x.match(/tads3/i)) 
+		.map(x=>URI.file(x))
+		.filter(x => x && existsSync(x.fsPath));
+	
 	serverState.fileBasePaths  = new Set([
         makefileLocation,
-        ...uris
+        ...uris,
+		...envPaths
     ]);
+	
 
 	for (const symbol of symbols) {
         const isDirectory = symbol.name.match(/^f[liyo]$/i) ? true : false;
         const relativeSourceFile = symbol.name.match(/source/) ? true : false;
         const relativeLibraryFile = symbol.name.match(/lib/) ? true : false;
-        if (relativeSourceFile || relativeLibraryFile) {
-			const absolutePath = serverState.cachedFileLocation.get(symbol.detail) ?? toAbsoluteUrl(symbol.detail, symbol, serverState.fileBasePaths, isDirectory);
+		if (relativeSourceFile || relativeLibraryFile) {
+			const absolutePath = toAbsoluteUrl(symbol.detail, symbol, serverState.fileBasePaths, isDirectory);
 			const range = Range.create(symbol.range.start.line, symbol.name.length+2,  symbol.range.end.line, symbol.range.end.character);
 			const documentLink = DocumentLink.create(range, URI.file(absolutePath).path);
-            serverState.cachedFileLocation.set(symbol.detail ?? '', absolutePath);
 			links.push(documentLink);
         }
     }
