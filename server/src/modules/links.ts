@@ -62,7 +62,8 @@ function getLinksForTads3Makefile(symbolManager: TadsSymbolManager, fsPath: any,
 	// Look for additional environment paths that includes the keyword tads3
 	// This will find include and library paths not specified in the t3 makefile.
 	const onWinPlatform = process.platform === 'win32';
-	const envPaths:any = process.env.path?.split(onWinPlatform? ';' : ':')
+	const envPaths = (onWinPlatform? process.env.path?.split(';') : process.env.PATH?.split(':')) ?? [];
+	const tads3EnvPaths:any = envPaths
 		.filter(x=>x.match(/tads3/i)) 
 		.map(x=>URI.file(x))
 		.filter(x => x && existsSync(x.fsPath));
@@ -70,7 +71,7 @@ function getLinksForTads3Makefile(symbolManager: TadsSymbolManager, fsPath: any,
 	serverState.fileBasePaths  = new Set([
         makefileLocation,
         ...uris,
-		...envPaths
+		...tads3EnvPaths
     ]);
 	
 
