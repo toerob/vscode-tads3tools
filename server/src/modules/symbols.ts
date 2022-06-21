@@ -8,8 +8,7 @@ import { TadsSymbolManager } from './symbol-manager';
 const asyncSetTimeout = promisify(setTimeout);
 
 export async function onDocumentSymbol(handler: DocumentSymbolParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
-	const fsPath = URI.parse(handler.textDocument.uri).fsPath
-
+	const fsPath = URI.parse(handler.textDocument.uri).fsPath;
 	if (fsPath.endsWith('.t3m')) {
 		const symbols: DocumentSymbol[] = parseTads3Makefile(documents.get(handler.textDocument.uri)?.getText() ?? "") ?? [];
 		if (symbols.length > 0) {
@@ -71,7 +70,7 @@ function parseTads3Makefile(text: string): DocumentSymbol[] {
 
 			} else if(result[2]  && result[3]) {
 				// Environment variables: KEY=VALUE
-				const envKey = result[2]
+				const envKey = result[2];
 				const envValue = result[3];
 				const range = Range.create(rowIdx,0, rowIdx,row.length);
 				const symbol = DocumentSymbol.create(envKey, envValue, SymbolKind.Constant, range, range);

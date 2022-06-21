@@ -1,7 +1,13 @@
-import { window, workspace } from 'vscode';
+import { existsSync } from 'fs';
+import { window, workspace, WorkspaceConfiguration } from 'vscode';
 import { runCommand } from "./run-command";
 
 export const versionRegexp = new RegExp(`TADS Compiler (.*) Copyright `);
+
+export function validatePathExists(config: WorkspaceConfiguration) {
+	const compilerPath: string | undefined = (config.get('compiler.path') ?? undefined);
+	return compilerPath && existsSync(compilerPath);
+}
 
 export async function validateUserSettings() {
 	const path: string = workspace.getConfiguration("tads3")?.get('compiler.path');
@@ -27,7 +33,6 @@ export async function validateCompilerPath(compilerPath: string, showSuccess = t
 	window.showErrorMessage(`Compiler path setting (${compilerPath} executable) couldn't execute properly. The extension won't work properly without a valid path/executable string. Examine the ${compilerPath} setting, Set the path to a valid one and try saving any document in the project to trigger a new parse. `);
 	return false;
 }
-
 
 export async function validatePreprocessorPath(ppPath: string, showSuccess = true) {
 	const versionArgument =  '--version';

@@ -243,8 +243,8 @@ function tads3MakefileSuggestions(): CompletionItem[] | CompletionList {
 			const completionItem = CompletionItem.create(libraryFile? '-lib ':'-source ' + itemPathWithoutExt);
 			return completionItem;
 		});
-	suggestions.push(CompletionItem.create("source"))
-	suggestions.push(CompletionItem.create("lib"))
+	suggestions.push(CompletionItem.create("source"));
+	suggestions.push(CompletionItem.create("lib"));
 	return suggestions;
 }
 

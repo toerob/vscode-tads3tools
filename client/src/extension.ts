@@ -22,7 +22,7 @@ import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
 import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
-import { validateCompilerPath, validateTads2Settings, validateUserSettings } from './modules/validations';
+import { validatePathExists, validateCompilerPath, validateTads2Settings, validateUserSettings } from './modules/validations';
 import { extensionState } from './modules/state';
 import { validateMakefile } from './modules/validate-makefile';
 import { extractAllQuotes } from './modules/extract-quotes';
@@ -36,6 +36,7 @@ import { addFileToProject } from './modules/addFileToProject';
 import { SnippetCompletionItemProvider } from './modules/snippet-completion-item-provider';
 import { DependencyNode } from './modules/DependencyNode';
 import { deleteReplayScript, openReplayScript, replayScript, ReplayScriptTreeDataProvider } from './modules/replay-script';
+import { handleMissingCompilerWithGui } from './modules/handle-missing-paths';
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -154,7 +155,7 @@ export async function activate(context: ExtensionContext) {
 	extensionCacheDirectory = path.join(context.globalStorageUri.fsPath, 'extensions');
 
 	client.onReady().then(async () => {
-		
+
 		client.onNotification('response/extractQuotes', (payload) => {
 			workspace
 				.openTextDocument({ language: 'tads3', content: payload.resultArray.join('\n') })
@@ -310,6 +311,13 @@ export async function activate(context: ExtensionContext) {
 				validateCompilerPath(workspace.getConfiguration("tads2").get('compiler.path'));
 			}
 		});
+
+		if(process.platform === 'win32') {
+			const config = workspace.getConfiguration('tads3');
+			if(!validatePathExists(config.get('compiler.path'))) {
+				await handleMissingCompilerWithGui(config);
+			}
+		}
 
 		if (await validateUserSettings()) {
 			initiallyParseTadsProject();
