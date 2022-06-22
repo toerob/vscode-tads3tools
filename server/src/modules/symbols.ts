@@ -55,7 +55,7 @@ function parseTads3Makefile(text: string): DocumentSymbol[] {
 			} else if(result[2] && result[3] === undefined) {
 				const type = result[1];
 				const path = result[2];
-				if(type.match(/f[ilyo]/i)) {
+				if(type.match(/(f[sycoil]?|i)/i)) {
 					// Library/Include file paths:
 					const range = Range.create(rowIdx,0, rowIdx,row.length);
 					const symbol = DocumentSymbol.create(type, path, SymbolKind.Module, range, range);

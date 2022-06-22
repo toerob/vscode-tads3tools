@@ -53,7 +53,7 @@ function getLinksForTads3Makefile(symbolManager: TadsSymbolManager, fsPath: any,
     const makefileLocation = URI.file(directoryName.fsPath);
 	
 	const uris:any = symbols
-            .filter(x => x.name.match(/^f[li]$/i))
+            .filter(x => x.name.match(/^f[lis]$/i))
             .map(x => x.detail && URI.file(x.detail))
             .filter(x => x && existsSync(x.fsPath));
 
@@ -68,15 +68,14 @@ function getLinksForTads3Makefile(symbolManager: TadsSymbolManager, fsPath: any,
 		.map(x=>URI.file(x))
 		.filter(x => x && existsSync(x.fsPath));
 	
-	serverState.fileBasePaths  = new Set([
-        makefileLocation,
-        ...uris,
-		...tads3EnvPaths
-    ]);
+
+	const completePathsArray:URI[] = [makefileLocation,...uris,...tads3EnvPaths];
+	const completePathsArrayAsAbsolutePaths: URI[] = completePathsArray.map(x=> makeAbsolutePathsBasedOnDir(x, directoryName));
+	serverState.fileBasePaths  = new Set<URI>(completePathsArrayAsAbsolutePaths);
 	
 
 	for (const symbol of symbols) {
-        const isDirectory = symbol.name.match(/^f[liyo]$/i) ? true : false;
+        const isDirectory = symbol.name.match(/^f[lisyo]$/i) ? true : false;
         const relativeSourceFile = symbol.name.match(/source/) ? true : false;
         const relativeLibraryFile = symbol.name.match(/lib/) ? true : false;
 		if (relativeSourceFile || relativeLibraryFile) {
@@ -113,3 +112,10 @@ function getLinksForTads3Makefile(symbolManager: TadsSymbolManager, fsPath: any,
     }
     return relativePath;
 }
+function makeAbsolutePathsBasedOnDir(possiblyRelativeDirectory: URI,  baseDirectory: URI): URI {
+	if(possiblyRelativeDirectory.fsPath.startsWith('/..')) {
+		return Utils.joinPath(baseDirectory,possiblyRelativeDirectory.fsPath);
+	}
+	return possiblyRelativeDirectory;
+}
+
