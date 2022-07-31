@@ -141,10 +141,6 @@ export async function activate(context: ExtensionContext) {
 		}
 	}));
 
-	if (workspace.getConfiguration("tads3").get('enableScriptFiles')) {
-		context.subscriptions.push(window.createTreeView('tads3ScriptTree', { treeDataProvider: new ReplayScriptTreeDataProvider(context) }));
-	}
-
 	setupVisualEditorResponseHandler();
 
 	globalStoragePath = context.globalStorageUri.fsPath;
@@ -312,7 +308,12 @@ export async function activate(context: ExtensionContext) {
 		});
 
 		if (await validateUserSettings()) {
-			initiallyParseTadsProject();
+			await initiallyParseTadsProject()
+			if (workspace.getConfiguration("tads3").get('enableScriptFiles')) {
+				// Only register a ReplayScriptTreeDataProvider if it is a tads3 project,
+				// Since that will create a folder for Scripts if there is not already one.
+				context.subscriptions.push(window.createTreeView('tads3ScriptTree', { treeDataProvider: new ReplayScriptTreeDataProvider(context) }));
+			}
 		}
 
 		/**

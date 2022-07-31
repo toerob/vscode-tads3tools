@@ -35,19 +35,21 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
 			return;
 		}
 
-		this.scriptFolderName = workspace.getConfiguration("tads3").get('scriptFolderName');
-		const scriptsPath = Uri.joinPath(wp, this.scriptFolderName);
-		ensureDirSync(scriptsPath.fsPath);
-		this.scriptFolderPattern = new RelativePattern(scriptsPath, '**/*.cmd');
+		if (extensionState.getChosenMakefileUri()) {
+			this.scriptFolderName = workspace.getConfiguration("tads3").get('scriptFolderName');
+			const scriptsPath = Uri.joinPath(wp, this.scriptFolderName);
+			ensureDirSync(scriptsPath.fsPath);
+			this.scriptFolderPattern = new RelativePattern(scriptsPath, '**/*.cmd');
 
-		this.scriptFileSystemWatcher = workspace.createFileSystemWatcher(this.scriptFolderPattern);
-		this.scriptFileSystemWatcher.onDidChange((_) => this.updateFiles());
-		this.scriptFileSystemWatcher.onDidDelete((_) => this.updateFiles());
-		this.scriptFileSystemWatcher.onDidCreate(async (_) => {
-			await this.updateFiles();
-			this.trimToMaxFiles();
-		});
-		this.updateFiles();
+			this.scriptFileSystemWatcher = workspace.createFileSystemWatcher(this.scriptFolderPattern);
+			this.scriptFileSystemWatcher.onDidChange((_) => this.updateFiles());
+			this.scriptFileSystemWatcher.onDidDelete((_) => this.updateFiles());
+			this.scriptFileSystemWatcher.onDidCreate(async (_) => {
+				await this.updateFiles();
+				this.trimToMaxFiles();
+			});
+			this.updateFiles();
+		}
 	}
 
 	refresh() {
