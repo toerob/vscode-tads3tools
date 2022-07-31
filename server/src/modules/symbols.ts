@@ -5,7 +5,7 @@ import { URI } from 'vscode-uri';
 import { connection } from '../server';
 import { TadsSymbolManager } from './symbol-manager';
 
-const asyncSetTimeout = promisify(setTimeout);
+export const asyncSetTimeout = promisify(setTimeout);
 
 export async function onDocumentSymbol(handler: DocumentSymbolParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
 	const fsPath = URI.parse(handler.textDocument.uri).fsPath

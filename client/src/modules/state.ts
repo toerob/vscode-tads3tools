@@ -9,7 +9,7 @@ export type ScriptInfo = {
 }
 
 // TODO: convert to properties
-class ExtensionStateStore {
+export class ExtensionStateStore {
 	longProcessing = false;
 	diagnosing = false;
 	preprocessing = false;
@@ -28,6 +28,13 @@ class ExtensionStateStore {
 	private _currentPreprocessAndParseProgress: Progress<any>;
 	
 	private _projectRootPath: Uri;
+	private _extensionCacheDirectory: string;
+	public get extensionCacheDirectory(): string {
+		return this._extensionCacheDirectory;
+	}
+	public set extensionCacheDirectory(value: string) {
+		this._extensionCacheDirectory = value;
+	}
 
 	constructor() {
 		makeAutoObservable(this, {

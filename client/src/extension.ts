@@ -4,7 +4,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
 
-import { copyFileSync, createReadStream, createWriteStream, existsSync, unlinkSync } from 'fs';
+import { copyFileSync, createWriteStream, existsSync, fstat, readdirSync } from 'fs';
 import * as path from 'path';
 import { basename, dirname } from 'path';
 import { workspace, ExtensionContext, commands, ProgressLocation, window, CancellationTokenSource, Uri, TextDocument, languages, Range, ViewColumn, WebviewOptions, WebviewPanel, DocumentSymbol, TextEditor, FileSystemWatcher, RelativePattern, MessageItem, Position, SnippetString, CancellationError, DiagnosticSeverity, Diagnostic } from 'vscode';
@@ -20,7 +20,6 @@ import { Subject, debounceTime } from 'rxjs';
 import { LocalStorageService } from './modules/local-storage-service';
 import { ensureDirSync } from 'fs-extra';
 import axios from 'axios';
-import { Extract } from 'unzipper';
 import { rmdirSync } from 'fs';
 import { validateCompilerPath, validateTads2Settings, validateUserSettings } from './modules/validations';
 import { extensionState } from './modules/state';
@@ -36,6 +35,8 @@ import { addFileToProject } from './modules/addFileToProject';
 import { SnippetCompletionItemProvider } from './modules/snippet-completion-item-provider';
 import { DependencyNode } from './modules/DependencyNode';
 import { deleteReplayScript, openReplayScript, replayScript, ReplayScriptTreeDataProvider } from './modules/replay-script';
+import { downloadAndInstallExtension, performLocalExtensionInstallation, unzipFromFiletoFolder } from './ifarchive-extensions';
+
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection('tads3diagnostics');
@@ -48,9 +49,8 @@ let selectedObject: DocumentSymbol | undefined;
 let lastChosenTextDocument: TextDocument | undefined;
 let lastChosenTextEditor: TextEditor;
 let globalStoragePath: string;
-let extensionCacheDirectory: string;
+
 let currentTextDocument: TextDocument | undefined;
-let extensionDownloadMap: Map<any, any>;
 
 let errorDiagnostics = [];
 let serverProcessCancelTokenSource: CancellationTokenSource;
@@ -118,7 +118,7 @@ export async function activate(context: ExtensionContext) {
 	context.subscriptions.push(commands.registerCommand('tads3.openProjectFileQuickPick', openProjectFileQuickPick));
 	context.subscriptions.push(commands.registerCommand('tads3.openInVisualEditor', () => openInVisualEditor(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.restartGameRunnerOnT3ImageChanges', () => toggleGameRunnerOnT3ImageChanges()));
-	context.subscriptions.push(commands.registerCommand('tads3.downloadAndInstallExtension', downloadAndInstallExtension));
+	context.subscriptions.push(commands.registerCommand('tads3.downloadAndInstallExtension', () => downloadAndInstallExtension(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.analyzeTextAtPosition', () => analyzeTextAtPosition()));
 	context.subscriptions.push(commands.registerCommand('tads3.extractAllQuotes', () => extractAllQuotes(context)));
 	context.subscriptions.push(commands.registerCommand('tads3.installTracker', () => installTracker(context)));
@@ -147,10 +147,11 @@ export async function activate(context: ExtensionContext) {
 
 	extensionState.scriptsFolder = Uri.file(context.asAbsolutePath('scripts'));
 
-	extensionCacheDirectory = path.join(context.globalStorageUri.fsPath, 'extensions');
+
+	extensionState.extensionCacheDirectory = path.join(context.globalStorageUri.fsPath, 'extensions');
 
 	client.onReady().then(async () => {
-		
+
 		client.onNotification('response/extractQuotes', (payload) => {
 			workspace
 				.openTextDocument({ language: 'tads3', content: payload.resultArray.join('\n') })
@@ -426,9 +427,9 @@ async function onDidSaveTextDocument(textDocument: TextDocument) {
 	// otherwise the output file is locked and prevents further compilation. 
 	const gameRunnerInterpreter: string = workspace.getConfiguration("tads3").get("gameRunnerInterpreter") ?? '';
 	const restartGameRunnerOnT3ImageChanges: string = workspace.getConfiguration("tads3").get("restartGameRunnerOnT3ImageChanges") ?? '';
-	if (restartGameRunnerOnT3ImageChanges 
-			&& process.platform === 'win32' 
-			&& gameRunnerInterpreter.startsWith('t3run.exe')) {
+	if (restartGameRunnerOnT3ImageChanges
+		&& process.platform === 'win32'
+		&& gameRunnerInterpreter.startsWith('t3run.exe')) {
 		closeAllTerminalsNamed("Tads3 Game runner terminal");
 	}
 
@@ -560,113 +561,6 @@ async function toggleURLCodeLensesInT3Makefile() {
 
 
 
-async function downloadFile(requestUrl: string, folder: string, fileName: string) {
-	ensureDirSync(extensionCacheDirectory);
-	const cachedFilePath = path.join(extensionCacheDirectory, fileName);
-	const pathToStoreExtension = path.resolve(__dirname, folder, fileName);
-	if (existsSync(cachedFilePath)) {
-		copyFileSync(cachedFilePath, pathToStoreExtension);
-		client.info(`Reusing cached file ${cachedFilePath}`);
-		return;
-	}
-
-	const res = await axios.get(requestUrl, { responseType: "stream" });
-	if (res.status == 200) {
-		res.data.pipe(createWriteStream(pathToStoreExtension));
-		res.data.on("end", () => {
-			try {
-				copyFileSync(pathToStoreExtension, cachedFilePath);
-				client.info(`Download of ${fileName} to folder "${folder}" is completed`);
-			} catch (err) {
-				client.error(err);
-			}
-		});
-		return;
-	}
-	throw new Error(`Error during download: ${res.status}`);
-}
-
-
-
-
-async function downloadAndInstallExtension(context: ExtensionContext) {
-	const configuration = workspace.getConfiguration(extensionState.isUsingTads2 ? "tads2" : "tads3");
-	const ifarchiveTads3ContributionsURL: string = configuration.get("ifArchiveExtensionURL");
-	try {
-		if (extensionDownloadMap === undefined) {
-			const response = await axios.get(ifarchiveTads3ContributionsURL);
-			const entries = response.data.split('#');
-			extensionDownloadMap = new Map();
-			let idx = 0;
-			for (const entry of entries) {
-				const [key, data] = entry.split('\n\n');
-				if (idx > 0) {
-					extensionDownloadMap.set(key.trim(), data.trim());
-				}
-				idx++;
-			}
-		}
-	} catch (err) {
-		window.showErrorMessage(`Failed downloading extension list: ${err}`);
-		client.error(`Failed downloading extension list: ${err}`);
-		return;
-	}
-
-
-	const selections = await window.showQuickPick([...extensionDownloadMap.keys()], { canPickMany: true });
-	if (selections === undefined || selections.length === 0) {
-		return;
-	}
-	const option1: MessageItem = { title: 'Install' };
-	const option2: MessageItem = { title: 'Abort' };
-
-	const infoEntries = [];
-	for (const extKey of selections) {
-		const desc = extensionDownloadMap.get(extKey);
-		const entry = extKey + ' \n ' + desc;
-		infoEntries.push(entry);
-	}
-
-	const action = await window.showInformationMessage(infoEntries.join('\n\n***\n\n'), { modal: true }, option1, option2);
-	console.log(action);
-	if (action.title === 'Install') {
-
-		const makefileDir = dirname(extensionState.isUsingTads2 ? extensionState.getTads2MainFile().fsPath : extensionState.getChosenMakefileUri().fsPath);
-		for (const extKey of selections) {
-			const downloadURL = ifarchiveTads3ContributionsURL + extKey;
-			try {
-				await downloadFile(downloadURL, makefileDir, extKey);
-			} catch (err) {
-				client.error(`Download failed for ${downloadURL}: ${err}`);
-				window.showErrorMessage(`Download failed for ${downloadURL}: ${err}`);
-				continue;
-			}
-
-			if (extKey.endsWith('.zip')) {
-				const extensionPath = path.join(makefileDir, extKey);
-				const fileNameWithoutZipExt = extKey.substr(0, extKey.length - 4);
-				const extensionInstalledDirname = path.join(makefileDir, fileNameWithoutZipExt);
-				client.info(`Unzipping ${extKey} to ${extensionInstalledDirname}`);
-				try {
-					const readStream = createReadStream(extensionPath);
-					readStream.on('open', () => readStream.pipe(Extract({ path: extensionInstalledDirname })));
-					readStream.on('error', (err) => client.error(`Error during unzipping: ${err}`));
-					readStream.on('close', () => {
-						client.info(`Unzipping finished`);
-						try {
-							unlinkSync(extensionPath);
-							client.info(`Archive deleted`);
-						} catch (err) {
-							client.error(`Deletion of archive failed: ${err}`);
-						}
-					});
-				} catch (err) {
-					client.error(`Setting up readstream for ${extensionPath} failed: ${err}`);
-				}
-			}
-		}
-	}
-}
 
 function enablePreprocessorCodeLens(arg0: string, enablePreprocessorCodeLens: any) {
 	const configuration = workspace.getConfiguration("tads3");
@@ -977,8 +871,8 @@ async function detectAndInitiallyParseTads2Project() {
 	const includeRegexp = new RegExp(/[#]\s*include\s*[<"](.+)[">]/);
 	const files = await workspace.findFiles('**/*.{t,h}');
 
-	const result = files.filter(x=>x.fsPath.endsWith('.t'));
-	if(result.length === 0) {
+	const result = files.filter(x => x.fsPath.endsWith('.t'));
+	if (result.length === 0) {
 		client.info(`No tads source files found at all, won't assume Tads2 project`);
 		return;
 	}
@@ -1023,4 +917,5 @@ async function detectAndInitiallyParseTads2Project() {
 		await diagnosePreprocessAndParse(mainText);
 	}
 }
+
 
