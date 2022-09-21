@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1-alpha
+### Fixed
+   - Script folder is longer created in another language besides Tads2/Tads3
+   - A fix was made to make the install extension script download and install all extensions. (Sometimes it didn't work.)
+   - The extension installer is refined to allow offline installations using cached extensions.
+
 ## 0.6.0-alpha
 ### Added
   - Signature help provider for functions/methods. Now a help dialog will appear above when writing function/method calls where documenation, total parameters per signature and current parameter are visualized.
