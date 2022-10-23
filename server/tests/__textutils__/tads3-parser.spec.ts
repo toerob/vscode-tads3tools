@@ -5,7 +5,6 @@ import { Tads3Lexer } from '../../src/parser/Tads3Lexer';
 import { Tads3Listener } from '../../src/parser/Tads3Listener';
 import { ObjectDeclarationContext, PropertyContext, Tads3Parser, TemplateExprContext } from '../../src/parser/Tads3Parser';
 
-
 describe('Tads3 parser tests', () => {
 
 	function parseText(text: string) {

@@ -1,6 +1,6 @@
 import { Range, DocumentSymbol, Position, SymbolKind, SymbolInformation, Location } from 'vscode-languageserver';
 import { URI } from 'vscode-uri';
-import { filterForLibraryFiles } from './utils';
+import { filterForStandardLibraryFiles } from './utils';
 import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 import { pathExistsSync } from 'fs-extra';
 
@@ -110,7 +110,7 @@ export class TadsSymbolManager {
 		let filepathArray;
 		if (onlyProjectFiles) {
 			const filePathSubset = [...this.symbols.keys()];
-			const libraryFiles = filterForLibraryFiles(filePathSubset);
+			const libraryFiles = filterForStandardLibraryFiles(filePathSubset);
 			const projectfiles = filePathSubset.filter(x => !libraryFiles.includes(x));
 			filepathArray = projectfiles;
 		} else {
@@ -135,7 +135,7 @@ export class TadsSymbolManager {
 
 		if (onlyProjectFiles) {
 			const filePathSubset = [...this.keywords.keys()];
-			const libraryFiles = filterForLibraryFiles(filePathSubset);
+			const libraryFiles = filterForStandardLibraryFiles(filePathSubset);
 			const projectfiles = filePathSubset.filter(x => !libraryFiles.includes(x));
 			filepathArray = projectfiles;
 		} else {

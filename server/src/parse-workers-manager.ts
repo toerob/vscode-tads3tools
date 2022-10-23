@@ -10,7 +10,7 @@ import * as path from 'path';
 import { ensureDirSync } from 'fs-extra';
 import { parseTads2Files } from './parseTads2Files';
 import { symbolManager } from './modules/symbol-manager';
-import { filterForLibraryFiles } from './modules/utils';
+import { filterForStandardLibraryFiles } from './modules/utils';
 
 /**
  * Reads and parses the makefile to get additional information
@@ -198,7 +198,7 @@ export async function preprocessAndParseTads3Files(globalStoragePath: string, ma
 
 		const workerPool = Pool(() => spawn(new Worker('./worker')), poolSize);
 
-		const libraryFilePaths = filterForLibraryFiles([...preprocessedFilesCacheMap.keys()]);
+		const libraryFilePaths = filterForStandardLibraryFiles([...preprocessedFilesCacheMap.keys()]);
 
 		try {
 			const startTime = Date.now();

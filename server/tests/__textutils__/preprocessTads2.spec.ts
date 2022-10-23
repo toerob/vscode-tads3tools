@@ -12,11 +12,11 @@ describe('Preprocessing suite Tads2', () => {
 		assert.equal(array[1], "Split");
 		assert.equal(array[2], "Me");
 		assert.equal(array[3], "Up!\";");
-	})
+	});
 
-	it('unprocessed file and preprocessed file shall have the same number of rows', async () => {
+	it.skip('unprocessed file and preprocessed file shall have the same number of rows', async () => {
 		const preprocessedFilesCacheMap: Map<string, string> = new Map();
-		const mainFilePath = `/home/reboto/repos/vscode-tads3tools/server/tests/__textutils__/t2testgames/hello.t`;
+		const mainFilePath = `tests/__textutils__/t2testgames/hello.t`;
 		const libAdvPath = `/usr/local/share/frobtads/tads2/adv.t`;
 		const libStdPath = `/usr/local/share/frobtads/tads2/std.t`;
 		await preprocessTads2Files(mainFilePath, preprocessedFilesCacheMap);

@@ -265,6 +265,12 @@
 					"default": false,
 					"description": "In case working on a slower machine and parsing the library takes way too long time to complete, this option is here to turn off the parsing of library files and only concentrate on the workspace files. (Requires a restart after change.)"
 				},
+				"tads3.enableWorkspaceSymbolsProjectScope": {
+					"scope": "resource",
+					"type": "boolean",
+					"default": false,
+					"description": "On 'Go to symbol in workspace' ONLY project symbols will be produced. Might increase performance on larger projects. Default is false. "
+				},
 				"tads3.maxNumberOfProblems": {
 					"scope": "resource",
 					"type": "number",
@@ -371,9 +377,7 @@
 		"test-compile": "tsc -p ./"
 	},
 	"devDependencies": {
-		"npm": "^8.12.2",
 		"@types/mocha": "^9.1.1",
-		"@types/node": "^18.0.0",
 		"@typescript-eslint/eslint-plugin": "^5.28.0",
 		"@typescript-eslint/parser": "^5.28.0",
 		"antlr4ts-cli": "^0.5.0-alpha.4",
