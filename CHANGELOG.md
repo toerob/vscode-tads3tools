@@ -1,10 +1,20 @@
 # Changelog
 
-## 0.6.1-alpha
+## 0.6.2-alpha
 ### Fixed
    - Script folder is longer created in another language besides Tads2/Tads3
    - A fix was made to make the install extension script download and install all extensions. (Sometimes it didn't work.)
    - The extension installer is refined to allow offline installations using cached extensions.
+   - Setting for producing only workspace symbols via CMD/CTRL-T was missing. It is now added. The way library files was filtered was a bit flawed and has been changed.
+
+## 0.6.1-alpha
+### Fixed
+  - Configuration for name of script folder
+  - link provider fix
+  - hover provider fix
+  - signature provider fix
+  - replay script fix
+  - XML->JSON conversion of textmate language syntax
 
 ## 0.6.0-alpha
 ### Added
