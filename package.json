@@ -1,396 +1,396 @@
 {
-	"name": "vscode-tads3tools",
-	"description": "Language server extension for Tads3",
-	"author": "Tomas Öberg",
-	"license": "MIT",
-	"version": "0.6.2",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/toerob/vscode-tads3tools.git"
-	},
-	"publisher": "toerob",
-	"icon": "resources/icons/logo.png",
-	"categories": [
-		"Programming Languages",
-		"Snippets"
-	],
-	"keywords": [
-		"tads",
-		"tads3",
-		"multi-root ready"
-	],
-	"engines": {
-		"vscode": "^1.43.0"
-	},
-	"activationEvents": [
-		"onLanguage:tads3",
-		"onCommand:tads3.createTads3TemplateProject"
-	],
-	"main": "./client/out/extension",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": false
-		},
-		"virtualWorkspaces": false
-	},
-	"contributes": {
-		"views": {
-			"explorer": [
-				{
-					"id": "tads3ScriptTree",
-					"name": "Tads3 Game Scripts",
-					"type": "tree"
-				}
-			]
-		},
-		"menus": {
-			"view/item/context": [
-				{
-					"command": "tads3.replayScript",
-					"when": "viewItem == string"
-				},
-				{
-					"command": "tads3.restartReplayScript",
-					"when": "viewItem == string"
-				},
-				{
-					"command": "tads3.openReplayScript",
-					"when": "viewItem == string"
-				},
-				{
-					"command": "tads3.deleteReplayScript",
-					"when": "viewItem == string"
-				}
-			]
-		},
-		"snippets": [
-			{
-				"language": "tads3",
-				"path": "./snippets/snippets_common.json"
-			}
-		],
-		"languages": [
-			{
-				"id": "tads3",
-				"aliases": [
-					"TADS 3 Source File",
-					"tads3"
-				],
-				"extensions": [
-					".t",
-					".h",
-					".t3m"
-				],
-				"configuration": "./language-configuration.json"
-			}
-		],
-		"grammars": [
-			{
-				"language": "tads3",
-				"scopeName": "source.tads3",
-				"path": "./syntaxes/tads3.tmLanguage.json"
-			}
-		],
-		"customEditors": [
-			{
-				"viewType": "tads3.visualEdit",
-				"displayName": "Tads3 Visual Editor",
-				"selector": [
-					{
-						"filenamePattern": "*.{t,h}"
-					}
-				],
-				"priority": "option"
-			}
-		],
-		"commands": [
-			{
-				"command": "tads3.restartReplayScript",
-				"title": "1. Restart & run script",
-				"category": "Interpreter",
-				"enablement": "true",
-				"shortTitle": "Restart & run"
-			},
-			{
-				"command": "tads3.replayScript",
-				"title": "2. Run script",
-				"category": "Interpreter",
-				"enablement": "true",
-				"shortTitle": "Run"
-			},
-			{
-				"command": "tads3.openReplayScript",
-				"title": "3. Open script in editor",
-				"category": "Interpreter",
-				"enablement": "true",
-				"shortTitle": "Open script"
-			},
-			{
-				"command": "tads3.deleteReplayScript",
-				"title": "4. Delete script",
-				"category": "Interpreter",
-				"enablement": "true",
-				"shortTitle": "Delete script"
-			},
-			{
-				"command": "tads2.parseTads2Project",
-				"title": "Tads2 command: Parse a tads2 project",
-				"category": "Editor",
-				"enablement": "true"
-			},
-			{
-				"command": "tads3.createTads3TemplateProject",
-				"title": "Tads3 command: Create a new Tads3 template project",
-				"category": "Edits"
-			},
-			{
-				"command": "tads3.addFileToProject",
-				"title": "Tads3 command: Adds a new file to the project",
-				"category": "Edits"
-			},
-			{
-				"command": "tads3.extractAllQuotes",
-				"title": "Tads3 command: extract unique strings from source code",
-				"category": "Editor"
-			},
-			{
-				"command": "tads3.clearCache",
-				"title": "Tads3 command: Clear cache for standard libraries adv3/adv3Lite. "
-			},
-			{
-				"command": "tads3.downloadAndInstallExtension",
-				"title": "Tads3 command: Download and install extension(s)"
-			},
-			{
-				"command": "tads3.installTracker",
-				"title": "Tads3 command: Install a tracker game file in the project so the game will remember player position between sessions",
-				"category": "Editor",
-				"enablement": "true"
-			},
-			{
-				"command": "tads3.openInVisualEditor",
-				"title": "Tads3 command: Open current tads3 source code *.{t,h} in Tads3 Visual Editor ",
-				"category": "Editor",
-				"enablement": "true"
-			},
-			{
-				"command": "tads3.setMakefile",
-				"title": "Tads3 command: Set which makefile (.t3m) to use for this project (in case there are several)",
-				"category": "Compilation"
-			},
-			{
-				"command": "tads3.restartGameRunnerOnT3ImageChanges",
-				"title": "Tads3 command: Toggles on/off if the game should restarted as soon as the t3 image game file changes",
-				"category": "Running"
-			},
-			{
-				"command": "tads3.showPreprocessedTextAction",
-				"title": "Tads3 command: Show preprocessed text and focus on range",
-				"category": "Preprocessing",
-				"enablement": "false"
-			},
-			{
-				"command": "tads3.showPreprocessedTextForCurrentFile",
-				"title": "Tads3 command: Show preprocessed text for the current file",
-				"category": "Preprocessing"
-			},
-			{
-				"command": "tads3.showPreprocessedFileQuickPick",
-				"title": "Tads3 command: Choose a preprocessed file to show in a separate window",
-				"category": "Preprocessing"
-			},
-			{
-				"command": "tads3.openProjectFileQuickPick",
-				"title": "Tads3 command: Open any project file in a separate window",
-				"category": "Preprocessing"
-			},
-			{
-				"command": "tads3.enablePreprocessorCodeLens",
-				"title": "Tads3 command: Toggle CodeLens for preprocessed text of the current file",
-				"category": "Preprocessing"
-			},
-			{
-				"command": "tads3.analyzeTextAtPosition",
-				"title": "Tads3 command: Analyze the text at the current position and offer code actions",
-				"category": "Editor",
-				"enablement": "true"
-			}
-		],
-		"configuration": {
-			"type": "object",
-			"title": "Tads3",
-			"properties": {
-				"tads3.enableScriptFiles": {
-					"scope": "application",
-					"type": "boolean",
-					"default": true,
-					"description": "Enable script files to be shown as separate pane and interacted with. Setting requires a restart of vscode in order to take effect. "
-				},
-				"tads3.scriptFolderName": {
-					"scope": "resource",
-					"type": "string",
-					"default": "Scripts",
-					"description": "The name of the folder within the project that holds the script files. Default is 'Scripts'. "
-				},
-				"tads3.maximumScriptFiles": {
-					"scope": "resource",
-					"type": "number",
-					"default": 25,
-					"minimum": 1,
-					"description": "Set the maximum number of script files allowed in the scripts folder. Default is 25."
-				},
-				"tads3.restartGameRunnerOnT3ImageChanges": {
-					"scope": "window",
-					"type": "boolean",
-					"default": false,
-					"description": "Restarts the t3 game image in the interpreter whenever it is recompiled."
-				},
-				"tads3.gameRunnerInterpreter": {
-					"scope": "window",
-					"type": "string",
-					"default": "frob",
-					"description": "Runs the game in an command line interpreter if the setting tads3.restartGameRunnerOnT3ImageChanges is enabled. \n(Note: If on windows \"t3run.exe -plain\" can be used if the regular tads3 workbench is installed.)"
-				},
-				"tads3.maxNumberOfParseWorkerThreads": {
-					"scope": "resource",
-					"type": "number",
-					"default": 6,
-					"minimum": 1,
-					"maximum": 20,
-					"description": "Set the maximum number of worker threads that takes care of the parsing. An optimal number depends on the hardware. "
-				},
-				"tads3.parseOnlyTheWorkspaceFiles": {
-					"scope": "resource",
-					"type": "boolean",
-					"default": false,
-					"description": "In case working on a slower machine and parsing the library takes way too long time to complete, this option is here to turn off the parsing of library files and only concentrate on the workspace files. (Requires a restart after change.)"
-				},
-				"tads3.enableWorkspaceSymbolsProjectScope": {
-					"scope": "resource",
-					"type": "boolean",
-					"default": false,
-					"description": "On 'Go to symbol in workspace' ONLY project symbols will be produced. Might increase performance on larger projects. Default is false. "
-				},
-				"tads3.maxNumberOfProblems": {
-					"scope": "resource",
-					"type": "number",
-					"default": 100,
-					"description": "Controls the maximum number of problems produced by the server."
-				},
-				"tads3.trace.server": {
-					"scope": "window",
-					"type": "string",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"default": "off",
-					"description": "Traces the communication between VS Code and the language server."
-				},
-				"tads.preprocessor.path": {
-					"scope": "window",
-					"type": "string",
-					"default": "t3make",
-					"description": "Path to the tads2 preprocessor (t3make). "
-				},
-				"tads2.compiler.path": {
-					"scope": "window",
-					"type": "string",
-					"default": "tadsc",
-					"description": "Path to the tads3 compiler (tadsc or on windows: tc32.exe). "
-				},
-				"tads2.library.path": {
-					"scope": "window",
-					"type": "string",
-					"default": "/usr/local/share/frobtads/tads2/",
-					"description": "Path to the tads2 library. "
-				},
-				"tads3.compiler.path": {
-					"scope": "window",
-					"type": "string",
-					"default": "t3make",
-					"description": "Path to the tads3 compiler (t3make). "
-				},
-				"tads3.adv3.library": {
-					"scope": "window",
-					"type": "string",
-					"default": "/usr/local/share/frobtads/tads3/lib/adv3/",
-					"description": "Path to adv3 library files. "
-				},
-				"tads3.adv3Lite.library": {
-					"scope": "window",
-					"type": "string",
-					"default": "/usr/local/share/frobtads/tads3/lib/adv3Lite/",
-					"description": "Path to adv3Lite library files. "
-				},
-				"tads3.lib": {
-					"scope": "window",
-					"type": "string",
-					"default": "/usr/local/share/frobtads/tads3/lib/",
-					"description": "Path the tads3 library files. "
-				},
-				"tads3.include": {
-					"scope": "window",
-					"type": "string",
-					"default": "/usr/local/share/frobtads/tads3/include/",
-					"description": "Path the tads3 include files. "
-				},
-				"tads3.enablePreprocessorCodeLens": {
-					"scope": "resource",
-					"type": "boolean",
-					"default": false,
-					"description": "Shows preprocessed rows above as CodeLens when they differ from original source code."
-				},
-				"tads3.ifArchiveExtensionURL": {
-					"scope": "window",
-					"type": "string",
-					"default": "http://ifarchive.org/if-archive/programming/tads3/library/contributions/",
-					"pattern": "https?://ifarchive.org/.*",
-					"description": "Path the ifarchive directory for tads3 contributions"
-				},
-				"tads2.ifArchiveExtensionURL": {
-					"scope": "window",
-					"type": "string",
-					"default": "http://ifarchive.org/if-archive/programming/tads2/examples/",
-					"pattern": "https?://ifarchive.org/.*",
-					"description": "Path the ifarchive directory for tads2 contributions"
-				}
-			}
-		}
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"antlr4ts": "npm run antlr4ts_t2;npm run antlr4ts_t3",
-		"antlr4ts_t2": "antlr4ts -visitor server/src/parser/Tads2.g4",
-		"antlr4ts_t3": "antlr4ts -visitor server/src/parser/Tads3.g4",
-		"build": "vsce package --no-yarn",
-		"compile": "tsc -b",
-		"watch": "tsc -b -w",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-		"e2e-test": "npm run compile && sh ./scripts/e2e.sh",
-		"test": "cd server; jest",
-		"rebuild": "rm package-lock.json;rm client/package-lock.json;rm server/package-lock.json;rm -r node_modules;rm -r client/node_modules;rm -r server/node_modules;npm install",
-		"esbuild-base": "esbuild ./client/src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
-		"esbuild": "npm run esbuild-base -- --sourcemap",
-		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
-		"test-compile": "tsc -p ./"
-	},
-	"devDependencies": {
-		"@types/mocha": "^9.1.1",
-		"@typescript-eslint/eslint-plugin": "^5.28.0",
-		"@typescript-eslint/parser": "^5.28.0",
-		"antlr4ts-cli": "^0.5.0-alpha.4",
-		"esbuild": "^0.14.45",
-		"eslint": "^8.17.0",
-		"jest": "^28.1.1",
-		"mocha": "^10.0.0",
-		"typescript": "^4.7.3"
-	},
-	"dependencies": {
-		"npm": "^8.12.2",
-		"@types/vscode": "^1.68.0",
-		"ts-jest": "^28.0.5",
-		"vsce": "^2.9.1"
-	}
+  "name": "vscode-tads3tools",
+  "description": "Language server extension for Tads3",
+  "author": "Tomas Öberg",
+  "license": "MIT",
+  "version": "0.6.2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/toerob/vscode-tads3tools.git"
+  },
+  "publisher": "toerob",
+  "icon": "resources/icons/logo.png",
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "keywords": [
+    "tads",
+    "tads3",
+    "multi-root ready"
+  ],
+  "engines": {
+    "vscode": "^1.43.0"
+  },
+  "activationEvents": [
+    "onLanguage:tads3",
+    "onCommand:tads3.createTads3TemplateProject"
+  ],
+  "main": "./client/out/extension",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    },
+    "virtualWorkspaces": false
+  },
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "tads3ScriptTree",
+          "name": "Tads3 Game Scripts",
+          "type": "tree"
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "tads3.replayScript",
+          "when": "viewItem == string"
+        },
+        {
+          "command": "tads3.restartReplayScript",
+          "when": "viewItem == string"
+        },
+        {
+          "command": "tads3.openReplayScript",
+          "when": "viewItem == string"
+        },
+        {
+          "command": "tads3.deleteReplayScript",
+          "when": "viewItem == string"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "tads3",
+        "path": "./snippets/snippets_common.json"
+      }
+    ],
+    "languages": [
+      {
+        "id": "tads3",
+        "aliases": [
+          "TADS 3 Source File",
+          "tads3"
+        ],
+        "extensions": [
+          ".t",
+          ".h",
+          ".t3m"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tads3",
+        "scopeName": "source.tads3",
+        "path": "./syntaxes/tads3.tmLanguage.json"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "tads3.visualEdit",
+        "displayName": "Tads3 Visual Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.{t,h}"
+          }
+        ],
+        "priority": "option"
+      }
+    ],
+    "commands": [
+      {
+        "command": "tads3.restartReplayScript",
+        "title": "1. Restart & run script",
+        "category": "Interpreter",
+        "enablement": "true",
+        "shortTitle": "Restart & run"
+      },
+      {
+        "command": "tads3.replayScript",
+        "title": "2. Run script",
+        "category": "Interpreter",
+        "enablement": "true",
+        "shortTitle": "Run"
+      },
+      {
+        "command": "tads3.openReplayScript",
+        "title": "3. Open script in editor",
+        "category": "Interpreter",
+        "enablement": "true",
+        "shortTitle": "Open script"
+      },
+      {
+        "command": "tads3.deleteReplayScript",
+        "title": "4. Delete script",
+        "category": "Interpreter",
+        "enablement": "true",
+        "shortTitle": "Delete script"
+      },
+      {
+        "command": "tads2.parseTads2Project",
+        "title": "Tads2 command: Parse a tads2 project",
+        "category": "Editor",
+        "enablement": "true"
+      },
+      {
+        "command": "tads3.createTads3TemplateProject",
+        "title": "Tads3 command: Create a new Tads3 template project",
+        "category": "Edits"
+      },
+      {
+        "command": "tads3.addFileToProject",
+        "title": "Tads3 command: Adds a new file to the project",
+        "category": "Edits"
+      },
+      {
+        "command": "tads3.extractAllQuotes",
+        "title": "Tads3 command: extract unique strings from source code",
+        "category": "Editor"
+      },
+      {
+        "command": "tads3.clearCache",
+        "title": "Tads3 command: Clear cache for standard libraries adv3/adv3Lite. "
+      },
+      {
+        "command": "tads3.downloadAndInstallExtension",
+        "title": "Tads3 command: Download and install extension(s)"
+      },
+      {
+        "command": "tads3.installTracker",
+        "title": "Tads3 command: Install a tracker game file in the project so the game will remember player position between sessions",
+        "category": "Editor",
+        "enablement": "true"
+      },
+      {
+        "command": "tads3.openInVisualEditor",
+        "title": "Tads3 command: Open current tads3 source code *.{t,h} in Tads3 Visual Editor ",
+        "category": "Editor",
+        "enablement": "true"
+      },
+      {
+        "command": "tads3.setMakefile",
+        "title": "Tads3 command: Set which makefile (.t3m) to use for this project (in case there are several)",
+        "category": "Compilation"
+      },
+      {
+        "command": "tads3.restartGameRunnerOnT3ImageChanges",
+        "title": "Tads3 command: Toggles on/off if the game should restarted as soon as the t3 image game file changes",
+        "category": "Running"
+      },
+      {
+        "command": "tads3.showPreprocessedTextAction",
+        "title": "Tads3 command: Show preprocessed text and focus on range",
+        "category": "Preprocessing",
+        "enablement": "false"
+      },
+      {
+        "command": "tads3.showPreprocessedTextForCurrentFile",
+        "title": "Tads3 command: Show preprocessed text for the current file",
+        "category": "Preprocessing"
+      },
+      {
+        "command": "tads3.showPreprocessedFileQuickPick",
+        "title": "Tads3 command: Choose a preprocessed file to show in a separate window",
+        "category": "Preprocessing"
+      },
+      {
+        "command": "tads3.openProjectFileQuickPick",
+        "title": "Tads3 command: Open any project file in a separate window",
+        "category": "Preprocessing"
+      },
+      {
+        "command": "tads3.enablePreprocessorCodeLens",
+        "title": "Tads3 command: Toggle CodeLens for preprocessed text of the current file",
+        "category": "Preprocessing"
+      },
+      {
+        "command": "tads3.analyzeTextAtPosition",
+        "title": "Tads3 command: Analyze the text at the current position and offer code actions",
+        "category": "Editor",
+        "enablement": "true"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Tads3",
+      "properties": {
+        "tads3.enableScriptFiles": {
+          "scope": "application",
+          "type": "boolean",
+          "default": true,
+          "description": "Enable script files to be shown as separate pane and interacted with. Setting requires a restart of vscode in order to take effect. "
+        },
+        "tads3.scriptFolderName": {
+          "scope": "resource",
+          "type": "string",
+          "default": "Scripts",
+          "description": "The name of the folder within the project that holds the script files. Default is 'Scripts'. "
+        },
+        "tads3.maximumScriptFiles": {
+          "scope": "resource",
+          "type": "number",
+          "default": 25,
+          "minimum": 1,
+          "description": "Set the maximum number of script files allowed in the scripts folder. Default is 25."
+        },
+        "tads3.restartGameRunnerOnT3ImageChanges": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "Restarts the t3 game image in the interpreter whenever it is recompiled."
+        },
+        "tads3.gameRunnerInterpreter": {
+          "scope": "window",
+          "type": "string",
+          "default": "frob",
+          "description": "Runs the game in an command line interpreter if the setting tads3.restartGameRunnerOnT3ImageChanges is enabled. \n(Note: If on windows \"t3run.exe -plain\" can be used if the regular tads3 workbench is installed.)"
+        },
+        "tads3.maxNumberOfParseWorkerThreads": {
+          "scope": "resource",
+          "type": "number",
+          "default": 6,
+          "minimum": 1,
+          "maximum": 20,
+          "description": "Set the maximum number of worker threads that takes care of the parsing. An optimal number depends on the hardware. "
+        },
+        "tads3.parseOnlyTheWorkspaceFiles": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "In case working on a slower machine and parsing the library takes way too long time to complete, this option is here to turn off the parsing of library files and only concentrate on the workspace files. (Requires a restart after change.)"
+        },
+        "tads3.enableWorkspaceSymbolsProjectScope": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "On 'Go to symbol in workspace' ONLY project symbols will be produced. Might increase performance on larger projects. Default is false. "
+        },
+        "tads3.maxNumberOfProblems": {
+          "scope": "resource",
+          "type": "number",
+          "default": 100,
+          "description": "Controls the maximum number of problems produced by the server."
+        },
+        "tads3.trace.server": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
+        },
+        "tads.preprocessor.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "t3make",
+          "description": "Path to the tads2 preprocessor (t3make). "
+        },
+        "tads2.compiler.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "tadsc",
+          "description": "Path to the tads3 compiler (tadsc or on windows: tc32.exe). "
+        },
+        "tads2.library.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "/usr/local/share/frobtads/tads2/",
+          "description": "Path to the tads2 library. "
+        },
+        "tads3.compiler.path": {
+          "scope": "window",
+          "type": "string",
+          "default": "t3make",
+          "description": "Path to the tads3 compiler (t3make). "
+        },
+        "tads3.adv3.library": {
+          "scope": "window",
+          "type": "string",
+          "default": "/usr/local/share/frobtads/tads3/lib/adv3/",
+          "description": "Path to adv3 library files. "
+        },
+        "tads3.adv3Lite.library": {
+          "scope": "window",
+          "type": "string",
+          "default": "/usr/local/share/frobtads/tads3/lib/adv3Lite/",
+          "description": "Path to adv3Lite library files. "
+        },
+        "tads3.lib": {
+          "scope": "window",
+          "type": "string",
+          "default": "/usr/local/share/frobtads/tads3/lib/",
+          "description": "Path the tads3 library files. "
+        },
+        "tads3.include": {
+          "scope": "window",
+          "type": "string",
+          "default": "/usr/local/share/frobtads/tads3/include/",
+          "description": "Path the tads3 include files. "
+        },
+        "tads3.enablePreprocessorCodeLens": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "Shows preprocessed rows above as CodeLens when they differ from original source code."
+        },
+        "tads3.ifArchiveExtensionURL": {
+          "scope": "window",
+          "type": "string",
+          "default": "http://ifarchive.org/if-archive/programming/tads3/library/contributions/",
+          "pattern": "https?://ifarchive.org/.*",
+          "description": "Path the ifarchive directory for tads3 contributions"
+        },
+        "tads2.ifArchiveExtensionURL": {
+          "scope": "window",
+          "type": "string",
+          "default": "http://ifarchive.org/if-archive/programming/tads2/examples/",
+          "pattern": "https?://ifarchive.org/.*",
+          "description": "Path the ifarchive directory for tads2 contributions"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "antlr4ts": "npm run antlr4ts_t2;npm run antlr4ts_t3",
+    "antlr4ts_t2": "antlr4ts -visitor server/src/parser/Tads2.g4",
+    "antlr4ts_t3": "antlr4ts -visitor server/src/parser/Tads3.g4",
+    "build": "vsce package --no-yarn",
+    "compile": "tsc -b",
+    "watch": "tsc -b -w",
+    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+    "e2e-test": "npm run compile && sh ./scripts/e2e.sh",
+    "test": "cd server; jest",
+    "rebuild": "rm package-lock.json;rm client/package-lock.json;rm server/package-lock.json;rm -r node_modules;rm -r client/node_modules;rm -r server/node_modules;npm install",
+    "esbuild-base": "esbuild ./client/src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "test-compile": "tsc -p ./"
+  },
+  "devDependencies": {
+    "@types/mocha": "^9.1.1",
+    "@typescript-eslint/eslint-plugin": "^5.28.0",
+    "@typescript-eslint/parser": "^5.28.0",
+    "antlr4ts-cli": "^0.5.0-alpha.4",
+    "esbuild": "^0.14.45",
+    "eslint": "^8.17.0",
+    "jest": "^28.1.1",
+    "mocha": "^10.0.0",
+    "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "npm": "^8.12.2",
+    "@types/vscode": "^1.68.0",
+    "ts-jest": "^28.0.5",
+    "vsce": "^2.9.1"
+  }
 }
