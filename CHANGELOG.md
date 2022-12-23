@@ -6,6 +6,8 @@
    - A fix was made to make the install extension script download and install all extensions. (Sometimes it didn't work.)
    - The extension installer is refined to allow offline installations using cached extensions.
    - Setting for producing only workspace symbols via CMD/CTRL-T was missing. It is now added. The way library files was filtered was a bit flawed and has been changed.
+### Removed
+   - The formatter providers are now disabled since they don't behave as expected all the time.
 
 ## 0.6.1-alpha
 ### Fixed
