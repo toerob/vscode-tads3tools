@@ -110,8 +110,8 @@ connection.onInitialize((params: InitializeParams) => {
 				resolveProvider: false
 			},
 			implementationProvider: true,
-			documentFormattingProvider: true,
-			documentRangeFormattingProvider: true,
+			documentFormattingProvider: false,
+			documentRangeFormattingProvider: false,
 			signatureHelpProvider: {
 				triggerCharacters: ['(', ','],
 			}
