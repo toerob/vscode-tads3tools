@@ -7,9 +7,12 @@ Prioritized to work on **linux** and **mac** platform but also supported on **wi
 
 <img src="screenshots/vscode-tads3tools-screenshot.png">
 
-## First time users
+## Installation
 
 Install the extension via the marketplace by opening the extension tab within vscode and search for its partial/full name, select it and install.  
+
+Specific instructions for windows can be found [here](docs/installing-vscode-tads3-tools-on-windows.md).
+
 
 ### Tads3 notes
 Once installed open up a tads3 project folder (use the open folder feature of vscode), or create a new project with the "Tads3 command: Create a new Tads3 template project" found in the general command menu _(CTRL-SHIFT-P)_. (See the movie below).
