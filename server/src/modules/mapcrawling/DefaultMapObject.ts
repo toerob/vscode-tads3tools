@@ -1,4 +1,5 @@
 import { SymbolKind } from 'vscode';
+//import { DocumentSymbol } from 'vscode-languageserver/node';
 
 // TODO: make sure it is serializable
 
@@ -19,7 +20,7 @@ export class DefaultMapObject {
 	x = 0;
 	y = 0;
 	z = 0;
-	kind: SymbolKind | undefined;
+	kind: any;
 	detail: string | undefined;
 	arrowConnection: string | undefined;
 	shortName: string | undefined;

@@ -330,7 +330,7 @@ export default class MapObjectManager {
 	 * @returns 
 	 */
 	createMapObject(symbol: DocumentSymbol, skipChildren = true, childrenKinds:SymbolKind[] = []): DefaultMapObject {
-		const mapObj = new DefaultMapObject(symbol.name);
+		const mapObj: DefaultMapObject = new DefaultMapObject(symbol.name);
 		if (!skipChildren) {
 			const children: DocumentSymbol[] = symbol.children ?? [];
 			for (const child of children) {

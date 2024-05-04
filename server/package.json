@@ -12,30 +12,30 @@
     "url": "https://github.com/Microsoft/vscode-extension-samples"
   },
   "dependencies": {
-    "@types/glob": "^8.0.0",
+    "@types/glob": "^8.1.0",
     "@types/lru-cache": "^7.10.10",
     "antlr4ts": "^0.5.0-alpha.4",
-    "fs-extra": "^11.1.0",
+    "fs-extra": "^11.2.0",
     "fuzzysort": "^2.0.4",
-    "glob": "^8.0.3",
-    "lru-cache": "^7.14.1",
-    "mobx": "^6.7.0",
-    "node": "^19.3.0",
+    "glob": "^10.3.12",
+    "lru-cache": "^10.2.2",
+    "mobx": "^6.12.3",
+    "node": "^22.1.0",
     "threads": "^1.7.0",
-    "vscode-languageserver": "^7.0.0",
-    "vscode-languageserver-textdocument": "^1.0.8",
-    "vscode-uri": "^3.0.7",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.11",
+    "vscode-uri": "^3.0.8",
     "wink-pos-tagger": "^2.2.2"
   },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.13",
-    "@types/jasmine": "^4.3.1",
-    "@types/jest": "^29.2.4",
+    "@types/fs-extra": "^11.0.4",
+    "@types/jasmine": "^5.1.4",
+    "@types/jest": "^29.5.12",
     "install": "^0.13.0",
     "jasmine-spec-reporter": "^7.0.0",
     "jasmine-ts": "^0.4.0",
-    "npm": "^9.2.0",
-    "ts-jest": "^29.0.3",
-    "ts-node": "^10.9.1"
+    "npm": "^10.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2"
   }
 }

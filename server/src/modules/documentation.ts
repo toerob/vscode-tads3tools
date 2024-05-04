@@ -5,11 +5,11 @@ import { stripComments, strOffsetAt } from './text-utils';
 import { readFileSync } from 'fs';
 import { basename } from 'path';
 import { connection } from '../server';
-import LRUCache = require('lru-cache');
+import { LRUCache } from 'lru-cache';
 
-const documentationCachedKeywords = new LRUCache({ max: 500 });
+const documentationCachedKeywords = new LRUCache<string,string>({ max: 500 });
 
-const documentationDontCheckCachedKeywords = new LRUCache({ max: 500 });
+const documentationDontCheckCachedKeywords = new LRUCache<string,boolean>({ max: 500 });
 
 /**
  * Retrieves a documentation for a symbol and filepath. 
@@ -36,7 +36,7 @@ export function retrieveDocumentationForKeyword(symbol: DocumentSymbol, filePath
 
 		if (documentationCachedKeywords.has(symbolHash)) {
 			//connection.console.log(`Reading from cache: ${filePath}`);
-			return documentationCachedKeywords.get(symbolHash) ?? '';
+			return documentationCachedKeywords.get(symbolHash) as string ?? '';
 		}
 		if (filePath) {
 			//connection.console.log(`Reading from disc: ${filePath}`);
