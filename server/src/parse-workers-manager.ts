@@ -142,9 +142,9 @@ export async function preprocessAndParseTads3Files(globalStoragePath: string, ma
 		return;
 	}
 
-	const maxNumberOfParseWorkerThreads: number = await connection.workspace.getConfiguration("tads3.maxNumberOfParseWorkerThreads");
-
-	const parseOnlyTheWorkspaceFiles: boolean = await connection.workspace.getConfiguration("tads3.parseOnlyTheWorkspaceFiles");
+	const configuration = await connection.workspace.getConfiguration("tads3");
+	const maxNumberOfParseWorkerThreads = configuration['maxNumberOfParseWorkerThreads'];
+	const parseOnlyTheWorkspaceFiles = configuration['parseOnlyTheWorkspaceFiles'];
 
 	if (parseOnlyTheWorkspaceFiles) {
 		allFilePaths = allFilePaths.filter(x => x.startsWith(baseDir));

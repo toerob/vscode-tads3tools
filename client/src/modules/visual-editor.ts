@@ -218,8 +218,8 @@ export function onDidAddRoom(payload, persistedObjectPositions) {
 
 export function getHtmlForWebview(context: ExtensionContext, webview: Webview, extensionUri: Uri): string {
 	const scriptPath = 'media';
-	const litegraphScriptUri = webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, 'litegraph.min.js')) ?? '';
-	const litegraphCssUri =    webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, 'litegraph.css')) ?? '';
+	const litegraphScriptUri = webview.asWebviewUri( Uri.joinPath(context.extensionUri, 'client', 'node_modules', 'litegraph.js','build','litegraph.js')  ) ?? '';
+	const litegraphCssUri =    webview.asWebviewUri( Uri.joinPath(context.extensionUri, 'client', 'node_modules', 'litegraph.js','css','litegraph.css') ) ?? '';
 	const mapLogicUri =        webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, 'maprenderer.js')) ?? '';
 	const html = `
 		<html>

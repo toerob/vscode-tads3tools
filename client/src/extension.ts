@@ -734,9 +734,14 @@ async function openInVisualEditor(context: ExtensionContext) {
 	);
 	const options: WebviewOptions = {
 		enableScripts: true,
-		localResourceRoots: [Uri.joinPath(context.extensionUri, 'media')],
-
+		//localResourceRoots: [Uri.joinPath(context.extensionUri, 'media')],
+		localResourceRoots: [
+			Uri.joinPath(context.extensionUri, 'media'),
+			Uri.joinPath(context.extensionUri, 'client', 'node_modules', 'litegraph.js/build'),
+			Uri.joinPath(context.extensionUri, 'client', 'node_modules', 'litegraph.js/css')
+		]
 	};
+
 	tads3VisualEditorPanel.webview.options = options;
 	tads3VisualEditorPanel.webview.html = getHtmlForWebview(context, tads3VisualEditorPanel.webview, context.extensionUri);
 	tads3VisualEditorPanel.onDidDispose(() => {

@@ -34,7 +34,6 @@ const tads3Keywords = ['grammar', 'switch', 'case', 'default', 'function', 'thro
 export async function onCompletion(handler: CompletionParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
 	const suggestions: Set<CompletionItem> = new Set();
 
-
 	const document = documents.get(handler.textDocument.uri);
 	const range = Range.create(handler.position.line, 0, handler.position.line, handler.position.character);
 	const lineTillCurrentPos = document?.getText(range) ?? '';

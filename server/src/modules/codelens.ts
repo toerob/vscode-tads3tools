@@ -6,7 +6,9 @@ import { TadsSymbolManager } from './symbol-manager';
 
 export async function onCodeLens({ textDocument }: CodeLensParams, documents: TextDocuments<TextDocument>, symbolManager: TadsSymbolManager) {
     const codeLenses: CodeLens[] = [];
-    const enablePreprocessorCodeLens = await connection.workspace.getConfiguration("tads3.enablePreprocessorCodeLens");
+    
+    const configuration = await connection.workspace.getConfiguration("tads3");
+	const enablePreprocessorCodeLens = configuration['enablePreprocessorCodeLens'];
 
     const uri = URI.parse(textDocument.uri);
     const fsPath = uri.fsPath;

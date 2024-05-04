@@ -1,4 +1,5 @@
-import assert = require('assert');
+import * as assert from 'assert';
+
 import { getWordAtPosition, tokenizeWithIndex } from '../../src/modules/text-utils';
 import { Position } from 'vscode-languageserver';
 
