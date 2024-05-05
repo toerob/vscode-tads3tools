@@ -557,7 +557,6 @@ export async function activate(context: ExtensionContext) {
     context.globalStorageUri.fsPath,
     "extensions"
   );
-  //await client.start();
 }
 
 export function deactivate(): Thenable<void> | undefined {

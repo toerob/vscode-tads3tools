@@ -30,9 +30,11 @@ export async function downloadAndInstallExtension(context: ExtensionContext) {
     extensionDownloadMap = new Map();
     let idx = 0;
     for (const entry of entries) {
-      const [key, data] = entry.split("\n\n");
+      const [key, data] = entry.split(/\n+/);
+      const sections = entry.split(/\n+/);
       if (idx > 0) {
-        extensionDownloadMap.set(key.trim(), data.trim());
+        //extensionDownloadMap.set(key.trim(), data.trim());
+        extensionDownloadMap.set(sections[0].trim(), sections.splice(1).join());
       }
       idx++;
     }
@@ -76,11 +78,11 @@ export async function downloadAndInstallExtension(context: ExtensionContext) {
   const action = await window.showInformationMessage(
     infoEntries.join("\n\n***\n\n"),
     { modal: true },
-    option1,
-    option2
+    option1
   );
-  console.log(action);
-  if (action.title === "Install") {
+
+  console.debug(`Choice: ${action}`);
+  if (action?.title === "Install") {
     const makefileDir = dirname(
       extensionState.isUsingTads2
         ? extensionState.getTads2MainFile().fsPath
@@ -174,6 +176,7 @@ async function downloadAndCacheFile(
   fileName: string,
   extensionCacheDirectory
 ) {
+  ensureDirSync(extensionCacheDirectory);
   const cachedFilePath = path.join(extensionCacheDirectory, fileName);
   const pathToStoreExtension = path.resolve(__dirname, folder, fileName);
   if (existsSync(cachedFilePath)) {
