@@ -6,6 +6,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI } from 'vscode-uri';
 import { SymbolKind } from 'vscode-languageserver';
 import { getDefineMacrosMap } from '../parser/preprocessor';
+import { connection } from '../server';
 
 const interpolatedExpressionRegExp = /[<][<](.*)[>][>]/g;
 
@@ -93,23 +94,28 @@ export async function onDefinition({ textDocument, position }: DefinitionParams,
 				symbolName = "sentinelDobj" + symbolName;
 			}
 
-
-
-			//connection.console.log(`Find definition(s) for word: ${symbolName}`);
+			//connection.console.debug(`Searching definition(s) for word: ${symbolName}`);
 			for (const filePathKey of symbolManager.symbols.keys()) {
 				const localSymbols = symbolManager.symbols.get(filePathKey);
 				if (localSymbols) {
 					const symbol = flattenTreeToArray(localSymbols).find(x => x.name === symbolName); 
 					if (symbol !== undefined) {
-						//connection.console.log(`Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`);
+						connection.console.debug(`Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`);
 						const filePath = URI.file(filePathKey).toString();
 						locations.push(Location.create(filePath, symbol.range));
 					}
 				}
 			}
+
+			//connection.console.debug(`Searching macro definition(s) for word: ${symbolName}`);
 			const macro = getDefineMacrosMap().get(symbolName);
 			if (macro) {
+				connection.console.debug(`Found macro definition(s) for word: ${symbolName} within ${macro.uri} on row ${macro.row}`);
 				locations.push(Location.create(macro.uri, Range.create(macro.row, 0, macro.endLine, macro.row + symbolName.length)));
+			}
+
+			if(locations.length == 0) {
+				connection.console.debug(`No definition(s) found for word: ${symbolName}.`);
 			}
 		}
 	}

@@ -211,11 +211,11 @@ export async function activate(context: ExtensionContext) {
 		preprocessedList = filesNames;
 	});
 
-	client.onNotification('symbolparsing/success', ([filePath, tracker, totalFiles, poolSize]) => {
+	client.onNotification('symbolparsing/success', async ([filePath, tracker, totalFiles, poolSize]) => {
 		if (extensionState.allFilesBeenProcessed && !extensionState.isLongProcessingInAction()) {
 			if (tads3VisualEditorPanel) {
 				client.info(`Refreshing the map view`);
-				client.sendNotification('request/mapsymbols');
+				await client.sendNotification('request/mapsymbols');
 			}
 		}
 		const filename = basename(Uri.parse(filePath).path);
@@ -227,13 +227,13 @@ export async function activate(context: ExtensionContext) {
 
 
 
-	client.onNotification("symbolparsing/allfiles/success", ({ elapsedTime }) => {
+	client.onNotification("symbolparsing/allfiles/success", async ({ elapsedTime }) => {
 		if (extensionState.isLongProcessingInAction()) {
 			window.showInformationMessage(`All project and library files are now parsed (elapsed time: ${elapsedTime} ms)`);
 		} else {
 			client.info(`File parsed (elapsed time: ${elapsedTime} ms)`);
 		}
-		client.sendNotification('request/mapsymbols');
+		await client.sendNotification('request/mapsymbols');
 		extensionState.setLongProcessing(false);
 		extensionState.allFilesBeenProcessed = true;
 	});
@@ -653,8 +653,8 @@ export async function executeParse(filePaths: string[]): Promise<any> {
 }
 
 export async function cancelParse(): Promise<any> {
-	return new Promise((resolve) => {
-		client.sendNotification('symbolparsing/abort');
+	return new Promise( async (resolve) => {
+		await client.sendNotification('symbolparsing/abort');
 		serverProcessCancelTokenSource?.cancel();
 		return resolve(true);
 	});
@@ -720,7 +720,7 @@ function showAndScrollToRange(document: TextDocument, range: Range) {
 async function openInVisualEditor(context: ExtensionContext) {
 	if (tads3VisualEditorPanel) {
 		tads3VisualEditorPanel.reveal();
-		client.sendNotification('request/mapsymbols');
+		await client.sendNotification('request/mapsymbols');
 		return;
 	}
 
@@ -748,15 +748,15 @@ async function openInVisualEditor(context: ExtensionContext) {
 		tads3VisualEditorPanel = undefined;
 	}, null, context.subscriptions);
 
-	tads3VisualEditorPanel.onDidChangeViewState(e => {
+	tads3VisualEditorPanel.onDidChangeViewState( async e => {
 		if (e.webviewPanel.active) {
 			client.info(`Refresh map view`);
-			client.sendNotification('request/mapsymbols');
+			await client.sendNotification('request/mapsymbols');
 		}
 	});
 
 	client.info(`Opening up the webview and ask server for map symbols`);
-	client.sendNotification('request/mapsymbols');
+	await client.sendNotification('request/mapsymbols');
 
 	tads3VisualEditorPanel.webview.onDidReceiveMessage(event => {
 		const routine = visualEditorResponseHandlerMap.get(event.command);

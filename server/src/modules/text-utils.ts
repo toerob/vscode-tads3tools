@@ -88,7 +88,7 @@ export function withinQuote(document: TextDocument|any, position: Position) {
 		const quoteString = tokenizedQuotes.get(quotePosition);
 		const endOfQuotePosition = quotePosition+quoteString.length;
 		if(quotePosition <= characterPosition && characterPosition <= endOfQuotePosition) {
-			//connection.console.log(`Position found within quote ${quoteString}`);
+			//connection.console.debug(`Position found within quote ${quoteString}`);
 			return {
 				characterPosition, 
 				quotePosition, 
@@ -211,7 +211,7 @@ export function getWordAtPosition_old(currentDocument: TextDocument|any, positio
 	const wordCandidate = line.substr(spaceBefore, spaceAfter);
 	const resultingWord = wordRegExp.exec(wordCandidate);
 	if (resultingWord) {
-		//connection.console.log(resultingWord[0]);
+		//connection.console.debug(resultingWord[0]);
 		return resultingWord[0];
 	}
 	return undefined;

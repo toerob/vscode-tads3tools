@@ -21,13 +21,13 @@ export async function onDocumentSymbol(handler: DocumentSymbolParams, documents:
 
 	if (fsPath.endsWith('.t') || fsPath.endsWith('.h')) {
 		while (!symbolManager.symbols.has(fsPath)) {
-			//connection.console.log(`${fsPath} is waiting for symbols`);
+			//connection.console.debug(`${fsPath} is waiting for symbols`);
 			await asyncSetTimeout(2000);
 		}
 	}
 
 	const symbols = symbolManager.symbols.get(fsPath) ?? [];
-	connection.console.log(`Fetching ${symbols.length} low level symbols for: ${fsPath}`);
+	connection.console.debug(`Fetching ${symbols.length} low level symbols for: ${fsPath}`);
 	return symbols;
 }
 

@@ -35,11 +35,11 @@ export function retrieveDocumentationForKeyword(symbol: DocumentSymbol, filePath
 		}
 
 		if (documentationCachedKeywords.has(symbolHash)) {
-			//connection.console.log(`Reading from cache: ${filePath}`);
+			//connection.console.debug(`Reading from cache: ${filePath}`);
 			return documentationCachedKeywords.get(symbolHash) as string ?? '';
 		}
 		if (filePath) {
-			//connection.console.log(`Reading from disc: ${filePath}`);
+			//connection.console.debug(`Reading from disc: ${filePath}`);
 			const originalSourceCode = readFileSync(filePath).toString();
 			const startOfClassLine = symbol.range.start.line;
 			if(startOfClassLine) {

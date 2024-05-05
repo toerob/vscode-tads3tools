@@ -42,14 +42,17 @@ export async function onReferences(handler: ReferenceParams, documents: TextDocu
 		if (symbolName) {
 
 			// Strategy 1:
-			connection.console.log(`Find reference(s) for word: ${symbolName}`);
+			connection.console.debug(`Searching reference(s) for word: ${symbolName}`);
 			const locations = symbolManager.getAllWorkspaceKeywordLocations(symbolName, false);
 
 			// Additional references could we added via symbol defintions, e.g if Property's should be allowed. 
 			/*symbolManager.getAllWorkspaceSymbols(false)
 				.filter(x => allowedSymbolAsKeywordPredicate(x) && x.name === symbolName)
 				.forEach(x => locations.push(x.location));*/
-
+			
+			if(locations.length == 0) {
+				connection.console.debug(`No reference(s) found for word: ${symbolName}.`);
+			}	
 			return locations;
 			
 			/*

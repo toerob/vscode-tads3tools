@@ -64,12 +64,12 @@ export function formatDocument(preprocessedText: string, orgInput: string, lineC
 			// but for now just ignore formatting spaces between them
 			const formattedRow = "\t".repeat(indentation) + trimmedOriginalRow;
 			formattedDocumentArray.push(formattedRow);
-			//connection.console.log(`Current indentation: ${indentation}: ${formattedRow}`);
+			//connection.console.debug(`Current indentation: ${indentation}: ${formattedRow}`);
 		} else {
 			const prunedWhiteSpaceOriginalRow = trimmedOriginalRow.replace(/\s{2,}/g, ' ');
 			const formattedRow = "\t".repeat(indentation) + prunedWhiteSpaceOriginalRow;
 			formattedDocumentArray.push(formattedRow);
-			//connection.console.log(`Current indentation: ${indentation}: ${formattedRow}`);
+			//connection.console.debug(`Current indentation: ${indentation}: ${formattedRow}`);
 		}
 
 	}

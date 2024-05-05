@@ -75,7 +75,7 @@ export async function onCompletion(handler: CompletionParams, documents: TextDoc
 
 			// Add all inherited properties for the object by checking its heritage and lookup all symbols
 			const heritage = symbolManager.mapHeritage(symbol);
-			connection.console.log([...heritage].join(','));
+			connection.console.debug([...heritage].join(','));
 			for (const ancestorClass of [...heritage.values()][0] ?? []) {
 				const result = symbolManager.findSymbol(ancestorClass);
 				if (result.symbol) {
@@ -96,7 +96,7 @@ export async function onCompletion(handler: CompletionParams, documents: TextDoc
 
 
 			const results = fuzzysort.go(word, [...suggestions], { key: 'label' });
-			connection.console.log(results.map(x => x.obj.label).join(','));
+			connection.console.debug(results.map(x => x.obj.label).join(','));
 			return results.map((x: any) => x.obj);
 
 		}
@@ -105,7 +105,7 @@ export async function onCompletion(handler: CompletionParams, documents: TextDoc
 		if (currentLineStr.match(`${WS}(class)?${ID}${WS}:${WS}${word}`)
 			|| currentLineStr.match(`${WS}(class)?${ID}${WS}:${WS}(${ID}${WS},${WS})*${word}`)
 		) {
-			connection.console.log(`Matching object declaration for: "${word}"`);
+			connection.console.debug(`Matching object declaration for: "${word}"`);
 			const classNames = [...symbolManager.inheritanceMap.keys()];
 			for (const className of classNames) {
 				const item = CompletionItem.create(className);
@@ -118,7 +118,7 @@ export async function onCompletion(handler: CompletionParams, documents: TextDoc
 			}
 
 			const results = fuzzysort.go(word, [...suggestions], { key: 'label' });
-			//connection.console.log(results.map(x=>x.obj.label).join(','));
+			//connection.console.debug(results.map(x=>x.obj.label).join(','));
 			return results.map((x: any) => x.obj);
 		}
 
@@ -129,7 +129,7 @@ export async function onCompletion(handler: CompletionParams, documents: TextDoc
 		const result = dirAssignmentRegExp.exec(currentLineStr);
 		if (result && result.length > 0) {
 			//word ??= '';
-			connection.console.log(`Matching direction assignment for: "${word}"`);
+			connection.console.debug(`Matching direction assignment for: "${word}"`);
 			for (const key of symbolManager.symbols.keys()) {
 				for (const symbol of symbolManager.symbols.get(key) ?? []) {
 					if (symbol.kind === SymbolKind.Object) {
@@ -149,7 +149,7 @@ export async function onCompletion(handler: CompletionParams, documents: TextDoc
 				return [...suggestions];
 			}
 			const results = fuzzysort.go(word, [...suggestions], { key: 'label' });
-			connection.console.log(results.map(x => x.obj.label).join(','));
+			connection.console.debug(results.map(x => x.obj.label).join(','));
 			return results.map((x: any) => x.obj);
 		}
 
@@ -171,7 +171,7 @@ export async function onCompletion(handler: CompletionParams, documents: TextDoc
 					const item = CompletionItem.create(key);
 					item.kind = CompletionItemKind.Keyword;
 					if (!suggestions.has(item)) {
-						//connection.console.log(`Adding ${key} for ${file}`);
+						//connection.console.debug(`Adding ${key} for ${file}`);
 						suggestions.add(item);
 					}
 				}

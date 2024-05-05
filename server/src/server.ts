@@ -138,7 +138,7 @@ connection.onInitialized(() => {
 	}
 	if (hasWorkspaceFolderCapability) {
 		connection.workspace.onDidChangeWorkspaceFolders(_event => {
-			connection.console.log('Workspace folder change event received.');
+			connection.console.debug('Workspace folder change event received.');
 		});
 	}
 
@@ -151,13 +151,16 @@ connection.onInitialized(() => {
 			mapper.newlyCreatedRoomsSet.clear();
 			mapper.persistedObjectPositions.clear();
 		}
+
+		// TODO: make this async so connection.sendNotification can use await
 		processMapSymbols(symbolManager, (symbols: DefaultMapObject[]) => {
 			connection.sendNotification('response/mapsymbols', symbols);
 		});
 	});
 	
-	connection.onRequest('request/changestartroom', (startRoom)=> {
+	connection.onRequest('request/changestartroom', async(startRoom)=> {
 		mapper.startRoom = startRoom;
+
 		processMapSymbols(symbolManager, (symbols: DefaultMapObject[]) => {
 			connection.sendNotification('response/mapsymbols', symbols);
 		});
@@ -168,7 +171,7 @@ connection.onInitialized(() => {
 	connection.onRequest('request/findsymbol', ({ name, postAction }) => {
 		const symbol = symbolManager.findSymbol(name);
 		if (symbol) {
-			connection.console.log(`Found symbol: ${name}`);
+			connection.console.debug(`Found symbol: ${name}`);
 			connection.sendNotification('response/foundsymbol', {...symbol, postAction});
 		}
 	});
@@ -293,7 +296,7 @@ connection.onRequest('request/extractQuotes', async (params) => {
 		}
 
 		resultArray = [...new Set([...resultArray])];
-		connection.sendNotification('response/extractQuotes', { resultArray } );
+		await connection.sendNotification('response/extractQuotes', { resultArray } );
 		return;
 	}
 	
@@ -307,14 +310,14 @@ connection.onRequest('request/extractQuotes', async (params) => {
 		resultArray = resultArray.filter(x=>x.startsWith('\"'));
 	}
 
-	connection.sendNotification('response/extractQuotes', { resultArray } );
+	await connection.sendNotification('response/extractQuotes', { resultArray } );
 });
 
 
 connection.onRequest('request/preprocessed/file', async (params) => {
 	const { path, range } = params;
 	const text = preprocessedFilesCacheMap.get(path);
-	connection.sendNotification('response/preprocessed/file', { path, text } );
+	await connection.sendNotification('response/preprocessed/file', { path, text } );
 });
 
 
@@ -325,7 +328,7 @@ connection.onRequest('request/analyzeText/findNouns', async (params) => {
 	const array = preprocessedText?.split(/\r?\n/) ?? [];
 	const line = array[position.line];
 	
-	connection.console.log(`Analyzing: ${line} / ${text}`);
+	connection.console.debug(`Analyzing: ${line} / ${text}`);
 
 	if(line) {
 		const tree = analyzeText(line);
@@ -334,8 +337,8 @@ connection.onRequest('request/analyzeText/findNouns', async (params) => {
 		const symbol = symbolManager.findClosestSymbolKindByPosition(path, SymbolKind.Object, position);
 		if(symbol) {
 			const level = symbolManager.additionalProperties.get(path)?.get(symbol)?.level + 1;
-			//connection.console.log(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
-			connection.sendNotification('response/analyzeText/findNouns', { tree, range: symbol.range, level } );
+			//connection.console.debug(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
+			await connection.sendNotification('response/analyzeText/findNouns', { tree, range: symbol.range, level } );
 		}
 	} 
 

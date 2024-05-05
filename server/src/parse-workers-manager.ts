@@ -30,7 +30,7 @@ function analyzeMakefile(chosenMakefileUri: string) {
 			makefileArray.push({ key, value });
 		}
 	}
-	connection.console.log(`Done analyzing makefile`);
+	connection.console.debug(`Done analyzing makefile`);
 	return makefileArray;
 }
 
@@ -67,10 +67,10 @@ export async function preprocessAndParseTads2Files(globalStoragePath: string, ma
 		const t2PreprocessorPath: string = await connection.workspace.getConfiguration('tads.preprocessor.path') ?? 't3make';
 		const libFolder: string = await connection.workspace.getConfiguration('tads2.library.path') ?? '/usr/local/share/frobtads/tads2/';
 		await preprocessTads2Files(mainFileLocation, preprocessedFilesCacheMap, t2PreprocessorPath, [libFolder], connection);
-		connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);
+		await connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);
 	} catch (error:any) {
 		connection.console.error(error.message);
-		connection.sendNotification('symbolparsing/allfiles/failed', { error: error.message });
+		await connection.sendNotification('symbolparsing/allfiles/failed', { error: error.message });
 		return;
 	}
 	parseTads2Files(filePaths);
@@ -88,18 +88,18 @@ export async function preprocessAndParseTads3Files(globalStoragePath: string, ma
 		lastMakeFileLocation = makefileLocation;
 		makefileStructure = analyzeMakefile(makefileLocation);
 		usingAdv3Lite = !!makefileStructure?.find(keyvalue => keyvalue.key.match(/-lib/) && keyvalue.value.match(adv3LitePathRegExp)) ?? false;
-		connection.console.log('Project using ' + (usingAdv3Lite ? 'adv3Lite' : 'standard adv3 library'));
-		connection.sendNotification('response/makefile/keyvaluemap', { makefileStructure, usingAdv3Lite });
+		connection.console.debug('Project using ' + (usingAdv3Lite ? 'adv3Lite' : 'standard adv3 library'));
+		await connection.sendNotification('response/makefile/keyvaluemap', { makefileStructure, usingAdv3Lite });
 	}
 
 	if (globalStoragePath) {
 		ensureDirSync(globalStoragePath);
-		connection.console.log(`Ensuring "${globalStoragePath}" exists`);
+		connection.console.debug(`Ensuring "${globalStoragePath}" exists`);
 		ensureDirSync(path.join(globalStoragePath, '.cache'));
 		const library = usingAdv3Lite ? 'adv3Lite' : 'adv3';
 		globalStorageCachePath = path.join(globalStoragePath, '.cache', library);
 
-		connection.console.log(`Ensuring "${globalStorageCachePath}" exists`);
+		connection.console.debug(`Ensuring "${globalStorageCachePath}" exists`);
 		ensureDirSync(globalStorageCachePath);
 	}
 
@@ -108,17 +108,17 @@ export async function preprocessAndParseTads3Files(globalStoragePath: string, ma
 		await preprocessTads3Files(makefileLocation, preprocessedFilesCacheMap, t3makeCompilerPath, connection);
 	} catch (error:any) {
 		connection.console.error(error.message);
-		connection.sendNotification('symbolparsing/allfiles/failed', { error: error.message });
+		await connection.sendNotification('symbolparsing/allfiles/failed', { error: error.message });
 		return;
 	}
 
-	connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);
+	await connection.sendNotification('response/preprocessed/list', [...preprocessedFilesCacheMap.keys()]);
 
 	let allFilePaths = filePaths;
 
 	// Parse project files close to the makefile first:
 	const baseDir = Utils.dirname(URI.file(makefileLocation)).fsPath;
-	connection.console.log(`Setting up base directory for project: ${baseDir}`); // Default 6 threads
+	connection.console.debug(`Setting up base directory for project: ${baseDir}`); // Default 6 threads
 
 
 	if (filePaths === undefined) {
@@ -138,7 +138,7 @@ export async function preprocessAndParseTads3Files(globalStoragePath: string, ma
 	}
 	if (allFilePaths === undefined) {
 		connection.console.error(`No files found to parse`);
-		connection.sendNotification('symbolparsing/allfiles/failed', { error: `No files found to parse` });
+		await connection.sendNotification('symbolparsing/allfiles/failed', { error: `No files found to parse` });
 		return;
 	}
 
@@ -148,12 +148,12 @@ export async function preprocessAndParseTads3Files(globalStoragePath: string, ma
 
 	if (parseOnlyTheWorkspaceFiles) {
 		allFilePaths = allFilePaths.filter(x => x.startsWith(baseDir));
-		connection.console.log(`Only parses files with base directory: ${baseDir}`); // Default 6 threads
-		connection.console.log(`****\n${allFilePaths.map(x => basename(x)).join('\n')}****\n`);
+		connection.console.debug(`Only parses files with base directory: ${baseDir}`); // Default 6 threads
+		connection.console.debug(`****\n${allFilePaths.map(x => basename(x)).join('\n')}****\n`);
 	}
 	if (allFilePaths.length === 0) {
-		connection.console.log(`No files to parse. Aborting operation`);
-		connection.sendNotification('symbolparsing/allfiles/failed', {error: `No files to parse. Aborting operation`});
+		connection.console.debug(`No files to parse. Aborting operation`);
+		await connection.sendNotification('symbolparsing/allfiles/failed', {error: `No files to parse. Aborting operation`});
 		return;
 	}
 
@@ -167,11 +167,11 @@ export async function preprocessAndParseTads3Files(globalStoragePath: string, ma
 	if (allFilePaths.length === 1) {
 		const filePath = allFilePaths[0];
 		const startTime = Date.now();
-		connection.console.log(`Spawning worker to parse a single file: ${filePath}`);
+		connection.console.debug(`Spawning worker to parse a single file: ${filePath}`);
 		const worker = await spawn(new Worker('./worker'));
 		const text = preprocessedFilesCacheMap.get(filePath) ?? '';
 		const jobResult = await worker(filePath, text);
-		connection.console.log(`Worker finished with result`);
+		connection.console.debug(`Worker finished with result`);
 		const { symbols, keywords, additionalProperties, inheritanceMap } = jobResult;
 		symbolManager.symbols.set(filePath, symbols ?? []);
 		symbolManager.keywords.set(filePath, keywords ?? []);
@@ -181,20 +181,20 @@ export async function preprocessAndParseTads3Files(globalStoragePath: string, ma
 		symbolManager.additionalProperties.set(filePath, additionalProperties);
 		tracker++;
 		const elapsedTime = Date.now() - startTime;
-		connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, 1]);
-		connection.console.log(`${filePath} parsed successfully in ${elapsedTime} ms`);
+		await connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, 1]);
+		connection.console.debug(`${filePath} parsed successfully in ${elapsedTime} ms`);
 		try {
 			await Thread.terminate(worker);
-			connection.console.log(`[worker unassigned]`);
+			connection.console.debug(`[worker unassigned]`);
 		} catch (err) {
 			connection.console.error(`Error during thread termination: ${err}`);
 		}
 
 		// Setup a WorkerPool if we have a collection of files to parse
 	} else {
-		connection.console.log(`Preparing to parse a total of ${allFilePaths.length} files`);
+		connection.console.debug(`Preparing to parse a total of ${allFilePaths.length} files`);
 		const poolSize = allFilePaths.length >= maxNumberOfParseWorkerThreads ? maxNumberOfParseWorkerThreads : 1;
-		connection.console.log(`Setting worker thread poolsize to: ${poolSize}`); // Default 6 threads
+		connection.console.debug(`Setting worker thread poolsize to: ${poolSize}`); // Default 6 threads
 
 		const workerPool = Pool(() => spawn(new Worker('./worker')), poolSize);
 
@@ -223,11 +223,11 @@ export async function preprocessAndParseTads3Files(globalStoragePath: string, ma
 				});
 
 				const elapsedCacheReadTime = Date.now() - startTime;
-				connection.console.log(`Cached library files took ${elapsedCacheReadTime} ms to read`);
+				connection.console.debug(`Cached library files took ${elapsedCacheReadTime} ms to read`);
 			}
 
 			for (const filePath of allFilePaths) {
-				connection.console.log(`Queuing parsing job ${filePath}`);
+				connection.console.debug(`Queuing parsing job ${filePath}`);
 
 				// Only use cached values herein:
 				if (!cachedFiles.has(filePath)) {
@@ -245,13 +245,13 @@ export async function preprocessAndParseTads3Files(globalStoragePath: string, ma
 						clearCompletionCache();
 						symbolManager.additionalProperties.set(filePath, additionalProperties);
 						tracker++;
-						connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, poolSize]);
-						connection.console.log(`${filePath} parsed successfully`);
+						await connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, poolSize]);
+						connection.console.debug(`${filePath} parsed successfully`);
 					});
 				} else {
 					tracker++;
-					connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, poolSize]);
-					connection.console.log(`${filePath} cached restored successfully`);
+					await connection.sendNotification('symbolparsing/success', [filePath, tracker, totalFiles, poolSize]);
+					connection.console.debug(`${filePath} cached restored successfully`);
 				}
 			}
 
@@ -266,8 +266,8 @@ export async function preprocessAndParseTads3Files(globalStoragePath: string, ma
 
 
 			const elapsedTime = Date.now() - startTime;
-			console.log(`All files parsed within ${elapsedTime} ms`);
-			connection.sendNotification('symbolparsing/allfiles/success', { allFilePaths, elapsedTime });
+			console.debug(`All files parsed within ${elapsedTime} ms`);
+			await await connection.sendNotification('symbolparsing/allfiles/success', { allFilePaths, elapsedTime });
 
 			if (initialParsing) {
 				const startTime = Date.now();
@@ -275,14 +275,14 @@ export async function preprocessAndParseTads3Files(globalStoragePath: string, ma
 				exportLibraryKeywords(libraryFilePaths, symbolManager.keywords, usingAdv3Lite);
 				exportInheritanceMap(symbolManager.inheritanceMap);
 				const elapsedCacheReadTime = Date.now() - startTime;
-				connection.console.log(`Cached library files export took ${elapsedCacheReadTime} ms to write`);
+				connection.console.debug(`Cached library files export took ${elapsedCacheReadTime} ms to write`);
 			}
 			initialParsing = false;
 
 		} catch (err) {
 			await workerPool.terminate();
 			connection.console.error(`Error happened during parsing of files: ${err}`);
-			connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
+			await connection.sendNotification('symbolparsing/allfiles/failed', allFilePaths);
 		}
 	}
 }
@@ -299,7 +299,7 @@ function exportLibrarySymbols(libraryFilePaths: string[], symbols: Map<string, D
 			const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 			try {
 				writeFileSync(libraryCacheFilePath, JSON.stringify(value).toString());
-				connection.console.log(`Cached symbols exported for ${libraryPath} to ${libraryCacheFilePath}`);
+				connection.console.debug(`Cached symbols exported for ${libraryPath} to ${libraryCacheFilePath}`);
 			} catch (err) {
 				connection.console.error(`Caching failed for ${libraryPath}: \n` + err);
 			}
@@ -321,7 +321,7 @@ function exportLibraryKeywords(libraryFilePaths: string[], keywords: Map<string,
 					const fileNameStr = `${basename(libraryKeywordPath)}__keywords.json`;
 					const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 					writeFileSync(libraryCacheFilePath, JSON.stringify(keywordRangeMapArray).toString());
-					connection.console.log(`Cached keywords exported for ${libraryKeywordPath} to ${libraryCacheFilePath}`);
+					connection.console.debug(`Cached keywords exported for ${libraryKeywordPath} to ${libraryCacheFilePath}`);
 				} catch (err) {
 					connection.console.error(`Error happened during export of keywords: ${err}`);
 				}
@@ -337,7 +337,7 @@ function exportInheritanceMap(inheritanceMap: Map<string, string>) {
 			const fileNameStr = `inheritance__map.json`;
 			const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 			writeFileSync(libraryCacheFilePath, JSON.stringify(inheritanceMapArray).toString());
-			connection.console.log(`Cached inheritancemap to ${libraryCacheFilePath}`);
+			connection.console.debug(`Cached inheritancemap to ${libraryCacheFilePath}`);
 		} catch (err) {
 			connection.console.error(`Error happened during export: ${err}`);
 		}
@@ -354,7 +354,7 @@ function importLibrarySymbols(libraryFilePaths: string[], fileSuffix: string, ca
 				const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 				const data = readFileSync(libraryCacheFilePath).toString();
 				callback(librarySymbolPath, data);
-				connection.console.log(`Cached symbols filed used for "${librarySymbolPath}"`);
+				connection.console.debug(`Cached symbols filed used for "${librarySymbolPath}"`);
 				cachedFiles.add(librarySymbolPath);
 			} catch (err) {
 				connection.console.error(`Error happened during import of symbols: ${err}`);
@@ -375,7 +375,7 @@ function importLibraryKeywords(libraryFilePaths: string[], fileSuffix: string, c
 				const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
 				const data = readFileSync(libraryCacheFilePath).toString();
 				callback(libraryKeywordPath, data);
-				connection.console.log('Cached symbols filed used for' + libraryKeywordPath);
+				connection.console.debug('Cached symbols filed used for' + libraryKeywordPath);
 				cachedFiles.add(libraryCacheFilePath);
 			} catch (err) {
 				connection.console.error(`Error happened during import of symbols: ${err}`);
@@ -393,7 +393,7 @@ function importInheritanceMap(callback: any) {
 			const filePath = path.join(globalStorageCachePath, fileNameStr).toString();
 			const data = readFileSync(filePath).toString();
 			callback(data);
-			connection.console.log('Cached symbols filed used for' + filePath);
+			connection.console.debug('Cached symbols filed used for' + filePath);
 		} catch (err) {
 			connection.console.error(`Error happened during import of symbols: ${err}`);
 		}

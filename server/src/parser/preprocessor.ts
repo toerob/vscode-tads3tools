@@ -254,7 +254,8 @@ function mapMacroDefinitions(filename: string, connection: any) {
 			const fp = onWindowsPlatform? URI.file(filename).path : filename;
 			let rowIdx = 0;
 			const text = data.toString();
-			const rows = text.split(wholeLineRegExp) ?? [];
+			//const rows = text.split(wholeLineRegExp) ?? []; // TODO: kolla 375 mot \n också
+			const rows = text.split(/\n/) ?? []; // TODO: kolla 375 mot \n också
 			rows.forEach((row, idx)=> {
 				const result = defineRegExp.exec(row);
 				if(result !== null && result?.length >= 2) {

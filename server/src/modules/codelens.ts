@@ -34,7 +34,7 @@ export async function onCodeLens({ textDocument }: CodeLensParams, documents: Te
     // positions
 
     if (currentDocArray.length !== preprocessedDocumentArray.length) {
-        connection.console.log(`Document number of rows diverging from preprocessed document, skipping codelens this time around`);
+        connection.console.debug(`Document number of rows diverging from preprocessed document, skipping codelens this time around`);
         return [];
     }
 

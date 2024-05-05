@@ -1,5 +1,10 @@
 # Changelog
 
+### Added
+   - Upgrades of dependencies - the client/server now adheres to the language server protocol of version 9.0.1
+### Fixed
+   - Macro definitions lookup now goes to the correct row. 
+
 ## 0.6.2-alpha
 ### Fixed
    - Script folder is longer created in another language besides Tads2/Tads3
