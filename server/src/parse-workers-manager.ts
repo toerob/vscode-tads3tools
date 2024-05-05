@@ -231,10 +231,12 @@ export async function preprocessAndParseTads3Files(
     const text = preprocessedFilesCacheMap.get(filePath) ?? "";
     const jobResult = await worker(filePath, text);
     connection.console.debug(`Worker finished with result`);
-    const { symbols, keywords, additionalProperties, inheritanceMap } =
+    const { symbols, keywords, additionalProperties, inheritanceMap, assignmentStatements } =
       jobResult;
     symbolManager.symbols.set(filePath, symbols ?? []);
     symbolManager.keywords.set(filePath, keywords ?? []);
+    symbolManager.assignmentStatements.set(filePath, assignmentStatements ?? []);
+
     inheritanceMap.forEach((value: string, key: string) =>
       symbolManager.inheritanceMap.set(key, value)
     );
@@ -318,12 +320,15 @@ export async function preprocessAndParseTads3Files(
           workerPool.queue(async (parseJob) => {
             // TODO consider report file before processing it:
             // e.g connection.sendNotification('symbolparsing/processing', [filePath, tracker, totalFiles, poolSize]);
+
+
             const text = preprocessedFilesCacheMap.get(filePath) ?? "";
-            const { symbols, keywords, additionalProperties, inheritanceMap } =
+            const { symbols, keywords, additionalProperties, inheritanceMap, assignmentStatements } =
               await parseJob(filePath, text);
 
             symbolManager.symbols.set(filePath, symbols ?? []);
             symbolManager.keywords.set(filePath, keywords ?? []);
+            symbolManager.assignmentStatements.set(filePath, assignmentStatements ?? []);
             inheritanceMap.forEach((value: string, key: string) =>
               symbolManager.inheritanceMap.set(key, value)
             );

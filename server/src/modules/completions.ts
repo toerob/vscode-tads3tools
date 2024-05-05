@@ -28,6 +28,17 @@ export function clearCompletionCache() {
   cachedKeyWords = undefined;
 }
 
+const newInstanceRegexp = /\s*new\s+([a-zA-Z][a-zA-Z0-9]*)?$/;
+
+// TODO: Remove once satisfied
+
+const newAssignmentRegexp = /(.*)\s*[=]\s*new\s*(.*)\s*\(/;
+const newAssignmentRegexp2 = /[=]\s*new\s*(.*)\s*\(/;
+const propertyRegexp = /([a-zA-Z][a-zA-Z0-9]*)[.]\s*([a-zA-Z][a-zA-Z0-9]*)?$/;
+
+const propertyRegexp2 =
+  /([a-zA-Z][a-zA-Z0-9]*)(\s*[(].*[)])?\s*[.]\s*([a-zA-Z][a-zA-Z0-9]*)?$/;
+
 const ID = "[a-zA-Z0-9_]+";
 const DIR =
   "(north|south|east|west|northeast|northwest|southeast|southwest|up|down|in|out)";
@@ -90,7 +101,6 @@ export async function onCompletion(
   symbolManager: TadsSymbolManager
 ) {
   const suggestions: Set<CompletionItem> = new Set();
-
   const document = documents.get(handler.textDocument.uri);
   const range = Range.create(
     handler.position.line,
@@ -296,6 +306,60 @@ export async function onCompletion(
     cachedKeyWords = suggestions;
   }
 
+  // TODO: Experimenting
+  // if (results.length == 0) {
+  // When matching "local x = new " -> return all classes as suggestion
+  // Match any assignment and add classes if keyword new is used
+
+  // TODO: check if inside code block for these
+  {
+    const newInstanceMatch = newInstanceRegexp.exec(currentLineStr);
+    if (
+      newInstanceMatch &&
+      newInstanceMatch.length > 0 &&
+      newInstanceMatch[1]
+    ) {
+      return getSuggestedClassNames(newInstanceMatch[1]);
+    }
+
+    const memberCallMatch = propertyRegexp2.exec(currentLineStr);
+    if (memberCallMatch && memberCallMatch.length > 1 && memberCallMatch[1]) {
+      // TODO: handle this the same way as below. Change the listnener if needs be
+      // TODO: find variable assignments instead and figure out the scope
+      const isInline = memberCallMatch[2] && memberCallMatch[2].startsWith("(");
+      if (isInline) {
+        const className = memberCallMatch[1];
+        return getSuggestedProperty(
+          handler.position.line,
+          document!,
+          className,
+          memberCallMatch[1],
+          memberCallMatch[3] ?? ""
+        );
+      }
+
+      const word = memberCallMatch[1];
+      const fsPath = URI.parse(handler.textDocument.uri).fsPath;
+      const localAssignments =
+        symbolManager.assignmentStatements.get(fsPath) ?? [];
+      const foundMatches = localAssignments.filter((x) => x.name === word);
+      if (foundMatches.length > 0) {
+        // TODO: decide the one match with most closest scope around this
+        const className = foundMatches[0]?.detail;
+        if (className) {
+          const variableName = memberCallMatch[1];
+          return getSuggestedProperty(
+            handler.position.line,
+            document!,
+            variableName,
+            className,
+            memberCallMatch[3] ?? ""
+          );
+        }
+      }
+    }
+  }
+
   const results = fuzzysort.go(word, [...cachedKeyWords], { key: "label" });
   return results.map((x: any) => x.obj);
 }
@@ -344,3 +408,108 @@ function tads3MakefileSuggestions(): CompletionItem[] | CompletionList {
   suggestions.push(CompletionItem.create("lib"));
   return suggestions;
 }
+
+function getSuggestedClassNames(partialClassWord: string) {
+  const suggestions = symbolManager
+    .getAllWorkspaceSymbols(false)
+    .filter((x) => x.kind == SymbolKind.Class)
+    .map((x) => {
+      const item = CompletionItem.create(x.name);
+      item.kind = CompletionItemKind.Class;
+      applyDocumentation(item);
+      return item;
+    });
+
+  if (partialClassWord === "") {
+    return suggestions;
+  }
+
+  const results = fuzzysort.go(partialClassWord, [...suggestions], {
+    key: "label",
+  });
+
+  connection.console.debug(
+    `Suggestions: ${results.map((x) => x.obj.label).join(" ")}`
+  );
+  return results.map((x: any) => x.obj);
+}
+
+
+
+function getSuggestedProperty(
+  line: number,
+  document: TextDocument,
+  variableName: string,
+  className: string | undefined,
+  partialPropertyWord: string
+) {
+  if (className === undefined) {
+    return [];
+  }
+
+  const classSymbol = symbolManager.findSymbol(className)?.symbol;
+
+  let containerNames: string[] = [className];
+
+  if (classSymbol !== undefined) {
+    const heritageMap = symbolManager.mapHeritage(classSymbol);
+    const classNames = [...heritageMap.values()]?.[0] ?? [];
+    containerNames = [className, ...classNames];
+  }
+
+  const propertyNames = symbolManager
+    .getAllWorkspaceSymbols(false)
+    .filter((symbol) => {
+      return (
+        symbol.containerName !== undefined &&
+        containerNames.includes(symbol.containerName) &&
+        (symbol.kind === SymbolKind.Property ||
+          symbol.kind === SymbolKind.Method)
+      );
+    })
+    .map((x) => x.name);
+
+  const uniquePropertyNames = [...new Set(propertyNames).values()];
+  const propertyNameSuggestions = uniquePropertyNames.map(
+    CompletionItem.create
+  );
+
+  if (partialPropertyWord === "") {
+    return propertyNameSuggestions;
+  }
+
+  const results = fuzzysort.go(partialPropertyWord, propertyNameSuggestions, {
+    key: "label",
+  });
+
+  connection.console.debug(
+    `Suggestions: ${results.map((x) => x.obj.label).join(" ")}`
+  );
+  return results.map((x: any) => x.obj);
+}
+
+/*
+
+function getAssignmentTextFor2(
+  line: number,
+  text: string,
+  variableName: string
+) {
+  const inline = new RegExp(
+    `\\${variableName}s*[=]\\s*new\\s*(.*)\\s*[(].*[)]\\s*[.]\\s*.*`
+  ).exec(text);
+  if (inline) {
+    // If a class assignment x = new ABC().xyzzy  --> locate x to find out class name
+    // we need to check for the location of the end of the parenthesis
+    return inline[1];
+  }
+
+  const local = new RegExp(`(${variableName})\\s*[=]\\s*new\\s+(.*)[(]`).exec(
+    text
+  );
+  if (local) {
+    // local x = new ABC();   --> locate x to find out class name
+    // x.xyzzy
+    return local[2];
+  }
+}*/

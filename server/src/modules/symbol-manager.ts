@@ -21,8 +21,9 @@ export class TadsSymbolManager {
   keywords: Map<string, Map<string, Range[]>>;
   additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
   inheritanceMap: Map<string, string> = new Map();
-
   onWindowsPlatform = false;
+
+  assignmentStatements: Map<string, DocumentSymbol[]> = new Map();
 
   constructor() {
     // Windows doesn't recognize case differences in file paths, therefore we need to use case insensitive maps:
@@ -63,6 +64,27 @@ export class TadsSymbolManager {
       }
     }
     return {};
+  }
+
+  findAllSymbol(name: any, kinds: SymbolKind[]) {
+    const collection = [];
+    if (name) {
+      for (const filePath of this.symbols.keys()) {
+        const fileLocalSymbols = this.symbols.get(filePath);
+        if (fileLocalSymbols) {
+          const flattened = flattenTreeToArray(fileLocalSymbols);
+
+          const symbols = flattened
+            ?.filter((s) => s.name === name && kinds.includes(s.kind))
+            .map((x) => ({ symbol: x, filePath }));
+
+          if (symbols && symbols.length > 0) {
+            collection.push(symbols);
+          }
+        }
+      }
+    }
+    return collection;
   }
 
   findSymbolsByDetail(
@@ -207,7 +229,7 @@ export class TadsSymbolManager {
     filePath: string,
     kind: SymbolKind,
     position: Position
-  ): any {
+  ): DocumentSymbol | undefined {
     const fileLocalSymbols = this.symbols.get(filePath);
     if (fileLocalSymbols) {
       const flattenedLocalSymbols = flattenTreeToArray(fileLocalSymbols);

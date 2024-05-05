@@ -15,6 +15,8 @@ import {
   IntrinsicDeclarationContext,
   GrammarDeclarationContext,
   TemplateDeclarationContext,
+  LocalExprContext,
+  CallStatementContext,
 } from "./Tads3Parser";
 import { ScopedEnvironment } from "./ScopedEnvironment";
 import {
@@ -61,7 +63,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 
   currentInnerObjectSymbol: DocumentSymbol | undefined;
 
-  assignmentStatements: DocumentSymbol[] = [];
+  public assignmentStatements: DocumentSymbol[] = [];
 
   lastObjectLevelMap: Map<number, DocumentSymbol> = new Map();
 
@@ -139,12 +141,31 @@ export class Tads3SymbolListener implements Tads3Listener {
     //TODO: this.scopedEnvironment = this.scopedEnvironment.getEnclosingEnvironment();
   }
 
+  enterCallStatement(ctx: CallStatementContext) {
+    
+  }
+
+  enterLocalExpr(ctx: LocalExprContext) {
+    //console.log("LOCAL ASSIGNMENT: " + ctx.getChild(1).text ); 
+  }
+
   enterAssignmentStatement(ctx: AssignmentStatementContext) {
     const name = ctx.identifierAtom()?.ID()?.text?.trim();
     const start = (ctx.start.line ?? 1) - 1;
     const stop = (ctx.stop?.line ?? 1) - 1;
     const range = Range.create(start, 0, stop, 0);
-    const detail = "";
+
+    let detail;
+    try {
+      if((ctx?.expr()?.childCount ?? 0) > 2) {
+        if((ctx?.expr()?.getChild(1)?.childCount ?? 0) > 0) {
+          detail = ctx?.expr()?.getChild(1)?.getChild(0)?.text ?? "";
+        }
+      }
+    } catch(err) {
+      console.error('You shall not pass!');
+    }
+
     if (name !== undefined) {
       const symbol = DocumentSymbol.create(
         name,
