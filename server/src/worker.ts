@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { BailErrorStrategy, CharStreams, CommonTokenStream } from 'antlr4ts';
-import { ParseTreeWalker } from 'antlr4ts/tree/ParseTreeWalker';
-import { Tads3Lexer } from './parser/Tads3Lexer';
-import { Tads3Listener } from './parser/Tads3Listener';
-import { Tads3Parser } from './parser/Tads3Parser';
-import { Tads3SymbolListener } from './parser/Tads3SymbolListener';
-import { expose } from 'threads';
-import { PredictionMode } from 'antlr4ts/atn/PredictionMode';
-import { DocumentSymbol  } from 'vscode-languageserver';
-
+import { BailErrorStrategy, CharStreams, CommonTokenStream } from "antlr4ts";
+import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
+import { Tads3Lexer } from "./parser/Tads3Lexer";
+import { Tads3Listener } from "./parser/Tads3Listener";
+import { Tads3Parser } from "./parser/Tads3Parser";
+import { Tads3SymbolListener } from "./parser/Tads3SymbolListener";
+import { expose } from "threads";
+import { PredictionMode } from "antlr4ts/atn/PredictionMode";
+import { DocumentSymbol } from "vscode-languageserver";
 
 expose(function parseFunc(path: string, text: string) {
   const symbols: DocumentSymbol[] = [];
@@ -19,7 +18,7 @@ expose(function parseFunc(path: string, text: string) {
   const parseTreeWalker = new ParseTreeWalker();
   const listener = new Tads3SymbolListener();
   let parseTree;
-  if (path.endsWith('.h')) {
+  if (path.endsWith(".h")) {
     parser.interpreter.setPredictionMode(PredictionMode.SLL);
     parser.removeErrorListeners();
     parser.errorHandler = new BailErrorStrategy();
@@ -28,7 +27,9 @@ expose(function parseFunc(path: string, text: string) {
       console.log(`SLL parsing succeeded for: ${path}`);
     } catch (err) {
       // Silently fail in case SLL fails, error is thrown by BailErrorStrategy
-      console.error(`Failing with (faster) SLL parsing for ${path}. Switching predicition mode to LL and retries`);
+      console.error(
+        `Failing with (faster) SLL parsing for ${path}. Switching predicition mode to LL and retries`
+      );
       lexer.reset();
       const tokenStream = new CommonTokenStream(lexer);
       parser = new Tads3Parser(tokenStream);
@@ -36,7 +37,7 @@ expose(function parseFunc(path: string, text: string) {
       parseTree = parser.program();
     }
   } else {
-    // If file is not a header file, use LL directly to save time:			
+    // If file is not a header file, use LL directly to save time:
     parseTree = parser.program();
   }
 
@@ -47,11 +48,10 @@ expose(function parseFunc(path: string, text: string) {
     console.error(`parseTreeWalker failed ${err}`);
   }
 
-  
   return {
     keywords: listener.localKeywords ?? [],
     symbols: listener.symbols ?? symbols,
     additionalProperties: listener.additionalProperties,
-    inheritanceMap: listener.inheritanceMap
+    inheritanceMap: listener.inheritanceMap,
   };
 });
