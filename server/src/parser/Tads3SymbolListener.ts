@@ -17,6 +17,7 @@ import {
   TemplateDeclarationContext,
   LocalExprContext,
   CallStatementContext,
+  ArrayContext,
 } from "./Tads3Parser";
 import { ScopedEnvironment } from "./ScopedEnvironment";
 import {
@@ -26,6 +27,7 @@ import {
 } from "vscode-languageserver";
 import { Range } from "vscode-languageserver";
 import { Interval } from "antlr4ts/misc/Interval";
+import { ErrorNode } from 'antlr4ts/tree/ErrorNode';
 
 // TODO: Maybe much easier to just keep a map instead of an object like this?
 export class ExtendedDocumentSymbolProperties {
@@ -354,8 +356,8 @@ export class Tads3SymbolListener implements Tads3Listener {
     this.currentPropertySetName = undefined;
   }
 
-  visitErrorNode(ctx: any) {
-    console.error(`*** ERROR NODE in (${this.currentUri})***`);
+  visitErrorNode(ctx: ErrorNode) {    
+    console.debug(`Problem parsing token "${ctx.toStringTree()}" on line ${ctx.payload.line} in (${this.currentUri})`);
   }
 
   exitCurlyObjectBody(ctx: CurlyObjectBodyContext) {
@@ -462,6 +464,8 @@ export class Tads3SymbolListener implements Tads3Listener {
     //------------------------------------------
     if (this.currentInnerObjectSymbol) {
       this.currentInnerObjectSymbol.children?.push(symbol);
+
+      // TODO states=[] goes into LMentionable.. check with THing
     } else if (this.currentObjectSymbol) {
       additionalProps.parent = this.currentObjectSymbol;
 

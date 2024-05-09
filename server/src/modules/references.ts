@@ -58,6 +58,12 @@ export async function onReferences(
         false
       );
 
+      const allOtherSymbols = symbolManager
+        .findAllSymbols(symbolName)
+        .map((x) => Location.create(x.filePath, x.symbol.range));
+
+      locations.push(...allOtherSymbols);
+
       // Additional references could we added via symbol defintions, e.g if Property's should be allowed.
       /*symbolManager.getAllWorkspaceSymbols(false)
 				.filter(x => allowedSymbolAsKeywordPredicate(x) && x.name === symbolName)

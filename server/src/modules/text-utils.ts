@@ -181,36 +181,17 @@ export function tokenizeWithIndex(text: string) {
   return indexToken;
 }
 
-// Graveyard:
-// const wordRegExp = new RegExp(/([a-zA-Z0-9-]+)/);
-
-// TODO: missbehaves slightly when it comes to ".," etc...
 /**
- *
- * @param currentDocument
- * @param position 5
- * @returns
+ * Used when string comparison is much faster by checking the characters from the end rather than from the beginning, for instance within file paths, where shared paths are used but the file at the destination folder will differ.
  */
-/*
-
-export function getWordAtPosition_old(currentDocument: TextDocument|any, position: Position) {
-
-	//const text = currentDocument.getText();
-	//const charNumber = currentDocument.offsetAt(position);
-	const line = currentDocument.getText().split(/\n/)[position.line];
-
-	let spaceBefore = line.lastIndexOf(' ', position.character);
-	spaceBefore = spaceBefore === -1? 0 : spaceBefore;
-
-	let spaceAfter = line.indexOf(' ', position.character);
-	spaceAfter = (spaceAfter === 0 || spaceAfter === -1)? line.length : spaceAfter;
-
-	const wordCandidate = line.substr(spaceBefore, spaceAfter);
-	const resultingWord = wordRegExp.exec(wordCandidate);
-	if (resultingWord) {
-		//connection.console.debug(resultingWord[0]);
-		return resultingWord[0];
-	}
-	return undefined;
+export function compareStringReverse(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = a.length - 1; i >= 0; i--) {
+    if (a[i].localeCompare(b[i]) !== 0) {
+      return false;
+    }
+  }
+  return true;
 }
-*/

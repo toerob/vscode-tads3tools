@@ -66,25 +66,29 @@ export class TadsSymbolManager {
     return {};
   }
 
-  findAllSymbol(name: any, kinds: SymbolKind[]) {
-    const collection = [];
+  findAllSymbols(name: any, kinds: SymbolKind[] | undefined = undefined): { symbol: DocumentSymbol; filePath: string; }[] {
+    const symbols: { symbol: DocumentSymbol; filePath: string; }[] = [];
     if (name) {
       for (const filePath of this.symbols.keys()) {
         const fileLocalSymbols = this.symbols.get(filePath);
         if (fileLocalSymbols) {
           const flattened = flattenTreeToArray(fileLocalSymbols);
 
-          const symbols = flattened
-            ?.filter((s) => s.name === name && kinds.includes(s.kind))
-            .map((x) => ({ symbol: x, filePath }));
+          const localSymbols = flattened
+            ?.filter((s) =>
+              kinds === undefined
+                ? s.name === name
+                : s.name === name && kinds.includes(s.kind)
+            )
+            .map(x => ({ symbol: x, filePath }));
 
-          if (symbols && symbols.length > 0) {
-            collection.push(symbols);
+          if (localSymbols && localSymbols.length > 0) {
+            symbols.push(...localSymbols);
           }
         }
       }
     }
-    return collection;
+    return symbols;
   }
 
   findSymbolsByDetail(

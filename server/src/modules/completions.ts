@@ -397,15 +397,12 @@ function tads3MakefileSuggestions(): CompletionItem[] | CompletionList {
       })
     )
     .map((x) => {
-      const libraryFile = x.endsWith(".tl");
       const itemPathWithoutExt = x.replace(/[.][th]$/, "");
-      const completionItem = CompletionItem.create(
-        libraryFile ? "-lib " : "-source " + itemPathWithoutExt
-      );
+      const completionItem = CompletionItem.create(itemPathWithoutExt);
       return completionItem;
     });
-  suggestions.push(CompletionItem.create("source"));
-  suggestions.push(CompletionItem.create("lib"));
+  suggestions.push(CompletionItem.create("-source"));
+  suggestions.push(CompletionItem.create("-lib"));
   return suggestions;
 }
 
