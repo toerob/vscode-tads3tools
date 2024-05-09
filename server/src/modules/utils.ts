@@ -1,7 +1,9 @@
 import { URI } from "vscode-uri";
 import { dirname } from "path";
 import * as path from "path";
-import { existsSync } from "fs";
+import * as languageserver from "vscode-languageserver/node";
+import * as languageserverTextdocument from "vscode-languageserver-textdocument";
+import { Range } from "vscode-languageserver";
 
 export function filterForStandardLibraryFiles(array: string[] = []): string[] {
   if (array.length === 0) {
@@ -44,4 +46,32 @@ export function filterForStandardLibraryFiles(array: string[] = []): string[] {
   return (
     array.filter((x) => basePathsArray.find((y) => !!x.startsWith(y))) ?? []
   );
+}
+
+export function extractCurrentLineFromDocument(
+  line: number,
+  document: languageserverTextdocument.TextDocument
+) {
+  const currentLineRange = languageserver.Range.create(line, 0, line + 1, 0);
+  const currentLineStr = document.getText(currentLineRange) ?? "";
+  return currentLineStr.trim();
+}
+
+export function isRangeWithin(range: Range, containingRange: Range): boolean {
+  if (range.start.line < containingRange.start.line) {
+    return false;
+  }
+
+  if (range.end.line > containingRange.end.line) {
+    return false;
+  }
+
+  if (range.start.line === containingRange.start.line) {
+    return range.start.character >= containingRange.start.character;
+  }
+
+  if (range.end.line === containingRange.end.line) {
+    return range.end.character <= containingRange.end.character;
+  }
+  return true;
 }

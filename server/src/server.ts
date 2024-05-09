@@ -382,7 +382,7 @@ connection.onRequest("request/analyzeText/findNouns", async (params) => {
     // Calculate where to best put the suggestions
     const symbol = symbolManager.findClosestSymbolKindByPosition(
       path,
-      SymbolKind.Object,
+      [SymbolKind.Object],
       position
     );
     if (symbol) {

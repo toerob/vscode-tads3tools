@@ -4,12 +4,15 @@
 
 ### Added
 
-- Upgrades of dependencies - the client/server now adheres to the language server protocol of version 9.0.1
-
 ### Fixed
-
+- Upgrades of dependencies - the client/server now adheres to the language server protocol of version 9.0.1.
 - Macro definitions lookup now goes to the correct row.
-- The extension downloader now caches files correctly, displays the options better and doesn't crash on cancel. Also, the superflous abort button was removed
+- The extension downloader now caches files correctly, displays the options better and doesn't crash on cancel. Also, the abort button is removed.
+- Makefile autocompletions works better by not trying to add -source/-lib and focusing only on autocompleting filepaths.
+- go to definitions now walks hierarchically up the inheritance chain to the first object definitions regarding properties.
+- Going to macro definitions now goes to the correct row.
+- Completions can now automatically suggest members/inherited members of the class while writing code blocks in methods.
+- Go to references now returns more hits than before.
 
 ## 0.6.2-alpha
 

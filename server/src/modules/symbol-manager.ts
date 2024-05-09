@@ -10,6 +10,7 @@ import { URI } from "vscode-uri";
 import { filterForStandardLibraryFiles } from "./utils";
 import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { pathExistsSync } from "fs-extra";
+import { ExtendedDocumentSymbolProperties } from "../parser/Tads3SymbolListener";
 
 export type FilePathAndSymbols = {
   filePath: string;
@@ -37,7 +38,9 @@ export class TadsSymbolManager {
     }
   }
 
-  getAdditionalProperties(symbol: DocumentSymbol) {
+  getAdditionalProperties(
+    symbol: DocumentSymbol
+  ): ExtendedDocumentSymbolProperties | undefined {
     for (const keys of this.additionalProperties.keys()) {
       const localAdditionalProps = this.additionalProperties.get(keys);
       const props = localAdditionalProps?.get(symbol);
@@ -66,25 +69,32 @@ export class TadsSymbolManager {
     return {};
   }
 
-  findAllSymbol(name: any, kinds: SymbolKind[]) {
-    const collection = [];
+  findAllSymbols(
+    name: any,
+    kinds: SymbolKind[] | undefined = undefined
+  ): { symbol: DocumentSymbol; filePath: string }[] {
+    const symbols: { symbol: DocumentSymbol; filePath: string }[] = [];
     if (name) {
       for (const filePath of this.symbols.keys()) {
         const fileLocalSymbols = this.symbols.get(filePath);
         if (fileLocalSymbols) {
           const flattened = flattenTreeToArray(fileLocalSymbols);
 
-          const symbols = flattened
-            ?.filter((s) => s.name === name && kinds.includes(s.kind))
+          const localSymbols = flattened
+            ?.filter((s) =>
+              kinds === undefined
+                ? s.name === name
+                : s.name === name && kinds.includes(s.kind)
+            )
             .map((x) => ({ symbol: x, filePath }));
 
-          if (symbols && symbols.length > 0) {
-            collection.push(symbols);
+          if (localSymbols && localSymbols.length > 0) {
+            symbols.push(...localSymbols);
           }
         }
       }
     }
-    return collection;
+    return symbols;
   }
 
   findSymbolsByDetail(
@@ -227,7 +237,7 @@ export class TadsSymbolManager {
 
   findClosestSymbolKindByPosition(
     filePath: string,
-    kind: SymbolKind,
+    kind: SymbolKind[],
     position: Position
   ): DocumentSymbol | undefined {
     const fileLocalSymbols = this.symbols.get(filePath);
@@ -235,7 +245,7 @@ export class TadsSymbolManager {
       const flattenedLocalSymbols = flattenTreeToArray(fileLocalSymbols);
       const symbol = flattenedLocalSymbols?.find(
         (s) =>
-          s.kind === kind &&
+          kind.includes(s.kind) &&
           position.line >= s.range.start.line &&
           position.line <= s.range.end.line
       );

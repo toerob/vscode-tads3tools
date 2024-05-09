@@ -17,6 +17,8 @@ import {
   TemplateDeclarationContext,
   LocalExprContext,
   CallStatementContext,
+  ArrayContext,
+  ParamsContext,
 } from "./Tads3Parser";
 import { ScopedEnvironment } from "./ScopedEnvironment";
 import {
@@ -26,6 +28,8 @@ import {
 } from "vscode-languageserver";
 import { Range } from "vscode-languageserver";
 import { Interval } from "antlr4ts/misc/Interval";
+import { ErrorNode } from "antlr4ts/tree/ErrorNode";
+import { Token } from 'antlr4ts';
 
 // TODO: Maybe much easier to just keep a map instead of an object like this?
 export class ExtendedDocumentSymbolProperties {
@@ -141,12 +145,10 @@ export class Tads3SymbolListener implements Tads3Listener {
     //TODO: this.scopedEnvironment = this.scopedEnvironment.getEnclosingEnvironment();
   }
 
-  enterCallStatement(ctx: CallStatementContext) {
-    
-  }
+  enterCallStatement(ctx: CallStatementContext) {}
 
   enterLocalExpr(ctx: LocalExprContext) {
-    //console.log("LOCAL ASSIGNMENT: " + ctx.getChild(1).text ); 
+    //console.log("LOCAL ASSIGNMENT: " + ctx.getChild(1).text );
   }
 
   enterAssignmentStatement(ctx: AssignmentStatementContext) {
@@ -157,13 +159,13 @@ export class Tads3SymbolListener implements Tads3Listener {
 
     let detail;
     try {
-      if((ctx?.expr()?.childCount ?? 0) > 2) {
-        if((ctx?.expr()?.getChild(1)?.childCount ?? 0) > 0) {
+      if ((ctx?.expr()?.childCount ?? 0) > 2) {
+        if ((ctx?.expr()?.getChild(1)?.childCount ?? 0) > 0) {
           detail = ctx?.expr()?.getChild(1)?.getChild(0)?.text ?? "";
         }
       }
-    } catch(err) {
-      console.error('You shall not pass!');
+    } catch (err) {
+      console.error("You shall not pass!");
     }
 
     if (name !== undefined) {
@@ -354,8 +356,10 @@ export class Tads3SymbolListener implements Tads3Listener {
     this.currentPropertySetName = undefined;
   }
 
-  visitErrorNode(ctx: any) {
-    console.error(`*** ERROR NODE in (${this.currentUri})***`);
+  visitErrorNode(ctx: ErrorNode) {
+    console.debug(
+      `Problem parsing token "${ctx.toStringTree()}" on line ${ctx.payload.line} in (${this.currentUri})`
+    );
   }
 
   exitCurlyObjectBody(ctx: CurlyObjectBodyContext) {
@@ -462,6 +466,8 @@ export class Tads3SymbolListener implements Tads3Listener {
     //------------------------------------------
     if (this.currentInnerObjectSymbol) {
       this.currentInnerObjectSymbol.children?.push(symbol);
+
+      // TODO states=[] goes into LMentionable.. check with THing
     } else if (this.currentObjectSymbol) {
       additionalProps.parent = this.currentObjectSymbol;
 
@@ -534,7 +540,7 @@ export class Tads3SymbolListener implements Tads3Listener {
     try {
       let name: string =
         ctx.identifierAtom()?.ID()?.text.toString() ?? "anonymous function";
-      const start = ctx.start.line - 1;
+      const start = ctx.start?.line - 1 ?? 0;
       const range = Range.create(start, 0, start, 0);
 
       const props = new ExtendedDocumentSymbolProperties();
@@ -572,10 +578,64 @@ export class Tads3SymbolListener implements Tads3Listener {
         this.currentFunctionSymbol = symbol;
         this.additionalProperties.set(symbol, props);
       }
+
+      // TODO: add params to local assignments
+      const params = ctx.params()?.text?.split(",") ?? [];
+      for (const param of params) {
+        const symbol = DocumentSymbol.create(
+          param,
+          "parameter",
+          SymbolKind.Variable,
+          range,
+          range,
+          []
+        );
+
+        const additionalProps = new ExtendedDocumentSymbolProperties();
+        additionalProps.objectScope = this.currentObjectSymbol;
+        additionalProps.functionScope = this.currentFunctionSymbol;
+        this.additionalProperties.set(symbol, additionalProps);
+        this.assignmentStatements.push(symbol);
+      }
+
+      /*
+      TODO: fix so we get better precision 
+
+      const childCount = ctx?.params()?.childCount ?? 0;
+      for(let idx = 0; idx < childCount; idx++) {
+        const child = ctx.params()?.getChild(idx) as ParamsContext
+        if(child) {
+          
+          const range = Range.create(
+            child.start?.line ?? 0,
+            child.start?.startIndex ?? 0,
+            child.stop?.line ?? child.start.line,
+            child.stop?.stopIndex ?? child.start.stopIndex
+          );
+
+          const symbol = DocumentSymbol.create(
+            child.text,
+            "argument",
+            SymbolKind.Variable,
+            range,
+            range,
+            []
+          );
+
+          const additionalProps = new ExtendedDocumentSymbolProperties();
+          additionalProps.objectScope = this.currentObjectSymbol;
+          additionalProps.functionScope = this.currentFunctionSymbol;
+          this.additionalProperties.set(symbol, additionalProps);
+          this.assignmentStatements.push(symbol);
+          }
+        */
+
+
     } catch (err) {
       console.error(err);
     }
   }
+
   exitFunctionDeclaration(ctx: FunctionDeclarationContext) {
     try {
       if (ctx.stop && ctx.stop.line && ctx.stop.charPositionInLine) {

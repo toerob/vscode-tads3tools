@@ -40,9 +40,9 @@ export async function onDocumentSymbol(
   }
 
   const symbols = symbolManager.symbols.get(fsPath) ?? [];
-  connection.console.debug(
+  /*connection.console.debug(
     `Fetching ${symbols.length} low level symbols for: ${fsPath}`
-  );
+  );*/
   return symbols;
 }
 

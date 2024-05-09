@@ -333,7 +333,6 @@ export async function preprocessAndParseTads3Files(
               symbolManager.inheritanceMap.set(key, value)
             );
 
-            clearCompletionCache();
             symbolManager.additionalProperties.set(
               filePath,
               additionalProperties
@@ -358,6 +357,7 @@ export async function preprocessAndParseTads3Files(
           connection.console.debug(`${filePath} cached restored successfully`);
         }
       }
+      clearCompletionCache();
 
       try {
         await workerPool.completed();

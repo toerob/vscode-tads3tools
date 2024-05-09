@@ -1,7 +1,5 @@
 import {
-  SymbolKind,
   TextDocuments,
-  SymbolInformation,
   Location,
 } from "vscode-languageserver";
 
@@ -10,6 +8,9 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 import { connection } from "../server";
 import { TadsSymbolManager } from "./symbol-manager";
 import { getWordAtPosition } from "./text-utils";
+import { URI } from "vscode-uri";
+
+const onWindowsPlatform = process.platform === "win32";
 
 /**
  * Predicate to decide what symbols to allow references to.
@@ -57,6 +58,17 @@ export async function onReferences(
         symbolName,
         false
       );
+
+      const allOtherSymbols = symbolManager
+        .findAllSymbols(symbolName)
+        .map((x) =>
+          Location.create(
+            onWindowsPlatform ? URI.file(x.filePath)?.path : x.filePath,
+            x.symbol.range
+          )
+        );
+
+      locations.push(...allOtherSymbols);
 
       // Additional references could we added via symbol defintions, e.g if Property's should be allowed.
       /*symbolManager.getAllWorkspaceSymbols(false)

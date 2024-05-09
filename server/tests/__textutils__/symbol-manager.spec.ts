@@ -209,28 +209,28 @@ describe("TadsSymbolManager", () => {
     it("looks within a file for a symbol type a given position and retrieves a symbol if within its position", () => {
       const tooLowPosition = sm.findClosestSymbolKindByPosition(
         "file1",
-        SymbolKind.Class,
+        [SymbolKind.Class],
         Position.create(9, 0)
       );
       assert.deepEqual(tooLowPosition, undefined);
 
       const withinSymbol1 = sm.findClosestSymbolKindByPosition(
         "file1",
-        SymbolKind.Class,
+        [SymbolKind.Class],
         Position.create(10, 4)
       );
       assert.deepEqual(withinSymbol1, symbol1);
 
       const alsoWithinSymbol1 = sm.findClosestSymbolKindByPosition(
         "file1",
-        SymbolKind.Class,
+        [SymbolKind.Class],
         Position.create(14, 5)
       );
       assert.deepEqual(alsoWithinSymbol1, symbol1);
 
       const tooHighPosition = sm.findClosestSymbolKindByPosition(
         "file1",
-        SymbolKind.Class,
+        [SymbolKind.Class],
         Position.create(15, 0)
       );
       assert.deepEqual(tooHighPosition, undefined);

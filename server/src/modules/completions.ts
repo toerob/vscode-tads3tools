@@ -20,10 +20,12 @@ import { isUsingAdv3Lite } from "../parse-workers-manager";
 import { retrieveDocumentationForKeyword } from "./documentation";
 import { serverState } from "../state";
 import { glob } from "glob";
+import { getDefineMacrosMap } from '../parser/preprocessor';
 
 let cachedKeyWords: Set<CompletionItem> | undefined = undefined;
 
 export function clearCompletionCache() {
+  connection.console.debug('Clearing keyword cache');
   cachedKeyWords?.clear();
   cachedKeyWords = undefined;
 }
@@ -100,6 +102,8 @@ export async function onCompletion(
   documents: TextDocuments<TextDocument>,
   symbolManager: TadsSymbolManager
 ) {
+  const methodStartTime = Date.now();
+
   const suggestions: Set<CompletionItem> = new Set();
   const document = documents.get(handler.textDocument.uri);
   const range = Range.create(
@@ -258,6 +262,9 @@ export async function onCompletion(
   const usedUpKeys = new Set();
 
   if (!cachedKeyWords) {
+    const startTime = Date.now();
+    connection.console.debug('Collecting keywords');
+
     for (const file of symbolManager.keywords.keys()) {
       const localKeys = symbolManager.keywords.get(file);
       if (localKeys) {
@@ -276,6 +283,11 @@ export async function onCompletion(
       }
     }
 
+    // Add all macros
+    for(const m of getDefineMacrosMap().keys()) {
+      suggestions.add(CompletionItem.create(m));
+    }
+    
     // Add known symbols
     for (const file of symbolManager.symbols.keys()) {
       const localKeys = symbolManager.symbols.get(file);
@@ -304,6 +316,8 @@ export async function onCompletion(
     }
 
     cachedKeyWords = suggestions;
+    const elapsedTime = Date.now() - startTime;
+    connection.console.debug(`Updating cache with keywords, elapsed time = ${elapsedTime} ms`);
   }
 
   // TODO: Experimenting
@@ -326,7 +340,7 @@ export async function onCompletion(
     if (memberCallMatch && memberCallMatch.length > 1 && memberCallMatch[1]) {
       // TODO: handle this the same way as below. Change the listnener if needs be
       // TODO: find variable assignments instead and figure out the scope
-      const isInline = memberCallMatch[2] && memberCallMatch[2].startsWith("(");
+      const isInline =  memberCallMatch[2] && memberCallMatch[2].startsWith("(");
       if (isInline) {
         const className = memberCallMatch[1];
         return getSuggestedProperty(
@@ -361,7 +375,10 @@ export async function onCompletion(
   }
 
   const results = fuzzysort.go(word, [...cachedKeyWords], { key: "label" });
-  return results.map((x: any) => x.obj);
+  const mappedResults = results.map((x: any) => x.obj);
+  const methodTookMs = Date.now() - methodStartTime;
+  connection.console.debug(`Completion method took: ${methodTookMs} ms to complete`);
+  return mappedResults;
 }
 
 function applyDocumentation(item: CompletionItem) {
@@ -397,15 +414,12 @@ function tads3MakefileSuggestions(): CompletionItem[] | CompletionList {
       })
     )
     .map((x) => {
-      const libraryFile = x.endsWith(".tl");
       const itemPathWithoutExt = x.replace(/[.][th]$/, "");
-      const completionItem = CompletionItem.create(
-        libraryFile ? "-lib " : "-source " + itemPathWithoutExt
-      );
+      const completionItem = CompletionItem.create(itemPathWithoutExt);
       return completionItem;
     });
-  suggestions.push(CompletionItem.create("source"));
-  suggestions.push(CompletionItem.create("lib"));
+  suggestions.push(CompletionItem.create("-source"));
+  suggestions.push(CompletionItem.create("-lib"));
   return suggestions;
 }
 
@@ -485,7 +499,8 @@ function getSuggestedProperty(
   connection.console.debug(
     `Suggestions: ${results.map((x) => x.obj.label).join(" ")}`
   );
-  return results.map((x: any) => x.obj);
+  const mappedResult = results.map((x: any) => x.obj);
+  return mappedResult;
 }
 
 /*
