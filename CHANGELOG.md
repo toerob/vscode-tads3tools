@@ -12,6 +12,7 @@
 - go to definitions now walks hierarchically up the inheritance chain to the first object definitions regarding properties.
 - Going to macro definitions now goes to the correct row.
 - Completions can now automatically suggest members/inherited members of the class while writing code blocks in methods.
+- Completions now suggests macro defintions
 - Go to references now returns more hits than before.
 
 ## 0.6.2-alpha

@@ -3,7 +3,7 @@
   "description": "Language server extension for Tads3",
   "author": "Tomas Öberg",
   "license": "MIT",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/toerob/vscode-tads3tools.git"
@@ -23,6 +23,7 @@
     "vscode": "^1.75.0"
   },
   "main": "./client/out/extension",
+  "activationEvents": [],
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": false
@@ -388,6 +389,6 @@
     "npm": "^10.7.0",
     "ts-jest": "^29.1.2",
     "unzipper": "^0.11.4",
-    "vsce": "^2.15.0"
+    "vsce": "^1.103.1"
   }
 }
