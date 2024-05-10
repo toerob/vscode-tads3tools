@@ -24,12 +24,12 @@ expose(function parseFunc(path: string, text: string) {
     parser.errorHandler = new BailErrorStrategy();
     try {
       parseTree = parser.program();
-      console.log(`SLL parsing succeeded for: ${path}`);
+      //console.log(`SLL parsing succeeded for: ${path}`);
     } catch (err) {
       // Silently fail in case SLL fails, error is thrown by BailErrorStrategy
-      console.error(
+      /*console.error(
         `Failing with (faster) SLL parsing for ${path}. Switching predicition mode to LL and retries`
-      );
+      );*/
       lexer.reset();
       const tokenStream = new CommonTokenStream(lexer);
       parser = new Tads3Parser(tokenStream);
@@ -53,6 +53,7 @@ expose(function parseFunc(path: string, text: string) {
     symbols: listener.symbols ?? symbols,
     additionalProperties: listener.additionalProperties,
     inheritanceMap: listener.inheritanceMap,
-    assignmentStatements: listener.assignmentStatements
+    assignmentStatements: listener.assignmentStatements,
+    assignmentDeclarations: listener.assignmentDeclarations
   };
 });

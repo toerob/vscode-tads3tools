@@ -1,39 +1,47 @@
 import { AbstractParseTreeVisitor } from "antlr4ts/tree/AbstractParseTreeVisitor";
 import {
-  ObjectDeclarationContext,
-  ProgramContext,
-  PropertyContext,
+  Tads3Parser,
 } from "./Tads3Parser";
-import { Tads3Visitor } from "./Tads3Visitor";
+import { TerminalNode } from "antlr4ts/tree/TerminalNode";
+import { Tads3Listener } from './Tads3Listener';
+  
+type T3StringVisitorOptions = {
+  hideSemicolon?: boolean 
+}
 
-export class T3StringVisitor
-  extends AbstractParseTreeVisitor<string>
-  implements Tads3Visitor<string>
-{
-  visitProgram(ctx: ProgramContext) {
-    return super.visitChildren(ctx);
+export class T3StringVisitor extends AbstractParseTreeVisitor<string>  implements Tads3Listener {
+  
+  static nodesToPrefix = [
+    Tads3Parser.TRANSIENT, 
+    Tads3Parser.LOCAL,
+    Tads3Parser.NEW,
+    Tads3Parser.COMMA,
+    Tads3Parser.ID, 
+    Tads3Parser.ASSIGN
+  ];    
+
+  public constructor(public readonly options: T3StringVisitorOptions) {
+    super();
   }
 
-  visitObjectDeclaration(ctx: ObjectDeclarationContext) {
-    const name = ctx.identifierAtom()?.text ?? "NAMELESS";
-    return name + super.visitChildren(ctx);
+  protected defaultResult(): string {
+    return '';
   }
 
-  visitProperty(ctx: PropertyContext) {
-    return (
-      "property: " +
-      ctx
-        .identifierAtom()
-        .map((x) => x.text)
-        .join(" ")
-    );
+  visitTerminal(node: TerminalNode): string {
+    
+    if(node.symbol.type === Tads3Parser.SEMICOLON
+      && this.options.hideSemicolon) {
+      return '';
+    }
+    if(T3StringVisitor.nodesToPrefix.indexOf(node.symbol.type)) {
+      return ` ${node.text}`;
+    }
+    return node.text;
+  }
+  
+  protected aggregateResult(aggregate: string, nextResult: string): string {
+      return aggregate + nextResult;
   }
 
-  aggregateResult(aggregate: string, nextResult: string) {
-    return aggregate + nextResult;
-  }
-
-  defaultResult() {
-    return "";
-  }
 }

@@ -5,7 +5,7 @@ import {
   TextDocumentIdentifier,
   DocumentSymbol,
 } from "vscode-languageserver";
-import { TadsSymbolManager } from "./symbol-manager";
+import { TadsSymbolManager, flattenTreeToArray } from "./symbol-manager";
 import {
   compareStringReverse,
   getWordAtPosition,
@@ -20,7 +20,6 @@ import { preprocessedFilesCacheMap } from "../server";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { extractCurrentLineFromDocument } from "./utils";
 
-
 const onWindowsPlatform = process.platform === "win32";
 
 export async function onDefinition(
@@ -32,29 +31,40 @@ export async function onDefinition(
     const locations: Location[] = [];
     const currentDoc = documents.get(textDocument.uri);
     if (currentDoc) {
+      let symbolName = getWordAtPosition(currentDoc, position);
+
+      /*
       const quote = withinQuote(currentDoc, position);
       if (quote) {
         // Left TODO: Quotes holds no definition per se. Unless it is an template inline expression  '<<' .* '>>'
         // in which case we can parse that expression here.
-        /*
-			const inlineExpression = interpolatedExpressionRegExp.exec(quote.quoteString);
-			if(inlineExpression) {
-				const str = inlineExpression[1];
-				const input = CharStreams.fromString(str);
-				const lexer = new Tads3Lexer(input);
-				const tokenStream = new CommonTokenStream(lexer);
-				const parser = new Tads3Parser(tokenStream);
-				const parseTree = parser.expr();
-				console.log(parseTree.ruleContext);
-			}*/
+        
+        const inlineExpression = interpolatedExpressionRegExp.exec(quote.quoteString);
+        if(inlineExpression) {
+          const str = inlineExpression[1];
+          const input = CharStreams.fromString(str);
+          const lexer = new Tads3Lexer(input);
+          const tokenStream = new CommonTokenStream(lexer);
+          const parser = new Tads3Parser(tokenStream);
+          const parseTree = parser.expr();
+          console.log(parseTree.ruleContext);
+        }
 
         return locations;
-      }
-
-      let symbolName = getWordAtPosition(currentDoc, position);
+      }*/
 
       if (symbolName) {
         const fsPath = URI.parse(textDocument.uri).fsPath;
+
+        /*
+        // TODO: use the callChain to extract origin faster
+        const localAssignmentDeclarations = symbolManager.assignmentDeclarations
+          .get(fsPath)
+          ?.get(symbolName);
+
+        if(localAssignmentDeclarations?.callChain) {
+            console.log(localAssignmentDeclarations?.callChain);
+        }*/
 
         if (symbolName === "object") {
           return locations;
@@ -89,12 +99,14 @@ export async function onDefinition(
                 ) ?? [];
               for (const inheritedMethod of inheritedMethods) {
                 if (inheritedMethod) {
-
-                  // Skip the position we're currently at if it's in the same file 
+                  // Skip the position we're currently at if it's in the same file
                   // and within the current method's scope
                   if (
-                    compareStringReverse(containingObjectKind.filePath, fsPath)
-                    && isPositionWithinRange(position, inheritedMethod.range)
+                    compareStringReverse(
+                      containingObjectKind.filePath,
+                      fsPath
+                    ) &&
+                    isPositionWithinRange(position, inheritedMethod.range)
                   ) {
                     continue;
                   }
@@ -179,30 +191,6 @@ export async function onDefinition(
           //const prepLine = (prepRows[position.line]) ?? '';
           symbolName = "sentinelDobj" + symbolName;
         }
-
-        // ====================================================================================
-        // This old way of looking up definitions should not be used now. If we have reached
-        // the bottom of an inheritance chain the way up is only by using references, not by
-        // definitions.
-        // ====================================================================================
-        /*
-        connection.console.debug(`Searching definition(s) for word: ${symbolName}`);
-        for (const filePathKey of symbolManager.symbols.keys()) {
-          const localSymbols = symbolManager.symbols.get(filePathKey);
-          if (localSymbols) {
-            const symbol = flattenTreeToArray(localSymbols).find(
-              (x) => x.name === symbolName
-            );
-            if (symbol !== undefined) {
-              connection.console.debug(
-                `Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`
-              );
-              const filePath = URI.file(filePathKey).toString();
-              locations.push(Location.create(filePath, symbol.range));
-            }
-          }
-        }*/
-        // ====================================================================================
 
         // First check for objects or classes definitions
         const objectsAndClasses = symbolManager.findAllSymbols(symbolName, [
@@ -306,6 +294,14 @@ export async function onDefinition(
         document
       );
 
+      //
+      /*
+      const s = symbolManager.findSymbol(symbolName);
+      const parentSymbols = symbolManager.getParentChain(s.symbol);
+      const contextChain = symbolManager.getContextChain(s.symbol);
+      console.log(parentSymbols);
+      */
+
       // NOTE: To be 100% correct this assignment should be parsed and evaluated instead,
       // using a visitor per assignment while the listener traverses the parse tree.
 
@@ -321,47 +317,115 @@ export async function onDefinition(
           position
         );
 
-        // TODO: find/make a rangeIntersects method
-        // TODO: there can be competing local assignments, but for now take only the first found:
-        const closeAssignments = localAssignmentsWithinFile.find((x) =>
-          isRangeWithin(x.range, containingObject.range)
-        );
+        if (containingObject) {
+          // TODO: find/make a rangeIntersects method
+          // TODO: there can be competing local assignments, but for now take only the first found:
+          const closeAssignments = localAssignmentsWithinFile.find((x) =>
+            isRangeWithin(x.range, containingObject.range)
+          );
 
-        if (closeAssignments) {
-          fsPath = onWindowsPlatform ? URI.file(fsPath)?.path : fsPath;
+          if (closeAssignments) {
+            fsPath = onWindowsPlatform ? URI.file(fsPath)?.path : fsPath;
 
-          return [Location.create(fsPath, closeAssignments.range)];
+            return [Location.create(fsPath, closeAssignments.range)];
+          }
         }
       }
 
       const memberCallRegExp = new RegExp(
-        //`([a-zA-Z][a-zA-Z0-9]*)\\s*.\\s*\\b(${symbolName})\\b\\s*[(.]`
-        `([a-zA-Z][a-zA-Z0-9]*)\\s*.\\s*\\b(${symbolName})\\b\\s*`
+        `([a-zA-Z][a-zA-Z0-9]*)\\s*([(].*[)])?\\s*[.]\\s*\\b(${symbolName})\\b\\s*`
       );
       const memberCallMatch = memberCallRegExp.exec(currentLineStr);
+
+      if (memberCallMatch === null) {
+        // If this wasn't a member call at all, look for regular function calls or property access
+        const functionSymbols = symbolManager.findAllSymbols(symbolName, [
+          SymbolKind.Function,
+          SymbolKind.Property,
+          SymbolKind.Method
+        ]);
+        if (functionSymbols.length > 0) {
+          const symbols = functionSymbols
+            .filter((x) => !isSameFileAndLine(x, fsPath, position))
+            .map((x) => 
+              Location.create(
+                onWindowsPlatform ? URI.file(x.filePath)?.path : x.filePath,
+                x.symbol.range
+              )
+            );
+          return symbols;
+        }
+      }
+
       if (memberCallMatch) {
         // Since this is a member call, look within the parent too for the symbol
         const parentName = memberCallMatch[1];
-        const potentialParents = symbolManager.findAllSymbols(parentName);
-        for (const potentialParent of potentialParents) {
+
+        const isInvocatingMethodCall =
+          memberCallMatch.length >= 2 && memberCallMatch[2] ? true : false;
+        if (isInvocatingMethodCall) {
+          connection.console.debug(
+            `Can not yet handle evaluating methods ${parentName}${memberCallMatch[2]} in a method call chain. `
+          );
+          return fetchSymbolGlobally(symbolName, symbolManager);
+        }
+
+        // If the owner of the symbol cannot be found, try fetch by old strategy
+        // NOTE: It might lead to the wrong definition
+        const owner = symbolManager.findSymbol(parentName);
+        if (owner?.symbol === undefined) {
+          connection.console.debug(
+            `Can not find the ${owner} in the member call chain. `
+          );
+          return fetchSymbolGlobally(symbolName, symbolManager);
+        }
+
+        const isObjectOrClass =
+          owner?.symbol?.kind &&
+          (owner.symbol.kind === SymbolKind.Object ||
+            owner.symbol.kind === SymbolKind.Class);
+        if (!isObjectOrClass) {
+          connection.console.debug(
+            `Can not handle anything else but objects and classes. `
+          );
+          return fetchSymbolGlobally(symbolName, symbolManager);
+        }
+
+        //symbolManager.assignmentStatements.get(symbolName);
+
+        // Add inheritance chain and check in ascending order where the method first occurs after the clicked instance:
+        const superClassNames =
+          symbolManager.getInheritanceChainFor(parentName);
+
+        for (const superClassName of superClassNames) {
+          const potentialParent = symbolManager.findSymbol(
+            superClassName,
+            false
+          );
           // TODO: verify member is within instance:
           const foundMemberSymbol =
             potentialParent?.symbol?.children?.filter(
               (x) => x.name === symbolName
             ) ?? [];
-          if (foundMemberSymbol.length > 0) {
+
+          if (
+            foundMemberSymbol.length > 0 &&
+            potentialParent.symbol &&
+            potentialParent.filePath
+          ) {
             // TODO: Decide which parent should be the containing object, for now we just grab the first
             containingObject = potentialParent?.symbol;
-            fsPath = potentialParent.filePath;
+            fsPath = potentialParent?.filePath;
 
             connection.console
               .debug(`Found definition within a member call chain: 
               [${containingObject.name}].${symbolName}, going there. `);
+            break;
           }
         }
       }
 
-      // IF no containingObject was found via member call chain,
+      // IF no containingObject was found via member call chain (_but it is still *matches* a member call chain_)
       // try to find it within the class itself
       // First try to locate the member's parent
       containingObject ??= symbolManager.findContainingObject(fsPath, position);
@@ -455,6 +519,43 @@ export async function onDefinition(
   }
 }
 
+function isSameFileAndLine(
+  x: { symbol: DocumentSymbol; filePath: string },
+  fsPath: string,
+  position: Position
+): unknown {
+  return (
+    compareStringReverse(x.filePath, fsPath) &&
+    x.symbol.range.start.line === position.line
+  );
+}
+
+function fetchSymbolGlobally(
+  symbolName: string,
+  symbolManager: TadsSymbolManager
+): Location[] {
+  const locations = [];
+  connection.console.debug(
+    `Searching definition(s) for word: ${symbolName} using (global) strategy`
+  );
+  for (const filePathKey of symbolManager.symbols.keys()) {
+    const localSymbols = symbolManager.symbols.get(filePathKey);
+    if (localSymbols) {
+      const symbol = flattenTreeToArray(localSymbols).find(
+        (x) => x.name === symbolName
+      );
+      if (symbol !== undefined) {
+        connection.console.debug(
+          `Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`
+        );
+        const filePath = URI.file(filePathKey).toString();
+        locations.push(Location.create(filePath, symbol.range));
+      }
+    }
+  }
+  return locations;
+}
+
 function isRangeWithin(range: Range, containingRange: Range): boolean {
   if (range.start.line < containingRange.start.line) {
     return false;
@@ -473,7 +574,10 @@ function isRangeWithin(range: Range, containingRange: Range): boolean {
   return true;
 }
 
-function isPositionWithinRange(position: Position, containingRange: Range): boolean {
+function isPositionWithinRange(
+  position: Position,
+  containingRange: Range
+): boolean {
   if (position.line < containingRange.start.line) {
     return false;
   }

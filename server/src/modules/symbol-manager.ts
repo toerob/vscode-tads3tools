@@ -11,20 +11,28 @@ import { filterForStandardLibraryFiles } from "./utils";
 import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { pathExistsSync } from "fs-extra";
 import { ExtendedDocumentSymbolProperties } from "../parser/Tads3SymbolListener";
+import { DocumentSymbolWithScope } from './types';
 
 export type FilePathAndSymbols = {
   filePath: string;
   symbols: DocumentSymbol[];
 };
 
-export class TadsSymbolManager {
-  symbols: Map<string, DocumentSymbol[]>;
-  keywords: Map<string, Map<string, Range[]>>;
-  additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
-  inheritanceMap: Map<string, string> = new Map();
-  onWindowsPlatform = false;
 
-  assignmentStatements: Map<string, DocumentSymbol[]> = new Map();
+export class TadsSymbolManager {
+  public symbols: Map<string, DocumentSymbol[]>;
+  // Next gen:
+  // TODO: symbols2: Map<string, SymbolWithInfo[]> = new Map();
+  // or: symbols2: Map<string, DocumentSymbolWithScope[]> = new Map();
+
+  public keywords: Map<string, Map<string, Range[]>>;
+  public additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
+  public inheritanceMap: Map<string, string> = new Map();
+  public onWindowsPlatform = false;
+
+  public readonly assignmentStatements: Map<string, DocumentSymbol[]> = new Map();
+  public readonly assignmentDeclarations: Map<string, Map<string,DocumentSymbolWithScope>> = new Map();
+
 
   constructor() {
     // Windows doesn't recognize case differences in file paths, therefore we need to use case insensitive maps:
@@ -67,6 +75,64 @@ export class TadsSymbolManager {
       }
     }
     return {};
+  }
+
+  getParent(symbol: DocumentSymbol | undefined): DocumentSymbol | undefined {
+    return symbol
+      ? symbolManager.getAdditionalProperties(symbol)?.parent ?? undefined
+      : undefined;
+  }
+
+  getParentChain(symbol: DocumentSymbol | undefined): DocumentSymbol[] {
+    const parentChain = [];
+    let current = symbol;
+    while ((current = this.getParent(current)) !== undefined) {
+      parentChain.push(current);
+    }
+    return parentChain;
+  }
+
+  getContext(
+    symbol: DocumentSymbol | undefined
+  ): ExtendedDocumentSymbolProperties | undefined {
+    return symbol
+      ? symbolManager.getAdditionalProperties(symbol) ?? undefined
+      : undefined;
+  }
+
+  getContextChain(
+    symbol: DocumentSymbol | undefined
+  ): ExtendedDocumentSymbolProperties[] {
+    const contextChain: ExtendedDocumentSymbolProperties[] = [];
+    const first = this.getContext(symbol);
+    if (first) {
+      contextChain.push(first);
+      let current: ExtendedDocumentSymbolProperties | undefined = first;
+      while ((current = this.getContext(current.parent)) !== undefined) {
+        contextChain.push(current);
+      }
+    }
+    return contextChain;
+  }
+
+  findSymbolsByNameArray(
+    name: string[]
+  ): { symbol: DocumentSymbol; filePath: string }[] {
+    const symbols: { symbol: DocumentSymbol; filePath: string }[] = [];
+    if (name) {
+      for (const filePath of this.symbols.keys()) {
+        const fileLocalSymbols = this.symbols.get(filePath);
+        if (fileLocalSymbols) {
+          const flattened = flattenTreeToArray(fileLocalSymbols);
+          const flattenedSymbols: DocumentSymbol[] =
+            flattened?.filter((s) => name.includes(s.name)) ?? [];
+          for (const symbol of flattenedSymbols) {
+            symbols.push({ symbol, filePath });
+          }
+        }
+      }
+    }
+    return symbols;
   }
 
   findAllSymbols(
@@ -284,6 +350,37 @@ export class TadsSymbolManager {
     return heritageStack;
   }
 
+  getInheritanceChainFor(parentName: string): string[] {
+    const potentialParents = this.findAllSymbols(parentName);
+    const superClassNames: any[] =
+      potentialParents?.flatMap((x) => x.symbol?.detail?.split(",")) ?? [];
+    const superClassNamesByInheritance = this.sortByInheritanceOrder(
+      parentName,
+      superClassNames
+    );
+    const uniqueSuperClasses = [...new Set(superClassNamesByInheritance)];
+    return uniqueSuperClasses;
+  }
+
+  sortByInheritanceOrder(originalClassName: string, classNames: string[]) {
+    const superClasses = classNames.map((x) => this.findHeritage(x)) ?? [];
+    const orderedClasses = [originalClassName];
+    const largestArrayLength =
+      superClasses
+        ?.map((x) => x.length)
+        ?.sort()
+        ?.reverse()?.[0] ?? 0;
+
+    for (let j = 0; j < largestArrayLength; j++) {
+      for (let i = 0; i < superClasses.length; i++) {
+        if (j < superClasses[i]?.length) {
+          orderedClasses.push(superClasses[i][j]);
+        }
+      }
+    }
+    return orderedClasses;
+  }
+
   findContainingObject(filePath: string, position: Position): any {
     function isClassOrObject(symbolKind: SymbolKind) {
       return (
@@ -372,21 +469,21 @@ export const symbolManager = new TadsSymbolManager();
 
 /*
 export function swapParent(newParent: ExtendedDocumentSymbol, oldParent: ExtendedDocumentSymbol, symbolAsExtDocObj: ExtendedDocumentSymbol, symbols: any) {
-	if (newParent) {
-		if (oldParent) {
-			let idx = oldParent.children.findIndex(x => x === symbolAsExtDocObj);
-			if(idx) {
-				oldParent.children = oldParent.children.splice(idx, 1);
-			}
-		} else {
-			let idx = symbols.findIndex(x=>x === symbolAsExtDocObj);
-			if(idx) {
-				symbols.splice(idx, 1);
-			}
-		}
-		newParent.children.push(symbolAsExtDocObj);
-		symbolAsExtDocObj.parent = newParent;
-	}
+  if (newParent) {
+    if (oldParent) {
+      let idx = oldParent.children.findIndex(x => x === symbolAsExtDocObj);
+      if(idx) {
+        oldParent.children = oldParent.children.splice(idx, 1);
+      }
+    } else {
+      let idx = symbols.findIndex(x=>x === symbolAsExtDocObj);
+      if(idx) {
+        symbols.splice(idx, 1);
+      }
+    }
+    newParent.children.push(symbolAsExtDocObj);
+    symbolAsExtDocObj.parent = newParent;
+  }
 }*/
 function translateRangeByLineOffset(range: Range, offsetLine = 0) {
   return Range.create(

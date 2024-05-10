@@ -20,12 +20,12 @@ import { isUsingAdv3Lite } from "../parse-workers-manager";
 import { retrieveDocumentationForKeyword } from "./documentation";
 import { serverState } from "../state";
 import { glob } from "glob";
-import { getDefineMacrosMap } from '../parser/preprocessor';
+import { getDefineMacrosMap } from "../parser/preprocessor";
 
 let cachedKeyWords: Set<CompletionItem> | undefined = undefined;
 
 export function clearCompletionCache() {
-  connection.console.debug('Clearing keyword cache');
+  connection.console.debug("Clearing keyword cache");
   cachedKeyWords?.clear();
   cachedKeyWords = undefined;
 }
@@ -263,7 +263,7 @@ export async function onCompletion(
 
   if (!cachedKeyWords) {
     const startTime = Date.now();
-    connection.console.debug('Collecting keywords');
+    connection.console.debug("Collecting keywords");
 
     for (const file of symbolManager.keywords.keys()) {
       const localKeys = symbolManager.keywords.get(file);
@@ -284,10 +284,10 @@ export async function onCompletion(
     }
 
     // Add all macros
-    for(const m of getDefineMacrosMap().keys()) {
+    for (const m of getDefineMacrosMap().keys()) {
       suggestions.add(CompletionItem.create(m));
     }
-    
+
     // Add known symbols
     for (const file of symbolManager.symbols.keys()) {
       const localKeys = symbolManager.symbols.get(file);
@@ -317,7 +317,9 @@ export async function onCompletion(
 
     cachedKeyWords = suggestions;
     const elapsedTime = Date.now() - startTime;
-    connection.console.debug(`Updating cache with keywords, elapsed time = ${elapsedTime} ms`);
+    connection.console.debug(
+      `Updating cache with keywords, elapsed time = ${elapsedTime} ms`
+    );
   }
 
   // TODO: Experimenting
@@ -340,7 +342,7 @@ export async function onCompletion(
     if (memberCallMatch && memberCallMatch.length > 1 && memberCallMatch[1]) {
       // TODO: handle this the same way as below. Change the listnener if needs be
       // TODO: find variable assignments instead and figure out the scope
-      const isInline =  memberCallMatch[2] && memberCallMatch[2].startsWith("(");
+      const isInline = memberCallMatch[2] && memberCallMatch[2].startsWith("(");
       if (isInline) {
         const className = memberCallMatch[1];
         return getSuggestedProperty(
@@ -359,8 +361,22 @@ export async function onCompletion(
       const foundMatches = localAssignments.filter((x) => x.name === word);
       if (foundMatches.length > 0) {
         // TODO: decide the one match with most closest scope around this
-        const className = foundMatches[0]?.detail;
+        const detail = foundMatches[0]?.detail; // TODO: handle undefined... listener should add this detail?
+
+        let className = detail;
+        if(detail) {
+          const resultOfRegexp = newAssignmentRegexp.exec(detail)
+          if(resultOfRegexp) {
+            className = resultOfRegexp[2].trim();
+          }  
+        }
+        connection.console.log(foundMatches[0]?.name);
+
+        // TODO: now details isn't just holding the class name anymore, but also the whole expression
+        //const TODO = symbolManager.assignmentDeclarations.get(fsPath)?.get(word);
+
         if (className) {
+          connection.console.log(className);
           const variableName = memberCallMatch[1];
           return getSuggestedProperty(
             handler.position.line,
@@ -377,7 +393,9 @@ export async function onCompletion(
   const results = fuzzysort.go(word, [...cachedKeyWords], { key: "label" });
   const mappedResults = results.map((x: any) => x.obj);
   const methodTookMs = Date.now() - methodStartTime;
-  connection.console.debug(`Completion method took: ${methodTookMs} ms to complete`);
+  connection.console.debug(
+    `Completion method took: ${methodTookMs} ms to complete`
+  );
   return mappedResults;
 }
 
@@ -418,8 +436,8 @@ function tads3MakefileSuggestions(): CompletionItem[] | CompletionList {
       const completionItem = CompletionItem.create(itemPathWithoutExt);
       return completionItem;
     });
-  suggestions.push(CompletionItem.create("-source"));
-  suggestions.push(CompletionItem.create("-lib"));
+  suggestions.push(CompletionItem.create("source"));
+  suggestions.push(CompletionItem.create("lib"));
   return suggestions;
 }
 
@@ -442,13 +460,11 @@ function getSuggestedClassNames(partialClassWord: string) {
     key: "label",
   });
 
-  connection.console.debug(
+  /*connection.console.debug(
     `Suggestions: ${results.map((x) => x.obj.label).join(" ")}`
-  );
+  );*/
   return results.map((x: any) => x.obj);
 }
-
-
 
 function getSuggestedProperty(
   line: number,

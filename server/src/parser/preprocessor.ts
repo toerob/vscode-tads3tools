@@ -193,7 +193,7 @@ function processPreprocessedResult(
   }
 
   const elapsedTime = Date.now() - startTime;
-  connection?.console?.log(
+  connection?.console?.debug(
     `${totalLineCount - 1} number of preprocessed lines mapped in ${elapsedTime} ms`
   );
 }
@@ -240,7 +240,7 @@ function countRowsOfUnprocessedFiles(
     rowMap.set(f, countedLines);
   }
   const elapsedTime = Date.now() - startTime;
-  connection?.console?.log(`Counting row lines done in ${elapsedTime} ms`);
+  connection?.console?.debug(`Counting row lines done in ${elapsedTime} ms`);
   return rowMap;
 }
 
@@ -289,7 +289,7 @@ function postProcessPreprocessedResultTads(
     }
   }
   const elapsedTime = Date.now() - startTime;
-  connection?.console?.log(
+  connection?.console?.debug(
     `Postprocessing row lines done in ${elapsedTime} ms`
   );
 }
@@ -336,7 +336,7 @@ function mapMacroDefinitions(filename: string, connection: any) {
         rowIdx++;
       });
       macrosChecked.add(fp); // Cache result, only refresh on file changes
-      connection?.console?.info(`${fp} scanned for macro definitions`);
+      connection?.console?.debug(`${fp} scanned for macro definitions`);
     }
   });
 }

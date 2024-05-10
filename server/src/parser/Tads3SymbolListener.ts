@@ -10,15 +10,15 @@ import {
   CurlyObjectBodyContext,
   CodeBlockContext,
   MemberExprContext,
-  ThrowStatementContext,
   IntrinsicMethodDeclarationContext,
   IntrinsicDeclarationContext,
   GrammarDeclarationContext,
   TemplateDeclarationContext,
   LocalExprContext,
   CallStatementContext,
-  ArrayContext,
-  ParamsContext,
+  AssignmentExprContext,
+  CallWithParamsExprContext,
+  ExprContext,
 } from "./Tads3Parser";
 import { ScopedEnvironment } from "./ScopedEnvironment";
 import {
@@ -29,7 +29,10 @@ import {
 import { Range } from "vscode-languageserver";
 import { Interval } from "antlr4ts/misc/Interval";
 import { ErrorNode } from "antlr4ts/tree/ErrorNode";
-import { Token } from 'antlr4ts';
+import { ParseTree } from 'antlr4ts/tree/ParseTree';
+import { T3StringVisitor } from './Tads3StringVisitor';
+import { T3ExprVisitor } from './Tads3ExprVisitor';
+import { DocumentSymbolWithScope } from '../modules/types';
 
 // TODO: Maybe much easier to just keep a map instead of an object like this?
 export class ExtendedDocumentSymbolProperties {
@@ -49,9 +52,8 @@ export class ExtendedDocumentSymbolProperties {
   travelConnectorMap = new Map();
 }
 
-//const additionalProperties = new Map<string, ExtendedDocumentSymbolProperties>();
-
 export class Tads3SymbolListener implements Tads3Listener {
+
   symbols: DocumentSymbol[] = [];
 
   additionalProperties: Map<DocumentSymbol, ExtendedDocumentSymbolProperties> =
@@ -66,6 +68,8 @@ export class Tads3SymbolListener implements Tads3Listener {
   currentFunctionSymbol: DocumentSymbol | undefined;
 
   currentInnerObjectSymbol: DocumentSymbol | undefined;
+
+  currentAssignment : DocumentSymbol | undefined;
 
   public assignmentStatements: DocumentSymbol[] = [];
 
@@ -99,7 +103,16 @@ export class Tads3SymbolListener implements Tads3Listener {
 
   memberCallChains = new Map();
 
+  public readonly stringVisitor = new T3StringVisitor({hideSemicolon: true});
+  public readonly assignmentDeclarations: Map<string,DocumentSymbolWithScope> = new Map();
+  
+  /*
+  lastLocalExpr: LocalExprContext|undefined = undefined;
+  lastAssignmentStatementContext: AssignmentStatementContext|undefined = undefined;
+  */
+  
   enterIdAtom(ctx: IdAtomContext) {
+
     try {
       let name;
       // eslint-disable-next-line prefer-const
@@ -119,6 +132,16 @@ export class Tads3SymbolListener implements Tads3Listener {
           }
         } catch (err) {
           console.error(`enterIdAtom ${err}`);
+        }
+        //const callChain = this.memberCallChains.get(name);
+
+        // If this ID has a local assignment, map it
+        if(this.currentAssignment) {
+          this.assignmentDeclarations.set(name, {
+            functionScope: this.currentFunctionSymbol,
+            documentSymbol: this.currentAssignment,
+            callChain: this.memberCallChains.get(name) ?? [], // This is in the reverse order here, not useful
+          });
         }
       }
     } catch (error) {
@@ -147,11 +170,22 @@ export class Tads3SymbolListener implements Tads3Listener {
 
   enterCallStatement(ctx: CallStatementContext) {}
 
+  /*
   enterLocalExpr(ctx: LocalExprContext) {
+    this.lastLocalExpr = ctx;
     //console.log("LOCAL ASSIGNMENT: " + ctx.getChild(1).text );
   }
+  exitLocalExpr(ctx: LocalExprContext) {
+    this.lastLocalExpr = undefined;
+  }
+
+
+  exitAssignmentStatement(ctx: AssignmentStatementContext) {
+    this.lastAssignmentStatementContext = undefined;
+  }*/
 
   enterAssignmentStatement(ctx: AssignmentStatementContext) {
+    //this.lastAssignmentStatementContext = ctx;
     const name = ctx.identifierAtom()?.ID()?.text?.trim();
     const start = (ctx.start.line ?? 1) - 1;
     const stop = (ctx.stop?.line ?? 1) - 1;
@@ -159,11 +193,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 
     let detail;
     try {
-      if ((ctx?.expr()?.childCount ?? 0) > 2) {
-        if ((ctx?.expr()?.getChild(1)?.childCount ?? 0) > 0) {
-          detail = ctx?.expr()?.getChild(1)?.getChild(0)?.text ?? "";
-        }
-      }
+      detail = this.stringVisitor.visit(ctx as ParseTree);
     } catch (err) {
       console.error("You shall not pass!");
     }
@@ -183,7 +213,12 @@ export class Tads3SymbolListener implements Tads3Listener {
       additionalProps.functionScope = this.currentFunctionSymbol;
       this.additionalProperties.set(symbol, additionalProps);
       this.assignmentStatements.push(symbol);
+      this.currentAssignment = symbol;
     }
+  }
+
+  exitAssignmentExpr(ctx: AssignmentExprContext) {
+    this.currentAssignment = undefined;
   }
 
   enterGrammarDeclaration(ctx: GrammarDeclarationContext) {
@@ -357,9 +392,10 @@ export class Tads3SymbolListener implements Tads3Listener {
   }
 
   visitErrorNode(ctx: ErrorNode) {
-    console.debug(
+    console.debug(`Parser failed on row ${ctx.payload.line} in (${this.currentUri})`);
+    /*console.debug(
       `Problem parsing token "${ctx.toStringTree()}" on line ${ctx.payload.line} in (${this.currentUri})`
-    );
+    );*/
   }
 
   exitCurlyObjectBody(ctx: CurlyObjectBodyContext) {
