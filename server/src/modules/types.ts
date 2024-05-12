@@ -12,14 +12,25 @@ import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { pathExistsSync } from "fs-extra";
 import { ExtendedDocumentSymbolProperties } from "../parser/Tads3SymbolListener";
 
+export type FilePathAndSymbols = {
+  filePath: string;
+  symbols: DocumentSymbol[];
+};
+
+export enum ExpressionType { OTHER, METHOD_INVOCATION, LOCAL_ASSIGNMENT };
 
 export type DocumentSymbolWithScope = {
-  documentSymbol: DocumentSymbol
+  documentSymbol?: DocumentSymbol
   functionScope?: DocumentSymbol
-	callChain?: string[]
-  type?: string // Or DocumentSymbol if possible
+	callChain?: string[] // Clean this one if not needed
+	callChainStr?: string // Clean this one if not needed
   
+  constructorArgs?: string // Or DocumentSymbol if possible  
+  instanceType?: string // Or DocumentSymbol if possible  
+
+  epxressionType: ExpressionType
 }
+
 
 /*
 export type ContextualInformationControlFlow = {

@@ -231,7 +231,7 @@ export async function preprocessAndParseTads3Files(
     const text = preprocessedFilesCacheMap.get(filePath) ?? "";
     const jobResult = await worker(filePath, text);
     connection.console.debug(`Worker finished with result`);
-    const { symbols, keywords, additionalProperties, inheritanceMap, assignmentStatements, assignmentDeclarations } =
+    const { symbols, keywords, additionalProperties, inheritanceMap, assignmentStatements, expressionSymbols } =
       jobResult;
 
     symbolManager.symbols.set(filePath, symbols ?? []);
@@ -248,10 +248,10 @@ export async function preprocessAndParseTads3Files(
       }
     }    
     */
-   assignmentDeclarations
+
     symbolManager.keywords.set(filePath, keywords ?? []);
-    symbolManager.assignmentStatements, assignmentDeclarations.set(filePath, assignmentStatements, assignmentDeclarations ?? []);
-    symbolManager.assignmentDeclarations.set(filePath, assignmentDeclarations)
+    symbolManager.assignmentStatements, expressionSymbols.set(filePath, assignmentStatements, expressionSymbols ?? []);
+    symbolManager.expressionSymbols.set(filePath, expressionSymbols)
 
     inheritanceMap.forEach((value: string, key: string) =>
       symbolManager.inheritanceMap.set(key, value)
@@ -339,7 +339,7 @@ export async function preprocessAndParseTads3Files(
 
 
             const text = preprocessedFilesCacheMap.get(filePath) ?? "";
-            const { symbols, keywords, additionalProperties, inheritanceMap, assignmentStatements, assignmentDeclarations } =
+            const { symbols, keywords, additionalProperties, inheritanceMap, assignmentStatements, expressionSymbols } =
               await parseJob(filePath, text);
 
             symbolManager.symbols.set(filePath, symbols ?? []);
@@ -361,7 +361,8 @@ export async function preprocessAndParseTads3Files(
 
             symbolManager.keywords.set(filePath, keywords ?? []);
             symbolManager.assignmentStatements.set(filePath, assignmentStatements ?? []);
-            symbolManager.assignmentDeclarations.set(filePath, assignmentDeclarations ?? []);
+            symbolManager.expressionSymbols.set(filePath, expressionSymbols ?? []);
+
             inheritanceMap.forEach((value: string, key: string) =>
               symbolManager.inheritanceMap.set(key, value)
             );

@@ -54,6 +54,6 @@ expose(function parseFunc(path: string, text: string) {
     additionalProperties: listener.additionalProperties,
     inheritanceMap: listener.inheritanceMap,
     assignmentStatements: listener.assignmentStatements,
-    assignmentDeclarations: listener.assignmentDeclarations
+    expressionSymbols: listener.expressionSymbols,
   };
 });

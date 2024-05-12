@@ -4,6 +4,7 @@ import * as path from "path";
 import * as languageserver from "vscode-languageserver/node";
 import * as languageserverTextdocument from "vscode-languageserver-textdocument";
 import { Range } from "vscode-languageserver";
+import { connection } from '../server';
 
 export function filterForStandardLibraryFiles(array: string[] = []): string[] {
   if (array.length === 0) {
@@ -57,6 +58,7 @@ export function extractCurrentLineFromDocument(
   return currentLineStr.trim();
 }
 
+// TODO: this must be missing something
 export function isRangeWithin(range: Range, containingRange: Range): boolean {
   if (range.start.line < containingRange.start.line) {
     return false;
@@ -74,4 +76,32 @@ export function isRangeWithin(range: Range, containingRange: Range): boolean {
     return range.end.character <= containingRange.end.character;
   }
   return true;
+}
+
+
+export function isPositionWithinRange(pos: languageserver.Position, range: Range) {
+  if(pos.line < range.start.line || pos.line > range.end.line) {
+    return false;
+  }
+
+  if(pos.line === range.start.line) {
+    if(pos.character < range.start.character) {
+      return false;
+    }
+  }
+
+  if(pos.line === range.start.line) {
+    if(pos.character > range.end.character) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+
+export function logElapsedTime(currentTimeUtc: number) {
+  connection.console.debug(
+    `Finding definition took ${Date.now() - currentTimeUtc} ms`
+  );
 }

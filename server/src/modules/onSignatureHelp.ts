@@ -1,4 +1,4 @@
-import { FilePathAndSymbols, TadsSymbolManager } from "./symbol-manager";
+import { TadsSymbolManager } from "./symbol-manager";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import {
   TextDocuments,
@@ -19,6 +19,7 @@ import { Tads3Lexer } from "../parser/Tads3Lexer";
 import { Tads3Listener } from "../parser/Tads3Listener";
 import { Tads3Parser } from "../parser/Tads3Parser";
 import Tads3SymbolListenerParameterCollector from "../parser/Tads3SymbolListenerCallStatement";
+import { FilePathAndSymbols } from './types';
 
 const idWithParametersRegexp = /\s*(.*)[(](.*)?[)]/;
 

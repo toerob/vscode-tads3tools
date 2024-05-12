@@ -11,28 +11,27 @@ import { filterForStandardLibraryFiles } from "./utils";
 import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { pathExistsSync } from "fs-extra";
 import { ExtendedDocumentSymbolProperties } from "../parser/Tads3SymbolListener";
-import { DocumentSymbolWithScope } from './types';
-
-export type FilePathAndSymbols = {
-  filePath: string;
-  symbols: DocumentSymbol[];
-};
-
+import {
+  DocumentSymbolWithScope,
+  ExpressionType,
+  FilePathAndSymbols,
+} from "./types";
 
 export class TadsSymbolManager {
   public symbols: Map<string, DocumentSymbol[]>;
-  // Next gen:
-  // TODO: symbols2: Map<string, SymbolWithInfo[]> = new Map();
-  // or: symbols2: Map<string, DocumentSymbolWithScope[]> = new Map();
+  // TODO: future tech - symbols2: Map<string, DocumentSymbolWithScope[]> = new Map();
 
   public keywords: Map<string, Map<string, Range[]>>;
-  public additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
+  public additionalProperties: Map<string, Map<DocumentSymbol, any>> =
+    new Map();
   public inheritanceMap: Map<string, string> = new Map();
   public onWindowsPlatform = false;
 
-  public readonly assignmentStatements: Map<string, DocumentSymbol[]> = new Map();
-  public readonly assignmentDeclarations: Map<string, Map<string,DocumentSymbolWithScope>> = new Map();
-
+  public assignmentStatements: Map<string, DocumentSymbol[]> = new Map();
+  public expressionSymbols: Map<
+    string,
+    Map<string, DocumentSymbolWithScope[]>
+  > = new Map();
 
   constructor() {
     // Windows doesn't recognize case differences in file paths, therefore we need to use case insensitive maps:
@@ -136,7 +135,7 @@ export class TadsSymbolManager {
   }
 
   findAllSymbols(
-    name: any,
+    name: string,
     kinds: SymbolKind[] | undefined = undefined
   ): { symbol: DocumentSymbol; filePath: string }[] {
     const symbols: { symbol: DocumentSymbol; filePath: string }[] = [];
@@ -160,6 +159,28 @@ export class TadsSymbolManager {
         }
       }
     }
+    return symbols;
+  }
+
+  findAllSymbolsByKind(
+    filePath: string,
+    kinds: SymbolKind[]
+  ): { symbol: DocumentSymbol; filePath: string }[] {
+    const symbols: { symbol: DocumentSymbol; filePath: string }[] = [];
+    //for (const filePath of this.symbols.keys()) {
+    const fileLocalSymbols = this.symbols.get(filePath);
+    if (fileLocalSymbols) {
+      const flattened = flattenTreeToArray(fileLocalSymbols);
+
+      const localSymbols = flattened
+        ?.filter((s) => kinds.includes(s.kind))
+        .map((x) => ({ symbol: x, filePath }));
+
+      if (localSymbols && localSymbols.length > 0) {
+        symbols.push(...localSymbols);
+      }
+    }
+    //}
     return symbols;
   }
 
@@ -381,7 +402,10 @@ export class TadsSymbolManager {
     return orderedClasses;
   }
 
-  findContainingObject(filePath: string, position: Position): any {
+  findContainingObject(
+    filePath: string,
+    position: Position
+  ): DocumentSymbol | undefined {
     function isClassOrObject(symbolKind: SymbolKind) {
       return (
         symbolKind === SymbolKind.Object || symbolKind === SymbolKind.Class
@@ -408,6 +432,72 @@ export class TadsSymbolManager {
     [...this.symbols.keys()]
       .filter((x) => !pathExistsSync(x))
       .forEach((x) => symbolManager.symbols.delete(x));
+  }
+
+  // TODO: improve this by a range instead
+  // TODO: check sorting order
+  getClosestAssignmentDeclaration(
+    fsPath: string,
+    symbolName: any,
+    position: Position
+  ): DocumentSymbolWithScope | undefined {
+    return this.getClosestExpressionSymbol(
+      fsPath,
+      symbolName,
+      ExpressionType.LOCAL_ASSIGNMENT,
+      position
+    );
+  }
+
+  getClosestExpressionSymbol(
+    fsPath: string,
+    symbolName: any,
+    type: ExpressionType,
+    position: Position
+  ): DocumentSymbolWithScope | undefined {
+    const localExpressionSymbols = this.expressionSymbols.get(fsPath);
+    const assignmentDeclarationsSortedByLine = localExpressionSymbols
+      ?.get(symbolName)
+      ?.filter((x) => x.epxressionType === type)
+      ?.filter(
+        (x) => (x.documentSymbol?.range?.start?.line ?? 0) <= position.line
+      ) // Filter everything greater than the current line
+      ?.sort(
+        (a, b) =>
+          (a.documentSymbol?.range?.start?.line ?? 0) -
+          (b.documentSymbol?.range?.start?.line ?? 0)
+      )
+      ?.reverse();
+    return assignmentDeclarationsSortedByLine?.[0] ?? undefined;
+  }
+
+  getExpressionSymbol(
+    fsPath: string,
+    symbol: DocumentSymbol
+  ): DocumentSymbolWithScope | undefined {
+    return (
+      this.expressionSymbols
+        ?.get(fsPath)
+        ?.get(symbol.name)
+        ?.find(
+          (x: DocumentSymbolWithScope) =>
+            (x.documentSymbol?.range?.start?.line ?? 0) ===
+            symbol.range.start.line
+        ) ?? undefined
+    );
+  }
+
+  isPositionWithinCodeBlock(fsPath: string, pos: Position): boolean {
+    const allMethodsInFile = this.findAllSymbolsByKind(fsPath, [
+      SymbolKind.Function,
+      SymbolKind.Method,
+    ]);
+    const methodsContainingRange =
+      allMethodsInFile
+        ?.map((x) => x.symbol.range)
+        ?.filter((x) => pos.line >= x.start.line && pos.line <= x.end.line) ??
+      [];
+    return methodsContainingRange?.length > 0;
   }
 }
 

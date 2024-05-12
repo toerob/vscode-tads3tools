@@ -21,6 +21,15 @@ import { retrieveDocumentationForKeyword } from "./documentation";
 import { serverState } from "../state";
 import { glob } from "glob";
 import { getDefineMacrosMap } from "../parser/preprocessor";
+import {
+  TADS3_KEYWORDS,
+  WS,
+  ID,
+  DIRECTION_ASSIGNMENT_REGEXP,
+  PROPERTY_REGEXP,
+  NEW_INSTANCE_REGEXP,
+  NEW_ASSIGNMENT_REGEXP,
+} from "./constants";
 
 let cachedKeyWords: Set<CompletionItem> | undefined = undefined;
 
@@ -29,73 +38,6 @@ export function clearCompletionCache() {
   cachedKeyWords?.clear();
   cachedKeyWords = undefined;
 }
-
-const newInstanceRegexp = /\s*new\s+([a-zA-Z][a-zA-Z0-9]*)?$/;
-
-// TODO: Remove once satisfied
-
-const newAssignmentRegexp = /(.*)\s*[=]\s*new\s*(.*)\s*\(/;
-const newAssignmentRegexp2 = /[=]\s*new\s*(.*)\s*\(/;
-const propertyRegexp = /([a-zA-Z][a-zA-Z0-9]*)[.]\s*([a-zA-Z][a-zA-Z0-9]*)?$/;
-
-const propertyRegexp2 =
-  /([a-zA-Z][a-zA-Z0-9]*)(\s*[(].*[)])?\s*[.]\s*([a-zA-Z][a-zA-Z0-9]*)?$/;
-
-const ID = "[a-zA-Z0-9_]+";
-const DIR =
-  "(north|south|east|west|northeast|northwest|southeast|southwest|up|down|in|out)";
-const WS = "\\s*";
-const dirAssignmentRegExp = new RegExp(`^${WS}${DIR}${WS}=${WS}(${ID})?`);
-const tads3Keywords = [
-  "grammar",
-  "switch",
-  "case",
-  "default",
-  "function",
-  "throw",
-  "new",
-  "template",
-  "for",
-  "try",
-  "catch",
-  "finally",
-  "enum",
-  "class",
-  "transient",
-  "modify",
-  "replace",
-  "propertyset",
-  "if",
-  "do",
-  "while",
-  "else",
-  "local",
-  "true",
-  "nil",
-  "intrinsic",
-  "inherited",
-  "delegated",
-  "property",
-  "dictionary",
-  "export",
-  "extern",
-  "return",
-  "static",
-  "string",
-  "foreach",
-  "in",
-  "...",
-  "..",
-  "step",
-  "not",
-  "is",
-  "break",
-  "continue",
-  "goto",
-  "token",
-  "pragma",
-  "operator",
-];
 
 export async function onCompletion(
   handler: CompletionParams,
@@ -145,36 +87,13 @@ export async function onCompletion(
         fsPath,
         handler.position
       );
-
-      const item = CompletionItem.create(symbol.name);
-      item.kind = CompletionItemKind.Class;
-      suggestions.add(item);
-      for (const prop of symbol.children) {
-        const item = CompletionItem.create(prop.name);
-        switch (prop.kind) {
-          case SymbolKind.Property:
-            item.kind = CompletionItemKind.Property;
-            break;
-          case SymbolKind.Object:
-            item.kind = CompletionItemKind.Class;
-            break;
-          case SymbolKind.Function:
-            item.kind = CompletionItemKind.Function;
-            break;
-        }
+      if (symbol) {
+        const item = CompletionItem.create(symbol.name);
+        item.kind = CompletionItemKind.Class;
         suggestions.add(item);
-      }
 
-      // Add all inherited properties for the object by checking its heritage and lookup all symbols
-      const heritage = symbolManager.mapHeritage(symbol);
-      connection.console.debug([...heritage].join(","));
-      for (const ancestorClass of [...heritage.values()][0] ?? []) {
-        const result = symbolManager.findSymbol(ancestorClass);
-        if (result.symbol) {
-          const item = CompletionItem.create(result.symbol.name);
-          item.kind = CompletionItemKind.Class;
-          suggestions.add(item);
-          for (const prop of result.symbol.children ?? []) {
+        if (symbol.children) {
+          for (const prop of symbol.children) {
             const item = CompletionItem.create(prop.name);
             switch (prop.kind) {
               case SymbolKind.Property:
@@ -190,11 +109,38 @@ export async function onCompletion(
             suggestions.add(item);
           }
         }
-      }
 
-      const results = fuzzysort.go(word, [...suggestions], { key: "label" });
-      connection.console.debug(results.map((x) => x.obj.label).join(","));
-      return results.map((x: any) => x.obj);
+        // Add all inherited properties for the object by checking its heritage and lookup all symbols
+        const heritage = symbolManager.mapHeritage(symbol);
+        connection.console.debug([...heritage].join(","));
+        for (const ancestorClass of [...heritage.values()][0] ?? []) {
+          const result = symbolManager.findSymbol(ancestorClass);
+          if (result.symbol) {
+            const item = CompletionItem.create(result.symbol.name);
+            item.kind = CompletionItemKind.Class;
+            suggestions.add(item);
+            for (const prop of result.symbol.children ?? []) {
+              const item = CompletionItem.create(prop.name);
+              switch (prop.kind) {
+                case SymbolKind.Property:
+                  item.kind = CompletionItemKind.Property;
+                  break;
+                case SymbolKind.Object:
+                  item.kind = CompletionItemKind.Class;
+                  break;
+                case SymbolKind.Function:
+                  item.kind = CompletionItemKind.Function;
+                  break;
+              }
+              suggestions.add(item);
+            }
+          }
+        }
+
+        const results = fuzzysort.go(word, [...suggestions], { key: "label" });
+        connection.console.debug(results.map((x) => x.obj.label).join(","));
+        return results.map((x: any) => x.obj);
+      }
     }
 
     // An object declaration where the word is a class, show all class alternatives:
@@ -225,7 +171,7 @@ export async function onCompletion(
     // And return all suggestions if no word have been written, otherwise fuzzysort it
     // on the word written so far:
 
-    const result = dirAssignmentRegExp.exec(currentLineStr);
+    const result = DIRECTION_ASSIGNMENT_REGEXP.exec(currentLineStr);
     if (result && result.length > 0) {
       //word ??= '';
       connection.console.debug(`Matching direction assignment for: "${word}"`);
@@ -309,7 +255,7 @@ export async function onCompletion(
     }
 
     // Add common tads3 keywords
-    for (const keyword of tads3Keywords) {
+    for (const keyword of TADS3_KEYWORDS) {
       const item = CompletionItem.create(keyword);
       item.kind = CompletionItemKind.Keyword;
       suggestions.add(item);
@@ -329,7 +275,7 @@ export async function onCompletion(
 
   // TODO: check if inside code block for these
   {
-    const newInstanceMatch = newInstanceRegexp.exec(currentLineStr);
+    const newInstanceMatch = NEW_INSTANCE_REGEXP.exec(currentLineStr);
     if (
       newInstanceMatch &&
       newInstanceMatch.length > 0 &&
@@ -338,7 +284,7 @@ export async function onCompletion(
       return getSuggestedClassNames(newInstanceMatch[1]);
     }
 
-    const memberCallMatch = propertyRegexp2.exec(currentLineStr);
+    const memberCallMatch = PROPERTY_REGEXP.exec(currentLineStr);
     if (memberCallMatch && memberCallMatch.length > 1 && memberCallMatch[1]) {
       // TODO: handle this the same way as below. Change the listnener if needs be
       // TODO: find variable assignments instead and figure out the scope
@@ -364,11 +310,11 @@ export async function onCompletion(
         const detail = foundMatches[0]?.detail; // TODO: handle undefined... listener should add this detail?
 
         let className = detail;
-        if(detail) {
-          const resultOfRegexp = newAssignmentRegexp.exec(detail)
-          if(resultOfRegexp) {
+        if (detail) {
+          const resultOfRegexp = NEW_ASSIGNMENT_REGEXP.exec(detail);
+          if (resultOfRegexp) {
             className = resultOfRegexp[2].trim();
-          }  
+          }
         }
         connection.console.log(foundMatches[0]?.name);
 
@@ -394,7 +340,7 @@ export async function onCompletion(
   const mappedResults = results.map((x: any) => x.obj);
   const methodTookMs = Date.now() - methodStartTime;
   connection.console.debug(
-    `Completion method took: ${methodTookMs} ms to complete`
+    `Completion took ${methodTookMs} ms+`
   );
   return mappedResults;
 }
@@ -518,29 +464,3 @@ function getSuggestedProperty(
   const mappedResult = results.map((x: any) => x.obj);
   return mappedResult;
 }
-
-/*
-
-function getAssignmentTextFor2(
-  line: number,
-  text: string,
-  variableName: string
-) {
-  const inline = new RegExp(
-    `\\${variableName}s*[=]\\s*new\\s*(.*)\\s*[(].*[)]\\s*[.]\\s*.*`
-  ).exec(text);
-  if (inline) {
-    // If a class assignment x = new ABC().xyzzy  --> locate x to find out class name
-    // we need to check for the location of the end of the parenthesis
-    return inline[1];
-  }
-
-  const local = new RegExp(`(${variableName})\\s*[=]\\s*new\\s+(.*)[(]`).exec(
-    text
-  );
-  if (local) {
-    // local x = new ABC();   --> locate x to find out class name
-    // x.xyzzy
-    return local[2];
-  }
-}*/

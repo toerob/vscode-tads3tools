@@ -19,20 +19,25 @@ import {
   AssignmentExprContext,
   CallWithParamsExprContext,
   ExprContext,
+  NewExprContext,
 } from "./Tads3Parser";
 import { ScopedEnvironment } from "./ScopedEnvironment";
 import {
   CompletionItem,
   DocumentSymbol,
+  Position,
   SymbolKind,
 } from "vscode-languageserver";
 import { Range } from "vscode-languageserver";
 import { Interval } from "antlr4ts/misc/Interval";
 import { ErrorNode } from "antlr4ts/tree/ErrorNode";
-import { ParseTree } from 'antlr4ts/tree/ParseTree';
-import { T3StringVisitor } from './Tads3StringVisitor';
-import { T3ExprVisitor } from './Tads3ExprVisitor';
-import { DocumentSymbolWithScope } from '../modules/types';
+import { ParseTree } from "antlr4ts/tree/ParseTree";
+import { T3StringVisitor } from "./Tads3StringVisitor";
+import { T3ExprVisitor } from "./Tads3ExprVisitor";
+import { DocumentSymbolWithScope, ExpressionType } from "../modules/types";
+import { ParseTreeMatch } from "antlr4ts/tree/pattern/ParseTreeMatch";
+import { ParseTreePatternMatcher } from "antlr4ts/tree/pattern/ParseTreePatternMatcher";
+import { urlToHttpOptions } from "url";
 
 // TODO: Maybe much easier to just keep a map instead of an object like this?
 export class ExtendedDocumentSymbolProperties {
@@ -53,7 +58,6 @@ export class ExtendedDocumentSymbolProperties {
 }
 
 export class Tads3SymbolListener implements Tads3Listener {
-
   symbols: DocumentSymbol[] = [];
 
   additionalProperties: Map<DocumentSymbol, ExtendedDocumentSymbolProperties> =
@@ -69,7 +73,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 
   currentInnerObjectSymbol: DocumentSymbol | undefined;
 
-  currentAssignment : DocumentSymbol | undefined;
+  currentAssignment: DocumentSymbol | undefined;
 
   public assignmentStatements: DocumentSymbol[] = [];
 
@@ -103,16 +107,22 @@ export class Tads3SymbolListener implements Tads3Listener {
 
   memberCallChains = new Map();
 
-  public readonly stringVisitor = new T3StringVisitor({hideSemicolon: true});
-  public readonly assignmentDeclarations: Map<string,DocumentSymbolWithScope> = new Map();
-  
+  public readonly stringVisitor = new T3StringVisitor({ hideSemicolon: true });
+
+  // This cannot be a map since we can have several nested assignments, plus scope within different locations
+
+  public readonly expressionSymbols: Map<string, DocumentSymbolWithScope[]> =
+    new Map();
+
+  public readonly methodCalls: Map<string, DocumentSymbolWithScope[]> =
+    new Map();
+
   /*
   lastLocalExpr: LocalExprContext|undefined = undefined;
   lastAssignmentStatementContext: AssignmentStatementContext|undefined = undefined;
   */
-  
-  enterIdAtom(ctx: IdAtomContext) {
 
+  enterIdAtom(ctx: IdAtomContext) {
     try {
       let name;
       // eslint-disable-next-line prefer-const
@@ -133,15 +143,49 @@ export class Tads3SymbolListener implements Tads3Listener {
         } catch (err) {
           console.error(`enterIdAtom ${err}`);
         }
-        //const callChain = this.memberCallChains.get(name);
 
+        // ********************************************************
+        // TODO: figure out if this is still needed
+        // Maybe enough within enterAssignmentStatement?
+        // ********************************************************
+
+        //const callChain = this.memberCallChains.get(name);
         // If this ID has a local assignment, map it
-        if(this.currentAssignment) {
-          this.assignmentDeclarations.set(name, {
-            functionScope: this.currentFunctionSymbol,
-            documentSymbol: this.currentAssignment,
-            callChain: this.memberCallChains.get(name) ?? [], // This is in the reverse order here, not useful
-          });
+
+        if (this.currentAssignment) {
+          /*
+            const assignmentDeclaration = this.getAssignmentDeclaration(this.currentAssignment);
+            if(assignmentDeclaration)
+              if(assignmentDeclaration.callChain2) {
+                assignmentDeclaration.callChain2?.push(name);
+              } else {
+                assignmentDeclaration.callChain2 = [name];
+              }
+              console.log('Adding ' + name + " to callchain");
+            }
+            */
+          //TODO: symbolManager.addOrCreateAssignmentDeclaration(name, this.currentFunctionSymbol, this.c)
+          /*const assignmentDeclarationsForFile =
+            this.assignmentDeclarations.get(name);
+
+            
+          const assignmentDeclarationForFile =
+            assignmentDeclarationsForFile?.find(
+              (x) => x.documentSymbol?.range.start.line === start
+            );
+
+          if (assignmentDeclarationForFile) {
+            assignmentDeclarationForFile.functionScope =
+              this.currentFunctionSymbol;
+            assignmentDeclarationForFile.documentSymbol =
+              this.currentAssignment;
+          } else {
+            assignmentDeclarationsForFile?.push({
+              functionScope: this.currentFunctionSymbol,
+              documentSymbol: this.currentAssignment,
+              callChain: this.memberCallChains.get(name) ?? [], // This is in the reverse order here, not useful
+            });
+          }*/
         }
       }
     } catch (error) {
@@ -150,42 +194,34 @@ export class Tads3SymbolListener implements Tads3Listener {
   }
 
   /**
-   * Create a new scope whenever entering a new code block { ... }
-   * TODO: this needs to happen inside various statements as well (while, for etc...)
-   * Keep track of new the new scope so we can access them all when doing call hierarchy etc
-   * @param ctx
+   * Store method invocations together with is call chain inside expressionSymbols.
    */
-  enterCodeBlock(ctx: CodeBlockContext) {
-    //TODO: this.scopedEnvironment = new ScopedEnvironment(this.scopedEnvironment);
-    //TODO: this.scopedEnvironments.push(this.scopedEnvironment);
+
+  enterCallWithParamsExpr(ctx: CallWithParamsExprContext) {
+    const name = ctx.expr()?.text;
+    if (name === undefined) {
+      return;
+    }
+    const start = (ctx.start.line ?? 1) - 1;
+    const stop = (ctx.stop?.line ?? 1) - 1;
+    const range = Range.create(start, 0, stop, 0);
+    const symbol = DocumentSymbol.create(
+      name,
+      "invocation",
+      SymbolKind.Method,
+      range,
+      range,
+      []
+    );
+    this.currentAssignment = symbol;
+    this.addOrChangeExpression(name, start, {
+      documentSymbol: symbol,
+      callChainStr: this.currentCallChain,
+      epxressionType: ExpressionType.METHOD_INVOCATION,
+    });
   }
-
-  /**
-   * Go back to the enclosing scope when leaving a code block { ... }
-   * @param ctx
-   */
-  exitCodeBlock(ctx: CodeBlockContext) {
-    //TODO: this.scopedEnvironment = this.scopedEnvironment.getEnclosingEnvironment();
-  }
-
-  enterCallStatement(ctx: CallStatementContext) {}
-
-  /*
-  enterLocalExpr(ctx: LocalExprContext) {
-    this.lastLocalExpr = ctx;
-    //console.log("LOCAL ASSIGNMENT: " + ctx.getChild(1).text );
-  }
-  exitLocalExpr(ctx: LocalExprContext) {
-    this.lastLocalExpr = undefined;
-  }
-
-
-  exitAssignmentStatement(ctx: AssignmentStatementContext) {
-    this.lastAssignmentStatementContext = undefined;
-  }*/
 
   enterAssignmentStatement(ctx: AssignmentStatementContext) {
-    //this.lastAssignmentStatementContext = ctx;
     const name = ctx.identifierAtom()?.ID()?.text?.trim();
     const start = (ctx.start.line ?? 1) - 1;
     const stop = (ctx.stop?.line ?? 1) - 1;
@@ -214,7 +250,38 @@ export class Tads3SymbolListener implements Tads3Listener {
       this.additionalProperties.set(symbol, additionalProps);
       this.assignmentStatements.push(symbol);
       this.currentAssignment = symbol;
+
+      this.addOrChangeExpression(name, start, {
+        documentSymbol: symbol,
+        epxressionType: ExpressionType.LOCAL_ASSIGNMENT,
+      });
     }
+  }
+
+  enterNewExpr(ctx: NewExprContext) {
+    if (this.currentAssignment) {
+      // In case we happen upon a "new expr()" and there's already an ongoing
+      // assignmentStatement (e.g: "local x = new ClassName(x) ")  (see enterAssignmentStatement)
+      // Then add the class instance type and its constructor parameters
+
+      const currentAssignmentScope = this.getExpressionSymbol(
+        this.currentAssignment
+      );
+      const newInvocationText = ctx.expr().text;
+      if (currentAssignmentScope && newInvocationText) {
+        const parts = newInvocationText.split("(");
+        if (parts && parts.length > 1) {
+          const instanceType = parts[0] ?? undefined;
+          const constructorArgs = parts[1].split(")")[0] ?? undefined;
+          currentAssignmentScope.instanceType = instanceType;
+          currentAssignmentScope.constructorArgs = constructorArgs;
+        }
+      }
+    }
+  }
+
+  exitNewExpr(ctx: NewExprContext) {
+    this.currentAssignment = undefined;
   }
 
   exitAssignmentExpr(ctx: AssignmentExprContext) {
@@ -364,7 +431,30 @@ export class Tads3SymbolListener implements Tads3Listener {
     }
   }
 
+  currentCallChain: string | undefined;
+
+  exitMemberExpr(ctx: MemberExprContext) {
+    this.currentCallChain = ctx.text;
+  }
+
   enterMemberExpr(ctx: MemberExprContext) {
+    this.currentCallChain = ctx.text;
+
+    // If there's an ongoing assignment, keep track of a potential call chain
+    /*if (this.currentAssignment) {
+      //const currentAssignmentScope = this.assignmentDeclarations.get(this.currentAssignment.name);
+      const currentAssignmentScope = this.getAssignmentDeclaration(this.currentAssignment);
+      if (currentAssignmentScope) {
+        if(currentAssignmentScope.callChain2) {
+          //currentAssignmentScope.callChain2?.push(ctx._next.text);
+          currentAssignmentScope.callChain2?.push(ctx._next.text);
+        } else {
+          currentAssignmentScope.callChain2 = [ctx._next.text];
+        }
+      }
+    }*/
+
+    // TODO: remove safely when above is done
     const memberCallChain = ctx._prev ? ctx._prev.text.split(".") : [];
     const procedure = ctx._next?.text;
     //console.error(`MemberExpr: [ ${memberCallChain} ]  ->(${procedure} ())   Line: ${ctx.start.line} - ${ctx.stop.line}`);
@@ -392,7 +482,7 @@ export class Tads3SymbolListener implements Tads3Listener {
   }
 
   visitErrorNode(ctx: ErrorNode) {
-    console.debug(`Parser failed on row ${ctx.payload.line} in (${this.currentUri})`);
+    //console.debug(`Parser failed on row ${ctx.payload.line} in (${this.currentUri})`);
     /*console.debug(
       `Problem parsing token "${ctx.toStringTree()}" on line ${ctx.payload.line} in (${this.currentUri})`
     );*/
@@ -665,8 +755,6 @@ export class Tads3SymbolListener implements Tads3Listener {
           this.assignmentStatements.push(symbol);
           }
         */
-
-
     } catch (err) {
       console.error(err);
     }
@@ -713,5 +801,62 @@ export class Tads3SymbolListener implements Tads3Listener {
       );
       this.symbols.push(symbol);
     }
+  }
+
+  // Helper functions
+
+  // TODO: test this
+  addOrChangeExpression(
+    name: string,
+    line: number,
+    update: DocumentSymbolWithScope
+  ) {
+    let dec = this.expressionSymbols.get(name);
+    if (dec === undefined) {
+      this.expressionSymbols.set(name, [update]);
+      return;
+    }
+    let ref = dec?.find((x) => x.documentSymbol?.range.start.line === line);
+    if (ref) {
+      ref = { ...ref, ...update };
+    } else {
+      dec?.push(update);
+    }
+  }
+
+  getExpressionSymbol(
+    symbol: DocumentSymbol
+  ): DocumentSymbolWithScope | undefined {
+    return (
+      this.expressionSymbols
+        ?.get(symbol.name)
+        ?.find(
+          (x) =>
+            (x.documentSymbol?.range?.start?.line ?? 0) ===
+            symbol.range.start.line
+        ) ?? undefined
+    );
+  }
+
+  getClosestAssignmentDeclaration(
+    symbolName: any,
+    position: Position
+  ): DocumentSymbolWithScope | undefined {
+    const declarationsSortedByLine = this.expressionSymbols
+      ?.get(symbolName)
+      ?.filter(
+        (
+          x // Doubt this check is needed: x.epxressionType === ExpressionType.LOCAL_ASSIGNMENT &&
+        ) => (x.documentSymbol?.range?.start?.line ?? 0) <= position.line
+      ) // Filter everything grater than the current line
+      ?.sort(
+        (a, b) =>
+          (a.documentSymbol?.range?.start?.line ?? 0) -
+          (b.documentSymbol?.range?.start?.line ?? 0)
+      )
+      .reverse();
+
+    // Get the "greatest" line of them
+    return declarationsSortedByLine?.[0] ?? undefined;
   }
 }
