@@ -14,6 +14,7 @@ const defineRegExp = new RegExp(/^\s*[#]\s*define\s+([^\(\s\n]+)[^(\n]*/);
  * not parsing a quoted newline. Those we don't want to touch.
  */
 export const wholeLineRegExp = new RegExp(/(?<=[^\\])\r?\n/);
+export const simpleWholeLineRegExp = new RegExp(/\r?\n/);
 
 export const rowsMap = new Map<string, number>();
 const defineMacrosMap = new Map();
@@ -75,6 +76,8 @@ export async function preprocessTads2Files(
     connection
   );
 }
+
+// TODO: FIND OUT WHY GRAMMAR.T ISN'T COMPLETED IN THE END
 
 export async function preprocessTads3Files(
   chosenMakefilePath: string,
@@ -236,7 +239,7 @@ function countRowsOfUnprocessedFiles(
   const rowMap = new Map();
   for (const f of filesArray) {
     const contents = readFileSync(f).toString();
-    const countedLines = contents.split(wholeLineRegExp)?.length;
+    const countedLines = contents.split(simpleWholeLineRegExp)?.length;
     rowMap.set(f, countedLines);
   }
   const elapsedTime = Date.now() - startTime;

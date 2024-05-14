@@ -8,17 +8,13 @@ import {
   AssignmentStatementContext,
   FunctionDeclarationContext,
   CurlyObjectBodyContext,
-  CodeBlockContext,
   MemberExprContext,
   IntrinsicMethodDeclarationContext,
   IntrinsicDeclarationContext,
   GrammarDeclarationContext,
   TemplateDeclarationContext,
-  LocalExprContext,
-  CallStatementContext,
   AssignmentExprContext,
   CallWithParamsExprContext,
-  ExprContext,
   NewExprContext,
 } from "./Tads3Parser";
 import { ScopedEnvironment } from "./ScopedEnvironment";
@@ -33,13 +29,9 @@ import { Interval } from "antlr4ts/misc/Interval";
 import { ErrorNode } from "antlr4ts/tree/ErrorNode";
 import { ParseTree } from "antlr4ts/tree/ParseTree";
 import { T3StringVisitor } from "./Tads3StringVisitor";
-import { T3ExprVisitor } from "./Tads3ExprVisitor";
 import { DocumentSymbolWithScope, ExpressionType } from "../modules/types";
-import { ParseTreeMatch } from "antlr4ts/tree/pattern/ParseTreeMatch";
-import { ParseTreePatternMatcher } from "antlr4ts/tree/pattern/ParseTreePatternMatcher";
-import { urlToHttpOptions } from "url";
+import { ParserRuleContext } from "antlr4ts";
 
-// TODO: Maybe much easier to just keep a map instead of an object like this?
 export class ExtendedDocumentSymbolProperties {
   level: number | undefined;
   arrowConnection: string | undefined;
@@ -114,14 +106,6 @@ export class Tads3SymbolListener implements Tads3Listener {
   public readonly expressionSymbols: Map<string, DocumentSymbolWithScope[]> =
     new Map();
 
-  public readonly methodCalls: Map<string, DocumentSymbolWithScope[]> =
-    new Map();
-
-  /*
-  lastLocalExpr: LocalExprContext|undefined = undefined;
-  lastAssignmentStatementContext: AssignmentStatementContext|undefined = undefined;
-  */
-
   enterIdAtom(ctx: IdAtomContext) {
     try {
       let name;
@@ -143,59 +127,11 @@ export class Tads3SymbolListener implements Tads3Listener {
         } catch (err) {
           console.error(`enterIdAtom ${err}`);
         }
-
-        // ********************************************************
-        // TODO: figure out if this is still needed
-        // Maybe enough within enterAssignmentStatement?
-        // ********************************************************
-
-        //const callChain = this.memberCallChains.get(name);
-        // If this ID has a local assignment, map it
-
-        if (this.currentAssignment) {
-          /*
-            const assignmentDeclaration = this.getAssignmentDeclaration(this.currentAssignment);
-            if(assignmentDeclaration)
-              if(assignmentDeclaration.callChain2) {
-                assignmentDeclaration.callChain2?.push(name);
-              } else {
-                assignmentDeclaration.callChain2 = [name];
-              }
-              console.log('Adding ' + name + " to callchain");
-            }
-            */
-          //TODO: symbolManager.addOrCreateAssignmentDeclaration(name, this.currentFunctionSymbol, this.c)
-          /*const assignmentDeclarationsForFile =
-            this.assignmentDeclarations.get(name);
-
-            
-          const assignmentDeclarationForFile =
-            assignmentDeclarationsForFile?.find(
-              (x) => x.documentSymbol?.range.start.line === start
-            );
-
-          if (assignmentDeclarationForFile) {
-            assignmentDeclarationForFile.functionScope =
-              this.currentFunctionSymbol;
-            assignmentDeclarationForFile.documentSymbol =
-              this.currentAssignment;
-          } else {
-            assignmentDeclarationsForFile?.push({
-              functionScope: this.currentFunctionSymbol,
-              documentSymbol: this.currentAssignment,
-              callChain: this.memberCallChains.get(name) ?? [], // This is in the reverse order here, not useful
-            });
-          }*/
-        }
       }
     } catch (error) {
       console.error(error);
     }
   }
-
-  /**
-   * Store method invocations together with is call chain inside expressionSymbols.
-   */
 
   enterCallWithParamsExpr(ctx: CallWithParamsExprContext) {
     const name = ctx.expr()?.text;
@@ -214,6 +150,8 @@ export class Tads3SymbolListener implements Tads3Listener {
       []
     );
     this.currentAssignment = symbol;
+
+    // Store method invocations together with is call chain inside expressionSymbols.
     this.addOrChangeExpression(name, start, {
       documentSymbol: symbol,
       callChainStr: this.currentCallChain,
@@ -317,7 +255,8 @@ export class Tads3SymbolListener implements Tads3Listener {
 
   enterObjectDeclaration(ctx: ObjectDeclarationContext) {
     let name: string =
-      ctx.identifierAtom()?.ID()?.text?.toString() ?? "unnamed";
+      ctx.identifierAtom()?.text?.toString() ?? (ctx._isAnon? "anonymous" : "unnamed");
+
     const start = (ctx.start.line ?? 1) - 1;
     const stop = (ctx.stop?.line ?? 1) - 1;
     const range = Range.create(start, 0, stop, 0);
@@ -325,10 +264,20 @@ export class Tads3SymbolListener implements Tads3Listener {
     if (ctx._level) {
       level = ctx._level.length;
     }
+
     if (name === "unnamed") {
       name = ctx.superTypes()?.identifierAtom()?.ID()?.toString() ?? "unnamed";
     }
-    const detail = ctx.superTypes()?.payload?.text ?? "object";
+
+    let meta: string = "";
+    if (ctx._isModify) {
+      meta = "(modified) ";
+    }
+    if (ctx._isReplace) {
+      meta = "(replaced) ";
+    }
+
+    let detail = ctx.superTypes()?.payload?.text ?? `${meta}object`;
 
     const additionalProps = new ExtendedDocumentSymbolProperties();
 
@@ -365,9 +314,7 @@ export class Tads3SymbolListener implements Tads3Listener {
         for (const template of body?.objectBody()?.templateExpr()) {
           if (template?.text) {
             if (template.text.startsWith("->")) {
-              //symbol['arrowConnection'] = template.text.replace('->', '');
               const arrowConnection = template.text.replace("->", "");
-
               additionalProps.arrowConnection = arrowConnection
                 ? arrowConnection
                 : additionalProps.arrowConnection;
@@ -440,21 +387,7 @@ export class Tads3SymbolListener implements Tads3Listener {
   enterMemberExpr(ctx: MemberExprContext) {
     this.currentCallChain = ctx.text;
 
-    // If there's an ongoing assignment, keep track of a potential call chain
-    /*if (this.currentAssignment) {
-      //const currentAssignmentScope = this.assignmentDeclarations.get(this.currentAssignment.name);
-      const currentAssignmentScope = this.getAssignmentDeclaration(this.currentAssignment);
-      if (currentAssignmentScope) {
-        if(currentAssignmentScope.callChain2) {
-          //currentAssignmentScope.callChain2?.push(ctx._next.text);
-          currentAssignmentScope.callChain2?.push(ctx._next.text);
-        } else {
-          currentAssignmentScope.callChain2 = [ctx._next.text];
-        }
-      }
-    }*/
-
-    // TODO: remove safely when above is done
+    // TODO: remove safely when above is done, this is probably not needed anymore
     const memberCallChain = ctx._prev ? ctx._prev.text.split(".") : [];
     const procedure = ctx._next?.text;
     //console.error(`MemberExpr: [ ${memberCallChain} ]  ->(${procedure} ())   Line: ${ctx.start.line} - ${ctx.stop.line}`);
@@ -482,7 +415,6 @@ export class Tads3SymbolListener implements Tads3Listener {
   }
 
   visitErrorNode(ctx: ErrorNode) {
-    //console.debug(`Parser failed on row ${ctx.payload.line} in (${this.currentUri})`);
     /*console.debug(
       `Problem parsing token "${ctx.toStringTree()}" on line ${ctx.payload.line} in (${this.currentUri})`
     );*/
@@ -662,13 +594,12 @@ export class Tads3SymbolListener implements Tads3Listener {
     }
   }
 
-  enterFunctionHead(ctx: FunctionHeadContext) {
+  enterFunctionDeclaration(ctx: FunctionDeclarationContext) {
     try {
       let name: string =
-        ctx.identifierAtom()?.ID()?.text.toString() ?? "anonymous function";
-      const start = ctx.start?.line - 1 ?? 0;
-      const range = Range.create(start, 0, start, 0);
-
+        ctx.functionHead()?.identifierAtom()?.ID()?.text.toString() ??
+        "anonymous function";
+      const range = createRangeFromContext(ctx);
       const props = new ExtendedDocumentSymbolProperties();
 
       if (this.currentObjectSymbol) {
@@ -706,7 +637,7 @@ export class Tads3SymbolListener implements Tads3Listener {
       }
 
       // TODO: add params to local assignments
-      const params = ctx.params()?.text?.split(",") ?? [];
+      const params = ctx.functionHead()?.params()?.text?.split(",") ?? [];
       for (const param of params) {
         const symbol = DocumentSymbol.create(
           param,
@@ -723,57 +654,6 @@ export class Tads3SymbolListener implements Tads3Listener {
         this.additionalProperties.set(symbol, additionalProps);
         this.assignmentStatements.push(symbol);
       }
-
-      /*
-      TODO: fix so we get better precision 
-
-      const childCount = ctx?.params()?.childCount ?? 0;
-      for(let idx = 0; idx < childCount; idx++) {
-        const child = ctx.params()?.getChild(idx) as ParamsContext
-        if(child) {
-          
-          const range = Range.create(
-            child.start?.line ?? 0,
-            child.start?.startIndex ?? 0,
-            child.stop?.line ?? child.start.line,
-            child.stop?.stopIndex ?? child.start.stopIndex
-          );
-
-          const symbol = DocumentSymbol.create(
-            child.text,
-            "argument",
-            SymbolKind.Variable,
-            range,
-            range,
-            []
-          );
-
-          const additionalProps = new ExtendedDocumentSymbolProperties();
-          additionalProps.objectScope = this.currentObjectSymbol;
-          additionalProps.functionScope = this.currentFunctionSymbol;
-          this.additionalProperties.set(symbol, additionalProps);
-          this.assignmentStatements.push(symbol);
-          }
-        */
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
-  exitFunctionDeclaration(ctx: FunctionDeclarationContext) {
-    try {
-      if (ctx.stop && ctx.stop.line && ctx.stop.charPositionInLine) {
-        if (this.currentFunctionSymbol?.range) {
-          const range = Range.create(
-            this.currentFunctionSymbol.range.start.line,
-            this.currentFunctionSymbol.range.start.character,
-            ctx.stop.line,
-            ctx.stop.charPositionInLine
-          );
-          this.currentFunctionSymbol.range = range;
-        }
-      }
-      this.currentFunctionSymbol = undefined;
     } catch (err) {
       console.error(err);
     }
@@ -803,9 +683,7 @@ export class Tads3SymbolListener implements Tads3Listener {
     }
   }
 
-  // Helper functions
-
-  // TODO: test this
+  // Helper functions - relocate
   addOrChangeExpression(
     name: string,
     line: number,
@@ -859,4 +737,12 @@ export class Tads3SymbolListener implements Tads3Listener {
     // Get the "greatest" line of them
     return declarationsSortedByLine?.[0] ?? undefined;
   }
+}
+
+export function createRangeFromContext(ctx: ParserRuleContext): Range {
+  const start = (ctx.start.line ?? 1) - 1;
+  const stop = (ctx.stop?.line ?? ctx.start.line ?? 1) - 1;
+  const startCharacter = ctx.start?.charPositionInLine ?? 0;
+  const stopCharacter = ctx.stop?.charPositionInLine ?? 0;
+  return Range.create(start, startCharacter, stop, stopCharacter);
 }

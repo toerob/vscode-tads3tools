@@ -24,6 +24,7 @@ import { TransientExpressionContext } from "./Tads3Parser";
 import { PrimaryExprContext } from "./Tads3Parser";
 import { CallWithParamsExprContext } from "./Tads3Parser";
 import { ExprWithParenExprContext } from "./Tads3Parser";
+import { ExprWithAnonymousObjectExpr2Context } from "./Tads3Parser";
 import { ExprWithAnonymousObjectExprContext } from "./Tads3Parser";
 import { ExprWithAnonymousObjectUsingMultipleSuperTypesExprContext } from "./Tads3Parser";
 import { ParenExpr2Context } from "./Tads3Parser";
@@ -40,13 +41,13 @@ import { AnonymousObjectExprContext } from "./Tads3Parser";
 import { BitwiseExprContext } from "./Tads3Parser";
 import { AndOrExprContext } from "./Tads3Parser";
 import { PowerOfExprContext } from "./Tads3Parser";
+import { ArrowExprContext } from "./Tads3Parser";
+import { ArrowExpr2Context } from "./Tads3Parser";
+import { ArrowExpr3Context } from "./Tads3Parser";
 import { MultiplicationExprContext } from "./Tads3Parser";
 import { AdditiveExprContext } from "./Tads3Parser";
 import { RelationalExprContext } from "./Tads3Parser";
 import { EqualityExprContext } from "./Tads3Parser";
-import { ArrowExprContext } from "./Tads3Parser";
-import { ArrowExpr2Context } from "./Tads3Parser";
-import { ArrowExpr3Context } from "./Tads3Parser";
 import { UnaryExprContext } from "./Tads3Parser";
 import { PostFixExprContext } from "./Tads3Parser";
 import { TernaryExprContext } from "./Tads3Parser";
@@ -54,7 +55,6 @@ import { AnonymousFunctionExprContext } from "./Tads3Parser";
 import { ProgramContext } from "./Tads3Parser";
 import { DirectiveContext } from "./Tads3Parser";
 import { PragmaDirectiveContext } from "./Tads3Parser";
-import { GrammarDeclarationContext } from "./Tads3Parser";
 import { GrammarRulesContext } from "./Tads3Parser";
 import { ItemListContext } from "./Tads3Parser";
 import { QualifiersContext } from "./Tads3Parser";
@@ -67,6 +67,7 @@ import { ExportDeclarationContext } from "./Tads3Parser";
 import { IntrinsicDeclarationContext } from "./Tads3Parser";
 import { IntrinsicMethodDeclarationContext } from "./Tads3Parser";
 import { ObjectDeclarationContext } from "./Tads3Parser";
+import { GrammarDeclarationContext } from "./Tads3Parser";
 import { TemplateExprContext } from "./Tads3Parser";
 import { ArrayContext } from "./Tads3Parser";
 import { CurlyObjectBodyContext } from "./Tads3Parser";
@@ -388,6 +389,19 @@ export interface Tads3Listener extends ParseTreeListener {
 	exitExprWithParenExpr?: (ctx: ExprWithParenExprContext) => void;
 
 	/**
+	 * Enter a parse tree produced by the `exprWithAnonymousObjectExpr2`
+	 * labeled alternative in `Tads3Parser.expr`.
+	 * @param ctx the parse tree
+	 */
+	enterExprWithAnonymousObjectExpr2?: (ctx: ExprWithAnonymousObjectExpr2Context) => void;
+	/**
+	 * Exit a parse tree produced by the `exprWithAnonymousObjectExpr2`
+	 * labeled alternative in `Tads3Parser.expr`.
+	 * @param ctx the parse tree
+	 */
+	exitExprWithAnonymousObjectExpr2?: (ctx: ExprWithAnonymousObjectExpr2Context) => void;
+
+	/**
 	 * Enter a parse tree produced by the `exprWithAnonymousObjectExpr`
 	 * labeled alternative in `Tads3Parser.expr`.
 	 * @param ctx the parse tree
@@ -596,6 +610,45 @@ export interface Tads3Listener extends ParseTreeListener {
 	exitPowerOfExpr?: (ctx: PowerOfExprContext) => void;
 
 	/**
+	 * Enter a parse tree produced by the `arrowExpr`
+	 * labeled alternative in `Tads3Parser.expr`.
+	 * @param ctx the parse tree
+	 */
+	enterArrowExpr?: (ctx: ArrowExprContext) => void;
+	/**
+	 * Exit a parse tree produced by the `arrowExpr`
+	 * labeled alternative in `Tads3Parser.expr`.
+	 * @param ctx the parse tree
+	 */
+	exitArrowExpr?: (ctx: ArrowExprContext) => void;
+
+	/**
+	 * Enter a parse tree produced by the `arrowExpr2`
+	 * labeled alternative in `Tads3Parser.expr`.
+	 * @param ctx the parse tree
+	 */
+	enterArrowExpr2?: (ctx: ArrowExpr2Context) => void;
+	/**
+	 * Exit a parse tree produced by the `arrowExpr2`
+	 * labeled alternative in `Tads3Parser.expr`.
+	 * @param ctx the parse tree
+	 */
+	exitArrowExpr2?: (ctx: ArrowExpr2Context) => void;
+
+	/**
+	 * Enter a parse tree produced by the `arrowExpr3`
+	 * labeled alternative in `Tads3Parser.expr`.
+	 * @param ctx the parse tree
+	 */
+	enterArrowExpr3?: (ctx: ArrowExpr3Context) => void;
+	/**
+	 * Exit a parse tree produced by the `arrowExpr3`
+	 * labeled alternative in `Tads3Parser.expr`.
+	 * @param ctx the parse tree
+	 */
+	exitArrowExpr3?: (ctx: ArrowExpr3Context) => void;
+
+	/**
 	 * Enter a parse tree produced by the `multiplicationExpr`
 	 * labeled alternative in `Tads3Parser.expr`.
 	 * @param ctx the parse tree
@@ -646,45 +699,6 @@ export interface Tads3Listener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitEqualityExpr?: (ctx: EqualityExprContext) => void;
-
-	/**
-	 * Enter a parse tree produced by the `arrowExpr`
-	 * labeled alternative in `Tads3Parser.expr`.
-	 * @param ctx the parse tree
-	 */
-	enterArrowExpr?: (ctx: ArrowExprContext) => void;
-	/**
-	 * Exit a parse tree produced by the `arrowExpr`
-	 * labeled alternative in `Tads3Parser.expr`.
-	 * @param ctx the parse tree
-	 */
-	exitArrowExpr?: (ctx: ArrowExprContext) => void;
-
-	/**
-	 * Enter a parse tree produced by the `arrowExpr2`
-	 * labeled alternative in `Tads3Parser.expr`.
-	 * @param ctx the parse tree
-	 */
-	enterArrowExpr2?: (ctx: ArrowExpr2Context) => void;
-	/**
-	 * Exit a parse tree produced by the `arrowExpr2`
-	 * labeled alternative in `Tads3Parser.expr`.
-	 * @param ctx the parse tree
-	 */
-	exitArrowExpr2?: (ctx: ArrowExpr2Context) => void;
-
-	/**
-	 * Enter a parse tree produced by the `arrowExpr3`
-	 * labeled alternative in `Tads3Parser.expr`.
-	 * @param ctx the parse tree
-	 */
-	enterArrowExpr3?: (ctx: ArrowExpr3Context) => void;
-	/**
-	 * Exit a parse tree produced by the `arrowExpr3`
-	 * labeled alternative in `Tads3Parser.expr`.
-	 * @param ctx the parse tree
-	 */
-	exitArrowExpr3?: (ctx: ArrowExpr3Context) => void;
 
 	/**
 	 * Enter a parse tree produced by the `unaryExpr`
@@ -770,17 +784,6 @@ export interface Tads3Listener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitPragmaDirective?: (ctx: PragmaDirectiveContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `Tads3Parser.grammarDeclaration`.
-	 * @param ctx the parse tree
-	 */
-	enterGrammarDeclaration?: (ctx: GrammarDeclarationContext) => void;
-	/**
-	 * Exit a parse tree produced by `Tads3Parser.grammarDeclaration`.
-	 * @param ctx the parse tree
-	 */
-	exitGrammarDeclaration?: (ctx: GrammarDeclarationContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `Tads3Parser.grammarRules`.
@@ -913,6 +916,17 @@ export interface Tads3Listener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitObjectDeclaration?: (ctx: ObjectDeclarationContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `Tads3Parser.grammarDeclaration`.
+	 * @param ctx the parse tree
+	 */
+	enterGrammarDeclaration?: (ctx: GrammarDeclarationContext) => void;
+	/**
+	 * Exit a parse tree produced by `Tads3Parser.grammarDeclaration`.
+	 * @param ctx the parse tree
+	 */
+	exitGrammarDeclaration?: (ctx: GrammarDeclarationContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `Tads3Parser.templateExpr`.
