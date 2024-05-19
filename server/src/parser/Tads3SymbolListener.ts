@@ -16,6 +16,11 @@ import {
   AssignmentExprContext,
   CallWithParamsExprContext,
   NewExprContext,
+  ExprWithAnonymousObjectExpr2Context,
+  ExprWithAnonymousObjectUsingMultipleSuperTypesExprContext,
+  AnonymousFunctionExprContext,
+  ParamsContext,
+  ExprWithAnonymousObjectExprContext,
 } from "./Tads3Parser";
 import { ScopedEnvironment } from "./ScopedEnvironment";
 import {
@@ -253,9 +258,22 @@ export class Tads3SymbolListener implements Tads3Listener {
     this.currentObjectSymbol = undefined;
   }
 
+  enterParams(ctx: ParamsContext) {
+    /*for(const param of ctx.params()) {
+      const name = param.text;
+      const range = createRangeFromContext(ctx);
+      const symbol = DocumentSymbol.create(name, 'parameter', SymbolKind.Variable,range,range);
+      this.addOrChangeExpression(name, param.start.line , {
+        documentSymbol: symbol,
+        epxressionType: ExpressionType.METHOD_PARAMETER,
+      });
+    }*/
+  }
+
   enterObjectDeclaration(ctx: ObjectDeclarationContext) {
-    let name: string =
-      ctx.identifierAtom()?.text?.toString() ?? (ctx._isAnon? "anonymous" : "unnamed");
+    // Use the given name, and if it doesn't exist give it the name anonymous. Count name 'object' as anonymous too.
+    const hasName = !!ctx.identifierAtom() && ctx.identifierAtom()!.text !== 'object';
+    let name = hasName ? ctx.identifierAtom()!.text : "anonymous";
 
     const start = (ctx.start.line ?? 1) - 1;
     const stop = (ctx.stop?.line ?? 1) - 1;
@@ -263,10 +281,6 @@ export class Tads3SymbolListener implements Tads3Listener {
     let level = 0;
     if (ctx._level) {
       level = ctx._level.length;
-    }
-
-    if (name === "unnamed") {
-      name = ctx.superTypes()?.identifierAtom()?.ID()?.toString() ?? "unnamed";
     }
 
     let meta: string = "";

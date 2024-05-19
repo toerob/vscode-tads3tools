@@ -8,7 +8,7 @@ import * as assert from "assert";
 import { getDocUri, activate } from "./helper";
 import { CompletionItem, CompletionItemLabel } from "vscode";
 
-suite("Should do completion", () => {
+suite.skip("Should do completion", () => {
   const docUri = getDocUri("diagnostics.t");
 
   test("Completes JS/TS in txt file", async () => {

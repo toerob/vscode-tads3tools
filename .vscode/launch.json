@@ -3,6 +3,13 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"command": "npm test tads3-parser",
+			"name": "Run npm test tads3-parser",
+			"request": "launch",
+			"type": "node-terminal"
+		},
+
+		{
 			"command": "npm test",
 			"name": "Run npm test",
 			"request": "launch",

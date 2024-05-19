@@ -4,7 +4,7 @@ import * as path from "path";
 import * as languageserver from "vscode-languageserver/node";
 import * as languageserverTextdocument from "vscode-languageserver-textdocument";
 import { Range } from "vscode-languageserver";
-import { connection } from '../server';
+//import { connection } from '../server';
 
 export function filterForStandardLibraryFiles(array: string[] = []): string[] {
   if (array.length === 0) {
@@ -78,30 +78,32 @@ export function isRangeWithin(range: Range, containingRange: Range): boolean {
   return true;
 }
 
-
-export function isPositionWithinRange(pos: languageserver.Position, range: Range) {
-  if(pos.line < range.start.line || pos.line > range.end.line) {
+export function isPositionWithinRange(
+  pos: languageserver.Position,
+  range: Range
+) {
+  if (pos.line < range.start.line || pos.line > range.end.line) {
     return false;
   }
 
-  if(pos.line === range.start.line) {
-    if(pos.character < range.start.character) {
+  if (pos.line === range.start.line) {
+    if (pos.character < range.start.character) {
       return false;
     }
   }
 
-  if(pos.line === range.start.line) {
-    if(pos.character > range.end.character) {
+  if (pos.line === range.start.line) {
+    if (pos.character > range.end.character) {
       return false;
     }
   }
   return true;
 }
 
-
-
-export function logElapsedTime(currentTimeUtc: number) {
-  connection.console.debug(
+// Not really great to flood the logs with this one, but handy during optimization
+export const logElapsedTimeUsingConnection =
+  (connection: any) => (currentTimeUtc: number) => {
+    /*connection.console.debug(
     `Finding definition took ${Date.now() - currentTimeUtc} ms`
-  );
-}
+  );*/
+  };

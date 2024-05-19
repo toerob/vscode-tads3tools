@@ -14,7 +14,10 @@ import { getDefineMacrosMap } from "../parser/preprocessor";
 import { connection } from "../server";
 import { preprocessedFilesCacheMap } from "../server";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import { extractCurrentLineFromDocument, logElapsedTime } from "./utils";
+import {
+  extractCurrentLineFromDocument,
+  logElapsedTimeUsingConnection,
+} from "./utils";
 
 const onWindowsPlatform = process.platform === "win32";
 
@@ -22,11 +25,14 @@ function windowsSafeUri(fsPath: string) {
   return onWindowsPlatform ? URI.file(fsPath)?.path : fsPath;
 }
 
+const logElapsedTime = logElapsedTimeUsingConnection(connection);
+
 export async function onDefinition(
   { textDocument: textDoc, position: pos }: DefinitionParams,
   docs: TextDocuments<TextDocument>,
   sm: TadsSymbolManager
 ) {
+  
   // ------------------------------------------------------------
   // Preparations and quick checks
   // ------------------------------------------------------------
@@ -46,6 +52,26 @@ export async function onDefinition(
   if (symbolName === "object") return [];
 
   const fsPath = URI.parse(textDoc.uri).fsPath;
+
+  const lambdaExprRegExp = /[{]\s*(\w+\s*([,]\s*\w+)*)\s*[:]/;
+  const isWithinLambda = lambdaExprRegExp.exec(currentLine);
+  if (isWithinLambda) {
+    const params = isWithinLambda[1].split(",").map((x) => x.trim()) ?? [];
+    if (params.length > 0) {
+      const matchedParam = params.find((x) => x === symbolName);
+      if (matchedParam) {
+        connection.console.log(
+          `Matched parameter within lambda ${matchedParam}`
+        );
+        const lambdaParamsStart = isWithinLambda.index + 1;
+        const location = Location.create(
+          windowsSafeUri(fsPath),
+          Range.create(pos.line, lambdaParamsStart, pos.line, lambdaParamsStart)
+        );
+        return [location];
+      }
+    }
+  }
 
   // ------------------------------------------------------------
   // 1. Check for local assignment declarations
@@ -161,14 +187,33 @@ function findMembers(
   if (locals.length > 0) {
     const containingObject = sm.findContainingObject(fsPath, pos);
     if (containingObject) {
-      // TODO: find/make a rangeIntersects method
-      // TODO: there can be competing local assignments, but for now take only the first found:
-      const closeAssignments = locals.find((x) =>
-        isRangeWithin(x.range, containingObject.range)
+      const containingMethod = containingObject.children?.find((x) =>
+        isPositionWithinRange(pos, x.range)
       );
-      if (closeAssignments) {
-        fsPath = onWindowsPlatform ? URI.file(fsPath)?.path : fsPath;
-        return [Location.create(fsPath, closeAssignments.range)];
+
+      if (containingMethod) {
+        // TODO: find/make a rangeIntersects method
+        // TODO: there can be competing local assignments, but for now take only the first found:
+        const closeAssignment = locals.find((x) =>
+          isRangeWithin(x.range, containingMethod.range)
+        );
+
+        if (closeAssignment) {
+          if (closeAssignment.detail === "parameter") {
+            const startAlignedParameterRange = alignRangeToStart(
+              closeAssignment.range
+            );
+            return [
+              Location.create(
+                windowsSafeUri(fsPath),
+                startAlignedParameterRange
+              ),
+            ];
+          }
+          return [
+            Location.create(windowsSafeUri(fsPath), closeAssignment.range),
+          ];
+        }
       }
     }
   }
@@ -449,6 +494,15 @@ function findMembers(
   }
 
   return [];
+}
+
+function alignRangeToStart(range: Range) {
+  return Range.create(
+    range.start.line,
+    range.start.character,
+    range.start.line,
+    range.start.character
+  );
 }
 
 function isSameFileAndLine(

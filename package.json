@@ -23,7 +23,7 @@
     "vscode": "^1.75.0"
   },
   "main": "./client/out/extension",
-  "activationEvents": [],
+  "activationEvents": ["onLanguage"],
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": false
@@ -367,6 +367,7 @@
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "e2e-test": "npm run compile && sh ./scripts/e2e.sh",
     "test": "cd server; jest",
+    "coverage": "cd server; jest --collect-coverage",
     "rebuild": "rm package-lock.json;rm client/package-lock.json;rm server/package-lock.json;rm -r node_modules;rm -r client/node_modules;rm -r server/node_modules;npm install",
     "esbuild-base": "esbuild ./client/src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
     "esbuild": "npm run esbuild-base -- --sourcemap",

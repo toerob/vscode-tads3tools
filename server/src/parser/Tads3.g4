@@ -102,16 +102,25 @@ intrinsicMethodDeclaration: STATIC? identifierAtom (LEFT_PAREN params? RIGHT_PAR
 objectDeclaration:
     (isClass=CLASS? | isModify=MODIFY? | isReplace=REPLACE?)
     level+=PLUS*
+    isTransient=TRANSIENT?
+    ( superTypes | ( id=identifierAtom (COLON superTypes)? ) )
+    (curlyObjectBody | semiColonEndedObjectBody)
+;
+
+/*
+objectDeclaration:
+    (isClass=CLASS? | isModify=MODIFY? | isReplace=REPLACE?)
+    level+=PLUS*
     (superTypes | isTransient=TRANSIENT?
      (isAnon=ID?
         (
           id=identifierAtom
-          COLON superTypes
+          (COLON superTypes)?
         )?
      )
     (curlyObjectBody | semiColonEndedObjectBody)
   )
-;
+;*/
 
 // TODO: merge objectDeclaration with grammarDeclaration, and maybe intrinsic too
 /*
