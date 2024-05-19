@@ -1,60 +1,60 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { ExtensionContext, Uri, Webview } from 'vscode';
-import { client, getLastChosenTextEditor, resetPersistedPositions } from '../extension';
-import { extensionState } from './state';
+import { ExtensionContext, Uri, Webview } from "vscode";
+import {
+  client,
+  getLastChosenTextEditor,
+  resetPersistedPositions,
+} from "../extension";
+import { extensionState } from "./state";
 
 export const visualEditorResponseHandlerMap = new Map();
 
 export function setupVisualEditorResponseHandler() {
-	visualEditorResponseHandlerMap.set('refresh', onDidRefresh);
-	visualEditorResponseHandlerMap.set('reset', onDidReset);
-	visualEditorResponseHandlerMap.set('select', onDidSelectMapObject);
-	visualEditorResponseHandlerMap.set('showall', onDidShowAll);
-	visualEditorResponseHandlerMap.set('updatepos', onDidUpdatePosition);
-	visualEditorResponseHandlerMap.set('change', onDidChange);
-	visualEditorResponseHandlerMap.set('changestartroom', onDidChangeStartRoom);
-	visualEditorResponseHandlerMap.set('log', onDidLog);
-	visualEditorResponseHandlerMap.set('editor', onDidSelectEditor);
-	visualEditorResponseHandlerMap.set('addroom', onDidAddRoom);
-	visualEditorResponseHandlerMap.set('removeroom', onDidRemoveRoom);
-	visualEditorResponseHandlerMap.set('changeport', onDidChangePort);
+  visualEditorResponseHandlerMap.set("refresh", onDidRefresh);
+  visualEditorResponseHandlerMap.set("reset", onDidReset);
+  visualEditorResponseHandlerMap.set("select", onDidSelectMapObject);
+  visualEditorResponseHandlerMap.set("showall", onDidShowAll);
+  visualEditorResponseHandlerMap.set("updatepos", onDidUpdatePosition);
+  visualEditorResponseHandlerMap.set("change", onDidChange);
+  visualEditorResponseHandlerMap.set("changestartroom", onDidChangeStartRoom);
+  visualEditorResponseHandlerMap.set("log", onDidLog);
+  visualEditorResponseHandlerMap.set("editor", onDidSelectEditor);
+  visualEditorResponseHandlerMap.set("addroom", onDidAddRoom);
+  visualEditorResponseHandlerMap.set("removeroom", onDidRemoveRoom);
+  visualEditorResponseHandlerMap.set("changeport", onDidChangePort);
 }
 
-
 export function onDidRefresh() {
-	client.sendNotification('request/mapsymbols');
+  client.sendNotification("request/mapsymbols");
 }
 
 export function onDidReset() {
-	resetPersistedPositions();
-	client.sendNotification('request/mapsymbols', { reset: true });
+  resetPersistedPositions();
+  client.sendNotification("request/mapsymbols", { reset: true });
 }
 
 export function onDidSelectMapObject(payload) {
-	if (payload) {
-		client.sendRequest('request/findsymbol', ({ name: payload }));
-	}
+  if (payload) {
+    client.sendRequest("request/findsymbol", { name: payload });
+  }
 }
 
-
 export function onDidShowAll(payload) {
-	console.log('did show all: ');
-	console.log(payload);
+  console.log("did show all: ");
+  console.log(payload);
 
-	// The old code:
-	//this.showAllRooms = e.payload;
-	//this.updateWebview(webviewPanel, this.lastSelectedTextDocument);
-
-
+  // The old code:
+  //this.showAllRooms = e.payload;
+  //this.updateWebview(webviewPanel, this.lastSelectedTextDocument);
 }
 
 export function onDidUpdatePosition(payload, persistedObjectPositions) {
-	console.log('did update position: ');
+  console.log("did update position: ");
 
-	//console.log(`Persisting new position (${payload.pos[0]}/${payload.pos[1]}) for node: ${payload.name}`);
-	persistedObjectPositions.set(payload.name, payload.pos);
+  //console.log(`Persisting new position (${payload.pos[0]}/${payload.pos[1]}) for node: ${payload.name}`);
+  persistedObjectPositions.set(payload.name, payload.pos);
 
-	/*
+  /*
 	TODO:
 		
 		let persistedMapObjectPositions = this.storageManager.getValue('persistedMapObjectPositions');
@@ -66,14 +66,14 @@ export function onDidUpdatePosition(payload, persistedObjectPositions) {
 		}
 	}*/
 
-	console.log(payload);
+  console.log(payload);
 }
 
 export function onDidChange(payload) {
-	console.log('did change: ');
-	console.log(payload);
+  console.log("did change: ");
+  console.log(payload);
 
-	/*
+  /*
 		OLD CODE: (this needs to be sent to the server now)
 		if (this.selectedObject && e.payload && this.lastSelectedTextDocument) {
 			console.error(`Change name of: ${this.selectedObject.name} to: ${e.payload}`);
@@ -90,138 +90,159 @@ export function onDidChange(payload) {
 }
 
 export function onDidChangeStartRoom(payload) {
-	console.log('did change start room: ');
-	console.log(payload);
+  console.log("did change start room: ");
+  console.log(payload);
 
-	/*
+  /*
 	OLD CODE: (this needs to be sent to the server now)
 		this.startRoom = e.payload;
 		this.updateWebview(webviewPanel, this.lastSelectedTextDocument);
 	*/
-	console.log(`${payload}`);
-	client.sendRequest('request/changestartroom', (payload));
+  console.log(`${payload}`);
+  client.sendRequest("request/changestartroom", payload);
 }
 
-
-
 export function onDidLog(payload) {
-	console.log('did Log: ');
-	console.log(payload);
+  console.log("did Log: ");
+  console.log(payload);
 }
 
 export function onDidSelectEditor(payload) {
-	console.log('did select editor: ');
-	console.log(payload);
+  console.log("did select editor: ");
+  console.log(payload);
 
-	/*
+  /*
 	OLD CODE: (this needs to be sent to the server now)
 	if (e.payload) {
 		this.selectedEditor = Number(e.payload);
 	}
 	this.updateWebview(webviewPanel, this.lastSelectedTextDocument);
 	*/
-
 }
-
-
 
 const connectingPairStack = [];
 
 export function onDidChangePort(payload) {
-	if (connectingPairStack.length === 0) {
-		connectingPairStack.push(payload);
-	} else {
-		const previousPayload = connectingPairStack.pop();
-		console.log('did change port: ');
-		console.log(payload);
+  if (connectingPairStack.length === 0) {
+    connectingPairStack.push(payload);
+  } else {
+    const previousPayload = connectingPairStack.pop();
+    console.log("did change port: ");
+    console.log(payload);
 
-		if(payload.to.includes(' ')) {
-			payload.to = camelCaseName(payload.to);
-		}
-		if(payload.from.includes(' ')) {
-			payload.from = camelCaseName(payload.from);
-		}
+    if (payload.to.includes(" ")) {
+      payload.to = camelCaseName(payload.to);
+    }
+    if (payload.from.includes(" ")) {
+      payload.from = camelCaseName(payload.from);
+    }
 
-		// TODO: save the current document before if dirty
-		client.sendRequest('request/connectrooms', ({ currentPayload: payload, previousPayload }));
-	}
+    // TODO: save the current document before if dirty
+    client.sendRequest("request/connectrooms", {
+      currentPayload: payload,
+      previousPayload,
+    });
+  }
 }
 export function onDidRemoveRoom(payload, persistedObjectPositions) {
-	//TODO: Not used
-	/*if (payload) {
+  //TODO: Not used
+  /*if (payload) {
 		//console.error(`Removing a room with name: ${payload}`);
 		//client.sendRequest('request/findsymbol', ({ name: payload, postAction: 'remove' }));
 	}*/
 }
 
 function capitalize(str: string) {
-	return str[0].toUpperCase() + str.substr(1);
+  return str[0].toUpperCase() + str.substr(1);
 }
 
 function camelCaseName(name: string) {
-	const result = name?.split(/\s+/) ?? [];
-	const capitalized = result.map((x) => capitalize(x)).join('');
-	return capitalized[0].toLowerCase() + capitalized.substr(1);
+  const result = name?.split(/\s+/) ?? [];
+  const capitalized = result.map((x) => capitalize(x)).join("");
+  return capitalized[0].toLowerCase() + capitalized.substr(1);
 }
-
 
 export function onDidAddRoom(payload, persistedObjectPositions) {
-	const editorOfChoice = getLastChosenTextEditor();
-	if (payload && editorOfChoice && payload.name) {
+  const editorOfChoice = getLastChosenTextEditor();
+  if (payload && editorOfChoice && payload.name) {
+    const camelCasedName = camelCaseName(payload.name);
 
-		const camelCasedName = camelCaseName(payload.name);
+    editorOfChoice
+      .edit(async (builder) => {
+        const lastLine = editorOfChoice.document.lineCount - 1;
+        let lastRange = editorOfChoice.document.lineAt(lastLine).range;
+        lastRange = editorOfChoice.document.validateRange(lastRange);
 
-		editorOfChoice.edit(async builder => {
-			const lastLine = editorOfChoice.document.lineCount - 1;
-			let lastRange = editorOfChoice.document.lineAt(lastLine).range;
-			lastRange = editorOfChoice.document.validateRange(lastRange);
+        const superTypes = "Room";
 
-			const superTypes = 'Room';
+        const str = extensionState.getUsingAdv3LiteStatus()
+          ? `\n${camelCasedName}: ${superTypes} '${payload.name}'\n;`
+          : `\n${camelCasedName}: ${superTypes} '${payload.name}' '${payload.name}'\n;`;
 
-			const str = extensionState.getUsingAdv3LiteStatus() ?
-				`\n${camelCasedName}: ${superTypes} '${payload.name}'\n;`
-				: `\n${camelCasedName}: ${superTypes} '${payload.name}' '${payload.name}'\n;`;
+        builder.insert(lastRange.end, str);
 
-			builder.insert(lastRange.end, str);
+        //let snippet = new SnippetString("\n${1: " + payload.name + "}: ${1: Room} '${" + payload.name + "}';");
+        //await window.activeTextEditor.insertSnippet(snippet, lastRange)
 
-			//let snippet = new SnippetString("\n${1: " + payload.name + "}: ${1: Room} '${" + payload.name + "}';");
-			//await window.activeTextEditor.insertSnippet(snippet, lastRange)
+        // TODO: maybe... doesn't work
+        // Add a temporary symbol in the outliner (will get replaced by the parsed object
+        // On update:
+        persistedObjectPositions.set(camelCasedName, payload.pos);
+      })
+      .then(() => {
+        //this.lastChosenTextEditor = editorOfChoice;
+        editorOfChoice.document
+          .save()
+          .then((saveResult) => {
+            if (saveResult) {
+              console.error(`Successfully saved with new content`);
+            }
+          })
+          .then(() => {
+            persistedObjectPositions.set(camelCasedName, payload.pos);
 
-			// TODO: maybe... doesn't work
-			// Add a temporary symbol in the outliner (will get replaced by the parsed object
-			// On update:
-			persistedObjectPositions.set(camelCasedName, payload.pos);
+            // TODO: Persist in server or here?
+            //this.newlyCreatedRoomsSet.add(payload.name);
 
-
-
-		}).then(() => {
-			//this.lastChosenTextEditor = editorOfChoice;
-			editorOfChoice.document.save().then(saveResult => {
-				if (saveResult) {
-					console.error(`Successfully saved with new content`);
-				}
-			}).then(() => {
-				persistedObjectPositions.set(camelCasedName, payload.pos);
-
-				// TODO: Persist in server or here?
-				//this.newlyCreatedRoomsSet.add(payload.name);
-
-				client.sendRequest('request/addroom', ({ room: payload }));
-
-			});
-
-		});
-
-	}
+            client.sendRequest("request/addroom", { room: payload });
+          });
+      });
+  }
 }
 
-
-export function getHtmlForWebview(context: ExtensionContext, webview: Webview, extensionUri: Uri): string {
-	const scriptPath = 'media';
-	const litegraphScriptUri = webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, 'litegraph.min.js')) ?? '';
-	const litegraphCssUri =    webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, 'litegraph.css')) ?? '';
-	const mapLogicUri =        webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, 'maprenderer.js')) ?? '';
-	const html = `
+export function getHtmlForWebview(
+  context: ExtensionContext,
+  webview: Webview,
+  extensionUri: Uri
+): string {
+  const scriptPath = "media";
+  const litegraphScriptUri =
+    webview.asWebviewUri(
+      Uri.joinPath(
+        context.extensionUri,
+        "client",
+        "node_modules",
+        "litegraph.js",
+        "build",
+        "litegraph.js"
+      )
+    ) ?? "";
+  const litegraphCssUri =
+    webview.asWebviewUri(
+      Uri.joinPath(
+        context.extensionUri,
+        "client",
+        "node_modules",
+        "litegraph.js",
+        "css",
+        "litegraph.css"
+      )
+    ) ?? "";
+  const mapLogicUri =
+    webview.asWebviewUri(
+      Uri.joinPath(extensionUri, scriptPath, "maprenderer.js")
+    ) ?? "";
+  const html = `
 		<html>
 			<head>
 				<meta charset="UTF-8">
@@ -262,5 +283,5 @@ export function getHtmlForWebview(context: ExtensionContext, webview: Webview, e
 				<script src="${mapLogicUri}"></script>
 			</body>
 		</html>`;
-	return html;
+  return html;
 }

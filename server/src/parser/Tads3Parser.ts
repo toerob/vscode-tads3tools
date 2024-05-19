@@ -127,19 +127,19 @@ export class Tads3Parser extends Parser {
 	public static readonly RULE_program = 0;
 	public static readonly RULE_directive = 1;
 	public static readonly RULE_pragmaDirective = 2;
-	public static readonly RULE_grammarDeclaration = 3;
-	public static readonly RULE_grammarRules = 4;
-	public static readonly RULE_itemList = 5;
-	public static readonly RULE_qualifiers = 6;
-	public static readonly RULE_item = 7;
-	public static readonly RULE_templateDeclaration = 8;
-	public static readonly RULE_enumDeclaration = 9;
-	public static readonly RULE_propertyDeclaration = 10;
-	public static readonly RULE_dictionaryDeclaration = 11;
-	public static readonly RULE_exportDeclaration = 12;
-	public static readonly RULE_intrinsicDeclaration = 13;
-	public static readonly RULE_intrinsicMethodDeclaration = 14;
-	public static readonly RULE_objectDeclaration = 15;
+	public static readonly RULE_grammarRules = 3;
+	public static readonly RULE_itemList = 4;
+	public static readonly RULE_qualifiers = 5;
+	public static readonly RULE_item = 6;
+	public static readonly RULE_templateDeclaration = 7;
+	public static readonly RULE_enumDeclaration = 8;
+	public static readonly RULE_propertyDeclaration = 9;
+	public static readonly RULE_dictionaryDeclaration = 10;
+	public static readonly RULE_exportDeclaration = 11;
+	public static readonly RULE_intrinsicDeclaration = 12;
+	public static readonly RULE_intrinsicMethodDeclaration = 13;
+	public static readonly RULE_objectDeclaration = 14;
+	public static readonly RULE_grammarDeclaration = 15;
 	public static readonly RULE_templateExpr = 16;
 	public static readonly RULE_array = 17;
 	public static readonly RULE_curlyObjectBody = 18;
@@ -182,19 +182,20 @@ export class Tads3Parser extends Parser {
 	public static readonly RULE_optionallyTypedOptionalId = 55;
 	// tslint:disable:no-trailing-whitespace
 	public static readonly ruleNames: string[] = [
-		"program", "directive", "pragmaDirective", "grammarDeclaration", "grammarRules", 
-		"itemList", "qualifiers", "item", "templateDeclaration", "enumDeclaration", 
-		"propertyDeclaration", "dictionaryDeclaration", "exportDeclaration", "intrinsicDeclaration", 
-		"intrinsicMethodDeclaration", "objectDeclaration", "templateExpr", "array", 
-		"curlyObjectBody", "semiColonEndedObjectBody", "superTypes", "objectBody", 
-		"property", "dictionaryProperty", "propertySet", "paramsWithWildcard", 
-		"functionDeclaration", "operatorOverride", "functionHead", "codeBlock", 
-		"stats", "innerCodeBlock", "gotoStatement", "breakStatement", "continueStatement", 
-		"labelStatement", "switchStatement", "throwStatement", "forInStatement", 
-		"forEachStatement", "returnStatement", "doWhileStatement", "whileStatement", 
-		"forStatement", "tryCatchStatement", "callStatement", "emptyStatement", 
-		"sayStatement", "assignmentStatement", "ifStatement", "enclosedExprCodeBlock", 
-		"expr", "primary", "identifierAtom", "params", "optionallyTypedOptionalId",
+		"program", "directive", "pragmaDirective", "grammarRules", "itemList", 
+		"qualifiers", "item", "templateDeclaration", "enumDeclaration", "propertyDeclaration", 
+		"dictionaryDeclaration", "exportDeclaration", "intrinsicDeclaration", 
+		"intrinsicMethodDeclaration", "objectDeclaration", "grammarDeclaration", 
+		"templateExpr", "array", "curlyObjectBody", "semiColonEndedObjectBody", 
+		"superTypes", "objectBody", "property", "dictionaryProperty", "propertySet", 
+		"paramsWithWildcard", "functionDeclaration", "operatorOverride", "functionHead", 
+		"codeBlock", "stats", "innerCodeBlock", "gotoStatement", "breakStatement", 
+		"continueStatement", "labelStatement", "switchStatement", "throwStatement", 
+		"forInStatement", "forEachStatement", "returnStatement", "doWhileStatement", 
+		"whileStatement", "forStatement", "tryCatchStatement", "callStatement", 
+		"emptyStatement", "sayStatement", "assignmentStatement", "ifStatement", 
+		"enclosedExprCodeBlock", "expr", "primary", "identifierAtom", "params", 
+		"optionallyTypedOptionalId",
 	];
 
 	private static readonly _LITERAL_NAMES: Array<string | undefined> = [
@@ -444,150 +445,28 @@ export class Tads3Parser extends Parser {
 		return _localctx;
 	}
 	// @RuleVersion(0)
-	public grammarDeclaration(): GrammarDeclarationContext {
-		let _localctx: GrammarDeclarationContext = new GrammarDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 6, Tads3Parser.RULE_grammarDeclaration);
-		let _la: number;
-		try {
-			this.enterOuterAlt(_localctx, 1);
-			{
-			this.state = 142;
-			this._errHandler.sync(this);
-			switch (this._input.LA(1)) {
-			case Tads3Parser.MODIFY:
-				{
-				this.state = 140;
-				_localctx._isModify = this.match(Tads3Parser.MODIFY);
-				}
-				break;
-			case Tads3Parser.REPLACE:
-				{
-				this.state = 141;
-				_localctx._isReplace = this.match(Tads3Parser.REPLACE);
-				}
-				break;
-			case Tads3Parser.GRAMMAR:
-				break;
-			default:
-				break;
-			}
-			this.state = 144;
-			this.match(Tads3Parser.GRAMMAR);
-			this.state = 145;
-			_localctx._prodName = this.identifierAtom();
-			this.state = 150;
-			this._errHandler.sync(this);
-			_la = this._input.LA(1);
-			if (_la === Tads3Parser.LEFT_PAREN) {
-				{
-				this.state = 146;
-				this.match(Tads3Parser.LEFT_PAREN);
-				this.state = 147;
-				_localctx._tag = this.identifierAtom();
-				this.state = 148;
-				this.match(Tads3Parser.RIGHT_PAREN);
-				}
-			}
-
-			this.state = 152;
-			this.match(Tads3Parser.COLON);
-			this.state = 153;
-			this.grammarRules();
-			this.state = 154;
-			this.match(Tads3Parser.COLON);
-			this.state = 160;
-			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 5, this._ctx) ) {
-			case 1:
-				{
-				this.state = 155;
-				this.superTypes();
-				this.state = 158;
-				this._errHandler.sync(this);
-				switch (this._input.LA(1)) {
-				case Tads3Parser.LEFT_CURLY:
-					{
-					this.state = 156;
-					this.curlyObjectBody();
-					}
-					break;
-				case Tads3Parser.FUNCTION:
-				case Tads3Parser.MODIFY:
-				case Tads3Parser.REPLACE:
-				case Tads3Parser.PROPERTYSET:
-				case Tads3Parser.EXTERN:
-				case Tads3Parser.STATIC:
-				case Tads3Parser.STRING:
-				case Tads3Parser.IN:
-				case Tads3Parser.STEP:
-				case Tads3Parser.IS:
-				case Tads3Parser.OPERATOR:
-				case Tads3Parser.AT:
-				case Tads3Parser.AMP:
-				case Tads3Parser.NOT:
-				case Tads3Parser.PLUS:
-				case Tads3Parser.DIV:
-				case Tads3Parser.MOD:
-				case Tads3Parser.MINUS:
-				case Tads3Parser.ARROW:
-				case Tads3Parser.TILDE:
-				case Tads3Parser.ID:
-				case Tads3Parser.STAR:
-				case Tads3Parser.SEMICOLON:
-				case Tads3Parser.LEFT_BRACKET:
-				case Tads3Parser.DSTR:
-				case Tads3Parser.SSTR:
-				case Tads3Parser.RIGHT_CURLY:
-					{
-					this.state = 157;
-					this.semiColonEndedObjectBody();
-					}
-					break;
-				default:
-					throw new NoViableAltException(this);
-				}
-				}
-				break;
-			}
-			}
-		}
-		catch (re) {
-			if (re instanceof RecognitionException) {
-				_localctx.exception = re;
-				this._errHandler.reportError(this, re);
-				this._errHandler.recover(this, re);
-			} else {
-				throw re;
-			}
-		}
-		finally {
-			this.exitRule();
-		}
-		return _localctx;
-	}
-	// @RuleVersion(0)
 	public grammarRules(): GrammarRulesContext {
 		let _localctx: GrammarRulesContext = new GrammarRulesContext(this._ctx, this.state);
-		this.enterRule(_localctx, 8, Tads3Parser.RULE_grammarRules);
+		this.enterRule(_localctx, 6, Tads3Parser.RULE_grammarRules);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 162;
+			this.state = 140;
 			this.itemList();
-			this.state = 167;
+			this.state = 145;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while (_la === Tads3Parser.BITWISE_OR) {
 				{
 				{
-				this.state = 163;
+				this.state = 141;
 				this.match(Tads3Parser.BITWISE_OR);
-				this.state = 164;
+				this.state = 142;
 				this.itemList();
 				}
 				}
-				this.state = 169;
+				this.state = 147;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
@@ -610,36 +489,36 @@ export class Tads3Parser extends Parser {
 	// @RuleVersion(0)
 	public itemList(): ItemListContext {
 		let _localctx: ItemListContext = new ItemListContext(this._ctx, this.state);
-		this.enterRule(_localctx, 10, Tads3Parser.RULE_itemList);
+		this.enterRule(_localctx, 8, Tads3Parser.RULE_itemList);
 		try {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 171;
+			this.state = 149;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 7, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 3, this._ctx) ) {
 			case 1:
 				{
-				this.state = 170;
+				this.state = 148;
 				this.qualifiers();
 				}
 				break;
 			}
-			this.state = 176;
+			this.state = 154;
 			this._errHandler.sync(this);
-			_alt = this.interpreter.adaptivePredict(this._input, 8, this._ctx);
+			_alt = this.interpreter.adaptivePredict(this._input, 4, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
 					{
 					{
-					this.state = 173;
+					this.state = 151;
 					this.item(0);
 					}
 					}
 				}
-				this.state = 178;
+				this.state = 156;
 				this._errHandler.sync(this);
-				_alt = this.interpreter.adaptivePredict(this._input, 8, this._ctx);
+				_alt = this.interpreter.adaptivePredict(this._input, 4, this._ctx);
 			}
 			}
 		}
@@ -660,17 +539,17 @@ export class Tads3Parser extends Parser {
 	// @RuleVersion(0)
 	public qualifiers(): QualifiersContext {
 		let _localctx: QualifiersContext = new QualifiersContext(this._ctx, this.state);
-		this.enterRule(_localctx, 12, Tads3Parser.RULE_qualifiers);
+		this.enterRule(_localctx, 10, Tads3Parser.RULE_qualifiers);
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 179;
+			this.state = 157;
 			this.match(Tads3Parser.LEFT_BRACKET);
-			this.state = 180;
+			this.state = 158;
 			this.identifierAtom();
-			this.state = 181;
+			this.state = 159;
 			this.match(Tads3Parser.NR);
-			this.state = 182;
+			this.state = 160;
 			this.match(Tads3Parser.RIGHT_BRACKET);
 			}
 		}
@@ -701,66 +580,66 @@ export class Tads3Parser extends Parser {
 		let _parentState: number = this.state;
 		let _localctx: ItemContext = new ItemContext(this._ctx, _parentState);
 		let _prevctx: ItemContext = _localctx;
-		let _startState: number = 14;
-		this.enterRecursionRule(_localctx, 14, Tads3Parser.RULE_item, _p);
+		let _startState: number = 12;
+		this.enterRecursionRule(_localctx, 12, Tads3Parser.RULE_item, _p);
 		let _la: number;
 		try {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 197;
+			this.state = 175;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 10, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 6, this._ctx) ) {
 			case 1:
 				{
-				this.state = 185;
+				this.state = 163;
 				this.match(Tads3Parser.LEFT_PAREN);
-				this.state = 187;
+				this.state = 165;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				do {
 					{
 					{
-					this.state = 186;
+					this.state = 164;
 					this.item(0);
 					}
 					}
-					this.state = 189;
+					this.state = 167;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 				} while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.BITWISE_OR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0));
-				this.state = 191;
+				this.state = 169;
 				this.match(Tads3Parser.RIGHT_PAREN);
 				}
 				break;
 
 			case 2:
 				{
-				this.state = 193;
+				this.state = 171;
 				this.match(Tads3Parser.BITWISE_OR);
-				this.state = 194;
+				this.state = 172;
 				this.item(3);
 				}
 				break;
 
 			case 3:
 				{
-				this.state = 195;
+				this.state = 173;
 				this.expr(0);
 				}
 				break;
 
 			case 4:
 				{
-				this.state = 196;
+				this.state = 174;
 				this.match(Tads3Parser.STAR);
 				}
 				break;
 			}
 			this._ctx._stop = this._input.tryLT(-1);
-			this.state = 203;
+			this.state = 181;
 			this._errHandler.sync(this);
-			_alt = this.interpreter.adaptivePredict(this._input, 11, this._ctx);
+			_alt = this.interpreter.adaptivePredict(this._input, 7, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
 					if (this._parseListeners != null) {
@@ -771,18 +650,18 @@ export class Tads3Parser extends Parser {
 					{
 					_localctx = new ItemContext(_parentctx, _parentState);
 					this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_item);
-					this.state = 199;
+					this.state = 177;
 					if (!(this.precpred(this._ctx, 4))) {
 						throw this.createFailedPredicateException("this.precpred(this._ctx, 4)");
 					}
-					this.state = 200;
+					this.state = 178;
 					this.match(Tads3Parser.BITWISE_OR);
 					}
 					}
 				}
-				this.state = 205;
+				this.state = 183;
 				this._errHandler.sync(this);
-				_alt = this.interpreter.adaptivePredict(this._input, 11, this._ctx);
+				_alt = this.interpreter.adaptivePredict(this._input, 7, this._ctx);
 			}
 			}
 		}
@@ -803,34 +682,34 @@ export class Tads3Parser extends Parser {
 	// @RuleVersion(0)
 	public templateDeclaration(): TemplateDeclarationContext {
 		let _localctx: TemplateDeclarationContext = new TemplateDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 16, Tads3Parser.RULE_templateDeclaration);
+		this.enterRule(_localctx, 14, Tads3Parser.RULE_templateDeclaration);
 		let _la: number;
 		try {
-			this.state = 234;
+			this.state = 212;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 16, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 12, this._ctx) ) {
 			case 1:
 				this.enterOuterAlt(_localctx, 1);
 				{
-				this.state = 206;
+				this.state = 184;
 				_localctx._className = this.identifierAtom();
-				this.state = 207;
+				this.state = 185;
 				this.match(Tads3Parser.TEMPLATE);
-				this.state = 212;
+				this.state = 190;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				do {
 					{
 					{
-					this.state = 208;
+					this.state = 186;
 					_localctx._expr = this.expr(0);
 					_localctx._properties.push(_localctx._expr);
-					this.state = 210;
+					this.state = 188;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 					if (_la === Tads3Parser.OPTIONAL) {
 						{
-						this.state = 209;
+						this.state = 187;
 						_localctx._OPTIONAL = this.match(Tads3Parser.OPTIONAL);
 						_localctx._isOptional.push(_localctx._OPTIONAL);
 						}
@@ -838,11 +717,11 @@ export class Tads3Parser extends Parser {
 
 					}
 					}
-					this.state = 214;
+					this.state = 192;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 				} while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0));
-				this.state = 216;
+				this.state = 194;
 				this.match(Tads3Parser.SEMICOLON);
 				}
 				break;
@@ -850,58 +729,58 @@ export class Tads3Parser extends Parser {
 			case 2:
 				this.enterOuterAlt(_localctx, 2);
 				{
-				this.state = 218;
+				this.state = 196;
 				this.match(Tads3Parser.STRING);
-				this.state = 219;
+				this.state = 197;
 				this.match(Tads3Parser.TEMPLATE);
-				this.state = 220;
+				this.state = 198;
 				this.match(Tads3Parser.ARITHMETIC_LEFT);
-				this.state = 227;
+				this.state = 205;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				while (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.STEP - 35)) | (1 << (Tads3Parser.IS - 35)) | (1 << (Tads3Parser.OPERATOR - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0) || _la === Tads3Parser.STAR) {
 					{
-					this.state = 225;
+					this.state = 203;
 					this._errHandler.sync(this);
-					switch ( this.interpreter.adaptivePredict(this._input, 14, this._ctx) ) {
+					switch ( this.interpreter.adaptivePredict(this._input, 10, this._ctx) ) {
 					case 1:
 						{
-						this.state = 221;
+						this.state = 199;
 						this.identifierAtom();
 						}
 						break;
 
 					case 2:
 						{
-						this.state = 222;
+						this.state = 200;
 						this.match(Tads3Parser.STAR);
 						}
 						break;
 
 					case 3:
 						{
-						this.state = 223;
+						this.state = 201;
 						this.match(Tads3Parser.IS);
 						}
 						break;
 
 					case 4:
 						{
-						this.state = 224;
+						this.state = 202;
 						this.match(Tads3Parser.IN);
 						}
 						break;
 					}
 					}
-					this.state = 229;
+					this.state = 207;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 				}
-				this.state = 230;
+				this.state = 208;
 				this.match(Tads3Parser.ARITHMETIC_RIGHT);
-				this.state = 231;
+				this.state = 209;
 				_localctx._templateId = this.identifierAtom();
-				this.state = 232;
+				this.state = 210;
 				this.match(Tads3Parser.SEMICOLON);
 				}
 				break;
@@ -924,42 +803,42 @@ export class Tads3Parser extends Parser {
 	// @RuleVersion(0)
 	public enumDeclaration(): EnumDeclarationContext {
 		let _localctx: EnumDeclarationContext = new EnumDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 18, Tads3Parser.RULE_enumDeclaration);
+		this.enterRule(_localctx, 16, Tads3Parser.RULE_enumDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 236;
+			this.state = 214;
 			this.match(Tads3Parser.ENUM);
-			this.state = 238;
+			this.state = 216;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === Tads3Parser.TOKEN) {
 				{
-				this.state = 237;
+				this.state = 215;
 				_localctx._isToken = this.match(Tads3Parser.TOKEN);
 				}
 			}
 
-			this.state = 240;
+			this.state = 218;
 			this.identifierAtom();
-			this.state = 245;
+			this.state = 223;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while (_la === Tads3Parser.COMMA) {
 				{
 				{
-				this.state = 241;
+				this.state = 219;
 				this.match(Tads3Parser.COMMA);
-				this.state = 242;
+				this.state = 220;
 				this.identifierAtom();
 				}
 				}
-				this.state = 247;
+				this.state = 225;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
-			this.state = 248;
+			this.state = 226;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -980,48 +859,48 @@ export class Tads3Parser extends Parser {
 	// @RuleVersion(0)
 	public propertyDeclaration(): PropertyDeclarationContext {
 		let _localctx: PropertyDeclarationContext = new PropertyDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 20, Tads3Parser.RULE_propertyDeclaration);
+		this.enterRule(_localctx, 18, Tads3Parser.RULE_propertyDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 253;
+			this.state = 231;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while (_la === Tads3Parser.PLUS) {
 				{
 				{
-				this.state = 250;
+				this.state = 228;
 				_localctx._level = this.match(Tads3Parser.PLUS);
 				}
 				}
-				this.state = 255;
+				this.state = 233;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
-			this.state = 256;
+			this.state = 234;
 			_localctx._isProperty = this.match(Tads3Parser.PROPERTY);
-			this.state = 257;
+			this.state = 235;
 			_localctx._identifierAtom = this.identifierAtom();
 			_localctx._identifiers.push(_localctx._identifierAtom);
-			this.state = 262;
+			this.state = 240;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while (_la === Tads3Parser.COMMA) {
 				{
 				{
-				this.state = 258;
+				this.state = 236;
 				this.match(Tads3Parser.COMMA);
-				this.state = 259;
+				this.state = 237;
 				_localctx._identifierAtom = this.identifierAtom();
 				_localctx._identifiers.push(_localctx._identifierAtom);
 				}
 				}
-				this.state = 264;
+				this.state = 242;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
-			this.state = 265;
+			this.state = 243;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -1042,58 +921,58 @@ export class Tads3Parser extends Parser {
 	// @RuleVersion(0)
 	public dictionaryDeclaration(): DictionaryDeclarationContext {
 		let _localctx: DictionaryDeclarationContext = new DictionaryDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 22, Tads3Parser.RULE_dictionaryDeclaration);
+		this.enterRule(_localctx, 20, Tads3Parser.RULE_dictionaryDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 270;
+			this.state = 248;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while (_la === Tads3Parser.PLUS) {
 				{
 				{
-				this.state = 267;
+				this.state = 245;
 				_localctx._level = this.match(Tads3Parser.PLUS);
 				}
 				}
-				this.state = 272;
+				this.state = 250;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
-			this.state = 273;
+			this.state = 251;
 			this.match(Tads3Parser.DICTIONARY);
-			this.state = 275;
+			this.state = 253;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === Tads3Parser.PROPERTY) {
 				{
-				this.state = 274;
+				this.state = 252;
 				_localctx._isProperty = this.match(Tads3Parser.PROPERTY);
 				}
 			}
 
-			this.state = 277;
+			this.state = 255;
 			_localctx._identifierAtom = this.identifierAtom();
 			_localctx._identifiers.push(_localctx._identifierAtom);
-			this.state = 282;
+			this.state = 260;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while (_la === Tads3Parser.COMMA) {
 				{
 				{
-				this.state = 278;
+				this.state = 256;
 				this.match(Tads3Parser.COMMA);
-				this.state = 279;
+				this.state = 257;
 				_localctx._identifierAtom = this.identifierAtom();
 				_localctx._identifiers.push(_localctx._identifierAtom);
 				}
 				}
-				this.state = 284;
+				this.state = 262;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
-			this.state = 285;
+			this.state = 263;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -1114,26 +993,26 @@ export class Tads3Parser extends Parser {
 	// @RuleVersion(0)
 	public exportDeclaration(): ExportDeclarationContext {
 		let _localctx: ExportDeclarationContext = new ExportDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 24, Tads3Parser.RULE_exportDeclaration);
+		this.enterRule(_localctx, 22, Tads3Parser.RULE_exportDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 287;
+			this.state = 265;
 			this.match(Tads3Parser.EXPORT);
-			this.state = 288;
+			this.state = 266;
 			this.identifierAtom();
-			this.state = 290;
+			this.state = 268;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === Tads3Parser.SSTR) {
 				{
-				this.state = 289;
+				this.state = 267;
 				this.match(Tads3Parser.SSTR);
 				}
 			}
 
-			this.state = 292;
+			this.state = 270;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -1154,39 +1033,39 @@ export class Tads3Parser extends Parser {
 	// @RuleVersion(0)
 	public intrinsicDeclaration(): IntrinsicDeclarationContext {
 		let _localctx: IntrinsicDeclarationContext = new IntrinsicDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 26, Tads3Parser.RULE_intrinsicDeclaration);
+		this.enterRule(_localctx, 24, Tads3Parser.RULE_intrinsicDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 294;
+			this.state = 272;
 			this.match(Tads3Parser.INTRINSIC);
-			this.state = 296;
+			this.state = 274;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === Tads3Parser.CLASS) {
 				{
-				this.state = 295;
+				this.state = 273;
 				this.match(Tads3Parser.CLASS);
 				}
 			}
 
-			this.state = 299;
+			this.state = 277;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.STEP - 35)) | (1 << (Tads3Parser.IS - 35)) | (1 << (Tads3Parser.OPERATOR - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0)) {
 				{
-				this.state = 298;
+				this.state = 276;
 				_localctx._name = this.identifierAtom();
 				}
 			}
 
-			this.state = 302;
+			this.state = 280;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === Tads3Parser.DSTR || _la === Tads3Parser.SSTR) {
 				{
-				this.state = 301;
+				this.state = 279;
 				_la = this._input.LA(1);
 				if (!(_la === Tads3Parser.DSTR || _la === Tads3Parser.SSTR)) {
 				this._errHandler.recoverInline(this);
@@ -1201,36 +1080,36 @@ export class Tads3Parser extends Parser {
 				}
 			}
 
-			this.state = 306;
+			this.state = 284;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === Tads3Parser.COLON) {
 				{
-				this.state = 304;
+				this.state = 282;
 				this.match(Tads3Parser.COLON);
-				this.state = 305;
+				this.state = 283;
 				this.superTypes();
 				}
 			}
 
-			this.state = 308;
+			this.state = 286;
 			this.match(Tads3Parser.LEFT_CURLY);
-			this.state = 312;
+			this.state = 290;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while (((((_la - 34)) & ~0x1F) === 0 && ((1 << (_la - 34)) & ((1 << (Tads3Parser.STATIC - 34)) | (1 << (Tads3Parser.STRING - 34)) | (1 << (Tads3Parser.IN - 34)) | (1 << (Tads3Parser.STEP - 34)) | (1 << (Tads3Parser.IS - 34)) | (1 << (Tads3Parser.OPERATOR - 34)))) !== 0) || _la === Tads3Parser.ID) {
 				{
 				{
-				this.state = 309;
+				this.state = 287;
 				_localctx._intrinsicMethodDeclaration = this.intrinsicMethodDeclaration();
 				_localctx._methods.push(_localctx._intrinsicMethodDeclaration);
 				}
 				}
-				this.state = 314;
+				this.state = 292;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
-			this.state = 315;
+			this.state = 293;
 			this.match(Tads3Parser.RIGHT_CURLY);
 			}
 		}
@@ -1251,40 +1130,40 @@ export class Tads3Parser extends Parser {
 	// @RuleVersion(0)
 	public intrinsicMethodDeclaration(): IntrinsicMethodDeclarationContext {
 		let _localctx: IntrinsicMethodDeclarationContext = new IntrinsicMethodDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 28, Tads3Parser.RULE_intrinsicMethodDeclaration);
+		this.enterRule(_localctx, 26, Tads3Parser.RULE_intrinsicMethodDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 318;
+			this.state = 296;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === Tads3Parser.STATIC) {
 				{
-				this.state = 317;
+				this.state = 295;
 				this.match(Tads3Parser.STATIC);
 				}
 			}
 
-			this.state = 320;
+			this.state = 298;
 			this.identifierAtom();
 			{
-			this.state = 321;
+			this.state = 299;
 			this.match(Tads3Parser.LEFT_PAREN);
-			this.state = 323;
+			this.state = 301;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
-				this.state = 322;
+				this.state = 300;
 				this.params();
 				}
 			}
 
-			this.state = 325;
+			this.state = 303;
 			this.match(Tads3Parser.RIGHT_PAREN);
 			}
-			this.state = 327;
+			this.state = 305;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -1305,23 +1184,23 @@ export class Tads3Parser extends Parser {
 	// @RuleVersion(0)
 	public objectDeclaration(): ObjectDeclarationContext {
 		let _localctx: ObjectDeclarationContext = new ObjectDeclarationContext(this._ctx, this.state);
-		this.enterRule(_localctx, 30, Tads3Parser.RULE_objectDeclaration);
+		this.enterRule(_localctx, 28, Tads3Parser.RULE_objectDeclaration);
 		let _la: number;
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 338;
+			this.state = 316;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 35, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 31, this._ctx) ) {
 			case 1:
 				{
-				this.state = 330;
+				this.state = 308;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === Tads3Parser.MODIFY) {
+				if (_la === Tads3Parser.CLASS) {
 					{
-					this.state = 329;
-					_localctx._isModify = this.match(Tads3Parser.MODIFY);
+					this.state = 307;
+					_localctx._isClass = this.match(Tads3Parser.CLASS);
 					}
 				}
 
@@ -1330,13 +1209,13 @@ export class Tads3Parser extends Parser {
 
 			case 2:
 				{
-				this.state = 333;
+				this.state = 311;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === Tads3Parser.REPLACE) {
+				if (_la === Tads3Parser.MODIFY) {
 					{
-					this.state = 332;
-					_localctx._isReplace = this.match(Tads3Parser.REPLACE);
+					this.state = 310;
+					_localctx._isModify = this.match(Tads3Parser.MODIFY);
 					}
 				}
 
@@ -1345,40 +1224,50 @@ export class Tads3Parser extends Parser {
 
 			case 3:
 				{
-				this.state = 336;
+				this.state = 314;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === Tads3Parser.CLASS) {
+				if (_la === Tads3Parser.REPLACE) {
 					{
-					this.state = 335;
-					_localctx._isClass = this.match(Tads3Parser.CLASS);
+					this.state = 313;
+					_localctx._isReplace = this.match(Tads3Parser.REPLACE);
 					}
 				}
 
 				}
 				break;
 			}
-			this.state = 343;
+			this.state = 321;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while (_la === Tads3Parser.PLUS) {
 				{
 				{
-				this.state = 340;
+				this.state = 318;
 				_localctx._PLUS = this.match(Tads3Parser.PLUS);
 				_localctx._level.push(_localctx._PLUS);
 				}
 				}
-				this.state = 345;
+				this.state = 323;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
-			this.state = 354;
+			this.state = 325;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 38, this._ctx) ) {
+			_la = this._input.LA(1);
+			if (_la === Tads3Parser.TRANSIENT) {
+				{
+				this.state = 324;
+				_localctx._isTransient = this.match(Tads3Parser.TRANSIENT);
+				}
+			}
+
+			this.state = 333;
+			this._errHandler.sync(this);
+			switch ( this.interpreter.adaptivePredict(this._input, 35, this._ctx) ) {
 			case 1:
 				{
-				this.state = 346;
+				this.state = 327;
 				this.superTypes();
 				}
 				break;
@@ -1386,32 +1275,30 @@ export class Tads3Parser extends Parser {
 			case 2:
 				{
 				{
-				this.state = 348;
+				this.state = 328;
+				_localctx._id = this.identifierAtom();
+				this.state = 331;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
-				if (_la === Tads3Parser.TRANSIENT) {
+				if (_la === Tads3Parser.COLON) {
 					{
-					this.state = 347;
-					_localctx._isTransient = this.match(Tads3Parser.TRANSIENT);
+					this.state = 329;
+					this.match(Tads3Parser.COLON);
+					this.state = 330;
+					this.superTypes();
 					}
 				}
 
-				this.state = 350;
-				_localctx._id = this.identifierAtom();
-				this.state = 351;
-				this.match(Tads3Parser.COLON);
-				this.state = 352;
-				this.superTypes();
 				}
 				}
 				break;
 			}
-			this.state = 358;
+			this.state = 337;
 			this._errHandler.sync(this);
 			switch (this._input.LA(1)) {
 			case Tads3Parser.LEFT_CURLY:
 				{
-				this.state = 356;
+				this.state = 335;
 				this.curlyObjectBody();
 				}
 				break;
@@ -1443,12 +1330,134 @@ export class Tads3Parser extends Parser {
 			case Tads3Parser.SSTR:
 			case Tads3Parser.RIGHT_CURLY:
 				{
-				this.state = 357;
+				this.state = 336;
 				this.semiColonEndedObjectBody();
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
+			}
+			}
+		}
+		catch (re) {
+			if (re instanceof RecognitionException) {
+				_localctx.exception = re;
+				this._errHandler.reportError(this, re);
+				this._errHandler.recover(this, re);
+			} else {
+				throw re;
+			}
+		}
+		finally {
+			this.exitRule();
+		}
+		return _localctx;
+	}
+	// @RuleVersion(0)
+	public grammarDeclaration(): GrammarDeclarationContext {
+		let _localctx: GrammarDeclarationContext = new GrammarDeclarationContext(this._ctx, this.state);
+		this.enterRule(_localctx, 30, Tads3Parser.RULE_grammarDeclaration);
+		let _la: number;
+		try {
+			this.enterOuterAlt(_localctx, 1);
+			{
+			this.state = 341;
+			this._errHandler.sync(this);
+			switch (this._input.LA(1)) {
+			case Tads3Parser.MODIFY:
+				{
+				this.state = 339;
+				_localctx._isModify = this.match(Tads3Parser.MODIFY);
+				}
+				break;
+			case Tads3Parser.REPLACE:
+				{
+				this.state = 340;
+				_localctx._isReplace = this.match(Tads3Parser.REPLACE);
+				}
+				break;
+			case Tads3Parser.GRAMMAR:
+				break;
+			default:
+				break;
+			}
+			this.state = 343;
+			this.match(Tads3Parser.GRAMMAR);
+			this.state = 344;
+			_localctx._prodName = this.identifierAtom();
+			this.state = 349;
+			this._errHandler.sync(this);
+			_la = this._input.LA(1);
+			if (_la === Tads3Parser.LEFT_PAREN) {
+				{
+				this.state = 345;
+				this.match(Tads3Parser.LEFT_PAREN);
+				this.state = 346;
+				_localctx._tag = this.identifierAtom();
+				this.state = 347;
+				this.match(Tads3Parser.RIGHT_PAREN);
+				}
+			}
+
+			this.state = 351;
+			this.match(Tads3Parser.COLON);
+			this.state = 352;
+			this.grammarRules();
+			this.state = 353;
+			this.match(Tads3Parser.COLON);
+			this.state = 359;
+			this._errHandler.sync(this);
+			switch ( this.interpreter.adaptivePredict(this._input, 40, this._ctx) ) {
+			case 1:
+				{
+				this.state = 354;
+				this.superTypes();
+				this.state = 357;
+				this._errHandler.sync(this);
+				switch (this._input.LA(1)) {
+				case Tads3Parser.LEFT_CURLY:
+					{
+					this.state = 355;
+					this.curlyObjectBody();
+					}
+					break;
+				case Tads3Parser.FUNCTION:
+				case Tads3Parser.MODIFY:
+				case Tads3Parser.REPLACE:
+				case Tads3Parser.PROPERTYSET:
+				case Tads3Parser.EXTERN:
+				case Tads3Parser.STATIC:
+				case Tads3Parser.STRING:
+				case Tads3Parser.IN:
+				case Tads3Parser.STEP:
+				case Tads3Parser.IS:
+				case Tads3Parser.OPERATOR:
+				case Tads3Parser.AT:
+				case Tads3Parser.AMP:
+				case Tads3Parser.NOT:
+				case Tads3Parser.PLUS:
+				case Tads3Parser.DIV:
+				case Tads3Parser.MOD:
+				case Tads3Parser.MINUS:
+				case Tads3Parser.ARROW:
+				case Tads3Parser.TILDE:
+				case Tads3Parser.ID:
+				case Tads3Parser.STAR:
+				case Tads3Parser.SEMICOLON:
+				case Tads3Parser.LEFT_BRACKET:
+				case Tads3Parser.DSTR:
+				case Tads3Parser.SSTR:
+				case Tads3Parser.RIGHT_CURLY:
+					{
+					this.state = 356;
+					this.semiColonEndedObjectBody();
+					}
+					break;
+				default:
+					throw new NoViableAltException(this);
+				}
+				}
+				break;
 			}
 			}
 		}
@@ -1474,62 +1483,82 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 384;
+			this.state = 385;
 			this._errHandler.sync(this);
-			switch (this._input.LA(1)) {
-			case Tads3Parser.SSTR:
+			switch ( this.interpreter.adaptivePredict(this._input, 45, this._ctx) ) {
+			case 1:
 				{
-				this.state = 360;
+				this.state = 361;
 				_localctx._singleString = this.match(Tads3Parser.SSTR);
-				this.state = 362;
-				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 40, this._ctx) ) {
-				case 1:
-					{
-					this.state = 361;
-					this.match(Tads3Parser.SEMICOLON);
-					}
-					break;
-				}
-				}
-				break;
-			case Tads3Parser.AT:
-				{
-				this.state = 364;
-				this.match(Tads3Parser.AT);
-				this.state = 365;
-				_localctx._atLocation = this.expr(0);
-				}
-				break;
-			case Tads3Parser.DSTR:
-				{
-				this.state = 366;
-				_localctx._doubleString = this.match(Tads3Parser.DSTR);
-				this.state = 368;
+				this.state = 363;
 				this._errHandler.sync(this);
 				switch ( this.interpreter.adaptivePredict(this._input, 41, this._ctx) ) {
 				case 1:
 					{
-					this.state = 367;
+					this.state = 362;
 					this.match(Tads3Parser.SEMICOLON);
 					}
 					break;
 				}
 				}
 				break;
-			case Tads3Parser.AMP:
-			case Tads3Parser.NOT:
-			case Tads3Parser.PLUS:
-			case Tads3Parser.DIV:
-			case Tads3Parser.MOD:
-			case Tads3Parser.MINUS:
-			case Tads3Parser.TILDE:
-			case Tads3Parser.STAR:
+
+			case 2:
 				{
-				this.state = 370;
+				this.state = 365;
+				this.match(Tads3Parser.AT);
+				this.state = 366;
+				_localctx._atLocation = this.expr(0);
+				}
+				break;
+
+			case 3:
+				{
+				this.state = 367;
+				_localctx._doubleString = this.match(Tads3Parser.DSTR);
+				this.state = 369;
+				this._errHandler.sync(this);
+				switch ( this.interpreter.adaptivePredict(this._input, 42, this._ctx) ) {
+				case 1:
+					{
+					this.state = 368;
+					this.match(Tads3Parser.SEMICOLON);
+					}
+					break;
+				}
+				}
+				break;
+
+			case 4:
+				{
+				this.state = 371;
+				this.match(Tads3Parser.ARROW);
+				this.state = 374;
+				this._errHandler.sync(this);
+				switch ( this.interpreter.adaptivePredict(this._input, 43, this._ctx) ) {
+				case 1:
+					{
+					this.state = 372;
+					_localctx._connection = this.identifierAtom();
+					}
+					break;
+
+				case 2:
+					{
+					this.state = 373;
+					_localctx._expression = this.expr(0);
+					}
+					break;
+				}
+				}
+				break;
+
+			case 5:
+				{
+				this.state = 376;
 				_localctx._op = this._input.LT(1);
 				_la = this._input.LA(1);
-				if (!(((((_la - 50)) & ~0x1F) === 0 && ((1 << (_la - 50)) & ((1 << (Tads3Parser.AMP - 50)) | (1 << (Tads3Parser.NOT - 50)) | (1 << (Tads3Parser.PLUS - 50)) | (1 << (Tads3Parser.DIV - 50)) | (1 << (Tads3Parser.MOD - 50)) | (1 << (Tads3Parser.MINUS - 50)) | (1 << (Tads3Parser.TILDE - 50)) | (1 << (Tads3Parser.STAR - 50)))) !== 0))) {
+				if (!(((((_la - 50)) & ~0x1F) === 0 && ((1 << (_la - 50)) & ((1 << (Tads3Parser.AMP - 50)) | (1 << (Tads3Parser.NOT - 50)) | (1 << (Tads3Parser.PLUS - 50)) | (1 << (Tads3Parser.DIV - 50)) | (1 << (Tads3Parser.MOD - 50)) | (1 << (Tads3Parser.MINUS - 50)) | (1 << (Tads3Parser.ARROW - 50)) | (1 << (Tads3Parser.TILDE - 50)) | (1 << (Tads3Parser.STAR - 50)))) !== 0))) {
 					_localctx._op = this._errHandler.recoverInline(this);
 				} else {
 					if (this._input.LA(1) === Token.EOF) {
@@ -1539,67 +1568,43 @@ export class Tads3Parser extends Parser {
 					this._errHandler.reportMatch(this);
 					this.consume();
 				}
-				this.state = 373;
+				this.state = 379;
 				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 42, this._ctx) ) {
+				switch ( this.interpreter.adaptivePredict(this._input, 44, this._ctx) ) {
 				case 1:
 					{
-					this.state = 371;
+					this.state = 377;
 					_localctx._id = this.identifierAtom();
 					}
 					break;
 
 				case 2:
 					{
-					this.state = 372;
+					this.state = 378;
 					_localctx._expression = this.expr(0);
 					}
 					break;
 				}
 				}
 				break;
-			case Tads3Parser.ARROW:
-				{
-				this.state = 375;
-				this.match(Tads3Parser.ARROW);
-				this.state = 378;
-				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 43, this._ctx) ) {
-				case 1:
-					{
-					this.state = 376;
-					_localctx._connection = this.identifierAtom();
-					}
-					break;
 
-				case 2:
-					{
-					this.state = 377;
-					_localctx._expression = this.expr(0);
-					}
-					break;
-				}
-				}
-				break;
-			case Tads3Parser.LEFT_BRACKET:
+			case 6:
 				{
-				this.state = 380;
-				this.match(Tads3Parser.LEFT_BRACKET);
 				this.state = 381;
-				this.array();
+				this.match(Tads3Parser.LEFT_BRACKET);
 				this.state = 382;
+				this.array();
+				this.state = 383;
 				this.match(Tads3Parser.RIGHT_BRACKET);
 				}
 				break;
-			default:
-				throw new NoViableAltException(this);
 			}
-			this.state = 387;
+			this.state = 388;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === Tads3Parser.OPTIONAL) {
 				{
-				this.state = 386;
+				this.state = 387;
 				this.match(Tads3Parser.OPTIONAL);
 				}
 			}
@@ -1628,25 +1633,25 @@ export class Tads3Parser extends Parser {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 389;
+			this.state = 390;
 			this.expr(0);
-			this.state = 394;
+			this.state = 395;
 			this._errHandler.sync(this);
-			_alt = this.interpreter.adaptivePredict(this._input, 46, this._ctx);
+			_alt = this.interpreter.adaptivePredict(this._input, 47, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
 					{
 					{
-					this.state = 390;
-					this.match(Tads3Parser.COMMA);
 					this.state = 391;
+					this.match(Tads3Parser.COMMA);
+					this.state = 392;
 					this.array();
 					}
 					}
 				}
-				this.state = 396;
+				this.state = 397;
 				this._errHandler.sync(this);
-				_alt = this.interpreter.adaptivePredict(this._input, 46, this._ctx);
+				_alt = this.interpreter.adaptivePredict(this._input, 47, this._ctx);
 			}
 			}
 		}
@@ -1671,11 +1676,11 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 397;
-			this.match(Tads3Parser.LEFT_CURLY);
 			this.state = 398;
-			this.objectBody();
+			this.match(Tads3Parser.LEFT_CURLY);
 			this.state = 399;
+			this.objectBody();
+			this.state = 400;
 			this.match(Tads3Parser.RIGHT_CURLY);
 			}
 		}
@@ -1700,9 +1705,9 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 401;
-			this.objectBody();
 			this.state = 402;
+			this.objectBody();
+			this.state = 403;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -1728,26 +1733,26 @@ export class Tads3Parser extends Parser {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 404;
+			this.state = 405;
 			_localctx._identifierAtom = this.identifierAtom();
 			_localctx._superType.push(_localctx._identifierAtom);
-			this.state = 409;
+			this.state = 410;
 			this._errHandler.sync(this);
-			_alt = this.interpreter.adaptivePredict(this._input, 47, this._ctx);
+			_alt = this.interpreter.adaptivePredict(this._input, 48, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
 					{
 					{
-					this.state = 405;
-					this.match(Tads3Parser.COMMA);
 					this.state = 406;
+					this.match(Tads3Parser.COMMA);
+					this.state = 407;
 					this.superTypes();
 					}
 					}
 				}
-				this.state = 411;
+				this.state = 412;
 				this._errHandler.sync(this);
-				_alt = this.interpreter.adaptivePredict(this._input, 47, this._ctx);
+				_alt = this.interpreter.adaptivePredict(this._input, 48, this._ctx);
 			}
 			}
 		}
@@ -1774,33 +1779,33 @@ export class Tads3Parser extends Parser {
 			this.enterOuterAlt(_localctx, 1);
 			{
 			{
-			this.state = 415;
+			this.state = 416;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while (((((_la - 49)) & ~0x1F) === 0 && ((1 << (_la - 49)) & ((1 << (Tads3Parser.AT - 49)) | (1 << (Tads3Parser.AMP - 49)) | (1 << (Tads3Parser.NOT - 49)) | (1 << (Tads3Parser.PLUS - 49)) | (1 << (Tads3Parser.DIV - 49)) | (1 << (Tads3Parser.MOD - 49)) | (1 << (Tads3Parser.MINUS - 49)) | (1 << (Tads3Parser.ARROW - 49)) | (1 << (Tads3Parser.TILDE - 49)) | (1 << (Tads3Parser.STAR - 49)) | (1 << (Tads3Parser.LEFT_BRACKET - 49)))) !== 0) || _la === Tads3Parser.DSTR || _la === Tads3Parser.SSTR) {
 				{
 				{
-				this.state = 412;
+				this.state = 413;
 				_localctx._templateExpr = this.templateExpr();
 				_localctx._template.push(_localctx._templateExpr);
 				}
 				}
-				this.state = 417;
+				this.state = 418;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
 			}
-			this.state = 423;
+			this.state = 424;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while (((((_la - 5)) & ~0x1F) === 0 && ((1 << (_la - 5)) & ((1 << (Tads3Parser.FUNCTION - 5)) | (1 << (Tads3Parser.MODIFY - 5)) | (1 << (Tads3Parser.REPLACE - 5)) | (1 << (Tads3Parser.PROPERTYSET - 5)) | (1 << (Tads3Parser.EXTERN - 5)) | (1 << (Tads3Parser.STATIC - 5)) | (1 << (Tads3Parser.STRING - 5)))) !== 0) || ((((_la - 37)) & ~0x1F) === 0 && ((1 << (_la - 37)) & ((1 << (Tads3Parser.IN - 37)) | (1 << (Tads3Parser.STEP - 37)) | (1 << (Tads3Parser.IS - 37)) | (1 << (Tads3Parser.OPERATOR - 37)) | (1 << (Tads3Parser.ID - 37)))) !== 0)) {
 				{
-				this.state = 421;
+				this.state = 422;
 				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 49, this._ctx) ) {
+				switch ( this.interpreter.adaptivePredict(this._input, 50, this._ctx) ) {
 				case 1:
 					{
-					this.state = 418;
+					this.state = 419;
 					_localctx._functionDeclaration = this.functionDeclaration();
 					_localctx._functions.push(_localctx._functionDeclaration);
 					}
@@ -1808,7 +1813,7 @@ export class Tads3Parser extends Parser {
 
 				case 2:
 					{
-					this.state = 419;
+					this.state = 420;
 					_localctx._property = this.property();
 					_localctx._properties.push(_localctx._property);
 					}
@@ -1816,14 +1821,14 @@ export class Tads3Parser extends Parser {
 
 				case 3:
 					{
-					this.state = 420;
+					this.state = 421;
 					_localctx._propertySet = this.propertySet();
 					_localctx._propertySets.push(_localctx._propertySet);
 					}
 					break;
 				}
 				}
-				this.state = 425;
+				this.state = 426;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
@@ -1851,48 +1856,48 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 426;
+			this.state = 427;
 			_localctx._id = this.identifierAtom();
-			this.state = 453;
+			this.state = 454;
 			this._errHandler.sync(this);
 			switch (this._input.LA(1)) {
 			case Tads3Parser.ASSIGN:
 				{
-				this.state = 427;
+				this.state = 428;
 				this.match(Tads3Parser.ASSIGN);
-				this.state = 429;
-				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 51, this._ctx) ) {
-				case 1:
-					{
-					this.state = 428;
-					this.match(Tads3Parser.STATIC);
-					}
-					break;
-				}
-				this.state = 433;
+				this.state = 430;
 				this._errHandler.sync(this);
 				switch ( this.interpreter.adaptivePredict(this._input, 52, this._ctx) ) {
 				case 1:
 					{
-					this.state = 431;
+					this.state = 429;
+					this.match(Tads3Parser.STATIC);
+					}
+					break;
+				}
+				this.state = 434;
+				this._errHandler.sync(this);
+				switch ( this.interpreter.adaptivePredict(this._input, 53, this._ctx) ) {
+				case 1:
+					{
+					this.state = 432;
 					this.expr(0);
 					}
 					break;
 
 				case 2:
 					{
-					this.state = 432;
+					this.state = 433;
 					this.dictionaryProperty();
 					}
 					break;
 				}
-				this.state = 436;
+				this.state = 437;
 				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 53, this._ctx) ) {
+				switch ( this.interpreter.adaptivePredict(this._input, 54, this._ctx) ) {
 				case 1:
 					{
-					this.state = 435;
+					this.state = 436;
 					this.match(Tads3Parser.SEMICOLON);
 					}
 					break;
@@ -1901,42 +1906,42 @@ export class Tads3Parser extends Parser {
 				break;
 			case Tads3Parser.COLON:
 				{
-				this.state = 438;
+				this.state = 439;
 				this.match(Tads3Parser.COLON);
-				this.state = 440;
+				this.state = 441;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.STEP - 35)) | (1 << (Tads3Parser.IS - 35)) | (1 << (Tads3Parser.OPERATOR - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0)) {
 					{
-					this.state = 439;
+					this.state = 440;
 					_localctx._objectName = this.identifierAtom();
 					}
 				}
 
-				this.state = 446;
+				this.state = 447;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				while (_la === Tads3Parser.COMMA) {
 					{
 					{
-					this.state = 442;
-					this.match(Tads3Parser.COMMA);
 					this.state = 443;
+					this.match(Tads3Parser.COMMA);
+					this.state = 444;
 					this.superTypes();
 					}
 					}
-					this.state = 448;
+					this.state = 449;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 				}
-				this.state = 449;
+				this.state = 450;
 				this.curlyObjectBody();
-				this.state = 451;
+				this.state = 452;
 				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 56, this._ctx) ) {
+				switch ( this.interpreter.adaptivePredict(this._input, 57, this._ctx) ) {
 				case 1:
 					{
-					this.state = 450;
+					this.state = 451;
 					this.match(Tads3Parser.SEMICOLON);
 					}
 					break;
@@ -1970,17 +1975,17 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 458;
+			this.state = 459;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while (_la === Tads3Parser.SSTR) {
 				{
 				{
-				this.state = 455;
+				this.state = 456;
 				this.match(Tads3Parser.SSTR);
 				}
 				}
-				this.state = 460;
+				this.state = 461;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
@@ -2008,50 +2013,50 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 472;
+			this.state = 473;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 61, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 62, this._ctx) ) {
 			case 1:
 				{
-				this.state = 461;
-				this.match(Tads3Parser.PROPERTYSET);
 				this.state = 462;
+				this.match(Tads3Parser.PROPERTYSET);
+				this.state = 463;
 				this.paramsWithWildcard();
 				}
 				break;
 
 			case 2:
 				{
-				this.state = 463;
+				this.state = 464;
 				this.match(Tads3Parser.PROPERTYSET);
-				this.state = 465;
+				this.state = 466;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				if (_la === Tads3Parser.SSTR) {
 					{
-					this.state = 464;
+					this.state = 465;
 					_localctx._prefix = this.match(Tads3Parser.SSTR);
 					}
 				}
 
-				this.state = 467;
+				this.state = 468;
 				this.match(Tads3Parser.LEFT_PAREN);
-				this.state = 469;
+				this.state = 470;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				if (((((_la - 24)) & ~0x1F) === 0 && ((1 << (_la - 24)) & ((1 << (Tads3Parser.TRUE - 24)) | (1 << (Tads3Parser.NIL - 24)) | (1 << (Tads3Parser.INHERITED - 24)) | (1 << (Tads3Parser.STRING - 24)) | (1 << (Tads3Parser.IN - 24)) | (1 << (Tads3Parser.STEP - 24)) | (1 << (Tads3Parser.IS - 24)) | (1 << (Tads3Parser.OPERATOR - 24)) | (1 << (Tads3Parser.AMP - 24)))) !== 0) || ((((_la - 66)) & ~0x1F) === 0 && ((1 << (_la - 66)) & ((1 << (Tads3Parser.ID - 66)) | (1 << (Tads3Parser.NR - 66)) | (1 << (Tads3Parser.HEX - 66)) | (1 << (Tads3Parser.STAR - 66)) | (1 << (Tads3Parser.DSTR - 66)) | (1 << (Tads3Parser.SSTR - 66)) | (1 << (Tads3Parser.RSTR - 66)))) !== 0)) {
 					{
-					this.state = 468;
+					this.state = 469;
 					this.paramsWithWildcard();
 					}
 				}
 
-				this.state = 471;
+				this.state = 472;
 				this.match(Tads3Parser.RIGHT_PAREN);
 				}
 				break;
 			}
-			this.state = 474;
+			this.state = 475;
 			this.curlyObjectBody();
 			}
 		}
@@ -2077,7 +2082,7 @@ export class Tads3Parser extends Parser {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 478;
+			this.state = 479;
 			this._errHandler.sync(this);
 			switch (this._input.LA(1)) {
 			case Tads3Parser.TRUE:
@@ -2096,37 +2101,37 @@ export class Tads3Parser extends Parser {
 			case Tads3Parser.SSTR:
 			case Tads3Parser.RSTR:
 				{
-				this.state = 476;
+				this.state = 477;
 				_localctx._primary = this.primary();
 				_localctx._parameters.push(_localctx._primary);
 				}
 				break;
 			case Tads3Parser.STAR:
 				{
-				this.state = 477;
+				this.state = 478;
 				this.match(Tads3Parser.STAR);
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
 			}
-			this.state = 484;
+			this.state = 485;
 			this._errHandler.sync(this);
-			_alt = this.interpreter.adaptivePredict(this._input, 63, this._ctx);
+			_alt = this.interpreter.adaptivePredict(this._input, 64, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
 					{
 					{
-					this.state = 480;
-					this.match(Tads3Parser.COMMA);
 					this.state = 481;
+					this.match(Tads3Parser.COMMA);
+					this.state = 482;
 					this.paramsWithWildcard();
 					}
 					}
 				}
-				this.state = 486;
+				this.state = 487;
 				this._errHandler.sync(this);
-				_alt = this.interpreter.adaptivePredict(this._input, 63, this._ctx);
+				_alt = this.interpreter.adaptivePredict(this._input, 64, this._ctx);
 			}
 			}
 		}
@@ -2150,23 +2155,23 @@ export class Tads3Parser extends Parser {
 		this.enterRule(_localctx, 52, Tads3Parser.RULE_functionDeclaration);
 		let _la: number;
 		try {
-			this.state = 499;
+			this.state = 500;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 67, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 68, this._ctx) ) {
 			case 1:
 				this.enterOuterAlt(_localctx, 1);
 				{
-				this.state = 493;
+				this.state = 494;
 				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 66, this._ctx) ) {
+				switch ( this.interpreter.adaptivePredict(this._input, 67, this._ctx) ) {
 				case 1:
 					{
-					this.state = 488;
+					this.state = 489;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 					if (_la === Tads3Parser.MODIFY) {
 						{
-						this.state = 487;
+						this.state = 488;
 						_localctx._isModify = this.match(Tads3Parser.MODIFY);
 						}
 					}
@@ -2176,12 +2181,12 @@ export class Tads3Parser extends Parser {
 
 				case 2:
 					{
-					this.state = 491;
+					this.state = 492;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 					if (_la === Tads3Parser.REPLACE) {
 						{
-						this.state = 490;
+						this.state = 491;
 						_localctx._isReplace = this.match(Tads3Parser.REPLACE);
 						}
 					}
@@ -2190,9 +2195,9 @@ export class Tads3Parser extends Parser {
 					break;
 				}
 				{
-				this.state = 495;
-				this.functionHead();
 				this.state = 496;
+				this.functionHead();
+				this.state = 497;
 				this.codeBlock();
 				}
 				}
@@ -2201,7 +2206,7 @@ export class Tads3Parser extends Parser {
 			case 2:
 				this.enterOuterAlt(_localctx, 2);
 				{
-				this.state = 498;
+				this.state = 499;
 				this.operatorOverride();
 				}
 				break;
@@ -2229,9 +2234,9 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 501;
+			this.state = 502;
 			this.match(Tads3Parser.OPERATOR);
-			this.state = 508;
+			this.state = 509;
 			this._errHandler.sync(this);
 			switch (this._input.LA(1)) {
 			case Tads3Parser.AMP:
@@ -2247,7 +2252,7 @@ export class Tads3Parser extends Parser {
 			case Tads3Parser.ARITHMETIC_RIGHT:
 			case Tads3Parser.LOGICAL_RIGHT_SHIFT:
 				{
-				this.state = 502;
+				this.state = 503;
 				_la = this._input.LA(1);
 				if (!(((((_la - 50)) & ~0x1F) === 0 && ((1 << (_la - 50)) & ((1 << (Tads3Parser.AMP - 50)) | (1 << (Tads3Parser.PLUS - 50)) | (1 << (Tads3Parser.DIV - 50)) | (1 << (Tads3Parser.MOD - 50)) | (1 << (Tads3Parser.MINUS - 50)) | (1 << (Tads3Parser.TILDE - 50)) | (1 << (Tads3Parser.POW - 50)) | (1 << (Tads3Parser.STAR - 50)) | (1 << (Tads3Parser.BITWISE_OR - 50)))) !== 0) || ((((_la - 87)) & ~0x1F) === 0 && ((1 << (_la - 87)) & ((1 << (Tads3Parser.ARITHMETIC_LEFT - 87)) | (1 << (Tads3Parser.ARITHMETIC_RIGHT - 87)) | (1 << (Tads3Parser.LOGICAL_RIGHT_SHIFT - 87)))) !== 0))) {
 				this._errHandler.recoverInline(this);
@@ -2264,16 +2269,16 @@ export class Tads3Parser extends Parser {
 			case Tads3Parser.LEFT_BRACKET:
 				{
 				{
-				this.state = 503;
-				this.match(Tads3Parser.LEFT_BRACKET);
 				this.state = 504;
+				this.match(Tads3Parser.LEFT_BRACKET);
+				this.state = 505;
 				this.match(Tads3Parser.RIGHT_BRACKET);
-				this.state = 506;
+				this.state = 507;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				if (_la === Tads3Parser.ASSIGN) {
 					{
-					this.state = 505;
+					this.state = 506;
 					this.match(Tads3Parser.ASSIGN);
 					}
 				}
@@ -2285,30 +2290,30 @@ export class Tads3Parser extends Parser {
 				throw new NoViableAltException(this);
 			}
 			{
-			this.state = 510;
-			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 511;
-			this.params();
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 512;
+			this.params();
+			this.state = 513;
 			this.match(Tads3Parser.RIGHT_PAREN);
 			}
-			this.state = 514;
+			this.state = 515;
 			this.match(Tads3Parser.LEFT_CURLY);
-			this.state = 518;
+			this.state = 519;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.SWITCH) | (1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.THROW) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.FOR) | (1 << Tads3Parser.TRY) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.IF) | (1 << Tads3Parser.DO) | (1 << Tads3Parser.WHILE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.RETURN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.FOREACH - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.BREAK - 32)) | (1 << (Tads3Parser.CONTINUE - 32)) | (1 << (Tads3Parser.GOTO - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.SEMICOLON - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
 				{
-				this.state = 515;
+				this.state = 516;
 				this.stats();
 				}
 				}
-				this.state = 520;
+				this.state = 521;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
-			this.state = 521;
+			this.state = 522;
 			this.match(Tads3Parser.RIGHT_CURLY);
 			}
 		}
@@ -2332,62 +2337,62 @@ export class Tads3Parser extends Parser {
 		this.enterRule(_localctx, 56, Tads3Parser.RULE_functionHead);
 		let _la: number;
 		try {
-			this.state = 548;
+			this.state = 549;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 78, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 79, this._ctx) ) {
 			case 1:
 				this.enterOuterAlt(_localctx, 1);
 				{
-				this.state = 524;
+				this.state = 525;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				if (_la === Tads3Parser.EXTERN) {
 					{
-					this.state = 523;
+					this.state = 524;
 					_localctx._isExtern = this.match(Tads3Parser.EXTERN);
 					}
 				}
 
-				this.state = 527;
+				this.state = 528;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				if (_la === Tads3Parser.STATIC) {
 					{
-					this.state = 526;
+					this.state = 527;
 					_localctx._isStatic = this.match(Tads3Parser.STATIC);
 					}
 				}
 
-				this.state = 530;
+				this.state = 531;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				if (_la === Tads3Parser.FUNCTION) {
 					{
-					this.state = 529;
+					this.state = 530;
 					this.match(Tads3Parser.FUNCTION);
 					}
 				}
 
-				this.state = 532;
+				this.state = 533;
 				this.identifierAtom();
-				this.state = 538;
+				this.state = 539;
 				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 75, this._ctx) ) {
+				switch ( this.interpreter.adaptivePredict(this._input, 76, this._ctx) ) {
 				case 1:
 					{
-					this.state = 533;
+					this.state = 534;
 					this.match(Tads3Parser.LEFT_PAREN);
-					this.state = 535;
+					this.state = 536;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 					if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 						{
-						this.state = 534;
+						this.state = 535;
 						this.params();
 						}
 					}
 
-					this.state = 537;
+					this.state = 538;
 					this.match(Tads3Parser.RIGHT_PAREN);
 					}
 					break;
@@ -2398,26 +2403,26 @@ export class Tads3Parser extends Parser {
 			case 2:
 				this.enterOuterAlt(_localctx, 2);
 				{
-				this.state = 540;
+				this.state = 541;
 				this.match(Tads3Parser.FUNCTION);
-				this.state = 546;
+				this.state = 547;
 				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 77, this._ctx) ) {
+				switch ( this.interpreter.adaptivePredict(this._input, 78, this._ctx) ) {
 				case 1:
 					{
-					this.state = 541;
+					this.state = 542;
 					this.match(Tads3Parser.LEFT_PAREN);
-					this.state = 543;
+					this.state = 544;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 					if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 						{
-						this.state = 542;
+						this.state = 543;
 						this.params();
 						}
 					}
 
-					this.state = 545;
+					this.state = 546;
 					this.match(Tads3Parser.RIGHT_PAREN);
 					}
 					break;
@@ -2446,29 +2451,29 @@ export class Tads3Parser extends Parser {
 		this.enterRule(_localctx, 58, Tads3Parser.RULE_codeBlock);
 		let _la: number;
 		try {
-			this.state = 559;
+			this.state = 560;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 80, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 81, this._ctx) ) {
 			case 1:
 				this.enterOuterAlt(_localctx, 1);
 				{
-				this.state = 550;
+				this.state = 551;
 				this.match(Tads3Parser.LEFT_CURLY);
-				this.state = 554;
+				this.state = 555;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.SWITCH) | (1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.THROW) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.FOR) | (1 << Tads3Parser.TRY) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.IF) | (1 << Tads3Parser.DO) | (1 << Tads3Parser.WHILE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.RETURN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.FOREACH - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.BREAK - 32)) | (1 << (Tads3Parser.CONTINUE - 32)) | (1 << (Tads3Parser.GOTO - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.SEMICOLON - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 					{
 					{
-					this.state = 551;
+					this.state = 552;
 					this.stats();
 					}
 					}
-					this.state = 556;
+					this.state = 557;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 				}
-				this.state = 557;
+				this.state = 558;
 				this.match(Tads3Parser.RIGHT_CURLY);
 				}
 				break;
@@ -2476,7 +2481,7 @@ export class Tads3Parser extends Parser {
 			case 2:
 				this.enterOuterAlt(_localctx, 2);
 				{
-				this.state = 558;
+				this.state = 559;
 				this.stats();
 				}
 				break;
@@ -2501,13 +2506,13 @@ export class Tads3Parser extends Parser {
 		let _localctx: StatsContext = new StatsContext(this._ctx, this.state);
 		this.enterRule(_localctx, 60, Tads3Parser.RULE_stats);
 		try {
-			this.state = 579;
+			this.state = 580;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 81, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 82, this._ctx) ) {
 			case 1:
 				this.enterOuterAlt(_localctx, 1);
 				{
-				this.state = 561;
+				this.state = 562;
 				this.assignmentStatement();
 				}
 				break;
@@ -2515,7 +2520,7 @@ export class Tads3Parser extends Parser {
 			case 2:
 				this.enterOuterAlt(_localctx, 2);
 				{
-				this.state = 562;
+				this.state = 563;
 				this.ifStatement();
 				}
 				break;
@@ -2523,7 +2528,7 @@ export class Tads3Parser extends Parser {
 			case 3:
 				this.enterOuterAlt(_localctx, 3);
 				{
-				this.state = 563;
+				this.state = 564;
 				this.tryCatchStatement();
 				}
 				break;
@@ -2531,7 +2536,7 @@ export class Tads3Parser extends Parser {
 			case 4:
 				this.enterOuterAlt(_localctx, 4);
 				{
-				this.state = 564;
+				this.state = 565;
 				this.forStatement();
 				}
 				break;
@@ -2539,7 +2544,7 @@ export class Tads3Parser extends Parser {
 			case 5:
 				this.enterOuterAlt(_localctx, 5);
 				{
-				this.state = 565;
+				this.state = 566;
 				this.doWhileStatement();
 				}
 				break;
@@ -2547,7 +2552,7 @@ export class Tads3Parser extends Parser {
 			case 6:
 				this.enterOuterAlt(_localctx, 6);
 				{
-				this.state = 566;
+				this.state = 567;
 				this.whileStatement();
 				}
 				break;
@@ -2555,7 +2560,7 @@ export class Tads3Parser extends Parser {
 			case 7:
 				this.enterOuterAlt(_localctx, 7);
 				{
-				this.state = 567;
+				this.state = 568;
 				this.switchStatement();
 				}
 				break;
@@ -2563,7 +2568,7 @@ export class Tads3Parser extends Parser {
 			case 8:
 				this.enterOuterAlt(_localctx, 8);
 				{
-				this.state = 568;
+				this.state = 569;
 				this.forInStatement();
 				}
 				break;
@@ -2571,7 +2576,7 @@ export class Tads3Parser extends Parser {
 			case 9:
 				this.enterOuterAlt(_localctx, 9);
 				{
-				this.state = 569;
+				this.state = 570;
 				this.forEachStatement();
 				}
 				break;
@@ -2579,7 +2584,7 @@ export class Tads3Parser extends Parser {
 			case 10:
 				this.enterOuterAlt(_localctx, 10);
 				{
-				this.state = 570;
+				this.state = 571;
 				this.sayStatement();
 				}
 				break;
@@ -2587,7 +2592,7 @@ export class Tads3Parser extends Parser {
 			case 11:
 				this.enterOuterAlt(_localctx, 11);
 				{
-				this.state = 571;
+				this.state = 572;
 				this.emptyStatement();
 				}
 				break;
@@ -2595,7 +2600,7 @@ export class Tads3Parser extends Parser {
 			case 12:
 				this.enterOuterAlt(_localctx, 12);
 				{
-				this.state = 572;
+				this.state = 573;
 				this.returnStatement();
 				}
 				break;
@@ -2603,7 +2608,7 @@ export class Tads3Parser extends Parser {
 			case 13:
 				this.enterOuterAlt(_localctx, 13);
 				{
-				this.state = 573;
+				this.state = 574;
 				this.throwStatement();
 				}
 				break;
@@ -2611,7 +2616,7 @@ export class Tads3Parser extends Parser {
 			case 14:
 				this.enterOuterAlt(_localctx, 14);
 				{
-				this.state = 574;
+				this.state = 575;
 				this.labelStatement();
 				}
 				break;
@@ -2619,7 +2624,7 @@ export class Tads3Parser extends Parser {
 			case 15:
 				this.enterOuterAlt(_localctx, 15);
 				{
-				this.state = 575;
+				this.state = 576;
 				this.breakStatement();
 				}
 				break;
@@ -2627,7 +2632,7 @@ export class Tads3Parser extends Parser {
 			case 16:
 				this.enterOuterAlt(_localctx, 16);
 				{
-				this.state = 576;
+				this.state = 577;
 				this.continueStatement();
 				}
 				break;
@@ -2635,7 +2640,7 @@ export class Tads3Parser extends Parser {
 			case 17:
 				this.enterOuterAlt(_localctx, 17);
 				{
-				this.state = 577;
+				this.state = 578;
 				this.gotoStatement();
 				}
 				break;
@@ -2643,7 +2648,7 @@ export class Tads3Parser extends Parser {
 			case 18:
 				this.enterOuterAlt(_localctx, 18);
 				{
-				this.state = 578;
+				this.state = 579;
 				this.innerCodeBlock();
 				}
 				break;
@@ -2671,23 +2676,23 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 581;
+			this.state = 582;
 			this.match(Tads3Parser.LEFT_CURLY);
-			this.state = 585;
+			this.state = 586;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.SWITCH) | (1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.THROW) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.FOR) | (1 << Tads3Parser.TRY) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.IF) | (1 << Tads3Parser.DO) | (1 << Tads3Parser.WHILE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.RETURN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.FOREACH - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.BREAK - 32)) | (1 << (Tads3Parser.CONTINUE - 32)) | (1 << (Tads3Parser.GOTO - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.SEMICOLON - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
 				{
-				this.state = 582;
+				this.state = 583;
 				this.stats();
 				}
 				}
-				this.state = 587;
+				this.state = 588;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
-			this.state = 588;
+			this.state = 589;
 			this.match(Tads3Parser.RIGHT_CURLY);
 			}
 		}
@@ -2713,19 +2718,19 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 590;
+			this.state = 591;
 			this.match(Tads3Parser.GOTO);
-			this.state = 592;
+			this.state = 593;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.STEP - 35)) | (1 << (Tads3Parser.IS - 35)) | (1 << (Tads3Parser.OPERATOR - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0)) {
 				{
-				this.state = 591;
+				this.state = 592;
 				_localctx._label = this.identifierAtom();
 				}
 			}
 
-			this.state = 594;
+			this.state = 595;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -2751,19 +2756,19 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 596;
+			this.state = 597;
 			this.match(Tads3Parser.BREAK);
-			this.state = 598;
+			this.state = 599;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.STEP - 35)) | (1 << (Tads3Parser.IS - 35)) | (1 << (Tads3Parser.OPERATOR - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0)) {
 				{
-				this.state = 597;
+				this.state = 598;
 				_localctx._label = this.identifierAtom();
 				}
 			}
 
-			this.state = 600;
+			this.state = 601;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -2789,19 +2794,19 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 602;
+			this.state = 603;
 			this.match(Tads3Parser.CONTINUE);
-			this.state = 604;
+			this.state = 605;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.STEP - 35)) | (1 << (Tads3Parser.IS - 35)) | (1 << (Tads3Parser.OPERATOR - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0)) {
 				{
-				this.state = 603;
+				this.state = 604;
 				_localctx._label = this.identifierAtom();
 				}
 			}
 
-			this.state = 606;
+			this.state = 607;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -2826,9 +2831,9 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 608;
-			this.identifierAtom();
 			this.state = 609;
+			this.identifierAtom();
+			this.state = 610;
 			this.match(Tads3Parser.COLON);
 			}
 		}
@@ -2854,69 +2859,69 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 611;
-			this.match(Tads3Parser.SWITCH);
 			this.state = 612;
-			this.match(Tads3Parser.LEFT_PAREN);
+			this.match(Tads3Parser.SWITCH);
 			this.state = 613;
-			this.expr(0);
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 614;
-			this.match(Tads3Parser.RIGHT_PAREN);
+			this.expr(0);
 			this.state = 615;
+			this.match(Tads3Parser.RIGHT_PAREN);
+			this.state = 616;
 			this.match(Tads3Parser.LEFT_CURLY);
-			this.state = 633;
+			this.state = 634;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			while (_la === Tads3Parser.CASE || _la === Tads3Parser.DEFAULT) {
 				{
 				{
-				this.state = 619;
+				this.state = 620;
 				this._errHandler.sync(this);
 				switch (this._input.LA(1)) {
 				case Tads3Parser.CASE:
 					{
 					{
-					this.state = 616;
-					this.match(Tads3Parser.CASE);
 					this.state = 617;
+					this.match(Tads3Parser.CASE);
+					this.state = 618;
 					this.expr(0);
 					}
 					}
 					break;
 				case Tads3Parser.DEFAULT:
 					{
-					this.state = 618;
+					this.state = 619;
 					this.match(Tads3Parser.DEFAULT);
 					}
 					break;
 				default:
 					throw new NoViableAltException(this);
 				}
-				this.state = 621;
+				this.state = 622;
 				this.match(Tads3Parser.COLON);
-				this.state = 629;
+				this.state = 630;
 				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 88, this._ctx) ) {
+				switch ( this.interpreter.adaptivePredict(this._input, 89, this._ctx) ) {
 				case 1:
 					{
-					this.state = 622;
+					this.state = 623;
 					this.codeBlock();
 					}
 					break;
 
 				case 2:
 					{
-					this.state = 626;
+					this.state = 627;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 					while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.SWITCH) | (1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.THROW) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.FOR) | (1 << Tads3Parser.TRY) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.IF) | (1 << Tads3Parser.DO) | (1 << Tads3Parser.WHILE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.RETURN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.FOREACH - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.BREAK - 32)) | (1 << (Tads3Parser.CONTINUE - 32)) | (1 << (Tads3Parser.GOTO - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.SEMICOLON - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 						{
 						{
-						this.state = 623;
+						this.state = 624;
 						this.stats();
 						}
 						}
-						this.state = 628;
+						this.state = 629;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
 					}
@@ -2925,11 +2930,11 @@ export class Tads3Parser extends Parser {
 				}
 				}
 				}
-				this.state = 635;
+				this.state = 636;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 			}
-			this.state = 636;
+			this.state = 637;
 			this.match(Tads3Parser.RIGHT_CURLY);
 			}
 		}
@@ -2954,9 +2959,9 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 638;
-			this.match(Tads3Parser.THROW);
 			this.state = 639;
+			this.match(Tads3Parser.THROW);
+			this.state = 640;
 			this.expr(0);
 			}
 		}
@@ -2981,21 +2986,21 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 641;
-			this.match(Tads3Parser.FOR);
 			this.state = 642;
-			this.match(Tads3Parser.LEFT_PAREN);
+			this.match(Tads3Parser.FOR);
 			this.state = 643;
-			this.match(Tads3Parser.LOCAL);
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 644;
-			this.match(Tads3Parser.ID);
+			this.match(Tads3Parser.LOCAL);
 			this.state = 645;
-			this.match(Tads3Parser.IN);
+			this.match(Tads3Parser.ID);
 			this.state = 646;
-			this.expr(0);
+			this.match(Tads3Parser.IN);
 			this.state = 647;
-			this.match(Tads3Parser.RIGHT_PAREN);
+			this.expr(0);
 			this.state = 648;
+			this.match(Tads3Parser.RIGHT_PAREN);
+			this.state = 649;
 			this.codeBlock();
 			}
 		}
@@ -3020,19 +3025,19 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 650;
-			this.match(Tads3Parser.FOREACH);
 			this.state = 651;
-			this.match(Tads3Parser.LEFT_PAREN);
+			this.match(Tads3Parser.FOREACH);
 			this.state = 652;
-			this.expr(0);
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 653;
-			this.match(Tads3Parser.IN);
-			this.state = 654;
 			this.expr(0);
+			this.state = 654;
+			this.match(Tads3Parser.IN);
 			this.state = 655;
-			this.match(Tads3Parser.RIGHT_PAREN);
+			this.expr(0);
 			this.state = 656;
+			this.match(Tads3Parser.RIGHT_PAREN);
+			this.state = 657;
 			this.codeBlock();
 			}
 		}
@@ -3058,19 +3063,19 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 658;
+			this.state = 659;
 			this.match(Tads3Parser.RETURN);
-			this.state = 660;
+			this.state = 661;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
-				this.state = 659;
+				this.state = 660;
 				this.expr(0);
 				}
 			}
 
-			this.state = 662;
+			this.state = 663;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -3096,25 +3101,25 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 664;
-			this.match(Tads3Parser.DO);
 			this.state = 665;
-			this.codeBlock();
+			this.match(Tads3Parser.DO);
 			this.state = 666;
-			this.match(Tads3Parser.WHILE);
+			this.codeBlock();
 			this.state = 667;
+			this.match(Tads3Parser.WHILE);
+			this.state = 668;
 			this.match(Tads3Parser.LEFT_PAREN);
-			this.state = 669;
+			this.state = 670;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
-				this.state = 668;
+				this.state = 669;
 				this.expr(0);
 				}
 			}
 
-			this.state = 671;
+			this.state = 672;
 			this.match(Tads3Parser.RIGHT_PAREN);
 			}
 		}
@@ -3140,23 +3145,23 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 673;
-			this.match(Tads3Parser.WHILE);
 			this.state = 674;
+			this.match(Tads3Parser.WHILE);
+			this.state = 675;
 			this.match(Tads3Parser.LEFT_PAREN);
-			this.state = 676;
+			this.state = 677;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
-				this.state = 675;
+				this.state = 676;
 				this.expr(0);
 				}
 			}
 
-			this.state = 678;
-			this.match(Tads3Parser.RIGHT_PAREN);
 			this.state = 679;
+			this.match(Tads3Parser.RIGHT_PAREN);
+			this.state = 680;
 			this.codeBlock();
 			}
 		}
@@ -3182,47 +3187,47 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 681;
-			this.match(Tads3Parser.FOR);
 			this.state = 682;
+			this.match(Tads3Parser.FOR);
+			this.state = 683;
 			this.match(Tads3Parser.LEFT_PAREN);
-			this.state = 684;
+			this.state = 685;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
-				this.state = 683;
+				this.state = 684;
 				this.expr(0);
 				}
 			}
 
-			this.state = 686;
+			this.state = 687;
 			this.match(Tads3Parser.SEMICOLON);
-			this.state = 688;
+			this.state = 689;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
-				this.state = 687;
+				this.state = 688;
 				this.expr(0);
 				}
 			}
 
-			this.state = 690;
+			this.state = 691;
 			this.match(Tads3Parser.SEMICOLON);
-			this.state = 692;
+			this.state = 693;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
-				this.state = 691;
+				this.state = 692;
 				this.expr(0);
 				}
 			}
 
-			this.state = 694;
-			this.match(Tads3Parser.RIGHT_PAREN);
 			this.state = 695;
+			this.match(Tads3Parser.RIGHT_PAREN);
+			this.state = 696;
 			this.codeBlock();
 			}
 		}
@@ -3249,50 +3254,50 @@ export class Tads3Parser extends Parser {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 697;
-			this.match(Tads3Parser.TRY);
 			this.state = 698;
+			this.match(Tads3Parser.TRY);
+			this.state = 699;
 			this.codeBlock();
-			this.state = 708;
+			this.state = 709;
 			this._errHandler.sync(this);
-			_alt = this.interpreter.adaptivePredict(this._input, 97, this._ctx);
+			_alt = this.interpreter.adaptivePredict(this._input, 98, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
 					{
 					{
-					this.state = 699;
-					this.match(Tads3Parser.CATCH);
 					this.state = 700;
+					this.match(Tads3Parser.CATCH);
+					this.state = 701;
 					this.match(Tads3Parser.LEFT_PAREN);
-					this.state = 702;
+					this.state = 703;
 					this._errHandler.sync(this);
 					_la = this._input.LA(1);
 					if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 						{
-						this.state = 701;
+						this.state = 702;
 						this.params();
 						}
 					}
 
-					this.state = 704;
-					this.match(Tads3Parser.RIGHT_PAREN);
 					this.state = 705;
+					this.match(Tads3Parser.RIGHT_PAREN);
+					this.state = 706;
 					this.codeBlock();
 					}
 					}
 				}
-				this.state = 710;
+				this.state = 711;
 				this._errHandler.sync(this);
-				_alt = this.interpreter.adaptivePredict(this._input, 97, this._ctx);
+				_alt = this.interpreter.adaptivePredict(this._input, 98, this._ctx);
 			}
-			this.state = 713;
+			this.state = 714;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 98, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 99, this._ctx) ) {
 			case 1:
 				{
-				this.state = 711;
-				this.match(Tads3Parser.FINALLY);
 				this.state = 712;
+				this.match(Tads3Parser.FINALLY);
+				this.state = 713;
 				this.codeBlock();
 				}
 				break;
@@ -3320,16 +3325,16 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 715;
+			this.state = 716;
 			this.expr(0);
-			this.state = 718;
+			this.state = 719;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 99, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 100, this._ctx) ) {
 			case 1:
 				{
-				this.state = 716;
-				this.match(Tads3Parser.DOT);
 				this.state = 717;
+				this.match(Tads3Parser.DOT);
+				this.state = 718;
 				this.callStatement();
 				}
 				break;
@@ -3358,17 +3363,17 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 721;
+			this.state = 722;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 				{
-				this.state = 720;
+				this.state = 721;
 				this.expr(0);
 				}
 			}
 
-			this.state = 723;
+			this.state = 724;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -3393,9 +3398,9 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 725;
-			this.match(Tads3Parser.DSTR);
 			this.state = 726;
+			this.match(Tads3Parser.DSTR);
+			this.state = 727;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -3421,23 +3426,23 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 728;
-			this.match(Tads3Parser.LOCAL);
 			this.state = 729;
+			this.match(Tads3Parser.LOCAL);
+			this.state = 730;
 			this.identifierAtom();
-			this.state = 732;
+			this.state = 733;
 			this._errHandler.sync(this);
 			_la = this._input.LA(1);
 			if (_la === Tads3Parser.ASSIGN) {
 				{
-				this.state = 730;
-				this.match(Tads3Parser.ASSIGN);
 				this.state = 731;
+				this.match(Tads3Parser.ASSIGN);
+				this.state = 732;
 				this.expr(0);
 				}
 			}
 
-			this.state = 734;
+			this.state = 735;
 			this.match(Tads3Parser.SEMICOLON);
 			}
 		}
@@ -3463,38 +3468,38 @@ export class Tads3Parser extends Parser {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 736;
-			this.match(Tads3Parser.IF);
 			this.state = 737;
+			this.match(Tads3Parser.IF);
+			this.state = 738;
 			_localctx._ifExprAndBlock = this.enclosedExprCodeBlock();
-			this.state = 743;
+			this.state = 744;
 			this._errHandler.sync(this);
-			_alt = this.interpreter.adaptivePredict(this._input, 102, this._ctx);
+			_alt = this.interpreter.adaptivePredict(this._input, 103, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
 					{
 					{
-					this.state = 738;
-					this.match(Tads3Parser.ELSE);
 					this.state = 739;
-					this.match(Tads3Parser.IF);
+					this.match(Tads3Parser.ELSE);
 					this.state = 740;
+					this.match(Tads3Parser.IF);
+					this.state = 741;
 					_localctx._elseIfExprAndBlock = this.enclosedExprCodeBlock();
 					}
 					}
 				}
-				this.state = 745;
+				this.state = 746;
 				this._errHandler.sync(this);
-				_alt = this.interpreter.adaptivePredict(this._input, 102, this._ctx);
+				_alt = this.interpreter.adaptivePredict(this._input, 103, this._ctx);
 			}
-			this.state = 748;
+			this.state = 749;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 103, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 104, this._ctx) ) {
 			case 1:
 				{
-				this.state = 746;
-				this.match(Tads3Parser.ELSE);
 				this.state = 747;
+				this.match(Tads3Parser.ELSE);
+				this.state = 748;
 				_localctx._elseBlock = this.codeBlock();
 				}
 				break;
@@ -3522,13 +3527,13 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 750;
-			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 751;
-			_localctx._expression = this.expr(0);
+			this.match(Tads3Parser.LEFT_PAREN);
 			this.state = 752;
-			this.match(Tads3Parser.RIGHT_PAREN);
+			_localctx._expression = this.expr(0);
 			this.state = 753;
+			this.match(Tads3Parser.RIGHT_PAREN);
+			this.state = 754;
 			this.codeBlock();
 			}
 		}
@@ -3566,28 +3571,28 @@ export class Tads3Parser extends Parser {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 796;
+			this.state = 799;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 108, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 109, this._ctx) ) {
 			case 1:
 				{
 				_localctx = new ArrayExprContext(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
 
-				this.state = 756;
+				this.state = 757;
 				this.match(Tads3Parser.LEFT_BRACKET);
-				this.state = 758;
+				this.state = 759;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 					{
-					this.state = 757;
+					this.state = 758;
 					this.expr(0);
 					}
 				}
 
-				this.state = 760;
+				this.state = 761;
 				this.match(Tads3Parser.RIGHT_BRACKET);
 				}
 				break;
@@ -3597,10 +3602,10 @@ export class Tads3Parser extends Parser {
 				_localctx = new DelegatedExpressionContext(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
-				this.state = 761;
-				this.match(Tads3Parser.DELEGATED);
 				this.state = 762;
-				this.expr(35);
+				this.match(Tads3Parser.DELEGATED);
+				this.state = 763;
+				this.expr(36);
 				}
 				break;
 
@@ -3609,10 +3614,10 @@ export class Tads3Parser extends Parser {
 				_localctx = new InheritedExpressionContext(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
-				this.state = 763;
-				this.match(Tads3Parser.INHERITED);
 				this.state = 764;
-				this.expr(34);
+				this.match(Tads3Parser.INHERITED);
+				this.state = 765;
+				this.expr(35);
 				}
 				break;
 
@@ -3621,10 +3626,10 @@ export class Tads3Parser extends Parser {
 				_localctx = new TransientExpressionContext(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
-				this.state = 765;
-				this.match(Tads3Parser.TRANSIENT);
 				this.state = 766;
-				this.expr(33);
+				this.match(Tads3Parser.TRANSIENT);
+				this.state = 767;
+				this.expr(34);
 				}
 				break;
 
@@ -3633,139 +3638,151 @@ export class Tads3Parser extends Parser {
 				_localctx = new PrimaryExprContext(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
-				this.state = 767;
+				this.state = 768;
 				this.primary();
 				}
 				break;
 
 			case 6:
 				{
-				_localctx = new ParenExpr2Context(_localctx);
+				_localctx = new ExprWithAnonymousObjectExpr2Context(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
-				this.state = 768;
-				this.match(Tads3Parser.LEFT_PAREN);
+				this.state = 769;
+				this.match(Tads3Parser.ID);
 				this.state = 770;
-				this._errHandler.sync(this);
-				_la = this._input.LA(1);
-				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
-					{
-					this.state = 769;
-					this.expr(0);
-					}
-				}
-
-				this.state = 772;
-				this.match(Tads3Parser.RIGHT_PAREN);
+				this.curlyObjectBody();
 				}
 				break;
 
 			case 7:
 				{
-				_localctx = new LocalExprContext(_localctx);
+				_localctx = new ParenExpr2Context(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
+				this.state = 771;
+				this.match(Tads3Parser.LEFT_PAREN);
 				this.state = 773;
-				this.match(Tads3Parser.LOCAL);
-				this.state = 774;
-				this.expr(26);
+				this._errHandler.sync(this);
+				_la = this._input.LA(1);
+				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
+					{
+					this.state = 772;
+					this.expr(0);
+					}
+				}
+
+				this.state = 775;
+				this.match(Tads3Parser.RIGHT_PAREN);
 				}
 				break;
 
 			case 8:
 				{
-				_localctx = new StaticExprContext(_localctx);
+				_localctx = new LocalExprContext(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
-				this.state = 775;
-				this.match(Tads3Parser.STATIC);
 				this.state = 776;
-				this.expr(25);
+				this.match(Tads3Parser.LOCAL);
+				this.state = 777;
+				this.expr(26);
 				}
 				break;
 
 			case 9:
 				{
-				_localctx = new NewExprContext(_localctx);
+				_localctx = new StaticExprContext(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
-				this.state = 777;
-				this.match(Tads3Parser.NEW);
 				this.state = 778;
-				this.expr(24);
+				this.match(Tads3Parser.STATIC);
+				this.state = 779;
+				this.expr(25);
 				}
 				break;
 
 			case 10:
 				{
-				_localctx = new AnonymousObjectExprContext(_localctx);
+				_localctx = new NewExprContext(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
-				this.state = 779;
-				this.match(Tads3Parser.LEFT_CURLY);
+				this.state = 780;
+				this.match(Tads3Parser.NEW);
 				this.state = 781;
-				this._errHandler.sync(this);
-				_la = this._input.LA(1);
-				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
-					{
-					this.state = 780;
-					this.params();
-					}
-				}
-
-				this.state = 783;
-				this.match(Tads3Parser.COLON);
-				this.state = 785;
-				this._errHandler.sync(this);
-				_la = this._input.LA(1);
-				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
-					{
-					this.state = 784;
-					this.expr(0);
-					}
-				}
-
-				this.state = 787;
-				this.match(Tads3Parser.RIGHT_CURLY);
+				this.expr(24);
 				}
 				break;
 
 			case 11:
 				{
-				_localctx = new ArrowExpr2Context(_localctx);
+				_localctx = new AnonymousObjectExprContext(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
-				{
-				this.state = 788;
-				this.match(Tads3Parser.ARROW);
+				this.state = 782;
+				this.match(Tads3Parser.LEFT_CURLY);
+				this.state = 784;
+				this._errHandler.sync(this);
+				_la = this._input.LA(1);
+				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
+					{
+					this.state = 783;
+					this.params();
+					}
 				}
-				this.state = 789;
-				this.expr(6);
+
+				this.state = 786;
+				this.match(Tads3Parser.COLON);
+				this.state = 788;
+				this._errHandler.sync(this);
+				_la = this._input.LA(1);
+				if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
+					{
+					this.state = 787;
+					this.expr(0);
+					}
+				}
+
+				this.state = 790;
+				this.match(Tads3Parser.RIGHT_CURLY);
 				}
 				break;
 
 			case 12:
 				{
-				_localctx = new ArrowExpr3Context(_localctx);
+				_localctx = new ArrowExpr2Context(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
-				this.state = 790;
-				this.match(Tads3Parser.STAR);
+				{
 				this.state = 791;
 				this.match(Tads3Parser.ARROW);
+				}
 				this.state = 792;
-				this.expr(5);
+				this.expr(11);
 				}
 				break;
 
 			case 13:
 				{
-				_localctx = new UnaryExprContext(_localctx);
+				_localctx = new ArrowExpr3Context(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
 				this.state = 793;
+				this.match(Tads3Parser.STAR);
+				this.state = 794;
+				this.match(Tads3Parser.ARROW);
+				this.state = 795;
+				this.expr(10);
+				}
+				break;
+
+			case 14:
+				{
+				_localctx = new UnaryExprContext(_localctx);
+				this._ctx = _localctx;
+				_prevctx = _localctx;
+				this.state = 796;
 				_la = this._input.LA(1);
-				if (!(((((_la - 49)) & ~0x1F) === 0 && ((1 << (_la - 49)) & ((1 << (Tads3Parser.AT - 49)) | (1 << (Tads3Parser.AMP - 49)) | (1 << (Tads3Parser.NOT - 49)) | (1 << (Tads3Parser.PLUS - 49)) | (1 << (Tads3Parser.MINUS - 49)) | (1 << (Tads3Parser.TILDE - 49)))) !== 0))) {
+				if (!(((((_la - 49)) & ~0x1F) === 0 && ((1 << (_la - 49)) & ((1 << (Tads3Parser.AT - 49)) | (1 << (Tads3Parser.AMP - 49)) | (1 << (Tads3Parser.NOT - 49)) | (1 << (Tads3Parser.PLUS - 49)) | (1 << (Tads3Parser.MINUS - 49)) | (1 << (Tads3Parser.TILDE - 49)) | (1 << (Tads3Parser.STAR - 49)))) !== 0))) {
 				this._errHandler.recoverInline(this);
 				} else {
 					if (this._input.LA(1) === Token.EOF) {
@@ -3775,25 +3792,25 @@ export class Tads3Parser extends Parser {
 					this._errHandler.reportMatch(this);
 					this.consume();
 				}
-				this.state = 794;
+				this.state = 797;
 				this.expr(4);
 				}
 				break;
 
-			case 14:
+			case 15:
 				{
 				_localctx = new AnonymousFunctionExprContext(_localctx);
 				this._ctx = _localctx;
 				_prevctx = _localctx;
-				this.state = 795;
+				this.state = 798;
 				this.functionDeclaration();
 				}
 				break;
 			}
 			this._ctx._stop = this._input.tryLT(-1);
-			this.state = 927;
+			this.state = 930;
 			this._errHandler.sync(this);
-			_alt = this.interpreter.adaptivePredict(this._input, 122, this._ctx);
+			_alt = this.interpreter.adaptivePredict(this._input, 123, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
 					if (this._parseListeners != null) {
@@ -3801,22 +3818,22 @@ export class Tads3Parser extends Parser {
 					}
 					_prevctx = _localctx;
 					{
-					this.state = 925;
+					this.state = 928;
 					this._errHandler.sync(this);
-					switch ( this.interpreter.adaptivePredict(this._input, 121, this._ctx) ) {
+					switch ( this.interpreter.adaptivePredict(this._input, 122, this._ctx) ) {
 					case 1:
 						{
 						_localctx = new MemberExprContext(new ExprContext(_parentctx, _parentState));
 						(_localctx as MemberExprContext)._prev = _prevctx;
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 798;
-						if (!(this.precpred(this._ctx, 39))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 39)");
+						this.state = 801;
+						if (!(this.precpred(this._ctx, 40))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 40)");
 						}
-						this.state = 799;
+						this.state = 802;
 						this.match(Tads3Parser.DOT);
-						this.state = 800;
-						(_localctx as MemberExprContext)._next = this.expr(40);
+						this.state = 803;
+						(_localctx as MemberExprContext)._next = this.expr(41);
 						}
 						break;
 
@@ -3824,14 +3841,14 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new CommaExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 801;
-						if (!(this.precpred(this._ctx, 37))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 37)");
+						this.state = 804;
+						if (!(this.precpred(this._ctx, 38))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 38)");
 						}
-						this.state = 802;
+						this.state = 805;
 						this.match(Tads3Parser.COMMA);
-						this.state = 803;
-						this.expr(38);
+						this.state = 806;
+						this.expr(39);
 						}
 						break;
 
@@ -3839,13 +3856,13 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new ReferenceExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 804;
+						this.state = 807;
 						if (!(this.precpred(this._ctx, 23))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 23)");
 						}
-						this.state = 805;
+						this.state = 808;
 						this.match(Tads3Parser.AMP);
-						this.state = 806;
+						this.state = 809;
 						this.expr(24);
 						}
 						break;
@@ -3854,15 +3871,15 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new NotInExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 807;
+						this.state = 810;
 						if (!(this.precpred(this._ctx, 22))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 22)");
 						}
-						this.state = 808;
+						this.state = 811;
 						this.match(Tads3Parser.LITERAL_NOT);
-						this.state = 809;
+						this.state = 812;
 						this.match(Tads3Parser.IN);
-						this.state = 810;
+						this.state = 813;
 						this.expr(23);
 						}
 						break;
@@ -3871,15 +3888,15 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new IsExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 811;
+						this.state = 814;
 						if (!(this.precpred(this._ctx, 21))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 21)");
 						}
-						this.state = 812;
+						this.state = 815;
 						this.match(Tads3Parser.IS);
-						this.state = 813;
+						this.state = 816;
 						this.match(Tads3Parser.IN);
-						this.state = 814;
+						this.state = 817;
 						this.expr(22);
 						}
 						break;
@@ -3888,13 +3905,13 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new IsExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 815;
+						this.state = 818;
 						if (!(this.precpred(this._ctx, 20))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 20)");
 						}
-						this.state = 816;
+						this.state = 819;
 						this.match(Tads3Parser.IS);
-						this.state = 817;
+						this.state = 820;
 						this.expr(21);
 						}
 						break;
@@ -3903,13 +3920,13 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new InExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 818;
+						this.state = 821;
 						if (!(this.precpred(this._ctx, 19))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 19)");
 						}
-						this.state = 819;
+						this.state = 822;
 						this.match(Tads3Parser.IN);
-						this.state = 820;
+						this.state = 823;
 						this.expr(20);
 						}
 						break;
@@ -3918,13 +3935,13 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new AssignmentExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 821;
+						this.state = 824;
 						if (!(this.precpred(this._ctx, 18))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 18)");
 						}
-						this.state = 822;
+						this.state = 825;
 						this.match(Tads3Parser.ASSIGN);
-						this.state = 823;
+						this.state = 826;
 						this.expr(19);
 						}
 						break;
@@ -3933,13 +3950,13 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new IfNilExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 824;
+						this.state = 827;
 						if (!(this.precpred(this._ctx, 17))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 17)");
 						}
-						this.state = 825;
+						this.state = 828;
 						this.match(Tads3Parser.IFNIL);
-						this.state = 826;
+						this.state = 829;
 						this.expr(18);
 						}
 						break;
@@ -3948,11 +3965,11 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new BitwiseExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 827;
+						this.state = 830;
 						if (!(this.precpred(this._ctx, 15))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 15)");
 						}
-						this.state = 828;
+						this.state = 831;
 						_la = this._input.LA(1);
 						if (!(_la === Tads3Parser.AMP || _la === Tads3Parser.BITWISE_OR)) {
 						this._errHandler.recoverInline(this);
@@ -3964,17 +3981,17 @@ export class Tads3Parser extends Parser {
 							this._errHandler.reportMatch(this);
 							this.consume();
 						}
-						this.state = 830;
+						this.state = 833;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
 						if (_la === Tads3Parser.ASSIGN) {
 							{
-							this.state = 829;
+							this.state = 832;
 							this.match(Tads3Parser.ASSIGN);
 							}
 						}
 
-						this.state = 832;
+						this.state = 835;
 						this.expr(16);
 						}
 						break;
@@ -3983,11 +4000,11 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new AndOrExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 833;
+						this.state = 836;
 						if (!(this.precpred(this._ctx, 14))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 14)");
 						}
-						this.state = 834;
+						this.state = 837;
 						(_localctx as AndOrExprContext)._op = this._input.LT(1);
 						_la = this._input.LA(1);
 						if (!(_la === Tads3Parser.AND || _la === Tads3Parser.OR)) {
@@ -4000,7 +4017,7 @@ export class Tads3Parser extends Parser {
 							this._errHandler.reportMatch(this);
 							this.consume();
 						}
-						this.state = 835;
+						this.state = 838;
 						this.expr(15);
 						}
 						break;
@@ -4009,60 +4026,41 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new PowerOfExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 836;
+						this.state = 839;
 						if (!(this.precpred(this._ctx, 13))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 13)");
 						}
 						{
-						this.state = 837;
+						this.state = 840;
 						this.match(Tads3Parser.POW);
 						}
-						this.state = 839;
+						this.state = 842;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
 						if (_la === Tads3Parser.ASSIGN) {
 							{
-							this.state = 838;
+							this.state = 841;
 							(_localctx as PowerOfExprContext)._isInc = this.match(Tads3Parser.ASSIGN);
 							}
 						}
 
-						this.state = 841;
+						this.state = 844;
 						this.expr(14);
 						}
 						break;
 
 					case 13:
 						{
-						_localctx = new MultiplicationExprContext(new ExprContext(_parentctx, _parentState));
+						_localctx = new ArrowExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 842;
+						this.state = 845;
 						if (!(this.precpred(this._ctx, 12))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 12)");
 						}
-						this.state = 843;
-						(_localctx as MultiplicationExprContext)._op = this._input.LT(1);
-						_la = this._input.LA(1);
-						if (!(((((_la - 56)) & ~0x1F) === 0 && ((1 << (_la - 56)) & ((1 << (Tads3Parser.DIV - 56)) | (1 << (Tads3Parser.MOD - 56)) | (1 << (Tads3Parser.STAR - 56)))) !== 0))) {
-							(_localctx as MultiplicationExprContext)._op = this._errHandler.recoverInline(this);
-						} else {
-							if (this._input.LA(1) === Token.EOF) {
-								this.matchedEOF = true;
-							}
-
-							this._errHandler.reportMatch(this);
-							this.consume();
+						{
+						this.state = 846;
+						this.match(Tads3Parser.ARROW);
 						}
-						this.state = 845;
-						this._errHandler.sync(this);
-						_la = this._input.LA(1);
-						if (_la === Tads3Parser.ASSIGN) {
-							{
-							this.state = 844;
-							(_localctx as MultiplicationExprContext)._isInc = this.match(Tads3Parser.ASSIGN);
-							}
-						}
-
 						this.state = 847;
 						this.expr(13);
 						}
@@ -4070,17 +4068,17 @@ export class Tads3Parser extends Parser {
 
 					case 14:
 						{
-						_localctx = new AdditiveExprContext(new ExprContext(_parentctx, _parentState));
+						_localctx = new MultiplicationExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 848;
-						if (!(this.precpred(this._ctx, 11))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 11)");
+						if (!(this.precpred(this._ctx, 9))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 9)");
 						}
 						this.state = 849;
-						(_localctx as AdditiveExprContext)._op = this._input.LT(1);
+						(_localctx as MultiplicationExprContext)._op = this._input.LT(1);
 						_la = this._input.LA(1);
-						if (!(_la === Tads3Parser.PLUS || _la === Tads3Parser.MINUS)) {
-							(_localctx as AdditiveExprContext)._op = this._errHandler.recoverInline(this);
+						if (!(((((_la - 56)) & ~0x1F) === 0 && ((1 << (_la - 56)) & ((1 << (Tads3Parser.DIV - 56)) | (1 << (Tads3Parser.MOD - 56)) | (1 << (Tads3Parser.STAR - 56)))) !== 0))) {
+							(_localctx as MultiplicationExprContext)._op = this._errHandler.recoverInline(this);
 						} else {
 							if (this._input.LA(1) === Token.EOF) {
 								this.matchedEOF = true;
@@ -4095,24 +4093,60 @@ export class Tads3Parser extends Parser {
 						if (_la === Tads3Parser.ASSIGN) {
 							{
 							this.state = 850;
-							(_localctx as AdditiveExprContext)._isInc = this.match(Tads3Parser.ASSIGN);
+							(_localctx as MultiplicationExprContext)._isInc = this.match(Tads3Parser.ASSIGN);
 							}
 						}
 
 						this.state = 853;
-						this.expr(12);
+						this.expr(10);
 						}
 						break;
 
 					case 15:
 						{
-						_localctx = new RelationalExprContext(new ExprContext(_parentctx, _parentState));
+						_localctx = new AdditiveExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
 						this.state = 854;
-						if (!(this.precpred(this._ctx, 10))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 10)");
+						if (!(this.precpred(this._ctx, 8))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 8)");
 						}
 						this.state = 855;
+						(_localctx as AdditiveExprContext)._op = this._input.LT(1);
+						_la = this._input.LA(1);
+						if (!(_la === Tads3Parser.PLUS || _la === Tads3Parser.MINUS)) {
+							(_localctx as AdditiveExprContext)._op = this._errHandler.recoverInline(this);
+						} else {
+							if (this._input.LA(1) === Token.EOF) {
+								this.matchedEOF = true;
+							}
+
+							this._errHandler.reportMatch(this);
+							this.consume();
+						}
+						this.state = 857;
+						this._errHandler.sync(this);
+						_la = this._input.LA(1);
+						if (_la === Tads3Parser.ASSIGN) {
+							{
+							this.state = 856;
+							(_localctx as AdditiveExprContext)._isInc = this.match(Tads3Parser.ASSIGN);
+							}
+						}
+
+						this.state = 859;
+						this.expr(9);
+						}
+						break;
+
+					case 16:
+						{
+						_localctx = new RelationalExprContext(new ExprContext(_parentctx, _parentState));
+						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
+						this.state = 860;
+						if (!(this.precpred(this._ctx, 7))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 7)");
+						}
+						this.state = 861;
 						(_localctx as RelationalExprContext)._op = this._input.LT(1);
 						_la = this._input.LA(1);
 						if (!(((((_la - 86)) & ~0x1F) === 0 && ((1 << (_la - 86)) & ((1 << (Tads3Parser.LTEQ - 86)) | (1 << (Tads3Parser.LT - 86)) | (1 << (Tads3Parser.GTEQ - 86)) | (1 << (Tads3Parser.GT - 86)))) !== 0))) {
@@ -4125,20 +4159,20 @@ export class Tads3Parser extends Parser {
 							this._errHandler.reportMatch(this);
 							this.consume();
 						}
-						this.state = 856;
-						this.expr(11);
+						this.state = 862;
+						this.expr(8);
 						}
 						break;
 
-					case 16:
+					case 17:
 						{
 						_localctx = new EqualityExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 857;
-						if (!(this.precpred(this._ctx, 9))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 9)");
+						this.state = 863;
+						if (!(this.precpred(this._ctx, 6))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 6)");
 						}
-						this.state = 858;
+						this.state = 864;
 						(_localctx as EqualityExprContext)._op = this._input.LT(1);
 						_la = this._input.LA(1);
 						if (!(_la === Tads3Parser.NEQ || _la === Tads3Parser.EQ)) {
@@ -4151,20 +4185,20 @@ export class Tads3Parser extends Parser {
 							this._errHandler.reportMatch(this);
 							this.consume();
 						}
-						this.state = 859;
-						this.expr(10);
+						this.state = 865;
+						this.expr(7);
 						}
 						break;
 
-					case 17:
+					case 18:
 						{
 						_localctx = new BitwiseExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 860;
-						if (!(this.precpred(this._ctx, 8))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 8)");
+						this.state = 866;
+						if (!(this.precpred(this._ctx, 5))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 5)");
 						}
-						this.state = 861;
+						this.state = 867;
 						(_localctx as BitwiseExprContext)._op = this._input.LT(1);
 						_la = this._input.LA(1);
 						if (!(((((_la - 87)) & ~0x1F) === 0 && ((1 << (_la - 87)) & ((1 << (Tads3Parser.ARITHMETIC_LEFT - 87)) | (1 << (Tads3Parser.ARITHMETIC_RIGHT - 87)) | (1 << (Tads3Parser.LOGICAL_RIGHT_SHIFT - 87)))) !== 0))) {
@@ -4177,35 +4211,18 @@ export class Tads3Parser extends Parser {
 							this._errHandler.reportMatch(this);
 							this.consume();
 						}
-						this.state = 863;
+						this.state = 869;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
 						if (_la === Tads3Parser.ASSIGN) {
 							{
-							this.state = 862;
+							this.state = 868;
 							(_localctx as BitwiseExprContext)._isInc = this.match(Tads3Parser.ASSIGN);
 							}
 						}
 
-						this.state = 865;
-						this.expr(9);
-						}
-						break;
-
-					case 18:
-						{
-						_localctx = new ArrowExprContext(new ExprContext(_parentctx, _parentState));
-						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 866;
-						if (!(this.precpred(this._ctx, 7))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 7)");
-						}
-						{
-						this.state = 867;
-						this.match(Tads3Parser.ARROW);
-						}
-						this.state = 868;
-						this.expr(8);
+						this.state = 871;
+						this.expr(6);
 						}
 						break;
 
@@ -4213,17 +4230,17 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new TernaryExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 869;
+						this.state = 872;
 						if (!(this.precpred(this._ctx, 2))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 2)");
 						}
-						this.state = 870;
-						this.match(Tads3Parser.OPTIONAL);
-						this.state = 871;
-						this.expr(0);
-						this.state = 872;
-						this.match(Tads3Parser.COLON);
 						this.state = 873;
+						this.match(Tads3Parser.OPTIONAL);
+						this.state = 874;
+						this.expr(0);
+						this.state = 875;
+						this.match(Tads3Parser.COLON);
+						this.state = 876;
 						this.expr(3);
 						}
 						break;
@@ -4232,23 +4249,23 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new IndexExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 875;
-						if (!(this.precpred(this._ctx, 38))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 38)");
-						}
-						this.state = 876;
-						this.match(Tads3Parser.LEFT_BRACKET);
 						this.state = 878;
+						if (!(this.precpred(this._ctx, 39))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 39)");
+						}
+						this.state = 879;
+						this.match(Tads3Parser.LEFT_BRACKET);
+						this.state = 881;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
 						if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 							{
-							this.state = 877;
+							this.state = 880;
 							this.expr(0);
 							}
 						}
 
-						this.state = 880;
+						this.state = 883;
 						this.match(Tads3Parser.RIGHT_BRACKET);
 						}
 						break;
@@ -4257,22 +4274,22 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new RangeExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 881;
-						if (!(this.precpred(this._ctx, 36))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 36)");
+						this.state = 884;
+						if (!(this.precpred(this._ctx, 37))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 37)");
 						}
-						this.state = 882;
+						this.state = 885;
 						this.match(Tads3Parser.RANGE);
-						this.state = 883;
-						this.expr(0);
 						this.state = 886;
+						this.expr(0);
+						this.state = 889;
 						this._errHandler.sync(this);
-						switch ( this.interpreter.adaptivePredict(this._input, 115, this._ctx) ) {
+						switch ( this.interpreter.adaptivePredict(this._input, 116, this._ctx) ) {
 						case 1:
 							{
-							this.state = 884;
+							this.state = 887;
 							(_localctx as RangeExprContext)._hasStep = this.match(Tads3Parser.STEP);
-							this.state = 885;
+							this.state = 888;
 							this.expr(0);
 							}
 							break;
@@ -4284,27 +4301,27 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new CallWithParamsExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 888;
-						if (!(this.precpred(this._ctx, 31))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 31)");
-						}
-						this.state = 889;
-						this.match(Tads3Parser.LEFT_PAREN);
 						this.state = 891;
+						if (!(this.precpred(this._ctx, 32))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 32)");
+						}
+						this.state = 892;
+						this.match(Tads3Parser.LEFT_PAREN);
+						this.state = 894;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
 						do {
 							{
 							{
-							this.state = 890;
+							this.state = 893;
 							this.params();
 							}
 							}
-							this.state = 893;
+							this.state = 896;
 							this._errHandler.sync(this);
 							_la = this._input.LA(1);
 						} while ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0));
-						this.state = 895;
+						this.state = 898;
 						this.match(Tads3Parser.RIGHT_PAREN);
 						}
 						break;
@@ -4313,23 +4330,23 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new ExprWithParenExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 897;
-						if (!(this.precpred(this._ctx, 30))) {
-							throw this.createFailedPredicateException("this.precpred(this._ctx, 30)");
-						}
-						this.state = 898;
-						this.match(Tads3Parser.LEFT_PAREN);
 						this.state = 900;
+						if (!(this.precpred(this._ctx, 31))) {
+							throw this.createFailedPredicateException("this.precpred(this._ctx, 31)");
+						}
+						this.state = 901;
+						this.match(Tads3Parser.LEFT_PAREN);
+						this.state = 903;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
 						if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 							{
-							this.state = 899;
+							this.state = 902;
 							this.expr(0);
 							}
 						}
 
-						this.state = 902;
+						this.state = 905;
 						this.match(Tads3Parser.RIGHT_PAREN);
 						}
 						break;
@@ -4338,35 +4355,35 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new ExprWithAnonymousObjectExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 903;
+						this.state = 906;
 						if (!(this.precpred(this._ctx, 29))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 29)");
 						}
-						this.state = 904;
+						this.state = 907;
 						this.match(Tads3Parser.LEFT_CURLY);
-						this.state = 906;
+						this.state = 909;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
 						if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.SPREAD - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 							{
-							this.state = 905;
+							this.state = 908;
 							this.params();
 							}
 						}
 
-						this.state = 908;
+						this.state = 911;
 						this.match(Tads3Parser.COLON);
-						this.state = 910;
+						this.state = 913;
 						this._errHandler.sync(this);
 						_la = this._input.LA(1);
 						if ((((_la) & ~0x1F) === 0 && ((1 << _la) & ((1 << Tads3Parser.FUNCTION) | (1 << Tads3Parser.NEW) | (1 << Tads3Parser.TRANSIENT) | (1 << Tads3Parser.MODIFY) | (1 << Tads3Parser.REPLACE) | (1 << Tads3Parser.LOCAL) | (1 << Tads3Parser.TRUE) | (1 << Tads3Parser.NIL) | (1 << Tads3Parser.INHERITED) | (1 << Tads3Parser.DELEGATED))) !== 0) || ((((_la - 32)) & ~0x1F) === 0 && ((1 << (_la - 32)) & ((1 << (Tads3Parser.EXTERN - 32)) | (1 << (Tads3Parser.STATIC - 32)) | (1 << (Tads3Parser.STRING - 32)) | (1 << (Tads3Parser.IN - 32)) | (1 << (Tads3Parser.STEP - 32)) | (1 << (Tads3Parser.IS - 32)) | (1 << (Tads3Parser.OPERATOR - 32)) | (1 << (Tads3Parser.AT - 32)) | (1 << (Tads3Parser.AMP - 32)) | (1 << (Tads3Parser.NOT - 32)) | (1 << (Tads3Parser.PLUS - 32)) | (1 << (Tads3Parser.MINUS - 32)) | (1 << (Tads3Parser.ARROW - 32)))) !== 0) || ((((_la - 64)) & ~0x1F) === 0 && ((1 << (_la - 64)) & ((1 << (Tads3Parser.TILDE - 64)) | (1 << (Tads3Parser.ID - 64)) | (1 << (Tads3Parser.NR - 64)) | (1 << (Tads3Parser.HEX - 64)) | (1 << (Tads3Parser.STAR - 64)) | (1 << (Tads3Parser.LEFT_PAREN - 64)) | (1 << (Tads3Parser.LEFT_BRACKET - 64)) | (1 << (Tads3Parser.DSTR - 64)) | (1 << (Tads3Parser.SSTR - 64)) | (1 << (Tads3Parser.RSTR - 64)) | (1 << (Tads3Parser.LEFT_CURLY - 64)))) !== 0)) {
 							{
-							this.state = 909;
+							this.state = 912;
 							this.expr(0);
 							}
 						}
 
-						this.state = 912;
+						this.state = 915;
 						this.match(Tads3Parser.RIGHT_CURLY);
 						}
 						break;
@@ -4375,15 +4392,15 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new ExprWithAnonymousObjectUsingMultipleSuperTypesExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 913;
+						this.state = 916;
 						if (!(this.precpred(this._ctx, 28))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 28)");
 						}
-						this.state = 914;
+						this.state = 917;
 						this.match(Tads3Parser.COLON);
-						this.state = 915;
+						this.state = 918;
 						this.superTypes();
-						this.state = 916;
+						this.state = 919;
 						this.curlyObjectBody();
 						}
 						break;
@@ -4392,26 +4409,26 @@ export class Tads3Parser extends Parser {
 						{
 						_localctx = new PostFixExprContext(new ExprContext(_parentctx, _parentState));
 						this.pushNewRecursionContext(_localctx, _startState, Tads3Parser.RULE_expr);
-						this.state = 918;
+						this.state = 921;
 						if (!(this.precpred(this._ctx, 3))) {
 							throw this.createFailedPredicateException("this.precpred(this._ctx, 3)");
 						}
-						this.state = 923;
+						this.state = 926;
 						this._errHandler.sync(this);
 						switch (this._input.LA(1)) {
 						case Tads3Parser.PLUS:
 							{
-							this.state = 919;
+							this.state = 922;
 							this.match(Tads3Parser.PLUS);
-							this.state = 920;
+							this.state = 923;
 							this.match(Tads3Parser.PLUS);
 							}
 							break;
 						case Tads3Parser.MINUS:
 							{
-							this.state = 921;
+							this.state = 924;
 							this.match(Tads3Parser.MINUS);
-							this.state = 922;
+							this.state = 925;
 							this.match(Tads3Parser.MINUS);
 							}
 							break;
@@ -4423,9 +4440,9 @@ export class Tads3Parser extends Parser {
 					}
 					}
 				}
-				this.state = 929;
+				this.state = 932;
 				this._errHandler.sync(this);
-				_alt = this.interpreter.adaptivePredict(this._input, 122, this._ctx);
+				_alt = this.interpreter.adaptivePredict(this._input, 123, this._ctx);
 			}
 			}
 		}
@@ -4448,14 +4465,14 @@ export class Tads3Parser extends Parser {
 		let _localctx: PrimaryContext = new PrimaryContext(this._ctx, this.state);
 		this.enterRule(_localctx, 104, Tads3Parser.RULE_primary);
 		try {
-			this.state = 941;
+			this.state = 944;
 			this._errHandler.sync(this);
 			switch (this._input.LA(1)) {
 			case Tads3Parser.INHERITED:
 				_localctx = new InheritedAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 1);
 				{
-				this.state = 930;
+				this.state = 933;
 				this.match(Tads3Parser.INHERITED);
 				}
 				break;
@@ -4463,7 +4480,7 @@ export class Tads3Parser extends Parser {
 				_localctx = new HexAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 2);
 				{
-				this.state = 931;
+				this.state = 934;
 				this.match(Tads3Parser.HEX);
 				}
 				break;
@@ -4471,7 +4488,7 @@ export class Tads3Parser extends Parser {
 				_localctx = new NumberAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 3);
 				{
-				this.state = 932;
+				this.state = 935;
 				this.match(Tads3Parser.NR);
 				}
 				break;
@@ -4479,9 +4496,9 @@ export class Tads3Parser extends Parser {
 				_localctx = new ReferenceAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 4);
 				{
-				this.state = 933;
+				this.state = 936;
 				this.match(Tads3Parser.AMP);
-				this.state = 934;
+				this.state = 937;
 				this.identifierAtom();
 				}
 				break;
@@ -4494,7 +4511,7 @@ export class Tads3Parser extends Parser {
 				_localctx = new IdAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 5);
 				{
-				this.state = 935;
+				this.state = 938;
 				this.identifierAtom();
 				}
 				break;
@@ -4502,7 +4519,7 @@ export class Tads3Parser extends Parser {
 				_localctx = new DoubleQuotestringAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 6);
 				{
-				this.state = 936;
+				this.state = 939;
 				this.match(Tads3Parser.SSTR);
 				}
 				break;
@@ -4510,7 +4527,7 @@ export class Tads3Parser extends Parser {
 				_localctx = new SingleQuotestringAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 7);
 				{
-				this.state = 937;
+				this.state = 940;
 				this.match(Tads3Parser.DSTR);
 				}
 				break;
@@ -4518,7 +4535,7 @@ export class Tads3Parser extends Parser {
 				_localctx = new RegexpStringAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 8);
 				{
-				this.state = 938;
+				this.state = 941;
 				this.match(Tads3Parser.RSTR);
 				}
 				break;
@@ -4526,7 +4543,7 @@ export class Tads3Parser extends Parser {
 				_localctx = new BooleanAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 9);
 				{
-				this.state = 939;
+				this.state = 942;
 				this.match(Tads3Parser.TRUE);
 				}
 				break;
@@ -4534,7 +4551,7 @@ export class Tads3Parser extends Parser {
 				_localctx = new NilAtomContext(_localctx);
 				this.enterOuterAlt(_localctx, 10);
 				{
-				this.state = 940;
+				this.state = 943;
 				this.match(Tads3Parser.NIL);
 				}
 				break;
@@ -4564,7 +4581,7 @@ export class Tads3Parser extends Parser {
 		try {
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 943;
+			this.state = 946;
 			_la = this._input.LA(1);
 			if (!(((((_la - 35)) & ~0x1F) === 0 && ((1 << (_la - 35)) & ((1 << (Tads3Parser.STRING - 35)) | (1 << (Tads3Parser.IN - 35)) | (1 << (Tads3Parser.STEP - 35)) | (1 << (Tads3Parser.IS - 35)) | (1 << (Tads3Parser.OPERATOR - 35)) | (1 << (Tads3Parser.ID - 35)))) !== 0))) {
 			this._errHandler.recoverInline(this);
@@ -4600,45 +4617,45 @@ export class Tads3Parser extends Parser {
 			let _alt: number;
 			this.enterOuterAlt(_localctx, 1);
 			{
-			this.state = 948;
+			this.state = 951;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 124, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 125, this._ctx) ) {
 			case 1:
 				{
-				this.state = 945;
+				this.state = 948;
 				this.optionallyTypedOptionalId();
 				}
 				break;
 
 			case 2:
 				{
-				this.state = 946;
+				this.state = 949;
 				this.match(Tads3Parser.SPREAD);
 				}
 				break;
 
 			case 3:
 				{
-				this.state = 947;
+				this.state = 950;
 				this.array();
 				}
 				break;
 			}
-			this.state = 956;
+			this.state = 959;
 			this._errHandler.sync(this);
-			_alt = this.interpreter.adaptivePredict(this._input, 126, this._ctx);
+			_alt = this.interpreter.adaptivePredict(this._input, 127, this._ctx);
 			while (_alt !== 2 && _alt !== ATN.INVALID_ALT_NUMBER) {
 				if (_alt === 1) {
 					{
 					{
-					this.state = 950;
+					this.state = 953;
 					this.match(Tads3Parser.COMMA);
-					this.state = 952;
+					this.state = 955;
 					this._errHandler.sync(this);
-					switch ( this.interpreter.adaptivePredict(this._input, 125, this._ctx) ) {
+					switch ( this.interpreter.adaptivePredict(this._input, 126, this._ctx) ) {
 					case 1:
 						{
-						this.state = 951;
+						this.state = 954;
 						this.params();
 						}
 						break;
@@ -4646,9 +4663,9 @@ export class Tads3Parser extends Parser {
 					}
 					}
 				}
-				this.state = 958;
+				this.state = 961;
 				this._errHandler.sync(this);
-				_alt = this.interpreter.adaptivePredict(this._input, 126, this._ctx);
+				_alt = this.interpreter.adaptivePredict(this._input, 127, this._ctx);
 			}
 			}
 		}
@@ -4672,45 +4689,45 @@ export class Tads3Parser extends Parser {
 		this.enterRule(_localctx, 110, Tads3Parser.RULE_optionallyTypedOptionalId);
 		let _la: number;
 		try {
-			this.state = 982;
+			this.state = 985;
 			this._errHandler.sync(this);
-			switch ( this.interpreter.adaptivePredict(this._input, 132, this._ctx) ) {
+			switch ( this.interpreter.adaptivePredict(this._input, 133, this._ctx) ) {
 			case 1:
 				this.enterOuterAlt(_localctx, 1);
 				{
 				{
-				this.state = 962;
-				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 127, this._ctx) ) {
-				case 1:
-					{
-					this.state = 959;
-					_localctx._identifier = this.identifierAtom();
-					this.state = 960;
-					this.match(Tads3Parser.COLON);
-					}
-					break;
-				}
 				this.state = 965;
 				this._errHandler.sync(this);
 				switch ( this.interpreter.adaptivePredict(this._input, 128, this._ctx) ) {
 				case 1:
 					{
-					this.state = 964;
+					this.state = 962;
+					_localctx._identifier = this.identifierAtom();
+					this.state = 963;
+					this.match(Tads3Parser.COLON);
+					}
+					break;
+				}
+				this.state = 968;
+				this._errHandler.sync(this);
+				switch ( this.interpreter.adaptivePredict(this._input, 129, this._ctx) ) {
+				case 1:
+					{
+					this.state = 967;
 					_localctx._type = this.identifierAtom();
 					}
 					break;
 				}
 				{
-				this.state = 967;
+				this.state = 970;
 				_localctx._name = this.identifierAtom();
 				}
-				this.state = 969;
+				this.state = 972;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				if (_la === Tads3Parser.OPTIONAL) {
 					{
-					this.state = 968;
+					this.state = 971;
 					_localctx._optional = this.match(Tads3Parser.OPTIONAL);
 					}
 				}
@@ -4723,16 +4740,16 @@ export class Tads3Parser extends Parser {
 				this.enterOuterAlt(_localctx, 2);
 				{
 				{
-				this.state = 971;
-				_localctx._identifier = this.identifierAtom();
-				this.state = 972;
-				_localctx._emptyColon = this.match(Tads3Parser.COLON);
 				this.state = 974;
+				_localctx._identifier = this.identifierAtom();
+				this.state = 975;
+				_localctx._emptyColon = this.match(Tads3Parser.COLON);
+				this.state = 977;
 				this._errHandler.sync(this);
 				_la = this._input.LA(1);
 				if (_la === Tads3Parser.OPTIONAL) {
 					{
-					this.state = 973;
+					this.state = 976;
 					_localctx._optional = this.match(Tads3Parser.OPTIONAL);
 					}
 				}
@@ -4745,18 +4762,18 @@ export class Tads3Parser extends Parser {
 				this.enterOuterAlt(_localctx, 3);
 				{
 				{
-				this.state = 976;
+				this.state = 979;
 				_localctx._identifier = this.identifierAtom();
-				this.state = 977;
-				_localctx._emptyColon = this.match(Tads3Parser.COLON);
-				this.state = 978;
-				_localctx._hasDefault = this.match(Tads3Parser.ASSIGN);
 				this.state = 980;
+				_localctx._emptyColon = this.match(Tads3Parser.COLON);
+				this.state = 981;
+				_localctx._hasDefault = this.match(Tads3Parser.ASSIGN);
+				this.state = 983;
 				this._errHandler.sync(this);
-				switch ( this.interpreter.adaptivePredict(this._input, 131, this._ctx) ) {
+				switch ( this.interpreter.adaptivePredict(this._input, 132, this._ctx) ) {
 				case 1:
 					{
-					this.state = 979;
+					this.state = 982;
 					_localctx._defaultValue = this.expr(0);
 					}
 					break;
@@ -4783,7 +4800,7 @@ export class Tads3Parser extends Parser {
 
 	public sempred(_localctx: RuleContext, ruleIndex: number, predIndex: number): boolean {
 		switch (ruleIndex) {
-		case 7:
+		case 6:
 			return this.item_sempred(_localctx as ItemContext, predIndex);
 
 		case 51:
@@ -4801,10 +4818,10 @@ export class Tads3Parser extends Parser {
 	private expr_sempred(_localctx: ExprContext, predIndex: number): boolean {
 		switch (predIndex) {
 		case 1:
-			return this.precpred(this._ctx, 39);
+			return this.precpred(this._ctx, 40);
 
 		case 2:
-			return this.precpred(this._ctx, 37);
+			return this.precpred(this._ctx, 38);
 
 		case 3:
 			return this.precpred(this._ctx, 23);
@@ -4840,34 +4857,34 @@ export class Tads3Parser extends Parser {
 			return this.precpred(this._ctx, 12);
 
 		case 14:
-			return this.precpred(this._ctx, 11);
-
-		case 15:
-			return this.precpred(this._ctx, 10);
-
-		case 16:
 			return this.precpred(this._ctx, 9);
 
-		case 17:
+		case 15:
 			return this.precpred(this._ctx, 8);
 
-		case 18:
+		case 16:
 			return this.precpred(this._ctx, 7);
+
+		case 17:
+			return this.precpred(this._ctx, 6);
+
+		case 18:
+			return this.precpred(this._ctx, 5);
 
 		case 19:
 			return this.precpred(this._ctx, 2);
 
 		case 20:
-			return this.precpred(this._ctx, 38);
+			return this.precpred(this._ctx, 39);
 
 		case 21:
-			return this.precpred(this._ctx, 36);
+			return this.precpred(this._ctx, 37);
 
 		case 22:
-			return this.precpred(this._ctx, 31);
+			return this.precpred(this._ctx, 32);
 
 		case 23:
-			return this.precpred(this._ctx, 30);
+			return this.precpred(this._ctx, 31);
 
 		case 24:
 			return this.precpred(this._ctx, 29);
@@ -4883,7 +4900,7 @@ export class Tads3Parser extends Parser {
 
 	private static readonly _serializedATNSegments: number = 2;
 	private static readonly _serializedATNSegment0: string =
-		"\x03\uC91D\uCABA\u058D\uAFBA\u4F53\u0607\uEA8B\uC241\x03b\u03DB\x04\x02" +
+		"\x03\uC91D\uCABA\u058D\uAFBA\u4F53\u0607\uEA8B\uC241\x03b\u03DE\x04\x02" +
 		"\t\x02\x04\x03\t\x03\x04\x04\t\x04\x04\x05\t\x05\x04\x06\t\x06\x04\x07" +
 		"\t\x07\x04\b\t\b\x04\t\t\t\x04\n\t\n\x04\v\t\v\x04\f\t\f\x04\r\t\r\x04" +
 		"\x0E\t\x0E\x04\x0F\t\x0F\x04\x10\t\x10\x04\x11\t\x11\x04\x12\t\x12\x04" +
@@ -4895,518 +4912,521 @@ export class Tads3Parser extends Parser {
 		"\t4\x045\t5\x046\t6\x047\t7\x048\t8\x049\t9\x03\x02\x07\x02t\n\x02\f\x02" +
 		"\x0E\x02w\v\x02\x03\x02\x03\x02\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03" +
 		"\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\x03\x05\x03\x86\n\x03\x03" +
-		"\x04\x03\x04\x03\x04\x03\x04\x03\x04\x03\x04\x03\x04\x03\x05\x03\x05\x05" +
-		"\x05\x91\n\x05\x03\x05\x03\x05\x03\x05\x03\x05\x03\x05\x03\x05\x05\x05" +
-		"\x99\n\x05\x03\x05\x03\x05\x03\x05\x03\x05\x03\x05\x03\x05\x05\x05\xA1" +
-		"\n\x05\x05\x05\xA3\n\x05\x03\x06\x03\x06\x03\x06\x07\x06\xA8\n\x06\f\x06" +
-		"\x0E\x06\xAB\v\x06\x03\x07\x05\x07\xAE\n\x07\x03\x07\x07\x07\xB1\n\x07" +
-		"\f\x07\x0E\x07\xB4\v\x07\x03\b\x03\b\x03\b\x03\b\x03\b\x03\t\x03\t\x03" +
-		"\t\x06\t\xBE\n\t\r\t\x0E\t\xBF\x03\t\x03\t\x03\t\x03\t\x03\t\x03\t\x05" +
-		"\t\xC8\n\t\x03\t\x03\t\x07\t\xCC\n\t\f\t\x0E\t\xCF\v\t\x03\n\x03\n\x03" +
-		"\n\x03\n\x05\n\xD5\n\n\x06\n\xD7\n\n\r\n\x0E\n\xD8\x03\n\x03\n\x03\n\x03" +
-		"\n\x03\n\x03\n\x03\n\x03\n\x03\n\x07\n\xE4\n\n\f\n\x0E\n\xE7\v\n\x03\n" +
-		"\x03\n\x03\n\x03\n\x05\n\xED\n\n\x03\v\x03\v\x05\v\xF1\n\v\x03\v\x03\v" +
-		"\x03\v\x07\v\xF6\n\v\f\v\x0E\v\xF9\v\v\x03\v\x03\v\x03\f\x07\f\xFE\n\f" +
-		"\f\f\x0E\f\u0101\v\f\x03\f\x03\f\x03\f\x03\f\x07\f\u0107\n\f\f\f\x0E\f" +
-		"\u010A\v\f\x03\f\x03\f\x03\r\x07\r\u010F\n\r\f\r\x0E\r\u0112\v\r\x03\r" +
-		"\x03\r\x05\r\u0116\n\r\x03\r\x03\r\x03\r\x07\r\u011B\n\r\f\r\x0E\r\u011E" +
-		"\v\r\x03\r\x03\r\x03\x0E\x03\x0E\x03\x0E\x05\x0E\u0125\n\x0E\x03\x0E\x03" +
-		"\x0E\x03\x0F\x03\x0F\x05\x0F\u012B\n\x0F\x03\x0F\x05\x0F\u012E\n\x0F\x03" +
-		"\x0F\x05\x0F\u0131\n\x0F\x03\x0F\x03\x0F\x05\x0F\u0135\n\x0F\x03\x0F\x03" +
-		"\x0F\x07\x0F\u0139\n\x0F\f\x0F\x0E\x0F\u013C\v\x0F\x03\x0F\x03\x0F\x03" +
-		"\x10\x05\x10\u0141\n\x10\x03\x10\x03\x10\x03\x10\x05\x10\u0146\n\x10\x03" +
-		"\x10\x03\x10\x03\x10\x03\x10\x03\x11\x05\x11\u014D\n\x11\x03\x11\x05\x11" +
-		"\u0150\n\x11\x03\x11\x05\x11\u0153\n\x11\x05\x11\u0155\n\x11\x03\x11\x07" +
-		"\x11\u0158\n\x11\f\x11\x0E\x11\u015B\v\x11\x03\x11\x03\x11\x05\x11\u015F" +
-		"\n\x11\x03\x11\x03\x11\x03\x11\x03\x11\x05\x11\u0165\n\x11\x03\x11\x03" +
-		"\x11\x05\x11\u0169\n\x11\x03\x12\x03\x12\x05\x12\u016D\n\x12\x03\x12\x03" +
-		"\x12\x03\x12\x03\x12\x05\x12\u0173\n\x12\x03\x12\x03\x12\x03\x12\x05\x12" +
-		"\u0178\n\x12\x03\x12\x03\x12\x03\x12\x05\x12\u017D\n\x12\x03\x12\x03\x12" +
-		"\x03\x12\x03\x12\x05\x12\u0183\n\x12\x03\x12\x05\x12\u0186\n\x12\x03\x13" +
-		"\x03\x13\x03\x13\x07\x13\u018B\n\x13\f\x13\x0E\x13\u018E\v\x13\x03\x14" +
+		"\x04\x03\x04\x03\x04\x03\x04\x03\x04\x03\x04\x03\x04\x03\x05\x03\x05\x03" +
+		"\x05\x07\x05\x92\n\x05\f\x05\x0E\x05\x95\v\x05\x03\x06\x05\x06\x98\n\x06" +
+		"\x03\x06\x07\x06\x9B\n\x06\f\x06\x0E\x06\x9E\v\x06\x03\x07\x03\x07\x03" +
+		"\x07\x03\x07\x03\x07\x03\b\x03\b\x03\b\x06\b\xA8\n\b\r\b\x0E\b\xA9\x03" +
+		"\b\x03\b\x03\b\x03\b\x03\b\x03\b\x05\b\xB2\n\b\x03\b\x03\b\x07\b\xB6\n" +
+		"\b\f\b\x0E\b\xB9\v\b\x03\t\x03\t\x03\t\x03\t\x05\t\xBF\n\t\x06\t\xC1\n" +
+		"\t\r\t\x0E\t\xC2\x03\t\x03\t\x03\t\x03\t\x03\t\x03\t\x03\t\x03\t\x03\t" +
+		"\x07\t\xCE\n\t\f\t\x0E\t\xD1\v\t\x03\t\x03\t\x03\t\x03\t\x05\t\xD7\n\t" +
+		"\x03\n\x03\n\x05\n\xDB\n\n\x03\n\x03\n\x03\n\x07\n\xE0\n\n\f\n\x0E\n\xE3" +
+		"\v\n\x03\n\x03\n\x03\v\x07\v\xE8\n\v\f\v\x0E\v\xEB\v\v\x03\v\x03\v\x03" +
+		"\v\x03\v\x07\v\xF1\n\v\f\v\x0E\v\xF4\v\v\x03\v\x03\v\x03\f\x07\f\xF9\n" +
+		"\f\f\f\x0E\f\xFC\v\f\x03\f\x03\f\x05\f\u0100\n\f\x03\f\x03\f\x03\f\x07" +
+		"\f\u0105\n\f\f\f\x0E\f\u0108\v\f\x03\f\x03\f\x03\r\x03\r\x03\r\x05\r\u010F" +
+		"\n\r\x03\r\x03\r\x03\x0E\x03\x0E\x05\x0E\u0115\n\x0E\x03\x0E\x05\x0E\u0118" +
+		"\n\x0E\x03\x0E\x05\x0E\u011B\n\x0E\x03\x0E\x03\x0E\x05\x0E\u011F\n\x0E" +
+		"\x03\x0E\x03\x0E\x07\x0E\u0123\n\x0E\f\x0E\x0E\x0E\u0126\v\x0E\x03\x0E" +
+		"\x03\x0E\x03\x0F\x05\x0F\u012B\n\x0F\x03\x0F\x03\x0F\x03\x0F\x05\x0F\u0130" +
+		"\n\x0F\x03\x0F\x03\x0F\x03\x0F\x03\x0F\x03\x10\x05\x10\u0137\n\x10\x03" +
+		"\x10\x05\x10\u013A\n\x10\x03\x10\x05\x10\u013D\n\x10\x05\x10\u013F\n\x10" +
+		"\x03\x10\x07\x10\u0142\n\x10\f\x10\x0E\x10\u0145\v\x10\x03\x10\x05\x10" +
+		"\u0148\n\x10\x03\x10\x03\x10\x03\x10\x03\x10\x05\x10\u014E\n\x10\x05\x10" +
+		"\u0150\n\x10\x03\x10\x03\x10\x05\x10\u0154\n\x10\x03\x11\x03\x11\x05\x11" +
+		"\u0158\n\x11\x03\x11\x03\x11\x03\x11\x03\x11\x03\x11\x03\x11\x05\x11\u0160" +
+		"\n\x11\x03\x11\x03\x11\x03\x11\x03\x11\x03\x11\x03\x11\x05\x11\u0168\n" +
+		"\x11\x05\x11\u016A\n\x11\x03\x12\x03\x12\x05\x12\u016E\n\x12\x03\x12\x03" +
+		"\x12\x03\x12\x03\x12\x05\x12\u0174\n\x12\x03\x12\x03\x12\x03\x12\x05\x12" +
+		"\u0179\n\x12\x03\x12\x03\x12\x03\x12\x05\x12\u017E\n\x12\x03\x12\x03\x12" +
+		"\x03\x12\x03\x12\x05\x12\u0184\n\x12\x03\x12\x05\x12\u0187\n\x12\x03\x13" +
+		"\x03\x13\x03\x13\x07\x13\u018C\n\x13\f\x13\x0E\x13\u018F\v\x13\x03\x14" +
 		"\x03\x14\x03\x14\x03\x14\x03\x15\x03\x15\x03\x15\x03\x16\x03\x16\x03\x16" +
-		"\x07\x16\u019A\n\x16\f\x16\x0E\x16\u019D\v\x16\x03\x17\x07\x17\u01A0\n" +
-		"\x17\f\x17\x0E\x17\u01A3\v\x17\x03\x17\x03\x17\x03\x17\x07\x17\u01A8\n" +
-		"\x17\f\x17\x0E\x17\u01AB\v\x17\x03\x18\x03\x18\x03\x18\x05\x18\u01B0\n" +
-		"\x18\x03\x18\x03\x18\x05\x18\u01B4\n\x18\x03\x18\x05\x18\u01B7\n\x18\x03" +
-		"\x18\x03\x18\x05\x18\u01BB\n\x18\x03\x18\x03\x18\x07\x18\u01BF\n\x18\f" +
-		"\x18\x0E\x18\u01C2\v\x18\x03\x18\x03\x18\x05\x18\u01C6\n\x18\x05\x18\u01C8" +
-		"\n\x18\x03\x19\x07\x19\u01CB\n\x19\f\x19\x0E\x19\u01CE\v\x19\x03\x1A\x03" +
-		"\x1A\x03\x1A\x03\x1A\x05\x1A\u01D4\n\x1A\x03\x1A\x03\x1A\x05\x1A\u01D8" +
-		"\n\x1A\x03\x1A\x05\x1A\u01DB\n\x1A\x03\x1A\x03\x1A\x03\x1B\x03\x1B\x05" +
-		"\x1B\u01E1\n\x1B\x03\x1B\x03\x1B\x07\x1B\u01E5\n\x1B\f\x1B\x0E\x1B\u01E8" +
-		"\v\x1B\x03\x1C\x05\x1C\u01EB\n\x1C\x03\x1C\x05\x1C\u01EE\n\x1C\x05\x1C" +
-		"\u01F0\n\x1C\x03\x1C\x03\x1C\x03\x1C\x03\x1C\x05\x1C\u01F6\n\x1C\x03\x1D" +
-		"\x03\x1D\x03\x1D\x03\x1D\x03\x1D\x05\x1D\u01FD\n\x1D\x05\x1D\u01FF\n\x1D" +
-		"\x03\x1D\x03\x1D\x03\x1D\x03\x1D\x03\x1D\x03\x1D\x07\x1D\u0207\n\x1D\f" +
-		"\x1D\x0E\x1D\u020A\v\x1D\x03\x1D\x03\x1D\x03\x1E\x05\x1E\u020F\n\x1E\x03" +
-		"\x1E\x05\x1E\u0212\n\x1E\x03\x1E\x05\x1E\u0215\n\x1E\x03\x1E\x03\x1E\x03" +
-		"\x1E\x05\x1E\u021A\n\x1E\x03\x1E\x05\x1E\u021D\n\x1E\x03\x1E\x03\x1E\x03" +
-		"\x1E\x05\x1E\u0222\n\x1E\x03\x1E\x05\x1E\u0225\n\x1E\x05\x1E\u0227\n\x1E" +
-		"\x03\x1F\x03\x1F\x07\x1F\u022B\n\x1F\f\x1F\x0E\x1F\u022E\v\x1F\x03\x1F" +
-		"\x03\x1F\x05\x1F\u0232\n\x1F\x03 \x03 \x03 \x03 \x03 \x03 \x03 \x03 \x03" +
-		" \x03 \x03 \x03 \x03 \x03 \x03 \x03 \x03 \x03 \x05 \u0246\n \x03!\x03" +
-		"!\x07!\u024A\n!\f!\x0E!\u024D\v!\x03!\x03!\x03\"\x03\"\x05\"\u0253\n\"" +
-		"\x03\"\x03\"\x03#\x03#\x05#\u0259\n#\x03#\x03#\x03$\x03$\x05$\u025F\n" +
+		"\x07\x16\u019B\n\x16\f\x16\x0E\x16\u019E\v\x16\x03\x17\x07\x17\u01A1\n" +
+		"\x17\f\x17\x0E\x17\u01A4\v\x17\x03\x17\x03\x17\x03\x17\x07\x17\u01A9\n" +
+		"\x17\f\x17\x0E\x17\u01AC\v\x17\x03\x18\x03\x18\x03\x18\x05\x18\u01B1\n" +
+		"\x18\x03\x18\x03\x18\x05\x18\u01B5\n\x18\x03\x18\x05\x18\u01B8\n\x18\x03" +
+		"\x18\x03\x18\x05\x18\u01BC\n\x18\x03\x18\x03\x18\x07\x18\u01C0\n\x18\f" +
+		"\x18\x0E\x18\u01C3\v\x18\x03\x18\x03\x18\x05\x18\u01C7\n\x18\x05\x18\u01C9" +
+		"\n\x18\x03\x19\x07\x19\u01CC\n\x19\f\x19\x0E\x19\u01CF\v\x19\x03\x1A\x03" +
+		"\x1A\x03\x1A\x03\x1A\x05\x1A\u01D5\n\x1A\x03\x1A\x03\x1A\x05\x1A\u01D9" +
+		"\n\x1A\x03\x1A\x05\x1A\u01DC\n\x1A\x03\x1A\x03\x1A\x03\x1B\x03\x1B\x05" +
+		"\x1B\u01E2\n\x1B\x03\x1B\x03\x1B\x07\x1B\u01E6\n\x1B\f\x1B\x0E\x1B\u01E9" +
+		"\v\x1B\x03\x1C\x05\x1C\u01EC\n\x1C\x03\x1C\x05\x1C\u01EF\n\x1C\x05\x1C" +
+		"\u01F1\n\x1C\x03\x1C\x03\x1C\x03\x1C\x03\x1C\x05\x1C\u01F7\n\x1C\x03\x1D" +
+		"\x03\x1D\x03\x1D\x03\x1D\x03\x1D\x05\x1D\u01FE\n\x1D\x05\x1D\u0200\n\x1D" +
+		"\x03\x1D\x03\x1D\x03\x1D\x03\x1D\x03\x1D\x03\x1D\x07\x1D\u0208\n\x1D\f" +
+		"\x1D\x0E\x1D\u020B\v\x1D\x03\x1D\x03\x1D\x03\x1E\x05\x1E\u0210\n\x1E\x03" +
+		"\x1E\x05\x1E\u0213\n\x1E\x03\x1E\x05\x1E\u0216\n\x1E\x03\x1E\x03\x1E\x03" +
+		"\x1E\x05\x1E\u021B\n\x1E\x03\x1E\x05\x1E\u021E\n\x1E\x03\x1E\x03\x1E\x03" +
+		"\x1E\x05\x1E\u0223\n\x1E\x03\x1E\x05\x1E\u0226\n\x1E\x05\x1E\u0228\n\x1E" +
+		"\x03\x1F\x03\x1F\x07\x1F\u022C\n\x1F\f\x1F\x0E\x1F\u022F\v\x1F\x03\x1F" +
+		"\x03\x1F\x05\x1F\u0233\n\x1F\x03 \x03 \x03 \x03 \x03 \x03 \x03 \x03 \x03" +
+		" \x03 \x03 \x03 \x03 \x03 \x03 \x03 \x03 \x03 \x05 \u0247\n \x03!\x03" +
+		"!\x07!\u024B\n!\f!\x0E!\u024E\v!\x03!\x03!\x03\"\x03\"\x05\"\u0254\n\"" +
+		"\x03\"\x03\"\x03#\x03#\x05#\u025A\n#\x03#\x03#\x03$\x03$\x05$\u0260\n" +
 		"$\x03$\x03$\x03%\x03%\x03%\x03&\x03&\x03&\x03&\x03&\x03&\x03&\x03&\x05" +
-		"&\u026E\n&\x03&\x03&\x03&\x07&\u0273\n&\f&\x0E&\u0276\v&\x05&\u0278\n" +
-		"&\x07&\u027A\n&\f&\x0E&\u027D\v&\x03&\x03&\x03\'\x03\'\x03\'\x03(\x03" +
+		"&\u026F\n&\x03&\x03&\x03&\x07&\u0274\n&\f&\x0E&\u0277\v&\x05&\u0279\n" +
+		"&\x07&\u027B\n&\f&\x0E&\u027E\v&\x03&\x03&\x03\'\x03\'\x03\'\x03(\x03" +
 		"(\x03(\x03(\x03(\x03(\x03(\x03(\x03(\x03)\x03)\x03)\x03)\x03)\x03)\x03" +
-		")\x03)\x03*\x03*\x05*\u0297\n*\x03*\x03*\x03+\x03+\x03+\x03+\x03+\x05" +
-		"+\u02A0\n+\x03+\x03+\x03,\x03,\x03,\x05,\u02A7\n,\x03,\x03,\x03,\x03-" +
-		"\x03-\x03-\x05-\u02AF\n-\x03-\x03-\x05-\u02B3\n-\x03-\x03-\x05-\u02B7" +
-		"\n-\x03-\x03-\x03-\x03.\x03.\x03.\x03.\x03.\x05.\u02C1\n.\x03.\x03.\x07" +
-		".\u02C5\n.\f.\x0E.\u02C8\v.\x03.\x03.\x05.\u02CC\n.\x03/\x03/\x03/\x05" +
-		"/\u02D1\n/\x030\x050\u02D4\n0\x030\x030\x031\x031\x031\x032\x032\x032" +
-		"\x032\x052\u02DF\n2\x032\x032\x033\x033\x033\x033\x033\x073\u02E8\n3\f" +
-		"3\x0E3\u02EB\v3\x033\x033\x053\u02EF\n3\x034\x034\x034\x034\x034\x035" +
-		"\x035\x035\x055\u02F9\n5\x035\x035\x035\x035\x035\x035\x035\x035\x035" +
-		"\x035\x055\u0305\n5\x035\x035\x035\x035\x035\x035\x035\x035\x035\x055" +
-		"\u0310\n5\x035\x035\x055\u0314\n5\x035\x035\x035\x035\x035\x035\x035\x03" +
-		"5\x035\x055\u031F\n5\x035\x035\x035\x035\x035\x035\x035\x035\x035\x03" +
+		")\x03)\x03*\x03*\x05*\u0298\n*\x03*\x03*\x03+\x03+\x03+\x03+\x03+\x05" +
+		"+\u02A1\n+\x03+\x03+\x03,\x03,\x03,\x05,\u02A8\n,\x03,\x03,\x03,\x03-" +
+		"\x03-\x03-\x05-\u02B0\n-\x03-\x03-\x05-\u02B4\n-\x03-\x03-\x05-\u02B8" +
+		"\n-\x03-\x03-\x03-\x03.\x03.\x03.\x03.\x03.\x05.\u02C2\n.\x03.\x03.\x07" +
+		".\u02C6\n.\f.\x0E.\u02C9\v.\x03.\x03.\x05.\u02CD\n.\x03/\x03/\x03/\x05" +
+		"/\u02D2\n/\x030\x050\u02D5\n0\x030\x030\x031\x031\x031\x032\x032\x032" +
+		"\x032\x052\u02E0\n2\x032\x032\x033\x033\x033\x033\x033\x073\u02E9\n3\f" +
+		"3\x0E3\u02EC\v3\x033\x033\x053\u02F0\n3\x034\x034\x034\x034\x034\x035" +
+		"\x035\x035\x055\u02FA\n5\x035\x035\x035\x035\x035\x035\x035\x035\x035" +
+		"\x035\x035\x035\x055\u0308\n5\x035\x035\x035\x035\x035\x035\x035\x035" +
+		"\x035\x055\u0313\n5\x035\x035\x055\u0317\n5\x035\x035\x035\x035\x035\x03" +
+		"5\x035\x035\x035\x055\u0322\n5\x035\x035\x035\x035\x035\x035\x035\x03" +
 		"5\x035\x035\x035\x035\x035\x035\x035\x035\x035\x035\x035\x035\x035\x03" +
-		"5\x035\x035\x035\x035\x035\x035\x035\x035\x055\u0341\n5\x035\x035\x03" +
-		"5\x035\x035\x035\x035\x055\u034A\n5\x035\x035\x035\x035\x055\u0350\n5" +
-		"\x035\x035\x035\x035\x055\u0356\n5\x035\x035\x035\x035\x035\x035\x035" +
-		"\x035\x035\x035\x055\u0362\n5\x035\x035\x035\x035\x035\x035\x035\x035" +
-		"\x035\x035\x035\x035\x035\x055\u0371\n5\x035\x035\x035\x035\x035\x035" +
-		"\x055\u0379\n5\x035\x035\x035\x065\u037E\n5\r5\x0E5\u037F\x035\x035\x03" +
-		"5\x035\x035\x055\u0387\n5\x035\x035\x035\x035\x055\u038D\n5\x035\x035" +
-		"\x055\u0391\n5\x035\x035\x035\x035\x035\x035\x035\x035\x035\x035\x035" +
-		"\x055\u039E\n5\x075\u03A0\n5\f5\x0E5\u03A3\v5\x036\x036\x036\x036\x03" +
-		"6\x036\x036\x036\x036\x036\x036\x056\u03B0\n6\x037\x037\x038\x038\x03" +
-		"8\x058\u03B7\n8\x038\x038\x058\u03BB\n8\x078\u03BD\n8\f8\x0E8\u03C0\v" +
-		"8\x039\x039\x039\x059\u03C5\n9\x039\x059\u03C8\n9\x039\x039\x059\u03CC" +
-		"\n9\x039\x039\x039\x059\u03D1\n9\x039\x039\x039\x039\x059\u03D7\n9\x05" +
-		"9\u03D9\n9\x039\x02\x02\x04\x10h:\x02\x02\x04\x02\x06\x02\b\x02\n\x02" +
-		"\f\x02\x0E\x02\x10\x02\x12\x02\x14\x02\x16\x02\x18\x02\x1A\x02\x1C\x02" +
-		"\x1E\x02 \x02\"\x02$\x02&\x02(\x02*\x02,\x02.\x020\x022\x024\x026\x02" +
-		"8\x02:\x02<\x02>\x02@\x02B\x02D\x02F\x02H\x02J\x02L\x02N\x02P\x02R\x02" +
-		"T\x02V\x02X\x02Z\x02\\\x02^\x02`\x02b\x02d\x02f\x02h\x02j\x02l\x02n\x02" +
-		"p\x02\x02\x0E\x03\x02ST\x07\x0244669<BBLL\b\x02449<BCLMYY]^\x07\x0234" +
-		"6699<<BB\x04\x0244MM\x03\x02?@\x04\x02:;LL\x04\x0299<<\x04\x02XXZ\\\x03" +
-		"\x02=>\x04\x02YY]^\b\x02%%\'\'**,,22DD\x02\u0479\x02u\x03\x02\x02\x02" +
-		"\x04\x85\x03\x02\x02\x02\x06\x87\x03\x02\x02\x02\b\x90\x03\x02\x02\x02" +
-		"\n\xA4\x03\x02\x02\x02\f\xAD\x03\x02\x02\x02\x0E\xB5\x03\x02\x02\x02\x10" +
-		"\xC7\x03\x02\x02\x02\x12\xEC\x03\x02\x02\x02\x14\xEE\x03\x02\x02\x02\x16" +
-		"\xFF\x03\x02\x02\x02\x18\u0110\x03\x02\x02\x02\x1A\u0121\x03\x02\x02\x02" +
-		"\x1C\u0128\x03\x02\x02\x02\x1E\u0140\x03\x02\x02\x02 \u0154\x03\x02\x02" +
-		"\x02\"\u0182\x03\x02\x02\x02$\u0187\x03\x02\x02\x02&\u018F\x03\x02\x02" +
-		"\x02(\u0193\x03\x02\x02\x02*\u0196\x03\x02\x02\x02,\u01A1\x03\x02\x02" +
-		"\x02.\u01AC\x03\x02\x02\x020\u01CC\x03\x02\x02\x022\u01DA\x03\x02\x02" +
-		"\x024\u01E0\x03\x02\x02\x026\u01F5\x03\x02\x02\x028\u01F7\x03\x02\x02" +
-		"\x02:\u0226\x03\x02\x02\x02<\u0231\x03\x02\x02\x02>\u0245\x03\x02\x02" +
-		"\x02@\u0247\x03\x02\x02\x02B\u0250\x03\x02\x02\x02D\u0256\x03\x02\x02" +
-		"\x02F\u025C\x03\x02\x02\x02H\u0262\x03\x02\x02\x02J\u0265\x03\x02\x02" +
-		"\x02L\u0280\x03\x02\x02\x02N\u0283\x03\x02\x02\x02P\u028C\x03\x02\x02" +
-		"\x02R\u0294\x03\x02\x02\x02T\u029A\x03\x02\x02\x02V\u02A3\x03\x02\x02" +
-		"\x02X\u02AB\x03\x02\x02\x02Z\u02BB\x03\x02\x02\x02\\\u02CD\x03\x02\x02" +
-		"\x02^\u02D3\x03\x02\x02\x02`\u02D7\x03\x02\x02\x02b\u02DA\x03\x02\x02" +
-		"\x02d\u02E2\x03\x02\x02\x02f\u02F0\x03\x02\x02\x02h\u031E\x03\x02\x02" +
-		"\x02j\u03AF\x03\x02\x02\x02l\u03B1\x03\x02\x02\x02n\u03B6\x03\x02\x02" +
-		"\x02p\u03D8\x03\x02\x02\x02rt\x05\x04\x03\x02sr\x03\x02\x02\x02tw\x03" +
-		"\x02\x02\x02us\x03\x02\x02\x02uv\x03\x02\x02\x02vx\x03\x02\x02\x02wu\x03" +
-		"\x02\x02\x02xy\x07\x02\x02\x03y\x03\x03\x02\x02\x02z\x86\x05\x14\v\x02" +
-		"{\x86\x05\x12\n\x02|\x86\x05\x1C\x0F\x02}\x86\x05\x1A\x0E\x02~\x86\x05" +
-		" \x11\x02\x7F\x86\x05\x16\f\x02\x80\x86\x05\x18\r\x02\x81\x86\x056\x1C" +
-		"\x02\x82\x86\x05\b\x05\x02\x83\x86\x05\x06\x04\x02\x84\x86\x07N\x02\x02" +
-		"\x85z\x03\x02\x02\x02\x85{\x03\x02\x02\x02\x85|\x03\x02\x02\x02\x85}\x03" +
-		"\x02\x02\x02\x85~\x03\x02\x02\x02\x85\x7F\x03\x02\x02\x02\x85\x80\x03" +
-		"\x02\x02\x02\x85\x81\x03\x02\x02\x02\x85\x82\x03\x02\x02\x02\x85\x83\x03" +
-		"\x02\x02\x02\x85\x84\x03\x02\x02\x02\x86\x05\x03\x02\x02\x02\x87\x88\x07" +
-		"5\x02\x02\x88\x89\x071\x02\x02\x89\x8A\x07D\x02\x02\x8A\x8B\x07O\x02\x02" +
-		"\x8B\x8C\x05h5\x02\x8C\x8D\x07P\x02\x02\x8D\x07\x03\x02\x02\x02\x8E\x91" +
-		"\x07\x12\x02\x02\x8F\x91\x07\x13\x02\x02\x90\x8E\x03\x02\x02\x02\x90\x8F" +
-		"\x03\x02\x02\x02\x90\x91\x03\x02\x02\x02\x91\x92\x03\x02\x02\x02\x92\x93" +
-		"\x07\x03\x02\x02\x93\x98\x05l7\x02\x94\x95\x07O\x02\x02\x95\x96\x05l7" +
-		"\x02\x96\x97\x07P\x02\x02\x97\x99\x03\x02\x02\x02\x98\x94\x03\x02\x02" +
-		"\x02\x98\x99\x03\x02\x02\x02\x99\x9A\x03\x02\x02\x02\x9A\x9B\x07I\x02" +
-		"\x02\x9B\x9C\x05\n\x06\x02\x9C\xA2\x07I\x02\x02\x9D\xA0\x05*\x16\x02\x9E" +
-		"\xA1\x05&\x14\x02\x9F\xA1\x05(\x15\x02\xA0\x9E\x03\x02\x02\x02\xA0\x9F" +
-		"\x03\x02\x02\x02\xA1\xA3\x03\x02\x02\x02\xA2\x9D\x03\x02\x02\x02\xA2\xA3" +
-		"\x03\x02\x02\x02\xA3\t\x03\x02\x02\x02\xA4\xA9\x05\f\x07\x02\xA5\xA6\x07" +
-		"M\x02\x02\xA6\xA8\x05\f\x07\x02\xA7\xA5\x03\x02\x02\x02\xA8\xAB\x03\x02" +
-		"\x02\x02\xA9\xA7\x03\x02\x02\x02\xA9\xAA\x03\x02\x02\x02\xAA\v\x03\x02" +
-		"\x02\x02\xAB\xA9\x03\x02\x02\x02\xAC\xAE\x05\x0E\b\x02\xAD\xAC\x03\x02" +
-		"\x02\x02\xAD\xAE\x03\x02\x02\x02\xAE\xB2\x03\x02\x02\x02\xAF\xB1\x05\x10" +
-		"\t\x02\xB0\xAF\x03\x02\x02\x02\xB1\xB4\x03\x02\x02\x02\xB2\xB0\x03\x02" +
-		"\x02\x02\xB2\xB3\x03\x02\x02\x02\xB3\r\x03\x02\x02\x02\xB4\xB2\x03\x02" +
-		"\x02\x02\xB5\xB6\x07Q\x02\x02\xB6\xB7\x05l7\x02\xB7\xB8\x07F\x02\x02\xB8" +
-		"\xB9\x07R\x02\x02\xB9\x0F\x03\x02\x02\x02\xBA\xBB\b\t\x01\x02\xBB\xBD" +
-		"\x07O\x02\x02\xBC\xBE\x05\x10\t\x02\xBD\xBC\x03\x02\x02\x02\xBE\xBF\x03" +
-		"\x02\x02\x02\xBF\xBD\x03\x02\x02\x02\xBF\xC0\x03\x02\x02\x02\xC0\xC1\x03" +
-		"\x02\x02\x02\xC1\xC2\x07P\x02\x02\xC2\xC8\x03\x02\x02\x02\xC3\xC4\x07" +
-		"M\x02\x02\xC4\xC8\x05\x10\t\x05\xC5\xC8\x05h5\x02\xC6\xC8\x07L\x02\x02" +
-		"\xC7\xBA\x03\x02\x02\x02\xC7\xC3\x03\x02\x02\x02\xC7\xC5\x03\x02\x02\x02" +
-		"\xC7\xC6\x03\x02\x02\x02\xC8\xCD\x03\x02\x02\x02\xC9\xCA\f\x06\x02\x02" +
-		"\xCA\xCC\x07M\x02\x02\xCB\xC9\x03\x02\x02\x02\xCC\xCF\x03\x02\x02\x02" +
-		"\xCD\xCB\x03\x02\x02\x02\xCD\xCE\x03\x02\x02\x02\xCE\x11\x03\x02\x02\x02" +
-		"\xCF\xCD\x03\x02\x02\x02\xD0\xD1\x05l7\x02\xD1\xD6\x07\n\x02\x02\xD2\xD4" +
-		"\x05h5\x02\xD3\xD5\x077\x02\x02\xD4\xD3\x03\x02\x02\x02\xD4\xD5\x03\x02" +
-		"\x02\x02\xD5\xD7\x03\x02\x02\x02\xD6\xD2\x03\x02\x02\x02\xD7\xD8\x03\x02" +
-		"\x02\x02\xD8\xD6\x03\x02\x02\x02\xD8\xD9\x03\x02\x02\x02\xD9\xDA\x03\x02" +
-		"\x02\x02\xDA\xDB\x07N\x02\x02\xDB\xED\x03\x02\x02\x02\xDC\xDD\x07%\x02" +
-		"\x02\xDD\xDE\x07\n\x02\x02\xDE\xE5\x07Y\x02\x02\xDF\xE4\x05l7\x02\xE0" +
-		"\xE4\x07L\x02\x02\xE1\xE4\x07,\x02\x02\xE2\xE4\x07\'\x02\x02\xE3\xDF\x03" +
-		"\x02\x02\x02\xE3\xE0\x03\x02\x02\x02\xE3\xE1\x03\x02\x02\x02\xE3\xE2\x03" +
-		"\x02\x02\x02\xE4\xE7\x03\x02\x02\x02\xE5\xE3\x03\x02\x02\x02\xE5\xE6\x03" +
-		"\x02\x02\x02\xE6\xE8\x03\x02\x02\x02\xE7\xE5\x03\x02\x02\x02\xE8\xE9\x07" +
-		"]\x02\x02\xE9\xEA\x05l7\x02\xEA\xEB\x07N\x02\x02\xEB\xED\x03\x02\x02\x02" +
-		"\xEC\xD0\x03\x02\x02\x02\xEC\xDC\x03\x02\x02\x02\xED\x13\x03\x02\x02\x02" +
-		"\xEE\xF0\x07\x0F\x02\x02\xEF\xF1\x070\x02\x02\xF0\xEF\x03\x02\x02\x02" +
-		"\xF0\xF1\x03\x02\x02\x02\xF1\xF2\x03\x02\x02\x02\xF2\xF7\x05l7\x02\xF3" +
-		"\xF4\x07J\x02\x02\xF4\xF6\x05l7\x02\xF5\xF3\x03\x02\x02\x02\xF6\xF9\x03" +
-		"\x02\x02\x02\xF7\xF5\x03\x02\x02\x02\xF7\xF8\x03\x02\x02\x02\xF8\xFA\x03" +
-		"\x02\x02\x02\xF9\xF7\x03\x02\x02\x02\xFA\xFB\x07N\x02\x02\xFB\x15\x03" +
-		"\x02\x02\x02\xFC\xFE\x079\x02\x02\xFD\xFC\x03\x02\x02\x02\xFE\u0101\x03" +
-		"\x02\x02\x02\xFF\xFD\x03\x02\x02\x02\xFF\u0100\x03\x02\x02\x02\u0100\u0102" +
-		"\x03\x02\x02\x02\u0101\xFF\x03\x02\x02\x02\u0102\u0103\x07\x1F\x02\x02" +
-		"\u0103\u0108\x05l7\x02\u0104\u0105\x07J\x02\x02\u0105\u0107\x05l7\x02" +
-		"\u0106\u0104\x03\x02\x02\x02\u0107\u010A\x03\x02\x02\x02\u0108\u0106\x03" +
-		"\x02\x02\x02\u0108\u0109\x03\x02\x02\x02\u0109\u010B\x03\x02\x02\x02\u010A" +
-		"\u0108\x03\x02\x02\x02\u010B\u010C\x07N\x02\x02\u010C\x17\x03\x02\x02" +
-		"\x02\u010D\u010F\x079\x02\x02\u010E\u010D\x03\x02\x02\x02\u010F\u0112" +
-		"\x03\x02\x02\x02\u0110\u010E\x03\x02\x02\x02\u0110\u0111\x03\x02\x02\x02" +
-		"\u0111\u0113\x03\x02\x02\x02\u0112\u0110\x03\x02\x02\x02\u0113\u0115\x07" +
-		" \x02\x02\u0114\u0116\x07\x1F\x02\x02\u0115\u0114\x03\x02\x02\x02\u0115" +
-		"\u0116\x03\x02\x02\x02\u0116\u0117\x03\x02\x02\x02\u0117\u011C\x05l7\x02" +
-		"\u0118\u0119\x07J\x02\x02\u0119\u011B\x05l7\x02\u011A\u0118\x03\x02\x02" +
-		"\x02\u011B\u011E\x03\x02\x02\x02\u011C\u011A\x03\x02\x02\x02\u011C\u011D" +
-		"\x03\x02\x02\x02\u011D\u011F\x03\x02\x02\x02\u011E\u011C\x03\x02\x02\x02" +
-		"\u011F\u0120\x07N\x02\x02\u0120\x19\x03\x02\x02\x02\u0121\u0122\x07!\x02" +
-		"\x02\u0122\u0124\x05l7\x02\u0123\u0125\x07T\x02\x02\u0124\u0123\x03\x02" +
-		"\x02\x02\u0124\u0125\x03\x02\x02\x02\u0125\u0126\x03\x02\x02\x02\u0126" +
-		"\u0127\x07N\x02\x02\u0127\x1B\x03\x02\x02\x02\u0128\u012A\x07\x1C\x02" +
-		"\x02\u0129\u012B\x07\x10\x02\x02\u012A\u0129\x03\x02\x02\x02\u012A\u012B" +
-		"\x03\x02\x02\x02\u012B\u012D\x03\x02\x02\x02\u012C\u012E\x05l7\x02\u012D" +
-		"\u012C\x03\x02\x02\x02\u012D\u012E\x03\x02\x02\x02\u012E\u0130\x03\x02" +
-		"\x02\x02\u012F\u0131\t\x02\x02\x02\u0130\u012F\x03\x02\x02\x02\u0130\u0131" +
-		"\x03\x02\x02\x02\u0131\u0134\x03\x02\x02\x02\u0132\u0133\x07I\x02\x02" +
-		"\u0133\u0135\x05*\x16\x02\u0134\u0132\x03\x02\x02\x02\u0134\u0135\x03" +
-		"\x02\x02\x02\u0135\u0136\x03\x02\x02\x02\u0136\u013A\x07V\x02\x02\u0137" +
-		"\u0139\x05\x1E\x10\x02\u0138\u0137\x03\x02\x02\x02\u0139\u013C\x03\x02" +
-		"\x02\x02\u013A\u0138\x03\x02\x02\x02\u013A\u013B\x03\x02\x02\x02\u013B" +
-		"\u013D\x03\x02\x02\x02\u013C\u013A\x03\x02\x02\x02\u013D\u013E\x07W\x02" +
-		"\x02\u013E\x1D\x03\x02\x02\x02\u013F\u0141\x07$\x02\x02\u0140\u013F\x03" +
-		"\x02\x02\x02\u0140\u0141\x03\x02\x02\x02\u0141\u0142\x03\x02\x02\x02\u0142" +
-		"\u0143\x05l7\x02\u0143\u0145\x07O\x02\x02\u0144\u0146\x05n8\x02\u0145" +
-		"\u0144\x03\x02\x02\x02\u0145\u0146\x03\x02\x02\x02\u0146\u0147\x03\x02" +
-		"\x02\x02\u0147\u0148\x07P\x02\x02\u0148\u0149\x03\x02\x02\x02\u0149\u014A" +
-		"\x07N\x02\x02\u014A\x1F\x03\x02\x02\x02\u014B\u014D\x07\x12\x02\x02\u014C" +
-		"\u014B\x03\x02\x02\x02\u014C\u014D\x03\x02\x02\x02\u014D\u0155\x03\x02" +
-		"\x02\x02\u014E\u0150\x07\x13\x02\x02\u014F\u014E\x03\x02\x02\x02\u014F" +
-		"\u0150\x03\x02\x02\x02\u0150\u0155\x03\x02\x02\x02\u0151\u0153\x07\x10" +
-		"\x02\x02\u0152\u0151\x03\x02\x02\x02\u0152\u0153\x03\x02\x02\x02\u0153" +
-		"\u0155\x03\x02\x02\x02\u0154\u014C\x03\x02\x02\x02\u0154\u014F\x03\x02" +
-		"\x02\x02\u0154\u0152\x03\x02\x02\x02\u0155\u0159\x03\x02\x02\x02\u0156" +
-		"\u0158\x079\x02\x02\u0157\u0156\x03\x02\x02\x02\u0158\u015B\x03\x02\x02" +
-		"\x02\u0159\u0157\x03\x02\x02\x02\u0159\u015A\x03\x02\x02\x02\u015A\u0164" +
-		"\x03\x02\x02\x02\u015B\u0159\x03\x02\x02\x02\u015C\u0165\x05*\x16\x02" +
-		"\u015D\u015F\x07\x11\x02\x02\u015E\u015D\x03\x02\x02\x02\u015E\u015F\x03" +
-		"\x02\x02\x02\u015F\u0160\x03\x02\x02\x02\u0160\u0161\x05l7\x02\u0161\u0162" +
-		"\x07I\x02\x02\u0162\u0163\x05*\x16\x02\u0163\u0165\x03\x02\x02\x02\u0164" +
-		"\u015C\x03\x02\x02\x02\u0164\u015E\x03\x02\x02\x02\u0165\u0168\x03\x02" +
-		"\x02\x02\u0166\u0169\x05&\x14\x02\u0167\u0169\x05(\x15\x02\u0168\u0166" +
-		"\x03\x02\x02\x02\u0168\u0167\x03\x02\x02\x02\u0169!\x03\x02\x02\x02\u016A" +
-		"\u016C\x07T\x02\x02\u016B\u016D\x07N\x02\x02\u016C\u016B\x03\x02\x02\x02" +
-		"\u016C\u016D\x03\x02\x02\x02\u016D\u0183\x03\x02\x02\x02\u016E\u016F\x07" +
-		"3\x02\x02\u016F\u0183\x05h5\x02\u0170\u0172\x07S\x02\x02\u0171\u0173\x07" +
-		"N\x02\x02\u0172\u0171\x03\x02\x02\x02\u0172\u0173\x03\x02\x02\x02\u0173" +
-		"\u0183\x03\x02\x02\x02\u0174\u0177\t\x03\x02\x02\u0175\u0178\x05l7\x02" +
-		"\u0176\u0178\x05h5\x02\u0177\u0175\x03\x02\x02\x02\u0177\u0176\x03\x02" +
-		"\x02\x02\u0178\u0183\x03\x02\x02\x02\u0179\u017C\x07A\x02\x02\u017A\u017D" +
-		"\x05l7\x02\u017B\u017D\x05h5\x02\u017C\u017A\x03\x02\x02\x02\u017C\u017B" +
-		"\x03\x02\x02\x02\u017D\u0183\x03\x02\x02\x02\u017E\u017F\x07Q\x02\x02" +
-		"\u017F\u0180\x05$\x13\x02\u0180\u0181\x07R\x02\x02\u0181\u0183\x03\x02" +
-		"\x02\x02\u0182\u016A\x03\x02\x02\x02\u0182\u016E\x03\x02\x02\x02\u0182" +
-		"\u0170\x03\x02\x02\x02\u0182\u0174\x03\x02\x02\x02\u0182\u0179\x03\x02" +
-		"\x02\x02\u0182\u017E\x03\x02\x02\x02\u0183\u0185\x03\x02\x02\x02\u0184" +
-		"\u0186\x077\x02\x02\u0185\u0184\x03\x02\x02\x02\u0185\u0186\x03\x02\x02" +
-		"\x02\u0186#\x03\x02\x02\x02\u0187\u018C\x05h5\x02\u0188\u0189\x07J\x02" +
-		"\x02\u0189\u018B\x05$\x13\x02\u018A\u0188\x03\x02\x02\x02\u018B\u018E" +
-		"\x03\x02\x02\x02\u018C\u018A\x03\x02\x02\x02\u018C\u018D\x03\x02\x02\x02" +
-		"\u018D%\x03\x02\x02\x02\u018E\u018C\x03\x02\x02\x02\u018F\u0190\x07V\x02" +
-		"\x02\u0190\u0191\x05,\x17\x02\u0191\u0192\x07W\x02\x02\u0192\'\x03\x02" +
-		"\x02\x02\u0193\u0194\x05,\x17\x02\u0194\u0195\x07N\x02\x02\u0195)\x03" +
-		"\x02\x02\x02\u0196\u019B\x05l7\x02\u0197\u0198\x07J\x02\x02\u0198\u019A" +
-		"\x05*\x16\x02\u0199\u0197\x03\x02\x02\x02\u019A\u019D\x03\x02\x02\x02" +
-		"\u019B\u0199\x03\x02\x02\x02\u019B\u019C\x03\x02\x02\x02\u019C+\x03\x02" +
-		"\x02\x02\u019D\u019B\x03\x02\x02\x02\u019E\u01A0\x05\"\x12\x02\u019F\u019E" +
-		"\x03\x02\x02\x02\u01A0\u01A3\x03\x02\x02\x02\u01A1\u019F\x03\x02\x02\x02" +
-		"\u01A1\u01A2\x03\x02\x02\x02\u01A2\u01A9\x03\x02\x02\x02\u01A3\u01A1\x03" +
-		"\x02\x02\x02\u01A4\u01A8\x056\x1C\x02\u01A5\u01A8\x05.\x18\x02\u01A6\u01A8" +
-		"\x052\x1A\x02\u01A7\u01A4\x03\x02\x02\x02\u01A7\u01A5\x03\x02\x02\x02" +
-		"\u01A7\u01A6\x03\x02\x02\x02\u01A8\u01AB\x03\x02\x02\x02\u01A9\u01A7\x03" +
-		"\x02\x02\x02\u01A9\u01AA\x03\x02\x02\x02\u01AA-\x03\x02\x02\x02\u01AB";
+		"5\x035\x035\x035\x035\x035\x035\x035\x035\x035\x035\x055\u0344\n5\x03" +
+		"5\x035\x035\x035\x035\x035\x035\x055\u034D\n5\x035\x035\x035\x035\x03" +
+		"5\x035\x035\x055\u0356\n5\x035\x035\x035\x035\x055\u035C\n5\x035\x035" +
+		"\x035\x035\x035\x035\x035\x035\x035\x035\x055\u0368\n5\x035\x035\x035" +
+		"\x035\x035\x035\x035\x035\x035\x035\x055\u0374\n5\x035\x035\x035\x035" +
+		"\x035\x035\x055\u037C\n5\x035\x035\x035\x065\u0381\n5\r5\x0E5\u0382\x03" +
+		"5\x035\x035\x035\x035\x055\u038A\n5\x035\x035\x035\x035\x055\u0390\n5" +
+		"\x035\x035\x055\u0394\n5\x035\x035\x035\x035\x035\x035\x035\x035\x035" +
+		"\x035\x035\x055\u03A1\n5\x075\u03A3\n5\f5\x0E5\u03A6\v5\x036\x036\x03" +
+		"6\x036\x036\x036\x036\x036\x036\x036\x036\x056\u03B3\n6\x037\x037\x03" +
+		"8\x038\x038\x058\u03BA\n8\x038\x038\x058\u03BE\n8\x078\u03C0\n8\f8\x0E" +
+		"8\u03C3\v8\x039\x039\x039\x059\u03C8\n9\x039\x059\u03CB\n9\x039\x039\x05" +
+		"9\u03CF\n9\x039\x039\x039\x059\u03D4\n9\x039\x039\x039\x039\x059\u03DA" +
+		"\n9\x059\u03DC\n9\x039\x02\x02\x04\x0Eh:\x02\x02\x04\x02\x06\x02\b\x02" +
+		"\n\x02\f\x02\x0E\x02\x10\x02\x12\x02\x14\x02\x16\x02\x18\x02\x1A\x02\x1C" +
+		"\x02\x1E\x02 \x02\"\x02$\x02&\x02(\x02*\x02,\x02.\x020\x022\x024\x026" +
+		"\x028\x02:\x02<\x02>\x02@\x02B\x02D\x02F\x02H\x02J\x02L\x02N\x02P\x02" +
+		"R\x02T\x02V\x02X\x02Z\x02\\\x02^\x02`\x02b\x02d\x02f\x02h\x02j\x02l\x02" +
+		"n\x02p\x02\x02\x0E\x03\x02ST\x07\x0244669<ABLL\b\x02449<BCLMYY]^\b\x02" +
+		"346699<<BBLL\x04\x0244MM\x03\x02?@\x04\x02:;LL\x04\x0299<<\x04\x02XXZ" +
+		"\\\x03\x02=>\x04\x02YY]^\b\x02%%\'\'**,,22DD\x02\u047E\x02u\x03\x02\x02" +
+		"\x02\x04\x85\x03\x02\x02\x02\x06\x87\x03\x02\x02\x02\b\x8E\x03\x02\x02" +
+		"\x02\n\x97\x03\x02\x02\x02\f\x9F\x03\x02\x02\x02\x0E\xB1\x03\x02\x02\x02" +
+		"\x10\xD6\x03\x02\x02\x02\x12\xD8\x03\x02\x02\x02\x14\xE9\x03\x02\x02\x02" +
+		"\x16\xFA\x03\x02\x02\x02\x18\u010B\x03\x02\x02\x02\x1A\u0112\x03\x02\x02" +
+		"\x02\x1C\u012A\x03\x02\x02\x02\x1E\u013E\x03\x02\x02\x02 \u0157\x03\x02" +
+		"\x02\x02\"\u0183\x03\x02\x02\x02$\u0188\x03\x02\x02\x02&\u0190\x03\x02" +
+		"\x02\x02(\u0194\x03\x02\x02\x02*\u0197\x03\x02\x02\x02,\u01A2\x03\x02" +
+		"\x02\x02.\u01AD\x03\x02\x02\x020\u01CD\x03\x02\x02\x022\u01DB\x03\x02" +
+		"\x02\x024\u01E1\x03\x02\x02\x026\u01F6\x03\x02\x02\x028\u01F8\x03\x02" +
+		"\x02\x02:\u0227\x03\x02\x02\x02<\u0232\x03\x02\x02\x02>\u0246\x03\x02" +
+		"\x02\x02@\u0248\x03\x02\x02\x02B\u0251\x03\x02\x02\x02D\u0257\x03\x02" +
+		"\x02\x02F\u025D\x03\x02\x02\x02H\u0263\x03\x02\x02\x02J\u0266\x03\x02" +
+		"\x02\x02L\u0281\x03\x02\x02\x02N\u0284\x03\x02\x02\x02P\u028D\x03\x02" +
+		"\x02\x02R\u0295\x03\x02\x02\x02T\u029B\x03\x02\x02\x02V\u02A4\x03\x02" +
+		"\x02\x02X\u02AC\x03\x02\x02\x02Z\u02BC\x03\x02\x02\x02\\\u02CE\x03\x02" +
+		"\x02\x02^\u02D4\x03\x02\x02\x02`\u02D8\x03\x02\x02\x02b\u02DB\x03\x02" +
+		"\x02\x02d\u02E3\x03\x02\x02\x02f\u02F1\x03\x02\x02\x02h\u0321\x03\x02" +
+		"\x02\x02j\u03B2\x03\x02\x02\x02l\u03B4\x03\x02\x02\x02n\u03B9\x03\x02" +
+		"\x02\x02p\u03DB\x03\x02\x02\x02rt\x05\x04\x03\x02sr\x03\x02\x02\x02tw" +
+		"\x03\x02\x02\x02us\x03\x02\x02\x02uv\x03\x02\x02\x02vx\x03\x02\x02\x02" +
+		"wu\x03\x02\x02\x02xy\x07\x02\x02\x03y\x03\x03\x02\x02\x02z\x86\x05\x12" +
+		"\n\x02{\x86\x05\x10\t\x02|\x86\x05\x1A\x0E\x02}\x86\x05\x18\r\x02~\x86" +
+		"\x05\x1E\x10\x02\x7F\x86\x05\x14\v\x02\x80\x86\x05\x16\f\x02\x81\x86\x05" +
+		"6\x1C\x02\x82\x86\x05 \x11\x02\x83\x86\x05\x06\x04\x02\x84\x86\x07N\x02" +
+		"\x02\x85z\x03\x02\x02\x02\x85{\x03\x02\x02\x02\x85|\x03\x02\x02\x02\x85" +
+		"}\x03\x02\x02\x02\x85~\x03\x02\x02\x02\x85\x7F\x03\x02\x02\x02\x85\x80" +
+		"\x03\x02\x02\x02\x85\x81\x03\x02\x02\x02\x85\x82\x03\x02\x02\x02\x85\x83" +
+		"\x03\x02\x02\x02\x85\x84\x03\x02\x02\x02\x86\x05\x03\x02\x02\x02\x87\x88" +
+		"\x075\x02\x02\x88\x89\x071\x02\x02\x89\x8A\x07D\x02\x02\x8A\x8B\x07O\x02" +
+		"\x02\x8B\x8C\x05h5\x02\x8C\x8D\x07P\x02\x02\x8D\x07\x03\x02\x02\x02\x8E" +
+		"\x93\x05\n\x06\x02\x8F\x90\x07M\x02\x02\x90\x92\x05\n\x06\x02\x91\x8F" +
+		"\x03\x02\x02\x02\x92\x95\x03\x02\x02\x02\x93\x91\x03\x02\x02\x02\x93\x94" +
+		"\x03\x02\x02\x02\x94\t\x03\x02\x02\x02\x95\x93\x03\x02\x02\x02\x96\x98" +
+		"\x05\f\x07\x02\x97\x96\x03\x02\x02\x02\x97\x98\x03\x02\x02\x02\x98\x9C" +
+		"\x03\x02\x02\x02\x99\x9B\x05\x0E\b\x02\x9A\x99\x03\x02\x02\x02\x9B\x9E" +
+		"\x03\x02\x02\x02\x9C\x9A\x03\x02\x02\x02\x9C\x9D\x03\x02\x02\x02\x9D\v" +
+		"\x03\x02\x02\x02\x9E\x9C\x03\x02\x02\x02\x9F\xA0\x07Q\x02\x02\xA0\xA1" +
+		"\x05l7\x02\xA1\xA2\x07F\x02\x02\xA2\xA3\x07R\x02\x02\xA3\r\x03\x02\x02" +
+		"\x02\xA4\xA5\b\b\x01\x02\xA5\xA7\x07O\x02\x02\xA6\xA8\x05\x0E\b\x02\xA7" +
+		"\xA6\x03\x02\x02\x02\xA8\xA9\x03\x02\x02\x02\xA9\xA7\x03\x02\x02\x02\xA9" +
+		"\xAA\x03\x02\x02\x02\xAA\xAB\x03\x02\x02\x02\xAB\xAC\x07P\x02\x02\xAC" +
+		"\xB2\x03\x02\x02\x02\xAD\xAE\x07M\x02\x02\xAE\xB2\x05\x0E\b\x05\xAF\xB2" +
+		"\x05h5\x02\xB0\xB2\x07L\x02\x02\xB1\xA4\x03\x02\x02\x02\xB1\xAD\x03\x02" +
+		"\x02\x02\xB1\xAF\x03\x02\x02\x02\xB1\xB0\x03\x02\x02\x02\xB2\xB7\x03\x02" +
+		"\x02\x02\xB3\xB4\f\x06\x02\x02\xB4\xB6\x07M\x02\x02\xB5\xB3\x03\x02\x02" +
+		"\x02\xB6\xB9\x03\x02\x02\x02\xB7\xB5\x03\x02\x02\x02\xB7\xB8\x03\x02\x02" +
+		"\x02\xB8\x0F\x03\x02\x02\x02\xB9\xB7\x03\x02\x02\x02\xBA\xBB\x05l7\x02" +
+		"\xBB\xC0\x07\n\x02\x02\xBC\xBE\x05h5\x02\xBD\xBF\x077\x02\x02\xBE\xBD" +
+		"\x03\x02\x02\x02\xBE\xBF\x03\x02\x02\x02\xBF\xC1\x03\x02\x02\x02\xC0\xBC" +
+		"\x03\x02\x02\x02\xC1\xC2\x03\x02\x02\x02\xC2\xC0\x03\x02\x02\x02\xC2\xC3" +
+		"\x03\x02\x02\x02\xC3\xC4\x03\x02\x02\x02\xC4\xC5\x07N\x02\x02\xC5\xD7" +
+		"\x03\x02\x02\x02\xC6\xC7\x07%\x02\x02\xC7\xC8\x07\n\x02\x02\xC8\xCF\x07" +
+		"Y\x02\x02\xC9\xCE\x05l7\x02\xCA\xCE\x07L\x02\x02\xCB\xCE\x07,\x02\x02" +
+		"\xCC\xCE\x07\'\x02\x02\xCD\xC9\x03\x02\x02\x02\xCD\xCA\x03\x02\x02\x02" +
+		"\xCD\xCB\x03\x02\x02\x02\xCD\xCC\x03\x02\x02\x02\xCE\xD1\x03\x02\x02\x02" +
+		"\xCF\xCD\x03\x02\x02\x02\xCF\xD0\x03\x02\x02\x02\xD0\xD2\x03\x02\x02\x02" +
+		"\xD1\xCF\x03\x02\x02\x02\xD2\xD3\x07]\x02\x02\xD3\xD4\x05l7\x02\xD4\xD5" +
+		"\x07N\x02\x02\xD5\xD7\x03\x02\x02\x02\xD6\xBA\x03\x02\x02\x02\xD6\xC6" +
+		"\x03\x02\x02\x02\xD7\x11\x03\x02\x02\x02\xD8\xDA\x07\x0F\x02\x02\xD9\xDB" +
+		"\x070\x02\x02\xDA\xD9\x03\x02\x02\x02\xDA\xDB\x03\x02\x02\x02\xDB\xDC" +
+		"\x03\x02\x02\x02\xDC\xE1\x05l7\x02\xDD\xDE\x07J\x02\x02\xDE\xE0\x05l7" +
+		"\x02\xDF\xDD\x03\x02\x02\x02\xE0\xE3\x03\x02\x02\x02\xE1\xDF\x03\x02\x02" +
+		"\x02\xE1\xE2\x03\x02\x02\x02\xE2\xE4\x03\x02\x02\x02\xE3\xE1\x03\x02\x02" +
+		"\x02\xE4\xE5\x07N\x02\x02\xE5\x13\x03\x02\x02\x02\xE6\xE8\x079\x02\x02" +
+		"\xE7\xE6\x03\x02\x02\x02\xE8\xEB\x03\x02\x02\x02\xE9\xE7\x03\x02\x02\x02" +
+		"\xE9\xEA\x03\x02\x02\x02\xEA\xEC\x03\x02\x02\x02\xEB\xE9\x03\x02\x02\x02" +
+		"\xEC\xED\x07\x1F\x02\x02\xED\xF2\x05l7\x02\xEE\xEF\x07J\x02\x02\xEF\xF1" +
+		"\x05l7\x02\xF0\xEE\x03\x02\x02\x02\xF1\xF4\x03\x02\x02\x02\xF2\xF0\x03" +
+		"\x02\x02\x02\xF2\xF3\x03\x02\x02\x02\xF3\xF5\x03\x02\x02\x02\xF4\xF2\x03" +
+		"\x02\x02\x02\xF5\xF6\x07N\x02\x02\xF6\x15\x03\x02\x02\x02\xF7\xF9\x07" +
+		"9\x02\x02\xF8\xF7\x03\x02\x02\x02\xF9\xFC\x03\x02\x02\x02\xFA\xF8\x03" +
+		"\x02\x02\x02\xFA\xFB\x03\x02\x02\x02\xFB\xFD\x03\x02\x02\x02\xFC\xFA\x03" +
+		"\x02\x02\x02\xFD\xFF\x07 \x02\x02\xFE\u0100\x07\x1F\x02\x02\xFF\xFE\x03" +
+		"\x02\x02\x02\xFF\u0100\x03\x02\x02\x02\u0100\u0101\x03\x02\x02\x02\u0101" +
+		"\u0106\x05l7\x02\u0102\u0103\x07J\x02\x02\u0103\u0105\x05l7\x02\u0104" +
+		"\u0102\x03\x02\x02\x02\u0105\u0108\x03\x02\x02\x02\u0106\u0104\x03\x02" +
+		"\x02\x02\u0106\u0107\x03\x02\x02\x02\u0107\u0109\x03\x02\x02\x02\u0108" +
+		"\u0106\x03\x02\x02\x02\u0109\u010A\x07N\x02\x02\u010A\x17\x03\x02\x02" +
+		"\x02\u010B\u010C\x07!\x02\x02\u010C\u010E\x05l7\x02\u010D\u010F\x07T\x02" +
+		"\x02\u010E\u010D\x03\x02\x02\x02\u010E\u010F\x03\x02\x02\x02\u010F\u0110" +
+		"\x03\x02\x02\x02\u0110\u0111\x07N\x02\x02\u0111\x19\x03\x02\x02\x02\u0112" +
+		"\u0114\x07\x1C\x02\x02\u0113\u0115\x07\x10\x02\x02\u0114\u0113\x03\x02" +
+		"\x02\x02\u0114\u0115\x03\x02\x02\x02\u0115\u0117\x03\x02\x02\x02\u0116" +
+		"\u0118\x05l7\x02\u0117\u0116\x03\x02\x02\x02\u0117\u0118\x03\x02\x02\x02" +
+		"\u0118\u011A\x03\x02\x02\x02\u0119\u011B\t\x02\x02\x02\u011A\u0119\x03" +
+		"\x02\x02\x02\u011A\u011B\x03\x02\x02\x02\u011B\u011E\x03\x02\x02\x02\u011C" +
+		"\u011D\x07I\x02\x02\u011D\u011F\x05*\x16\x02\u011E\u011C\x03\x02\x02\x02" +
+		"\u011E\u011F\x03\x02\x02\x02\u011F\u0120\x03\x02\x02\x02\u0120\u0124\x07" +
+		"V\x02\x02\u0121\u0123\x05\x1C\x0F\x02\u0122\u0121\x03\x02\x02\x02\u0123" +
+		"\u0126\x03\x02\x02\x02\u0124\u0122\x03\x02\x02\x02\u0124\u0125\x03\x02" +
+		"\x02\x02\u0125\u0127\x03\x02\x02\x02\u0126\u0124\x03\x02\x02\x02\u0127" +
+		"\u0128\x07W\x02\x02\u0128\x1B\x03\x02\x02\x02\u0129\u012B\x07$\x02\x02" +
+		"\u012A\u0129\x03\x02\x02\x02\u012A\u012B\x03\x02\x02\x02\u012B\u012C\x03" +
+		"\x02\x02\x02\u012C\u012D\x05l7\x02\u012D\u012F\x07O\x02\x02\u012E\u0130" +
+		"\x05n8\x02\u012F\u012E\x03\x02\x02\x02\u012F\u0130\x03\x02\x02\x02\u0130" +
+		"\u0131\x03\x02\x02\x02\u0131\u0132\x07P\x02\x02\u0132\u0133\x03\x02\x02" +
+		"\x02\u0133\u0134\x07N\x02\x02\u0134\x1D\x03\x02\x02\x02\u0135\u0137\x07" +
+		"\x10\x02\x02\u0136\u0135\x03\x02\x02\x02\u0136\u0137\x03\x02\x02\x02\u0137" +
+		"\u013F\x03\x02\x02\x02\u0138\u013A\x07\x12\x02\x02\u0139\u0138\x03\x02" +
+		"\x02\x02\u0139\u013A\x03\x02\x02\x02\u013A\u013F\x03\x02\x02\x02\u013B" +
+		"\u013D\x07\x13\x02\x02\u013C\u013B\x03\x02\x02\x02\u013C\u013D\x03\x02" +
+		"\x02\x02\u013D\u013F\x03\x02\x02\x02\u013E\u0136\x03\x02\x02\x02\u013E" +
+		"\u0139\x03\x02\x02\x02\u013E\u013C\x03\x02\x02\x02\u013F\u0143\x03\x02" +
+		"\x02\x02\u0140\u0142\x079\x02\x02\u0141\u0140\x03\x02\x02\x02\u0142\u0145" +
+		"\x03\x02\x02\x02\u0143\u0141\x03\x02\x02\x02\u0143\u0144\x03\x02\x02\x02" +
+		"\u0144\u0147\x03\x02\x02\x02\u0145\u0143\x03\x02\x02\x02\u0146\u0148\x07" +
+		"\x11\x02\x02\u0147\u0146\x03\x02\x02\x02\u0147\u0148\x03\x02\x02\x02\u0148" +
+		"\u014F\x03\x02\x02\x02\u0149\u0150\x05*\x16\x02\u014A\u014D\x05l7\x02" +
+		"\u014B\u014C\x07I\x02\x02\u014C\u014E\x05*\x16\x02\u014D\u014B\x03\x02" +
+		"\x02\x02\u014D\u014E\x03\x02\x02\x02\u014E\u0150\x03\x02\x02\x02\u014F" +
+		"\u0149\x03\x02\x02\x02\u014F\u014A\x03\x02\x02\x02\u0150\u0153\x03\x02" +
+		"\x02\x02\u0151\u0154\x05&\x14\x02\u0152\u0154\x05(\x15\x02\u0153\u0151" +
+		"\x03\x02\x02\x02\u0153\u0152\x03\x02\x02\x02\u0154\x1F\x03\x02\x02\x02" +
+		"\u0155\u0158\x07\x12\x02\x02\u0156\u0158\x07\x13\x02\x02\u0157\u0155\x03" +
+		"\x02\x02\x02\u0157\u0156\x03\x02\x02\x02\u0157\u0158\x03\x02\x02\x02\u0158" +
+		"\u0159\x03\x02\x02\x02\u0159\u015A\x07\x03\x02\x02\u015A\u015F\x05l7\x02" +
+		"\u015B\u015C\x07O\x02\x02\u015C\u015D\x05l7\x02\u015D\u015E\x07P\x02\x02" +
+		"\u015E\u0160\x03\x02\x02\x02\u015F\u015B\x03\x02\x02\x02\u015F\u0160\x03" +
+		"\x02\x02\x02\u0160\u0161\x03\x02\x02\x02\u0161\u0162\x07I\x02\x02\u0162" +
+		"\u0163\x05\b\x05\x02\u0163\u0169\x07I\x02\x02\u0164\u0167\x05*\x16\x02" +
+		"\u0165\u0168\x05&\x14\x02\u0166\u0168\x05(\x15\x02\u0167\u0165\x03\x02" +
+		"\x02\x02\u0167\u0166\x03\x02\x02\x02\u0168\u016A\x03\x02\x02\x02\u0169" +
+		"\u0164\x03\x02\x02\x02\u0169\u016A\x03\x02\x02\x02\u016A!\x03\x02\x02" +
+		"\x02\u016B\u016D\x07T\x02\x02\u016C\u016E\x07N\x02\x02\u016D\u016C\x03" +
+		"\x02\x02\x02\u016D\u016E\x03\x02\x02\x02\u016E\u0184\x03\x02\x02\x02\u016F" +
+		"\u0170\x073\x02\x02\u0170\u0184\x05h5\x02\u0171\u0173\x07S\x02\x02\u0172" +
+		"\u0174\x07N\x02\x02\u0173\u0172\x03\x02\x02\x02\u0173\u0174\x03\x02\x02" +
+		"\x02\u0174\u0184\x03\x02\x02\x02\u0175\u0178\x07A\x02\x02\u0176\u0179" +
+		"\x05l7\x02\u0177\u0179\x05h5\x02\u0178\u0176\x03\x02\x02\x02\u0178\u0177" +
+		"\x03\x02\x02\x02\u0179\u0184\x03\x02\x02\x02\u017A\u017D\t\x03\x02\x02" +
+		"\u017B\u017E\x05l7\x02\u017C\u017E\x05h5\x02\u017D\u017B\x03\x02\x02\x02" +
+		"\u017D\u017C\x03\x02\x02\x02\u017E\u0184\x03\x02\x02\x02\u017F\u0180\x07" +
+		"Q\x02\x02\u0180\u0181\x05$\x13\x02\u0181\u0182\x07R\x02\x02\u0182\u0184" +
+		"\x03\x02\x02\x02\u0183\u016B\x03\x02\x02\x02\u0183\u016F\x03\x02\x02\x02" +
+		"\u0183\u0171\x03\x02\x02\x02\u0183\u0175\x03\x02\x02\x02\u0183\u017A\x03" +
+		"\x02\x02\x02\u0183\u017F\x03\x02\x02\x02\u0184\u0186\x03\x02\x02\x02\u0185" +
+		"\u0187\x077\x02\x02\u0186\u0185\x03\x02\x02\x02\u0186\u0187\x03\x02\x02" +
+		"\x02\u0187#\x03\x02\x02\x02\u0188\u018D\x05h5\x02\u0189\u018A\x07J\x02" +
+		"\x02\u018A\u018C\x05$\x13\x02\u018B\u0189\x03\x02\x02\x02\u018C\u018F" +
+		"\x03\x02\x02\x02\u018D\u018B\x03\x02\x02\x02\u018D\u018E\x03\x02\x02\x02" +
+		"\u018E%\x03\x02\x02\x02\u018F\u018D\x03\x02\x02\x02\u0190\u0191\x07V\x02" +
+		"\x02\u0191\u0192\x05,\x17\x02\u0192\u0193\x07W\x02\x02\u0193\'\x03\x02" +
+		"\x02\x02\u0194\u0195\x05,\x17\x02\u0195\u0196\x07N\x02\x02\u0196)\x03" +
+		"\x02\x02\x02\u0197\u019C\x05l7\x02\u0198\u0199\x07J\x02\x02\u0199\u019B" +
+		"\x05*\x16\x02\u019A\u0198\x03\x02\x02\x02\u019B\u019E\x03\x02\x02\x02" +
+		"\u019C\u019A\x03\x02\x02\x02\u019C\u019D\x03\x02\x02\x02\u019D+\x03\x02" +
+		"\x02\x02\u019E\u019C\x03\x02\x02\x02\u019F\u01A1\x05\"\x12\x02\u01A0\u019F" +
+		"\x03\x02\x02\x02\u01A1\u01A4\x03\x02\x02\x02\u01A2\u01A0\x03\x02\x02\x02" +
+		"\u01A2\u01A3\x03\x02\x02\x02\u01A3\u01AA\x03\x02\x02\x02\u01A4\u01A2\x03" +
+		"\x02\x02\x02\u01A5\u01A9\x056\x1C\x02\u01A6\u01A9\x05.\x18\x02\u01A7\u01A9" +
+		"\x052\x1A\x02\u01A8\u01A5\x03\x02\x02\x02\u01A8\u01A6\x03\x02\x02\x02" +
+		"\u01A8\u01A7\x03\x02\x02\x02\u01A9\u01AC\x03\x02";
 	private static readonly _serializedATNSegment1: string =
-		"\u01A9\x03\x02\x02\x02\u01AC\u01C7\x05l7\x02\u01AD\u01AF\x07E\x02\x02" +
-		"\u01AE\u01B0\x07$\x02\x02\u01AF\u01AE\x03\x02\x02\x02\u01AF\u01B0\x03" +
-		"\x02\x02\x02\u01B0\u01B3\x03\x02\x02\x02\u01B1\u01B4\x05h5\x02\u01B2\u01B4" +
-		"\x050\x19\x02\u01B3\u01B1\x03\x02\x02\x02\u01B3\u01B2\x03\x02\x02\x02" +
-		"\u01B4\u01B6\x03\x02\x02\x02\u01B5\u01B7\x07N\x02\x02\u01B6\u01B5\x03" +
-		"\x02\x02\x02\u01B6\u01B7\x03\x02\x02\x02\u01B7\u01C8\x03\x02\x02\x02\u01B8" +
-		"\u01BA\x07I\x02\x02\u01B9\u01BB\x05l7\x02\u01BA\u01B9\x03\x02\x02\x02" +
-		"\u01BA\u01BB\x03\x02\x02\x02\u01BB\u01C0\x03\x02\x02\x02\u01BC\u01BD\x07" +
-		"J\x02\x02\u01BD\u01BF\x05*\x16\x02\u01BE\u01BC\x03\x02\x02\x02\u01BF\u01C2" +
-		"\x03\x02\x02\x02\u01C0\u01BE\x03\x02\x02\x02\u01C0\u01C1\x03\x02\x02\x02" +
-		"\u01C1\u01C3\x03\x02\x02\x02\u01C2\u01C0\x03\x02\x02\x02\u01C3\u01C5\x05" +
-		"&\x14\x02\u01C4\u01C6\x07N\x02\x02\u01C5\u01C4\x03\x02\x02\x02\u01C5\u01C6" +
-		"\x03\x02\x02\x02\u01C6\u01C8\x03\x02\x02\x02\u01C7\u01AD\x03\x02\x02\x02" +
-		"\u01C7\u01B8\x03\x02\x02\x02\u01C8/\x03\x02\x02\x02\u01C9\u01CB\x07T\x02" +
-		"\x02\u01CA\u01C9\x03\x02\x02\x02\u01CB\u01CE\x03\x02\x02\x02\u01CC\u01CA" +
-		"\x03\x02\x02\x02\u01CC\u01CD\x03\x02\x02\x02\u01CD1\x03\x02\x02\x02\u01CE" +
-		"\u01CC\x03\x02\x02\x02\u01CF\u01D0\x07\x14\x02\x02\u01D0\u01DB\x054\x1B" +
-		"\x02\u01D1\u01D3\x07\x14\x02\x02\u01D2\u01D4\x07T\x02\x02\u01D3\u01D2" +
-		"\x03\x02\x02\x02\u01D3\u01D4\x03\x02\x02\x02\u01D4\u01D5\x03\x02\x02\x02" +
-		"\u01D5\u01D7\x07O\x02\x02\u01D6\u01D8\x054\x1B\x02\u01D7\u01D6\x03\x02" +
-		"\x02\x02\u01D7\u01D8\x03\x02\x02\x02\u01D8\u01D9\x03\x02\x02\x02\u01D9" +
-		"\u01DB\x07P\x02\x02\u01DA\u01CF\x03\x02\x02\x02\u01DA\u01D1\x03\x02\x02" +
-		"\x02\u01DB\u01DC\x03\x02\x02\x02\u01DC\u01DD\x05&\x14\x02\u01DD3\x03\x02" +
-		"\x02\x02\u01DE\u01E1\x05j6\x02\u01DF\u01E1\x07L\x02\x02\u01E0\u01DE\x03" +
-		"\x02\x02\x02\u01E0\u01DF\x03\x02\x02\x02\u01E1\u01E6\x03\x02\x02\x02\u01E2" +
-		"\u01E3\x07J\x02\x02\u01E3\u01E5\x054\x1B\x02\u01E4\u01E2\x03\x02\x02\x02" +
-		"\u01E5\u01E8\x03\x02\x02\x02\u01E6\u01E4\x03\x02\x02\x02\u01E6\u01E7\x03" +
-		"\x02\x02\x02\u01E75\x03\x02\x02\x02\u01E8\u01E6\x03\x02\x02\x02\u01E9" +
-		"\u01EB\x07\x12\x02\x02\u01EA\u01E9\x03\x02\x02\x02\u01EA\u01EB\x03\x02" +
-		"\x02\x02\u01EB\u01F0\x03\x02\x02\x02\u01EC\u01EE\x07\x13\x02\x02\u01ED" +
-		"\u01EC\x03\x02\x02\x02\u01ED\u01EE\x03\x02\x02\x02\u01EE\u01F0\x03\x02" +
-		"\x02\x02\u01EF\u01EA\x03\x02\x02\x02\u01EF\u01ED\x03\x02\x02\x02\u01F0" +
-		"\u01F1\x03\x02\x02\x02\u01F1\u01F2\x05:\x1E\x02\u01F2\u01F3\x05<\x1F\x02" +
-		"\u01F3\u01F6\x03\x02\x02\x02\u01F4\u01F6\x058\x1D\x02\u01F5\u01EF\x03" +
-		"\x02\x02\x02\u01F5\u01F4\x03\x02\x02\x02\u01F67\x03\x02\x02\x02\u01F7" +
-		"\u01FE\x072\x02\x02\u01F8\u01FF\t\x04\x02\x02\u01F9\u01FA\x07Q\x02\x02" +
-		"\u01FA\u01FC\x07R\x02\x02\u01FB\u01FD\x07E\x02\x02\u01FC\u01FB\x03\x02" +
-		"\x02\x02\u01FC\u01FD\x03\x02\x02\x02\u01FD\u01FF\x03\x02\x02\x02\u01FE" +
-		"\u01F8\x03\x02\x02\x02\u01FE\u01F9\x03\x02\x02\x02\u01FF\u0200\x03\x02" +
-		"\x02\x02\u0200\u0201\x07O\x02\x02\u0201\u0202\x05n8\x02\u0202\u0203\x07" +
-		"P\x02\x02\u0203\u0204\x03\x02\x02\x02\u0204\u0208\x07V\x02\x02\u0205\u0207" +
-		"\x05> \x02\u0206\u0205\x03\x02\x02\x02\u0207\u020A\x03\x02\x02\x02\u0208" +
-		"\u0206\x03\x02\x02\x02\u0208\u0209\x03\x02\x02\x02\u0209\u020B\x03\x02" +
-		"\x02\x02\u020A\u0208\x03\x02\x02\x02\u020B\u020C\x07W\x02\x02\u020C9\x03" +
-		"\x02\x02\x02\u020D\u020F\x07\"\x02\x02\u020E\u020D\x03\x02\x02\x02\u020E" +
-		"\u020F\x03\x02\x02\x02\u020F\u0211\x03\x02\x02\x02\u0210\u0212\x07$\x02" +
-		"\x02\u0211\u0210\x03\x02\x02\x02\u0211\u0212\x03\x02\x02\x02\u0212\u0214" +
-		"\x03\x02\x02\x02\u0213\u0215\x07\x07\x02\x02\u0214\u0213\x03\x02\x02\x02" +
-		"\u0214\u0215\x03\x02\x02\x02\u0215\u0216\x03\x02\x02\x02\u0216\u021C\x05" +
-		"l7\x02\u0217\u0219\x07O\x02\x02\u0218\u021A\x05n8\x02\u0219\u0218\x03" +
-		"\x02\x02\x02\u0219\u021A\x03\x02\x02\x02\u021A\u021B\x03\x02\x02\x02\u021B" +
-		"\u021D\x07P\x02\x02\u021C\u0217\x03\x02\x02\x02\u021C\u021D\x03\x02\x02" +
-		"\x02\u021D\u0227\x03\x02\x02\x02\u021E\u0224\x07\x07\x02\x02\u021F\u0221" +
-		"\x07O\x02\x02\u0220\u0222\x05n8\x02\u0221\u0220\x03\x02\x02\x02\u0221" +
-		"\u0222\x03\x02\x02\x02\u0222\u0223\x03\x02\x02\x02\u0223\u0225\x07P\x02" +
-		"\x02\u0224\u021F\x03\x02\x02\x02\u0224\u0225\x03\x02\x02\x02\u0225\u0227" +
-		"\x03\x02\x02\x02\u0226\u020E\x03\x02\x02\x02\u0226\u021E\x03\x02\x02\x02" +
-		"\u0227;\x03\x02\x02\x02\u0228\u022C\x07V\x02\x02\u0229\u022B\x05> \x02" +
-		"\u022A\u0229\x03\x02\x02\x02\u022B\u022E\x03\x02\x02\x02\u022C\u022A\x03" +
-		"\x02\x02\x02\u022C\u022D\x03\x02\x02\x02\u022D\u022F\x03\x02\x02\x02\u022E" +
-		"\u022C\x03\x02\x02\x02\u022F\u0232\x07W\x02\x02\u0230\u0232\x05> \x02" +
-		"\u0231\u0228\x03\x02\x02\x02\u0231\u0230\x03\x02\x02\x02\u0232=\x03\x02" +
-		"\x02\x02\u0233\u0246\x05b2\x02\u0234\u0246\x05d3\x02\u0235\u0246\x05Z" +
-		".\x02\u0236\u0246\x05X-\x02\u0237\u0246\x05T+\x02\u0238\u0246\x05V,\x02" +
-		"\u0239\u0246\x05J&\x02\u023A\u0246\x05N(\x02\u023B\u0246\x05P)\x02\u023C" +
-		"\u0246\x05`1\x02\u023D\u0246\x05^0\x02\u023E\u0246\x05R*\x02\u023F\u0246" +
-		"\x05L\'\x02\u0240\u0246\x05H%\x02\u0241\u0246\x05D#\x02\u0242\u0246\x05" +
-		"F$\x02\u0243\u0246\x05B\"\x02\u0244\u0246\x05@!\x02\u0245\u0233\x03\x02" +
-		"\x02\x02\u0245\u0234\x03\x02\x02\x02\u0245\u0235\x03\x02\x02\x02\u0245" +
-		"\u0236\x03\x02\x02\x02\u0245\u0237\x03\x02\x02\x02\u0245\u0238\x03\x02" +
-		"\x02\x02\u0245\u0239\x03\x02\x02\x02\u0245\u023A\x03\x02\x02\x02\u0245" +
-		"\u023B\x03\x02\x02\x02\u0245\u023C\x03\x02\x02\x02\u0245\u023D\x03\x02" +
-		"\x02\x02\u0245\u023E\x03\x02\x02\x02\u0245\u023F\x03\x02\x02\x02\u0245" +
-		"\u0240\x03\x02\x02\x02\u0245\u0241\x03\x02\x02\x02\u0245\u0242\x03\x02" +
-		"\x02\x02\u0245\u0243\x03\x02\x02\x02\u0245\u0244\x03\x02\x02\x02\u0246" +
-		"?\x03\x02\x02\x02\u0247\u024B\x07V\x02\x02\u0248\u024A\x05> \x02\u0249" +
-		"\u0248\x03\x02\x02\x02\u024A\u024D\x03\x02\x02\x02\u024B\u0249\x03\x02" +
-		"\x02\x02\u024B\u024C\x03\x02\x02\x02\u024C\u024E\x03\x02\x02\x02\u024D" +
-		"\u024B\x03\x02\x02\x02\u024E\u024F\x07W\x02\x02\u024FA\x03\x02\x02\x02" +
-		"\u0250\u0252\x07/\x02\x02\u0251\u0253\x05l7\x02\u0252\u0251\x03\x02\x02" +
-		"\x02\u0252\u0253\x03\x02\x02\x02\u0253\u0254\x03\x02\x02\x02\u0254\u0255" +
-		"\x07N\x02\x02\u0255C\x03\x02\x02\x02\u0256\u0258\x07-\x02\x02\u0257\u0259" +
-		"\x05l7\x02\u0258\u0257\x03\x02\x02\x02\u0258\u0259\x03\x02\x02\x02\u0259" +
-		"\u025A\x03\x02\x02\x02\u025A\u025B\x07N\x02\x02\u025BE\x03\x02\x02\x02" +
-		"\u025C\u025E\x07.\x02\x02\u025D\u025F\x05l7\x02\u025E\u025D\x03\x02\x02" +
-		"\x02\u025E\u025F\x03\x02\x02\x02\u025F\u0260\x03\x02\x02\x02\u0260\u0261" +
-		"\x07N\x02\x02\u0261G\x03\x02\x02\x02\u0262\u0263\x05l7\x02\u0263\u0264" +
-		"\x07I\x02\x02\u0264I\x03\x02\x02\x02\u0265\u0266\x07\x04\x02\x02\u0266" +
-		"\u0267\x07O\x02\x02\u0267\u0268\x05h5\x02\u0268\u0269\x07P\x02\x02\u0269" +
-		"\u027B\x07V\x02\x02\u026A\u026B\x07\x05\x02\x02\u026B\u026E\x05h5\x02" +
-		"\u026C\u026E\x07\x06\x02\x02\u026D\u026A\x03\x02\x02\x02\u026D\u026C\x03" +
-		"\x02\x02\x02\u026E\u026F\x03\x02\x02\x02\u026F\u0277\x07I\x02\x02\u0270" +
-		"\u0278\x05<\x1F\x02\u0271\u0273\x05> \x02\u0272\u0271\x03\x02\x02\x02" +
-		"\u0273\u0276\x03\x02\x02\x02\u0274\u0272\x03\x02\x02\x02\u0274\u0275\x03" +
-		"\x02\x02\x02\u0275\u0278\x03\x02\x02\x02\u0276\u0274\x03\x02\x02\x02\u0277" +
-		"\u0270\x03\x02\x02\x02\u0277\u0274\x03\x02\x02\x02\u0278\u027A\x03\x02" +
-		"\x02\x02\u0279\u026D\x03\x02\x02\x02\u027A\u027D\x03\x02\x02\x02\u027B" +
-		"\u0279\x03\x02\x02\x02\u027B\u027C\x03\x02\x02\x02\u027C\u027E\x03\x02" +
-		"\x02\x02\u027D\u027B\x03\x02\x02\x02\u027E\u027F\x07W\x02\x02\u027FK\x03" +
-		"\x02\x02\x02\u0280\u0281\x07\b\x02\x02\u0281\u0282\x05h5\x02\u0282M\x03" +
-		"\x02\x02\x02\u0283\u0284\x07\v\x02\x02\u0284\u0285\x07O\x02\x02\u0285" +
-		"\u0286\x07\x19\x02\x02\u0286\u0287\x07D\x02\x02\u0287\u0288\x07\'\x02" +
-		"\x02\u0288\u0289\x05h5\x02\u0289\u028A\x07P\x02\x02\u028A\u028B\x05<\x1F" +
-		"\x02\u028BO\x03\x02\x02\x02\u028C\u028D\x07&\x02\x02\u028D\u028E\x07O" +
-		"\x02\x02\u028E\u028F\x05h5\x02\u028F\u0290\x07\'\x02\x02\u0290\u0291\x05" +
-		"h5\x02\u0291\u0292\x07P\x02\x02\u0292\u0293\x05<\x1F\x02\u0293Q\x03\x02" +
-		"\x02\x02\u0294\u0296\x07#\x02\x02\u0295\u0297\x05h5\x02\u0296\u0295\x03" +
-		"\x02\x02\x02\u0296\u0297\x03\x02\x02\x02\u0297\u0298\x03\x02\x02\x02\u0298" +
-		"\u0299\x07N\x02\x02\u0299S\x03\x02\x02\x02\u029A\u029B\x07\x16\x02\x02" +
-		"\u029B\u029C\x05<\x1F\x02\u029C\u029D\x07\x17\x02\x02\u029D\u029F\x07" +
-		"O\x02\x02\u029E\u02A0\x05h5\x02\u029F\u029E\x03\x02\x02\x02\u029F\u02A0" +
-		"\x03\x02\x02\x02\u02A0\u02A1\x03\x02\x02\x02\u02A1\u02A2\x07P\x02\x02" +
-		"\u02A2U\x03\x02\x02\x02\u02A3\u02A4\x07\x17\x02\x02\u02A4\u02A6\x07O\x02" +
-		"\x02\u02A5\u02A7\x05h5\x02\u02A6\u02A5\x03\x02\x02\x02\u02A6\u02A7\x03" +
-		"\x02\x02\x02\u02A7\u02A8\x03\x02\x02\x02\u02A8\u02A9\x07P\x02\x02\u02A9" +
-		"\u02AA\x05<\x1F\x02\u02AAW\x03\x02\x02\x02\u02AB\u02AC\x07\v\x02\x02\u02AC" +
-		"\u02AE\x07O\x02\x02\u02AD\u02AF\x05h5\x02\u02AE\u02AD\x03\x02\x02\x02" +
-		"\u02AE\u02AF\x03\x02\x02\x02\u02AF\u02B0\x03\x02\x02\x02\u02B0\u02B2\x07" +
-		"N\x02\x02\u02B1\u02B3\x05h5\x02\u02B2\u02B1\x03\x02\x02\x02\u02B2\u02B3" +
-		"\x03\x02\x02\x02\u02B3\u02B4\x03\x02\x02\x02\u02B4\u02B6\x07N\x02\x02" +
-		"\u02B5\u02B7\x05h5\x02\u02B6\u02B5\x03\x02\x02\x02\u02B6\u02B7\x03\x02" +
-		"\x02\x02\u02B7\u02B8\x03\x02\x02\x02\u02B8\u02B9\x07P\x02\x02\u02B9\u02BA" +
-		"\x05<\x1F\x02\u02BAY\x03\x02\x02\x02\u02BB\u02BC\x07\f\x02\x02\u02BC\u02C6" +
-		"\x05<\x1F\x02\u02BD\u02BE\x07\r\x02\x02\u02BE\u02C0\x07O\x02\x02\u02BF" +
-		"\u02C1\x05n8\x02\u02C0\u02BF\x03\x02\x02\x02\u02C0\u02C1\x03\x02\x02\x02" +
-		"\u02C1\u02C2\x03\x02\x02\x02\u02C2\u02C3\x07P\x02\x02\u02C3\u02C5\x05" +
-		"<\x1F\x02\u02C4\u02BD\x03\x02\x02\x02\u02C5\u02C8\x03\x02\x02\x02\u02C6" +
-		"\u02C4\x03\x02\x02\x02\u02C6\u02C7\x03\x02\x02\x02\u02C7\u02CB\x03\x02" +
-		"\x02\x02\u02C8\u02C6\x03\x02\x02\x02\u02C9\u02CA\x07\x0E\x02\x02\u02CA" +
-		"\u02CC\x05<\x1F\x02\u02CB\u02C9\x03\x02\x02\x02\u02CB\u02CC\x03\x02\x02" +
-		"\x02\u02CC[\x03\x02\x02\x02\u02CD\u02D0\x05h5\x02\u02CE\u02CF\x07K\x02" +
-		"\x02\u02CF\u02D1\x05\\/\x02\u02D0\u02CE\x03\x02\x02\x02\u02D0\u02D1\x03" +
-		"\x02\x02\x02\u02D1]\x03\x02\x02\x02\u02D2\u02D4\x05h5\x02\u02D3\u02D2" +
-		"\x03\x02\x02\x02\u02D3\u02D4\x03\x02\x02\x02\u02D4\u02D5\x03\x02\x02\x02" +
-		"\u02D5\u02D6\x07N\x02\x02\u02D6_\x03\x02\x02\x02\u02D7\u02D8\x07S\x02" +
-		"\x02\u02D8\u02D9\x07N\x02\x02\u02D9a\x03\x02\x02\x02\u02DA\u02DB\x07\x19" +
-		"\x02\x02\u02DB\u02DE\x05l7\x02\u02DC\u02DD\x07E\x02\x02\u02DD\u02DF\x05" +
-		"h5\x02\u02DE\u02DC\x03\x02\x02\x02\u02DE\u02DF\x03\x02\x02\x02\u02DF\u02E0" +
-		"\x03\x02\x02\x02\u02E0\u02E1\x07N\x02\x02\u02E1c\x03\x02\x02\x02\u02E2" +
-		"\u02E3\x07\x15\x02\x02\u02E3\u02E9\x05f4\x02\u02E4\u02E5\x07\x18\x02\x02" +
-		"\u02E5\u02E6\x07\x15\x02\x02\u02E6\u02E8\x05f4\x02\u02E7\u02E4\x03\x02" +
-		"\x02\x02\u02E8\u02EB\x03\x02\x02\x02\u02E9\u02E7\x03\x02\x02\x02\u02E9" +
-		"\u02EA\x03\x02\x02\x02\u02EA\u02EE\x03\x02\x02\x02\u02EB\u02E9\x03\x02" +
-		"\x02\x02\u02EC\u02ED\x07\x18\x02\x02\u02ED\u02EF\x05<\x1F\x02\u02EE\u02EC" +
-		"\x03\x02\x02\x02\u02EE\u02EF\x03\x02\x02\x02\u02EFe\x03\x02\x02\x02\u02F0" +
-		"\u02F1\x07O\x02\x02\u02F1\u02F2\x05h5\x02\u02F2\u02F3\x07P\x02\x02\u02F3" +
-		"\u02F4\x05<\x1F\x02\u02F4g\x03\x02\x02\x02\u02F5\u02F6\b5\x01\x02\u02F6" +
-		"\u02F8\x07Q\x02\x02\u02F7\u02F9\x05h5\x02\u02F8\u02F7\x03\x02\x02\x02" +
-		"\u02F8\u02F9\x03\x02\x02\x02\u02F9\u02FA\x03\x02\x02\x02\u02FA\u031F\x07" +
-		"R\x02\x02\u02FB\u02FC\x07\x1E\x02\x02\u02FC\u031F\x05h5%\u02FD\u02FE\x07" +
-		"\x1D\x02\x02\u02FE\u031F\x05h5$\u02FF\u0300\x07\x11\x02\x02\u0300\u031F" +
-		"\x05h5#\u0301\u031F\x05j6\x02\u0302\u0304\x07O\x02\x02\u0303\u0305\x05" +
-		"h5\x02\u0304\u0303\x03\x02\x02\x02\u0304\u0305\x03\x02\x02\x02\u0305\u0306" +
-		"\x03\x02\x02\x02\u0306\u031F\x07P\x02\x02\u0307\u0308\x07\x19\x02\x02" +
-		"\u0308\u031F\x05h5\x1C\u0309\u030A\x07$\x02\x02\u030A\u031F\x05h5\x1B" +
-		"\u030B\u030C\x07\t\x02\x02\u030C\u031F\x05h5\x1A\u030D\u030F\x07V\x02" +
-		"\x02\u030E\u0310\x05n8\x02\u030F\u030E\x03\x02\x02\x02\u030F\u0310\x03" +
-		"\x02\x02\x02\u0310\u0311\x03\x02\x02\x02\u0311\u0313\x07I\x02\x02\u0312" +
-		"\u0314\x05h5\x02\u0313\u0312\x03\x02\x02\x02\u0313\u0314\x03\x02\x02\x02" +
-		"\u0314\u0315\x03\x02\x02\x02\u0315\u031F\x07W\x02\x02\u0316\u0317\x07" +
-		"A\x02\x02\u0317\u031F\x05h5\b\u0318\u0319\x07L\x02\x02\u0319\u031A\x07" +
-		"A\x02\x02\u031A\u031F\x05h5\x07\u031B\u031C\t\x05\x02\x02\u031C\u031F" +
-		"\x05h5\x06\u031D\u031F\x056\x1C\x02\u031E\u02F5\x03\x02\x02\x02\u031E" +
-		"\u02FB\x03\x02\x02\x02\u031E\u02FD\x03\x02\x02\x02\u031E\u02FF\x03\x02" +
-		"\x02\x02\u031E\u0301\x03\x02\x02\x02\u031E\u0302\x03\x02\x02\x02\u031E" +
-		"\u0307\x03\x02\x02\x02\u031E\u0309\x03\x02\x02\x02\u031E\u030B\x03\x02" +
-		"\x02\x02\u031E\u030D\x03\x02\x02\x02\u031E\u0316\x03\x02\x02\x02\u031E" +
-		"\u0318\x03\x02\x02\x02\u031E\u031B\x03\x02\x02\x02\u031E\u031D\x03\x02" +
-		"\x02\x02\u031F\u03A1\x03\x02\x02\x02\u0320\u0321\f)\x02\x02\u0321\u0322" +
-		"\x07K\x02\x02\u0322\u03A0\x05h5*\u0323\u0324\f\'\x02\x02\u0324\u0325\x07" +
-		"J\x02\x02\u0325\u03A0\x05h5(\u0326\u0327\f\x19\x02\x02\u0327\u0328\x07" +
-		"4\x02\x02\u0328\u03A0\x05h5\x1A\u0329\u032A\f\x18\x02\x02\u032A\u032B" +
-		"\x07+\x02\x02\u032B\u032C\x07\'\x02\x02\u032C\u03A0\x05h5\x19\u032D\u032E" +
-		"\f\x17\x02\x02\u032E\u032F\x07,\x02\x02\u032F\u0330\x07\'\x02\x02\u0330" +
-		"\u03A0\x05h5\x18\u0331\u0332\f\x16\x02\x02\u0332\u0333\x07,\x02\x02\u0333" +
-		"\u03A0\x05h5\x17\u0334\u0335\f\x15\x02\x02\u0335\u0336\x07\'\x02\x02\u0336" +
-		"\u03A0\x05h5\x16\u0337\u0338\f\x14\x02\x02\u0338\u0339\x07E\x02\x02\u0339" +
-		"\u03A0\x05h5\x15\u033A\u033B\f\x13\x02\x02\u033B\u033C\x078\x02\x02\u033C" +
-		"\u03A0\x05h5\x14\u033D\u033E\f\x11\x02\x02\u033E\u0340\t\x06\x02\x02\u033F" +
-		"\u0341\x07E\x02\x02\u0340\u033F\x03\x02\x02\x02\u0340\u0341\x03\x02\x02" +
-		"\x02\u0341\u0342\x03\x02\x02\x02\u0342\u03A0\x05h5\x12\u0343\u0344\f\x10" +
-		"\x02\x02\u0344\u0345\t\x07\x02\x02\u0345\u03A0\x05h5\x11\u0346\u0347\f" +
-		"\x0F\x02\x02\u0347\u0349\x07C\x02\x02\u0348\u034A\x07E\x02\x02\u0349\u0348" +
-		"\x03\x02\x02\x02\u0349\u034A\x03\x02\x02\x02\u034A\u034B\x03\x02\x02\x02" +
-		"\u034B\u03A0\x05h5\x10\u034C\u034D\f\x0E\x02\x02\u034D\u034F\t\b\x02\x02" +
-		"\u034E\u0350\x07E\x02\x02\u034F\u034E\x03\x02\x02\x02\u034F\u0350\x03" +
-		"\x02\x02\x02\u0350\u0351\x03\x02\x02\x02\u0351\u03A0\x05h5\x0F\u0352\u0353" +
-		"\f\r\x02\x02\u0353\u0355\t\t\x02\x02\u0354\u0356\x07E\x02\x02\u0355\u0354" +
-		"\x03\x02\x02\x02\u0355\u0356\x03\x02\x02\x02\u0356\u0357\x03\x02\x02\x02" +
-		"\u0357\u03A0\x05h5\x0E\u0358\u0359\f\f\x02\x02\u0359\u035A\t\n\x02\x02" +
-		"\u035A\u03A0\x05h5\r\u035B\u035C\f\v\x02\x02\u035C\u035D\t\v\x02\x02\u035D" +
-		"\u03A0\x05h5\f\u035E\u035F\f\n\x02\x02\u035F\u0361\t\f\x02\x02\u0360\u0362" +
-		"\x07E\x02\x02\u0361\u0360\x03\x02\x02\x02\u0361\u0362\x03\x02\x02\x02" +
-		"\u0362\u0363\x03\x02\x02\x02\u0363\u03A0\x05h5\v\u0364\u0365\f\t\x02\x02" +
-		"\u0365\u0366\x07A\x02\x02\u0366\u03A0\x05h5\n\u0367\u0368\f\x04\x02\x02" +
-		"\u0368\u0369\x077\x02\x02\u0369\u036A\x05h5\x02\u036A\u036B\x07I\x02\x02" +
-		"\u036B\u036C\x05h5\x05\u036C\u03A0\x03\x02\x02\x02\u036D\u036E\f(\x02" +
-		"\x02\u036E\u0370\x07Q\x02\x02\u036F\u0371\x05h5\x02\u0370\u036F\x03\x02" +
-		"\x02\x02\u0370\u0371\x03\x02\x02\x02\u0371\u0372\x03\x02\x02\x02\u0372" +
-		"\u03A0\x07R\x02\x02\u0373\u0374\f&\x02\x02\u0374\u0375\x07)\x02\x02\u0375" +
-		"\u0378\x05h5\x02\u0376\u0377\x07*\x02\x02\u0377\u0379\x05h5\x02\u0378" +
-		"\u0376\x03\x02\x02\x02\u0378\u0379\x03\x02\x02\x02\u0379\u03A0\x03\x02" +
-		"\x02\x02\u037A\u037B\f!\x02\x02\u037B\u037D\x07O\x02\x02\u037C\u037E\x05" +
-		"n8\x02\u037D\u037C\x03\x02\x02\x02\u037E\u037F\x03\x02\x02\x02\u037F\u037D" +
-		"\x03\x02\x02\x02\u037F\u0380\x03\x02\x02\x02\u0380\u0381\x03\x02\x02\x02" +
-		"\u0381\u0382\x07P\x02\x02\u0382\u03A0\x03\x02\x02\x02\u0383\u0384\f \x02" +
-		"\x02\u0384\u0386\x07O\x02\x02\u0385\u0387\x05h5\x02\u0386\u0385\x03\x02" +
-		"\x02\x02\u0386\u0387\x03\x02\x02\x02\u0387\u0388\x03\x02\x02\x02\u0388" +
-		"\u03A0\x07P\x02\x02\u0389\u038A\f\x1F\x02\x02\u038A\u038C\x07V\x02\x02" +
-		"\u038B\u038D\x05n8\x02\u038C\u038B\x03\x02\x02\x02\u038C\u038D\x03\x02" +
-		"\x02\x02\u038D\u038E\x03\x02\x02\x02\u038E\u0390\x07I\x02\x02\u038F\u0391" +
-		"\x05h5\x02\u0390\u038F\x03\x02\x02\x02\u0390\u0391\x03\x02\x02\x02\u0391" +
-		"\u0392\x03\x02\x02\x02\u0392\u03A0\x07W\x02\x02\u0393\u0394\f\x1E\x02" +
-		"\x02\u0394\u0395\x07I\x02\x02\u0395\u0396\x05*\x16\x02\u0396\u0397\x05" +
-		"&\x14\x02\u0397\u03A0\x03\x02\x02\x02\u0398\u039D\f\x05\x02\x02\u0399" +
-		"\u039A\x079\x02\x02\u039A\u039E\x079\x02\x02\u039B\u039C\x07<\x02\x02" +
-		"\u039C\u039E\x07<\x02\x02\u039D\u0399\x03\x02\x02\x02\u039D\u039B\x03" +
-		"\x02\x02\x02\u039E\u03A0\x03\x02\x02\x02\u039F\u0320\x03\x02\x02\x02\u039F" +
-		"\u0323\x03\x02\x02\x02\u039F\u0326\x03\x02\x02\x02\u039F\u0329\x03\x02" +
-		"\x02\x02\u039F\u032D\x03\x02\x02\x02\u039F\u0331\x03\x02\x02\x02\u039F" +
-		"\u0334\x03\x02\x02\x02\u039F\u0337\x03\x02\x02\x02\u039F\u033A\x03\x02" +
-		"\x02\x02\u039F\u033D\x03\x02\x02\x02\u039F\u0343\x03\x02\x02\x02\u039F" +
-		"\u0346\x03\x02\x02\x02\u039F\u034C\x03\x02\x02\x02\u039F\u0352\x03\x02" +
-		"\x02\x02\u039F\u0358\x03\x02\x02\x02\u039F\u035B\x03\x02\x02\x02\u039F" +
-		"\u035E\x03\x02\x02\x02\u039F\u0364\x03\x02\x02\x02\u039F\u0367\x03\x02" +
-		"\x02\x02\u039F\u036D\x03\x02\x02\x02\u039F\u0373\x03\x02\x02\x02\u039F" +
-		"\u037A\x03\x02\x02\x02\u039F\u0383\x03\x02\x02\x02\u039F\u0389\x03\x02" +
-		"\x02\x02\u039F\u0393\x03\x02\x02\x02\u039F\u0398\x03\x02\x02\x02\u03A0" +
-		"\u03A3\x03\x02\x02\x02\u03A1\u039F\x03\x02\x02\x02\u03A1\u03A2\x03\x02" +
-		"\x02\x02\u03A2i\x03\x02\x02\x02\u03A3\u03A1\x03\x02\x02\x02\u03A4\u03B0" +
-		"\x07\x1D\x02\x02\u03A5\u03B0\x07G\x02\x02\u03A6\u03B0\x07F\x02\x02\u03A7" +
-		"\u03A8\x074\x02\x02\u03A8\u03B0\x05l7\x02\u03A9\u03B0\x05l7\x02\u03AA" +
-		"\u03B0\x07T\x02\x02\u03AB\u03B0\x07S\x02\x02\u03AC\u03B0\x07U\x02\x02" +
-		"\u03AD\u03B0\x07\x1A\x02\x02\u03AE\u03B0\x07\x1B\x02\x02\u03AF\u03A4\x03" +
-		"\x02\x02\x02\u03AF\u03A5\x03\x02\x02\x02\u03AF\u03A6\x03\x02\x02\x02\u03AF" +
-		"\u03A7\x03\x02\x02\x02\u03AF\u03A9\x03\x02\x02\x02\u03AF\u03AA\x03\x02" +
-		"\x02\x02\u03AF\u03AB\x03\x02\x02\x02\u03AF\u03AC\x03\x02\x02\x02\u03AF" +
-		"\u03AD\x03\x02\x02\x02\u03AF\u03AE\x03\x02\x02\x02\u03B0k\x03\x02\x02" +
-		"\x02\u03B1\u03B2\t\r\x02\x02\u03B2m\x03\x02\x02\x02\u03B3\u03B7\x05p9" +
-		"\x02\u03B4\u03B7\x07(\x02\x02\u03B5\u03B7\x05$\x13\x02\u03B6\u03B3\x03" +
-		"\x02\x02\x02\u03B6\u03B4\x03\x02\x02\x02\u03B6\u03B5\x03\x02\x02\x02\u03B7" +
-		"\u03BE\x03\x02\x02\x02\u03B8\u03BA\x07J\x02\x02\u03B9\u03BB\x05n8\x02" +
-		"\u03BA\u03B9\x03\x02\x02\x02\u03BA\u03BB\x03\x02\x02\x02\u03BB\u03BD\x03" +
-		"\x02\x02\x02\u03BC\u03B8\x03\x02\x02\x02\u03BD\u03C0\x03\x02\x02\x02\u03BE" +
-		"\u03BC\x03\x02\x02\x02\u03BE\u03BF\x03\x02\x02\x02\u03BFo\x03\x02\x02" +
-		"\x02\u03C0\u03BE\x03\x02\x02\x02\u03C1\u03C2\x05l7\x02\u03C2\u03C3\x07" +
-		"I\x02\x02\u03C3\u03C5\x03\x02\x02\x02\u03C4\u03C1\x03\x02\x02\x02\u03C4" +
-		"\u03C5\x03\x02\x02\x02\u03C5\u03C7\x03\x02\x02\x02\u03C6\u03C8\x05l7\x02" +
-		"\u03C7\u03C6\x03\x02\x02\x02\u03C7\u03C8\x03\x02\x02\x02\u03C8\u03C9\x03" +
-		"\x02\x02\x02\u03C9\u03CB\x05l7\x02\u03CA\u03CC\x077\x02\x02\u03CB\u03CA" +
-		"\x03\x02\x02\x02\u03CB\u03CC\x03\x02\x02\x02\u03CC\u03D9\x03\x02\x02\x02" +
-		"\u03CD\u03CE\x05l7\x02\u03CE\u03D0\x07I\x02\x02\u03CF\u03D1\x077\x02\x02" +
-		"\u03D0\u03CF\x03\x02\x02\x02\u03D0\u03D1\x03\x02\x02\x02\u03D1\u03D9\x03" +
-		"\x02\x02\x02\u03D2\u03D3\x05l7\x02\u03D3\u03D4\x07I\x02\x02\u03D4\u03D6" +
-		"\x07E\x02\x02\u03D5\u03D7\x05h5\x02\u03D6\u03D5\x03\x02\x02\x02\u03D6" +
-		"\u03D7\x03\x02\x02\x02\u03D7\u03D9\x03\x02\x02\x02\u03D8\u03C4\x03\x02" +
-		"\x02\x02\u03D8\u03CD\x03\x02\x02\x02\u03D8\u03D2\x03\x02\x02\x02\u03D9" +
-		"q\x03\x02\x02\x02\x87u\x85\x90\x98\xA0\xA2\xA9\xAD\xB2\xBF\xC7\xCD\xD4" +
-		"\xD8\xE3\xE5\xEC\xF0\xF7\xFF\u0108\u0110\u0115\u011C\u0124\u012A\u012D" +
-		"\u0130\u0134\u013A\u0140\u0145\u014C\u014F\u0152\u0154\u0159\u015E\u0164" +
-		"\u0168\u016C\u0172\u0177\u017C\u0182\u0185\u018C\u019B\u01A1\u01A7\u01A9" +
-		"\u01AF\u01B3\u01B6\u01BA\u01C0\u01C5\u01C7\u01CC\u01D3\u01D7\u01DA\u01E0" +
-		"\u01E6\u01EA\u01ED\u01EF\u01F5\u01FC\u01FE\u0208\u020E\u0211\u0214\u0219" +
-		"\u021C\u0221\u0224\u0226\u022C\u0231\u0245\u024B\u0252\u0258\u025E\u026D" +
-		"\u0274\u0277\u027B\u0296\u029F\u02A6\u02AE\u02B2\u02B6\u02C0\u02C6\u02CB" +
-		"\u02D0\u02D3\u02DE\u02E9\u02EE\u02F8\u0304\u030F\u0313\u031E\u0340\u0349" +
-		"\u034F\u0355\u0361\u0370\u0378\u037F\u0386\u038C\u0390\u039D\u039F\u03A1" +
-		"\u03AF\u03B6\u03BA\u03BE\u03C4\u03C7\u03CB\u03D0\u03D6\u03D8";
+		"\x02\x02\u01AA\u01A8\x03\x02\x02\x02\u01AA\u01AB\x03\x02\x02\x02\u01AB" +
+		"-\x03\x02\x02\x02\u01AC\u01AA\x03\x02\x02\x02\u01AD\u01C8\x05l7\x02\u01AE" +
+		"\u01B0\x07E\x02\x02\u01AF\u01B1\x07$\x02\x02\u01B0\u01AF\x03\x02\x02\x02" +
+		"\u01B0\u01B1\x03\x02\x02\x02\u01B1\u01B4\x03\x02\x02\x02\u01B2\u01B5\x05" +
+		"h5\x02\u01B3\u01B5\x050\x19\x02\u01B4\u01B2\x03\x02\x02\x02\u01B4\u01B3" +
+		"\x03\x02\x02\x02\u01B5\u01B7\x03\x02\x02\x02\u01B6\u01B8\x07N\x02\x02" +
+		"\u01B7\u01B6\x03\x02\x02\x02\u01B7\u01B8\x03\x02\x02\x02\u01B8\u01C9\x03" +
+		"\x02\x02\x02\u01B9\u01BB\x07I\x02\x02\u01BA\u01BC\x05l7\x02\u01BB\u01BA" +
+		"\x03\x02\x02\x02\u01BB\u01BC\x03\x02\x02\x02\u01BC\u01C1\x03\x02\x02\x02" +
+		"\u01BD\u01BE\x07J\x02\x02\u01BE\u01C0\x05*\x16\x02\u01BF\u01BD\x03\x02" +
+		"\x02\x02\u01C0\u01C3\x03\x02\x02\x02\u01C1\u01BF\x03\x02\x02\x02\u01C1" +
+		"\u01C2\x03\x02\x02\x02\u01C2\u01C4\x03\x02\x02\x02\u01C3\u01C1\x03\x02" +
+		"\x02\x02\u01C4\u01C6\x05&\x14\x02\u01C5\u01C7\x07N\x02\x02\u01C6\u01C5" +
+		"\x03\x02\x02\x02\u01C6\u01C7\x03\x02\x02\x02\u01C7\u01C9\x03\x02\x02\x02" +
+		"\u01C8\u01AE\x03\x02\x02\x02\u01C8\u01B9\x03\x02\x02\x02\u01C9/\x03\x02" +
+		"\x02\x02\u01CA\u01CC\x07T\x02\x02\u01CB\u01CA\x03\x02\x02\x02\u01CC\u01CF" +
+		"\x03\x02\x02\x02\u01CD\u01CB\x03\x02\x02\x02\u01CD\u01CE\x03\x02\x02\x02" +
+		"\u01CE1\x03\x02\x02\x02\u01CF\u01CD\x03\x02\x02\x02\u01D0\u01D1\x07\x14" +
+		"\x02\x02\u01D1\u01DC\x054\x1B\x02\u01D2\u01D4\x07\x14\x02\x02\u01D3\u01D5" +
+		"\x07T\x02\x02\u01D4\u01D3\x03\x02\x02\x02\u01D4\u01D5\x03\x02\x02\x02" +
+		"\u01D5\u01D6\x03\x02\x02\x02\u01D6\u01D8\x07O\x02\x02\u01D7\u01D9\x05" +
+		"4\x1B\x02\u01D8\u01D7\x03\x02\x02\x02\u01D8\u01D9\x03\x02\x02\x02\u01D9" +
+		"\u01DA\x03\x02\x02\x02\u01DA\u01DC\x07P\x02\x02\u01DB\u01D0\x03\x02\x02" +
+		"\x02\u01DB\u01D2\x03\x02\x02\x02\u01DC\u01DD\x03\x02\x02\x02\u01DD\u01DE" +
+		"\x05&\x14\x02\u01DE3\x03\x02\x02\x02\u01DF\u01E2\x05j6\x02\u01E0\u01E2" +
+		"\x07L\x02\x02\u01E1\u01DF\x03\x02\x02\x02\u01E1\u01E0\x03\x02\x02\x02" +
+		"\u01E2\u01E7\x03\x02\x02\x02\u01E3\u01E4\x07J\x02\x02\u01E4\u01E6\x05" +
+		"4\x1B\x02\u01E5\u01E3\x03\x02\x02\x02\u01E6\u01E9\x03\x02\x02\x02\u01E7" +
+		"\u01E5\x03\x02\x02\x02\u01E7\u01E8\x03\x02\x02\x02\u01E85\x03\x02\x02" +
+		"\x02\u01E9\u01E7\x03\x02\x02\x02\u01EA\u01EC\x07\x12\x02\x02\u01EB\u01EA" +
+		"\x03\x02\x02\x02\u01EB\u01EC\x03\x02\x02\x02\u01EC\u01F1\x03\x02\x02\x02" +
+		"\u01ED\u01EF\x07\x13\x02\x02\u01EE\u01ED\x03\x02\x02\x02\u01EE\u01EF\x03" +
+		"\x02\x02\x02\u01EF\u01F1\x03\x02\x02\x02\u01F0\u01EB\x03\x02\x02\x02\u01F0" +
+		"\u01EE\x03\x02\x02\x02\u01F1\u01F2\x03\x02\x02\x02\u01F2\u01F3\x05:\x1E" +
+		"\x02\u01F3\u01F4\x05<\x1F\x02\u01F4\u01F7\x03\x02\x02\x02\u01F5\u01F7" +
+		"\x058\x1D\x02\u01F6\u01F0\x03\x02\x02\x02\u01F6\u01F5\x03\x02\x02\x02" +
+		"\u01F77\x03\x02\x02\x02\u01F8\u01FF\x072\x02\x02\u01F9\u0200\t\x04\x02" +
+		"\x02\u01FA\u01FB\x07Q\x02\x02\u01FB\u01FD\x07R\x02\x02\u01FC\u01FE\x07" +
+		"E\x02\x02\u01FD\u01FC\x03\x02\x02\x02\u01FD\u01FE\x03\x02\x02\x02\u01FE" +
+		"\u0200\x03\x02\x02\x02\u01FF\u01F9\x03\x02\x02\x02\u01FF\u01FA\x03\x02" +
+		"\x02\x02\u0200\u0201\x03\x02\x02\x02\u0201\u0202\x07O\x02\x02\u0202\u0203" +
+		"\x05n8\x02\u0203\u0204\x07P\x02\x02\u0204\u0205\x03\x02\x02\x02\u0205" +
+		"\u0209\x07V\x02\x02\u0206\u0208\x05> \x02\u0207\u0206\x03\x02\x02\x02" +
+		"\u0208\u020B\x03\x02\x02\x02\u0209\u0207\x03\x02\x02\x02\u0209\u020A\x03" +
+		"\x02\x02\x02\u020A\u020C\x03\x02\x02\x02\u020B\u0209\x03\x02\x02\x02\u020C" +
+		"\u020D\x07W\x02\x02\u020D9\x03\x02\x02\x02\u020E\u0210\x07\"\x02\x02\u020F" +
+		"\u020E\x03\x02\x02\x02\u020F\u0210\x03\x02\x02\x02\u0210\u0212\x03\x02" +
+		"\x02\x02\u0211\u0213\x07$\x02\x02\u0212\u0211\x03\x02\x02\x02\u0212\u0213" +
+		"\x03\x02\x02\x02\u0213\u0215\x03\x02\x02\x02\u0214\u0216\x07\x07\x02\x02" +
+		"\u0215\u0214\x03\x02\x02\x02\u0215\u0216\x03\x02\x02\x02\u0216\u0217\x03" +
+		"\x02\x02\x02\u0217\u021D\x05l7\x02\u0218\u021A\x07O\x02\x02\u0219\u021B" +
+		"\x05n8\x02\u021A\u0219\x03\x02\x02\x02\u021A\u021B\x03\x02\x02\x02\u021B" +
+		"\u021C\x03\x02\x02\x02\u021C\u021E\x07P\x02\x02\u021D\u0218\x03\x02\x02" +
+		"\x02\u021D\u021E\x03\x02\x02\x02\u021E\u0228\x03\x02\x02\x02\u021F\u0225" +
+		"\x07\x07\x02\x02\u0220\u0222\x07O\x02\x02\u0221\u0223\x05n8\x02\u0222" +
+		"\u0221\x03\x02\x02\x02\u0222\u0223\x03\x02\x02\x02\u0223\u0224\x03\x02" +
+		"\x02\x02\u0224\u0226\x07P\x02\x02\u0225\u0220\x03\x02\x02\x02\u0225\u0226" +
+		"\x03\x02\x02\x02\u0226\u0228\x03\x02\x02\x02\u0227\u020F\x03\x02\x02\x02" +
+		"\u0227\u021F\x03\x02\x02\x02\u0228;\x03\x02\x02\x02\u0229\u022D\x07V\x02" +
+		"\x02\u022A\u022C\x05> \x02\u022B\u022A\x03\x02\x02\x02\u022C\u022F\x03" +
+		"\x02\x02\x02\u022D\u022B\x03\x02\x02\x02\u022D\u022E\x03\x02\x02\x02\u022E" +
+		"\u0230\x03\x02\x02\x02\u022F\u022D\x03\x02\x02\x02\u0230\u0233\x07W\x02" +
+		"\x02\u0231\u0233\x05> \x02\u0232\u0229\x03\x02\x02\x02\u0232\u0231\x03" +
+		"\x02\x02\x02\u0233=\x03\x02\x02\x02\u0234\u0247\x05b2\x02\u0235\u0247" +
+		"\x05d3\x02\u0236\u0247\x05Z.\x02\u0237\u0247\x05X-\x02\u0238\u0247\x05" +
+		"T+\x02\u0239\u0247\x05V,\x02\u023A\u0247\x05J&\x02\u023B\u0247\x05N(\x02" +
+		"\u023C\u0247\x05P)\x02\u023D\u0247\x05`1\x02\u023E\u0247\x05^0\x02\u023F" +
+		"\u0247\x05R*\x02\u0240\u0247\x05L\'\x02\u0241\u0247\x05H%\x02\u0242\u0247" +
+		"\x05D#\x02\u0243\u0247\x05F$\x02\u0244\u0247\x05B\"\x02\u0245\u0247\x05" +
+		"@!\x02\u0246\u0234\x03\x02\x02\x02\u0246\u0235\x03\x02\x02\x02\u0246\u0236" +
+		"\x03\x02\x02\x02\u0246\u0237\x03\x02\x02\x02\u0246\u0238\x03\x02\x02\x02" +
+		"\u0246\u0239\x03\x02\x02\x02\u0246\u023A\x03\x02\x02\x02\u0246\u023B\x03" +
+		"\x02\x02\x02\u0246\u023C\x03\x02\x02\x02\u0246\u023D\x03\x02\x02\x02\u0246" +
+		"\u023E\x03\x02\x02\x02\u0246\u023F\x03\x02\x02\x02\u0246\u0240\x03\x02" +
+		"\x02\x02\u0246\u0241\x03\x02\x02\x02\u0246\u0242\x03\x02\x02\x02\u0246" +
+		"\u0243\x03\x02\x02\x02\u0246\u0244\x03\x02\x02\x02\u0246\u0245\x03\x02" +
+		"\x02\x02\u0247?\x03\x02\x02\x02\u0248\u024C\x07V\x02\x02\u0249\u024B\x05" +
+		"> \x02\u024A\u0249\x03\x02\x02\x02\u024B\u024E\x03\x02\x02\x02\u024C\u024A" +
+		"\x03\x02\x02\x02\u024C\u024D\x03\x02\x02\x02\u024D\u024F\x03\x02\x02\x02" +
+		"\u024E\u024C\x03\x02\x02\x02\u024F\u0250\x07W\x02\x02\u0250A\x03\x02\x02" +
+		"\x02\u0251\u0253\x07/\x02\x02\u0252\u0254\x05l7\x02\u0253\u0252\x03\x02" +
+		"\x02\x02\u0253\u0254\x03\x02\x02\x02\u0254\u0255\x03\x02\x02\x02\u0255" +
+		"\u0256\x07N\x02\x02\u0256C\x03\x02\x02\x02\u0257\u0259\x07-\x02\x02\u0258" +
+		"\u025A\x05l7\x02\u0259\u0258\x03\x02\x02\x02\u0259\u025A\x03\x02\x02\x02" +
+		"\u025A\u025B\x03\x02\x02\x02\u025B\u025C\x07N\x02\x02\u025CE\x03\x02\x02" +
+		"\x02\u025D\u025F\x07.\x02\x02\u025E\u0260\x05l7\x02\u025F\u025E\x03\x02" +
+		"\x02\x02\u025F\u0260\x03\x02\x02\x02\u0260\u0261\x03\x02\x02\x02\u0261" +
+		"\u0262\x07N\x02\x02\u0262G\x03\x02\x02\x02\u0263\u0264\x05l7\x02\u0264" +
+		"\u0265\x07I\x02\x02\u0265I\x03\x02\x02\x02\u0266\u0267\x07\x04\x02\x02" +
+		"\u0267\u0268\x07O\x02\x02\u0268\u0269\x05h5\x02\u0269\u026A\x07P\x02\x02" +
+		"\u026A\u027C\x07V\x02\x02\u026B\u026C\x07\x05\x02\x02\u026C\u026F\x05" +
+		"h5\x02\u026D\u026F\x07\x06\x02\x02\u026E\u026B\x03\x02\x02\x02\u026E\u026D" +
+		"\x03\x02\x02\x02\u026F\u0270\x03\x02\x02\x02\u0270\u0278\x07I\x02\x02" +
+		"\u0271\u0279\x05<\x1F\x02\u0272\u0274\x05> \x02\u0273\u0272\x03\x02\x02" +
+		"\x02\u0274\u0277\x03\x02\x02\x02\u0275\u0273\x03\x02\x02\x02\u0275\u0276" +
+		"\x03\x02\x02\x02\u0276\u0279\x03\x02\x02\x02\u0277\u0275\x03\x02\x02\x02" +
+		"\u0278\u0271\x03\x02\x02\x02\u0278\u0275\x03\x02\x02\x02\u0279\u027B\x03" +
+		"\x02\x02\x02\u027A\u026E\x03\x02\x02\x02\u027B\u027E\x03\x02\x02\x02\u027C" +
+		"\u027A\x03\x02\x02\x02\u027C\u027D\x03\x02\x02\x02\u027D\u027F\x03\x02" +
+		"\x02\x02\u027E\u027C\x03\x02\x02\x02\u027F\u0280\x07W\x02\x02\u0280K\x03" +
+		"\x02\x02\x02\u0281\u0282\x07\b\x02\x02\u0282\u0283\x05h5\x02\u0283M\x03" +
+		"\x02\x02\x02\u0284\u0285\x07\v\x02\x02\u0285\u0286\x07O\x02\x02\u0286" +
+		"\u0287\x07\x19\x02\x02\u0287\u0288\x07D\x02\x02\u0288\u0289\x07\'\x02" +
+		"\x02\u0289\u028A\x05h5\x02\u028A\u028B\x07P\x02\x02\u028B\u028C\x05<\x1F" +
+		"\x02\u028CO\x03\x02\x02\x02\u028D\u028E\x07&\x02\x02\u028E\u028F\x07O" +
+		"\x02\x02\u028F\u0290\x05h5\x02\u0290\u0291\x07\'\x02\x02\u0291\u0292\x05" +
+		"h5\x02\u0292\u0293\x07P\x02\x02\u0293\u0294\x05<\x1F\x02\u0294Q\x03\x02" +
+		"\x02\x02\u0295\u0297\x07#\x02\x02\u0296\u0298\x05h5\x02\u0297\u0296\x03" +
+		"\x02\x02\x02\u0297\u0298\x03\x02\x02\x02\u0298\u0299\x03\x02\x02\x02\u0299" +
+		"\u029A\x07N\x02\x02\u029AS\x03\x02\x02\x02\u029B\u029C\x07\x16\x02\x02" +
+		"\u029C\u029D\x05<\x1F\x02\u029D\u029E\x07\x17\x02\x02\u029E\u02A0\x07" +
+		"O\x02\x02\u029F\u02A1\x05h5\x02\u02A0\u029F\x03\x02\x02\x02\u02A0\u02A1" +
+		"\x03\x02\x02\x02\u02A1\u02A2\x03\x02\x02\x02\u02A2\u02A3\x07P\x02\x02" +
+		"\u02A3U\x03\x02\x02\x02\u02A4\u02A5\x07\x17\x02\x02\u02A5\u02A7\x07O\x02" +
+		"\x02\u02A6\u02A8\x05h5\x02\u02A7\u02A6\x03\x02\x02\x02\u02A7\u02A8\x03" +
+		"\x02\x02\x02\u02A8\u02A9\x03\x02\x02\x02\u02A9\u02AA\x07P\x02\x02\u02AA" +
+		"\u02AB\x05<\x1F\x02\u02ABW\x03\x02\x02\x02\u02AC\u02AD\x07\v\x02\x02\u02AD" +
+		"\u02AF\x07O\x02\x02\u02AE\u02B0\x05h5\x02\u02AF\u02AE\x03\x02\x02\x02" +
+		"\u02AF\u02B0\x03\x02\x02\x02\u02B0\u02B1\x03\x02\x02\x02\u02B1\u02B3\x07" +
+		"N\x02\x02\u02B2\u02B4\x05h5\x02\u02B3\u02B2\x03\x02\x02\x02\u02B3\u02B4" +
+		"\x03\x02\x02\x02\u02B4\u02B5\x03\x02\x02\x02\u02B5\u02B7\x07N\x02\x02" +
+		"\u02B6\u02B8\x05h5\x02\u02B7\u02B6\x03\x02\x02\x02\u02B7\u02B8\x03\x02" +
+		"\x02\x02\u02B8\u02B9\x03\x02\x02\x02\u02B9\u02BA\x07P\x02\x02\u02BA\u02BB" +
+		"\x05<\x1F\x02\u02BBY\x03\x02\x02\x02\u02BC\u02BD\x07\f\x02\x02\u02BD\u02C7" +
+		"\x05<\x1F\x02\u02BE\u02BF\x07\r\x02\x02\u02BF\u02C1\x07O\x02\x02\u02C0" +
+		"\u02C2\x05n8\x02\u02C1\u02C0\x03\x02\x02\x02\u02C1\u02C2\x03\x02\x02\x02" +
+		"\u02C2\u02C3\x03\x02\x02\x02\u02C3\u02C4\x07P\x02\x02\u02C4\u02C6\x05" +
+		"<\x1F\x02\u02C5\u02BE\x03\x02\x02\x02\u02C6\u02C9\x03\x02\x02\x02\u02C7" +
+		"\u02C5\x03\x02\x02\x02\u02C7\u02C8\x03\x02\x02\x02\u02C8\u02CC\x03\x02" +
+		"\x02\x02\u02C9\u02C7\x03\x02\x02\x02\u02CA\u02CB\x07\x0E\x02\x02\u02CB" +
+		"\u02CD\x05<\x1F\x02\u02CC\u02CA\x03\x02\x02\x02\u02CC\u02CD\x03\x02\x02" +
+		"\x02\u02CD[\x03\x02\x02\x02\u02CE\u02D1\x05h5\x02\u02CF\u02D0\x07K\x02" +
+		"\x02\u02D0\u02D2\x05\\/\x02\u02D1\u02CF\x03\x02\x02\x02\u02D1\u02D2\x03" +
+		"\x02\x02\x02\u02D2]\x03\x02\x02\x02\u02D3\u02D5\x05h5\x02\u02D4\u02D3" +
+		"\x03\x02\x02\x02\u02D4\u02D5\x03\x02\x02\x02\u02D5\u02D6\x03\x02\x02\x02" +
+		"\u02D6\u02D7\x07N\x02\x02\u02D7_\x03\x02\x02\x02\u02D8\u02D9\x07S\x02" +
+		"\x02\u02D9\u02DA\x07N\x02\x02\u02DAa\x03\x02\x02\x02\u02DB\u02DC\x07\x19" +
+		"\x02\x02\u02DC\u02DF\x05l7\x02\u02DD\u02DE\x07E\x02\x02\u02DE\u02E0\x05" +
+		"h5\x02\u02DF\u02DD\x03\x02\x02\x02\u02DF\u02E0\x03\x02\x02\x02\u02E0\u02E1" +
+		"\x03\x02\x02\x02\u02E1\u02E2\x07N\x02\x02\u02E2c\x03\x02\x02\x02\u02E3" +
+		"\u02E4\x07\x15\x02\x02\u02E4\u02EA\x05f4\x02\u02E5\u02E6\x07\x18\x02\x02" +
+		"\u02E6\u02E7\x07\x15\x02\x02\u02E7\u02E9\x05f4\x02\u02E8\u02E5\x03\x02" +
+		"\x02\x02\u02E9\u02EC\x03\x02\x02\x02\u02EA\u02E8\x03\x02\x02\x02\u02EA" +
+		"\u02EB\x03\x02\x02\x02\u02EB\u02EF\x03\x02\x02\x02\u02EC\u02EA\x03\x02" +
+		"\x02\x02\u02ED\u02EE\x07\x18\x02\x02\u02EE\u02F0\x05<\x1F\x02\u02EF\u02ED" +
+		"\x03\x02\x02\x02\u02EF\u02F0\x03\x02\x02\x02\u02F0e\x03\x02\x02\x02\u02F1" +
+		"\u02F2\x07O\x02\x02\u02F2\u02F3\x05h5\x02\u02F3\u02F4\x07P\x02\x02\u02F4" +
+		"\u02F5\x05<\x1F\x02\u02F5g\x03\x02\x02\x02\u02F6\u02F7\b5\x01\x02\u02F7" +
+		"\u02F9\x07Q\x02\x02\u02F8\u02FA\x05h5\x02\u02F9\u02F8\x03\x02\x02\x02" +
+		"\u02F9\u02FA\x03\x02\x02\x02\u02FA\u02FB\x03\x02\x02\x02\u02FB\u0322\x07" +
+		"R\x02\x02\u02FC\u02FD\x07\x1E\x02\x02\u02FD\u0322\x05h5&\u02FE\u02FF\x07" +
+		"\x1D\x02\x02\u02FF\u0322\x05h5%\u0300\u0301\x07\x11\x02\x02\u0301\u0322" +
+		"\x05h5$\u0302\u0322\x05j6\x02\u0303\u0304\x07D\x02\x02\u0304\u0322\x05" +
+		"&\x14\x02\u0305\u0307\x07O\x02\x02\u0306\u0308\x05h5\x02\u0307\u0306\x03" +
+		"\x02\x02\x02\u0307\u0308\x03\x02\x02\x02\u0308\u0309\x03\x02\x02\x02\u0309" +
+		"\u0322\x07P\x02\x02\u030A\u030B\x07\x19\x02\x02\u030B\u0322\x05h5\x1C" +
+		"\u030C\u030D\x07$\x02\x02\u030D\u0322\x05h5\x1B\u030E\u030F\x07\t\x02" +
+		"\x02\u030F\u0322\x05h5\x1A\u0310\u0312\x07V\x02\x02\u0311\u0313\x05n8" +
+		"\x02\u0312\u0311\x03\x02\x02\x02\u0312\u0313\x03\x02\x02\x02\u0313\u0314" +
+		"\x03\x02\x02\x02\u0314\u0316\x07I\x02\x02\u0315\u0317\x05h5\x02\u0316" +
+		"\u0315\x03\x02\x02\x02\u0316\u0317\x03\x02\x02\x02\u0317\u0318\x03\x02" +
+		"\x02\x02\u0318\u0322\x07W\x02\x02\u0319\u031A\x07A\x02\x02\u031A\u0322" +
+		"\x05h5\r\u031B\u031C\x07L\x02\x02\u031C\u031D\x07A\x02\x02\u031D\u0322" +
+		"\x05h5\f\u031E\u031F\t\x05\x02\x02\u031F\u0322\x05h5\x06\u0320\u0322\x05" +
+		"6\x1C\x02\u0321\u02F6\x03\x02\x02\x02\u0321\u02FC\x03\x02\x02\x02\u0321" +
+		"\u02FE\x03\x02\x02\x02\u0321\u0300\x03\x02\x02\x02\u0321\u0302\x03\x02" +
+		"\x02\x02\u0321\u0303\x03\x02\x02\x02\u0321\u0305\x03\x02\x02\x02\u0321" +
+		"\u030A\x03\x02\x02\x02\u0321\u030C\x03\x02\x02\x02\u0321\u030E\x03\x02" +
+		"\x02\x02\u0321\u0310\x03\x02\x02\x02\u0321\u0319\x03\x02\x02\x02\u0321" +
+		"\u031B\x03\x02\x02\x02\u0321\u031E\x03\x02\x02\x02\u0321\u0320\x03\x02" +
+		"\x02\x02\u0322\u03A4\x03\x02\x02\x02\u0323\u0324\f*\x02\x02\u0324\u0325" +
+		"\x07K\x02\x02\u0325\u03A3\x05h5+\u0326\u0327\f(\x02\x02\u0327\u0328\x07" +
+		"J\x02\x02\u0328\u03A3\x05h5)\u0329\u032A\f\x19\x02\x02\u032A\u032B\x07" +
+		"4\x02\x02\u032B\u03A3\x05h5\x1A\u032C\u032D\f\x18\x02\x02\u032D\u032E" +
+		"\x07+\x02\x02\u032E\u032F\x07\'\x02\x02\u032F\u03A3\x05h5\x19\u0330\u0331" +
+		"\f\x17\x02\x02\u0331\u0332\x07,\x02\x02\u0332\u0333\x07\'\x02\x02\u0333" +
+		"\u03A3\x05h5\x18\u0334\u0335\f\x16\x02\x02\u0335\u0336\x07,\x02\x02\u0336" +
+		"\u03A3\x05h5\x17\u0337\u0338\f\x15\x02\x02\u0338\u0339\x07\'\x02\x02\u0339" +
+		"\u03A3\x05h5\x16\u033A\u033B\f\x14\x02\x02\u033B\u033C\x07E\x02\x02\u033C" +
+		"\u03A3\x05h5\x15\u033D\u033E\f\x13\x02\x02\u033E\u033F\x078\x02\x02\u033F" +
+		"\u03A3\x05h5\x14\u0340\u0341\f\x11\x02\x02\u0341\u0343\t\x06\x02\x02\u0342" +
+		"\u0344\x07E\x02\x02\u0343\u0342\x03\x02\x02\x02\u0343\u0344\x03\x02\x02" +
+		"\x02\u0344\u0345\x03\x02\x02\x02\u0345\u03A3\x05h5\x12\u0346\u0347\f\x10" +
+		"\x02\x02\u0347\u0348\t\x07\x02\x02\u0348\u03A3\x05h5\x11\u0349\u034A\f" +
+		"\x0F\x02\x02\u034A\u034C\x07C\x02\x02\u034B\u034D\x07E\x02\x02\u034C\u034B" +
+		"\x03\x02\x02\x02\u034C\u034D\x03\x02\x02\x02\u034D\u034E\x03\x02\x02\x02" +
+		"\u034E\u03A3\x05h5\x10\u034F\u0350\f\x0E\x02\x02\u0350\u0351\x07A\x02" +
+		"\x02\u0351\u03A3\x05h5\x0F\u0352\u0353\f\v\x02\x02\u0353\u0355\t\b\x02" +
+		"\x02\u0354\u0356\x07E\x02\x02\u0355\u0354\x03\x02\x02\x02\u0355\u0356" +
+		"\x03\x02\x02\x02\u0356\u0357\x03\x02\x02\x02\u0357\u03A3\x05h5\f\u0358" +
+		"\u0359\f\n\x02\x02\u0359\u035B\t\t\x02\x02\u035A\u035C\x07E\x02\x02\u035B" +
+		"\u035A\x03\x02\x02\x02\u035B\u035C\x03\x02\x02\x02\u035C\u035D\x03\x02" +
+		"\x02\x02\u035D\u03A3\x05h5\v\u035E\u035F\f\t\x02\x02\u035F\u0360\t\n\x02" +
+		"\x02\u0360\u03A3\x05h5\n\u0361\u0362\f\b\x02\x02\u0362\u0363\t\v\x02\x02" +
+		"\u0363\u03A3\x05h5\t\u0364\u0365\f\x07\x02\x02\u0365\u0367\t\f\x02\x02" +
+		"\u0366\u0368\x07E\x02\x02\u0367\u0366\x03\x02\x02\x02\u0367\u0368\x03" +
+		"\x02\x02\x02\u0368\u0369\x03\x02\x02\x02\u0369\u03A3\x05h5\b\u036A\u036B" +
+		"\f\x04\x02\x02\u036B\u036C\x077\x02\x02\u036C\u036D\x05h5\x02\u036D\u036E" +
+		"\x07I\x02\x02\u036E\u036F\x05h5\x05\u036F\u03A3\x03\x02\x02\x02\u0370" +
+		"\u0371\f)\x02\x02\u0371\u0373\x07Q\x02\x02\u0372\u0374\x05h5\x02\u0373" +
+		"\u0372\x03\x02\x02\x02\u0373\u0374\x03\x02\x02\x02\u0374\u0375\x03\x02" +
+		"\x02\x02\u0375\u03A3\x07R\x02\x02\u0376\u0377\f\'\x02\x02\u0377\u0378" +
+		"\x07)\x02\x02\u0378\u037B\x05h5\x02\u0379\u037A\x07*\x02\x02\u037A\u037C" +
+		"\x05h5\x02\u037B\u0379\x03\x02\x02\x02\u037B\u037C\x03\x02\x02\x02\u037C" +
+		"\u03A3\x03\x02\x02\x02\u037D\u037E\f\"\x02\x02\u037E\u0380\x07O\x02\x02" +
+		"\u037F\u0381\x05n8\x02\u0380\u037F\x03\x02\x02\x02\u0381\u0382\x03\x02" +
+		"\x02\x02\u0382\u0380\x03\x02\x02\x02\u0382\u0383\x03\x02\x02\x02\u0383" +
+		"\u0384\x03\x02\x02\x02\u0384\u0385\x07P\x02\x02\u0385\u03A3\x03\x02\x02" +
+		"\x02\u0386\u0387\f!\x02\x02\u0387\u0389\x07O\x02\x02\u0388\u038A\x05h" +
+		"5\x02\u0389\u0388\x03\x02\x02\x02\u0389\u038A\x03\x02\x02\x02\u038A\u038B" +
+		"\x03\x02\x02\x02\u038B\u03A3\x07P\x02\x02\u038C\u038D\f\x1F\x02\x02\u038D" +
+		"\u038F\x07V\x02\x02\u038E\u0390\x05n8\x02\u038F\u038E\x03\x02\x02\x02" +
+		"\u038F\u0390\x03\x02\x02\x02\u0390\u0391\x03\x02\x02\x02\u0391\u0393\x07" +
+		"I\x02\x02\u0392\u0394\x05h5\x02\u0393\u0392\x03\x02\x02\x02\u0393\u0394" +
+		"\x03\x02\x02\x02\u0394\u0395\x03\x02\x02\x02\u0395\u03A3\x07W\x02\x02" +
+		"\u0396\u0397\f\x1E\x02\x02\u0397\u0398\x07I\x02\x02\u0398\u0399\x05*\x16" +
+		"\x02\u0399\u039A\x05&\x14\x02\u039A\u03A3\x03\x02\x02\x02\u039B\u03A0" +
+		"\f\x05\x02\x02\u039C\u039D\x079\x02\x02\u039D\u03A1\x079\x02\x02\u039E" +
+		"\u039F\x07<\x02\x02\u039F\u03A1\x07<\x02\x02\u03A0\u039C\x03\x02\x02\x02" +
+		"\u03A0\u039E\x03\x02\x02\x02\u03A1\u03A3\x03\x02\x02\x02\u03A2\u0323\x03" +
+		"\x02\x02\x02\u03A2\u0326\x03\x02\x02\x02\u03A2\u0329\x03\x02\x02\x02\u03A2" +
+		"\u032C\x03\x02\x02\x02\u03A2\u0330\x03\x02\x02\x02\u03A2\u0334\x03\x02" +
+		"\x02\x02\u03A2\u0337\x03\x02\x02\x02\u03A2\u033A\x03\x02\x02\x02\u03A2" +
+		"\u033D\x03\x02\x02\x02\u03A2\u0340\x03\x02\x02\x02\u03A2\u0346\x03\x02" +
+		"\x02\x02\u03A2\u0349\x03\x02\x02\x02\u03A2\u034F\x03\x02\x02\x02\u03A2" +
+		"\u0352\x03\x02\x02\x02\u03A2\u0358\x03\x02\x02\x02\u03A2\u035E\x03\x02" +
+		"\x02\x02\u03A2\u0361\x03\x02\x02\x02\u03A2\u0364\x03\x02\x02\x02\u03A2" +
+		"\u036A\x03\x02\x02\x02\u03A2\u0370\x03\x02\x02\x02\u03A2\u0376\x03\x02" +
+		"\x02\x02\u03A2\u037D\x03\x02\x02\x02\u03A2\u0386\x03\x02\x02\x02\u03A2" +
+		"\u038C\x03\x02\x02\x02\u03A2\u0396\x03\x02\x02\x02\u03A2\u039B\x03\x02" +
+		"\x02\x02\u03A3\u03A6\x03\x02\x02\x02\u03A4\u03A2\x03\x02\x02\x02\u03A4" +
+		"\u03A5\x03\x02\x02\x02\u03A5i\x03\x02\x02\x02\u03A6\u03A4\x03\x02\x02" +
+		"\x02\u03A7\u03B3\x07\x1D\x02\x02\u03A8\u03B3\x07G\x02\x02\u03A9\u03B3" +
+		"\x07F\x02\x02\u03AA\u03AB\x074\x02\x02\u03AB\u03B3\x05l7\x02\u03AC\u03B3" +
+		"\x05l7\x02\u03AD\u03B3\x07T\x02\x02\u03AE\u03B3\x07S\x02\x02\u03AF\u03B3" +
+		"\x07U\x02\x02\u03B0\u03B3\x07\x1A\x02\x02\u03B1\u03B3\x07\x1B\x02\x02" +
+		"\u03B2\u03A7\x03\x02\x02\x02\u03B2\u03A8\x03\x02\x02\x02\u03B2\u03A9\x03" +
+		"\x02\x02\x02\u03B2\u03AA\x03\x02\x02\x02\u03B2\u03AC\x03\x02\x02\x02\u03B2" +
+		"\u03AD\x03\x02\x02\x02\u03B2\u03AE\x03\x02\x02\x02\u03B2\u03AF\x03\x02" +
+		"\x02\x02\u03B2\u03B0\x03\x02\x02\x02\u03B2\u03B1\x03\x02\x02\x02\u03B3" +
+		"k\x03\x02\x02\x02\u03B4\u03B5\t\r\x02\x02\u03B5m\x03\x02\x02\x02\u03B6" +
+		"\u03BA\x05p9\x02\u03B7\u03BA\x07(\x02\x02\u03B8\u03BA\x05$\x13\x02\u03B9" +
+		"\u03B6\x03\x02\x02\x02\u03B9\u03B7\x03\x02\x02\x02\u03B9\u03B8\x03\x02" +
+		"\x02\x02\u03BA\u03C1\x03\x02\x02\x02\u03BB\u03BD\x07J\x02\x02\u03BC\u03BE" +
+		"\x05n8\x02\u03BD\u03BC\x03\x02\x02\x02\u03BD\u03BE\x03\x02\x02\x02\u03BE" +
+		"\u03C0\x03\x02\x02\x02\u03BF\u03BB\x03\x02\x02\x02\u03C0\u03C3\x03\x02" +
+		"\x02\x02\u03C1\u03BF\x03\x02\x02\x02\u03C1\u03C2\x03\x02\x02\x02\u03C2" +
+		"o\x03\x02\x02\x02\u03C3\u03C1\x03\x02\x02\x02\u03C4\u03C5\x05l7\x02\u03C5" +
+		"\u03C6\x07I\x02\x02\u03C6\u03C8\x03\x02\x02\x02\u03C7\u03C4\x03\x02\x02" +
+		"\x02\u03C7\u03C8\x03\x02\x02\x02\u03C8\u03CA\x03\x02\x02\x02\u03C9\u03CB" +
+		"\x05l7\x02\u03CA\u03C9\x03\x02\x02\x02\u03CA\u03CB\x03\x02\x02\x02\u03CB" +
+		"\u03CC\x03\x02\x02\x02\u03CC\u03CE\x05l7\x02\u03CD\u03CF\x077\x02\x02" +
+		"\u03CE\u03CD\x03\x02\x02\x02\u03CE\u03CF\x03\x02\x02\x02\u03CF\u03DC\x03" +
+		"\x02\x02\x02\u03D0\u03D1\x05l7\x02\u03D1\u03D3\x07I\x02\x02\u03D2\u03D4" +
+		"\x077\x02\x02\u03D3\u03D2\x03\x02\x02\x02\u03D3\u03D4\x03\x02\x02\x02" +
+		"\u03D4\u03DC\x03\x02\x02\x02\u03D5\u03D6\x05l7\x02\u03D6\u03D7\x07I\x02" +
+		"\x02\u03D7\u03D9\x07E\x02\x02\u03D8\u03DA\x05h5\x02\u03D9\u03D8\x03\x02" +
+		"\x02\x02\u03D9\u03DA\x03\x02\x02\x02\u03DA\u03DC\x03\x02\x02\x02\u03DB" +
+		"\u03C7\x03\x02\x02\x02\u03DB\u03D0\x03\x02\x02\x02\u03DB\u03D5\x03\x02" +
+		"\x02\x02\u03DCq\x03\x02\x02\x02\x88u\x85\x93\x97\x9C\xA9\xB1\xB7\xBE\xC2" +
+		"\xCD\xCF\xD6\xDA\xE1\xE9\xF2\xFA\xFF\u0106\u010E\u0114\u0117\u011A\u011E" +
+		"\u0124\u012A\u012F\u0136\u0139\u013C\u013E\u0143\u0147\u014D\u014F\u0153" +
+		"\u0157\u015F\u0167\u0169\u016D\u0173\u0178\u017D\u0183\u0186\u018D\u019C" +
+		"\u01A2\u01A8\u01AA\u01B0\u01B4\u01B7\u01BB\u01C1\u01C6\u01C8\u01CD\u01D4" +
+		"\u01D8\u01DB\u01E1\u01E7\u01EB\u01EE\u01F0\u01F6\u01FD\u01FF\u0209\u020F" +
+		"\u0212\u0215\u021A\u021D\u0222\u0225\u0227\u022D\u0232\u0246\u024C\u0253" +
+		"\u0259\u025F\u026E\u0275\u0278\u027C\u0297\u02A0\u02A7\u02AF\u02B3\u02B7" +
+		"\u02C1\u02C7\u02CC\u02D1\u02D4\u02DF\u02EA\u02EF\u02F9\u0307\u0312\u0316" +
+		"\u0321\u0343\u034C\u0355\u035B\u0367\u0373\u037B\u0382\u0389\u038F\u0393" +
+		"\u03A0\u03A2\u03A4\u03B2\u03B9\u03BD\u03C1\u03C7\u03CA\u03CE\u03D3\u03D9" +
+		"\u03DB";
 	public static readonly _serializedATN: string = Utils.join(
 		[
 			Tads3Parser._serializedATNSegment0,
@@ -5556,74 +5576,6 @@ export class PragmaDirectiveContext extends ParserRuleContext {
 	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
 		if (visitor.visitPragmaDirective) {
 			return visitor.visitPragmaDirective(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
-}
-
-
-export class GrammarDeclarationContext extends ParserRuleContext {
-	public _isModify!: Token;
-	public _isReplace!: Token;
-	public _prodName!: IdentifierAtomContext;
-	public _tag!: IdentifierAtomContext;
-	public GRAMMAR(): TerminalNode { return this.getToken(Tads3Parser.GRAMMAR, 0); }
-	public COLON(): TerminalNode[];
-	public COLON(i: number): TerminalNode;
-	public COLON(i?: number): TerminalNode | TerminalNode[] {
-		if (i === undefined) {
-			return this.getTokens(Tads3Parser.COLON);
-		} else {
-			return this.getToken(Tads3Parser.COLON, i);
-		}
-	}
-	public grammarRules(): GrammarRulesContext {
-		return this.getRuleContext(0, GrammarRulesContext);
-	}
-	public identifierAtom(): IdentifierAtomContext[];
-	public identifierAtom(i: number): IdentifierAtomContext;
-	public identifierAtom(i?: number): IdentifierAtomContext | IdentifierAtomContext[] {
-		if (i === undefined) {
-			return this.getRuleContexts(IdentifierAtomContext);
-		} else {
-			return this.getRuleContext(i, IdentifierAtomContext);
-		}
-	}
-	public LEFT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LEFT_PAREN, 0); }
-	public RIGHT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.RIGHT_PAREN, 0); }
-	public superTypes(): SuperTypesContext | undefined {
-		return this.tryGetRuleContext(0, SuperTypesContext);
-	}
-	public MODIFY(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.MODIFY, 0); }
-	public REPLACE(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.REPLACE, 0); }
-	public curlyObjectBody(): CurlyObjectBodyContext | undefined {
-		return this.tryGetRuleContext(0, CurlyObjectBodyContext);
-	}
-	public semiColonEndedObjectBody(): SemiColonEndedObjectBodyContext | undefined {
-		return this.tryGetRuleContext(0, SemiColonEndedObjectBodyContext);
-	}
-	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
-		super(parent, invokingState);
-	}
-	// @Override
-	public get ruleIndex(): number { return Tads3Parser.RULE_grammarDeclaration; }
-	// @Override
-	public enterRule(listener: Tads3Listener): void {
-		if (listener.enterGrammarDeclaration) {
-			listener.enterGrammarDeclaration(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: Tads3Listener): void {
-		if (listener.exitGrammarDeclaration) {
-			listener.exitGrammarDeclaration(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
-		if (visitor.visitGrammarDeclaration) {
-			return visitor.visitGrammarDeclaration(this);
 		} else {
 			return visitor.visitChildren(this);
 		}
@@ -6198,9 +6150,9 @@ export class IntrinsicMethodDeclarationContext extends ParserRuleContext {
 
 
 export class ObjectDeclarationContext extends ParserRuleContext {
+	public _isClass!: Token;
 	public _isModify!: Token;
 	public _isReplace!: Token;
-	public _isClass!: Token;
 	public _PLUS!: Token;
 	public _level: Token[] = [];
 	public _isTransient!: Token;
@@ -6223,14 +6175,14 @@ export class ObjectDeclarationContext extends ParserRuleContext {
 			return this.getToken(Tads3Parser.PLUS, i);
 		}
 	}
-	public COLON(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.COLON, 0); }
+	public TRANSIENT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.TRANSIENT, 0); }
 	public identifierAtom(): IdentifierAtomContext | undefined {
 		return this.tryGetRuleContext(0, IdentifierAtomContext);
 	}
+	public CLASS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.CLASS, 0); }
 	public MODIFY(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.MODIFY, 0); }
 	public REPLACE(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.REPLACE, 0); }
-	public CLASS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.CLASS, 0); }
-	public TRANSIENT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.TRANSIENT, 0); }
+	public COLON(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.COLON, 0); }
 	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
 		super(parent, invokingState);
 	}
@@ -6259,14 +6211,82 @@ export class ObjectDeclarationContext extends ParserRuleContext {
 }
 
 
+export class GrammarDeclarationContext extends ParserRuleContext {
+	public _isModify!: Token;
+	public _isReplace!: Token;
+	public _prodName!: IdentifierAtomContext;
+	public _tag!: IdentifierAtomContext;
+	public GRAMMAR(): TerminalNode { return this.getToken(Tads3Parser.GRAMMAR, 0); }
+	public COLON(): TerminalNode[];
+	public COLON(i: number): TerminalNode;
+	public COLON(i?: number): TerminalNode | TerminalNode[] {
+		if (i === undefined) {
+			return this.getTokens(Tads3Parser.COLON);
+		} else {
+			return this.getToken(Tads3Parser.COLON, i);
+		}
+	}
+	public grammarRules(): GrammarRulesContext {
+		return this.getRuleContext(0, GrammarRulesContext);
+	}
+	public identifierAtom(): IdentifierAtomContext[];
+	public identifierAtom(i: number): IdentifierAtomContext;
+	public identifierAtom(i?: number): IdentifierAtomContext | IdentifierAtomContext[] {
+		if (i === undefined) {
+			return this.getRuleContexts(IdentifierAtomContext);
+		} else {
+			return this.getRuleContext(i, IdentifierAtomContext);
+		}
+	}
+	public LEFT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LEFT_PAREN, 0); }
+	public RIGHT_PAREN(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.RIGHT_PAREN, 0); }
+	public superTypes(): SuperTypesContext | undefined {
+		return this.tryGetRuleContext(0, SuperTypesContext);
+	}
+	public MODIFY(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.MODIFY, 0); }
+	public REPLACE(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.REPLACE, 0); }
+	public curlyObjectBody(): CurlyObjectBodyContext | undefined {
+		return this.tryGetRuleContext(0, CurlyObjectBodyContext);
+	}
+	public semiColonEndedObjectBody(): SemiColonEndedObjectBodyContext | undefined {
+		return this.tryGetRuleContext(0, SemiColonEndedObjectBodyContext);
+	}
+	constructor(parent: ParserRuleContext | undefined, invokingState: number) {
+		super(parent, invokingState);
+	}
+	// @Override
+	public get ruleIndex(): number { return Tads3Parser.RULE_grammarDeclaration; }
+	// @Override
+	public enterRule(listener: Tads3Listener): void {
+		if (listener.enterGrammarDeclaration) {
+			listener.enterGrammarDeclaration(this);
+		}
+	}
+	// @Override
+	public exitRule(listener: Tads3Listener): void {
+		if (listener.exitGrammarDeclaration) {
+			listener.exitGrammarDeclaration(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitGrammarDeclaration) {
+			return visitor.visitGrammarDeclaration(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
+}
+
+
 export class TemplateExprContext extends ParserRuleContext {
 	public _singleString!: Token;
 	public _atLocation!: ExprContext;
 	public _doubleString!: Token;
+	public _connection!: IdentifierAtomContext;
+	public _expression!: ExprContext;
 	public _op!: Token;
 	public _id!: IdentifierAtomContext;
-	public _expression!: ExprContext;
-	public _connection!: IdentifierAtomContext;
 	public AT(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.AT, 0); }
 	public ARROW(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ARROW, 0); }
 	public LEFT_BRACKET(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.LEFT_BRACKET, 0); }
@@ -8281,6 +8301,36 @@ export class ExprWithParenExprContext extends ExprContext {
 		}
 	}
 }
+export class ExprWithAnonymousObjectExpr2Context extends ExprContext {
+	public ID(): TerminalNode { return this.getToken(Tads3Parser.ID, 0); }
+	public curlyObjectBody(): CurlyObjectBodyContext {
+		return this.getRuleContext(0, CurlyObjectBodyContext);
+	}
+	constructor(ctx: ExprContext) {
+		super(ctx.parent, ctx.invokingState);
+		this.copyFrom(ctx);
+	}
+	// @Override
+	public enterRule(listener: Tads3Listener): void {
+		if (listener.enterExprWithAnonymousObjectExpr2) {
+			listener.enterExprWithAnonymousObjectExpr2(this);
+		}
+	}
+	// @Override
+	public exitRule(listener: Tads3Listener): void {
+		if (listener.exitExprWithAnonymousObjectExpr2) {
+			listener.exitExprWithAnonymousObjectExpr2(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitExprWithAnonymousObjectExpr2) {
+			return visitor.visitExprWithAnonymousObjectExpr2(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
+}
 export class ExprWithAnonymousObjectExprContext extends ExprContext {
 	public expr(): ExprContext[];
 	public expr(i: number): ExprContext;
@@ -8851,6 +8901,103 @@ export class PowerOfExprContext extends ExprContext {
 		}
 	}
 }
+export class ArrowExprContext extends ExprContext {
+	public expr(): ExprContext[];
+	public expr(i: number): ExprContext;
+	public expr(i?: number): ExprContext | ExprContext[] {
+		if (i === undefined) {
+			return this.getRuleContexts(ExprContext);
+		} else {
+			return this.getRuleContext(i, ExprContext);
+		}
+	}
+	public ARROW(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ARROW, 0); }
+	constructor(ctx: ExprContext) {
+		super(ctx.parent, ctx.invokingState);
+		this.copyFrom(ctx);
+	}
+	// @Override
+	public enterRule(listener: Tads3Listener): void {
+		if (listener.enterArrowExpr) {
+			listener.enterArrowExpr(this);
+		}
+	}
+	// @Override
+	public exitRule(listener: Tads3Listener): void {
+		if (listener.exitArrowExpr) {
+			listener.exitArrowExpr(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitArrowExpr) {
+			return visitor.visitArrowExpr(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
+}
+export class ArrowExpr2Context extends ExprContext {
+	public expr(): ExprContext {
+		return this.getRuleContext(0, ExprContext);
+	}
+	public ARROW(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ARROW, 0); }
+	constructor(ctx: ExprContext) {
+		super(ctx.parent, ctx.invokingState);
+		this.copyFrom(ctx);
+	}
+	// @Override
+	public enterRule(listener: Tads3Listener): void {
+		if (listener.enterArrowExpr2) {
+			listener.enterArrowExpr2(this);
+		}
+	}
+	// @Override
+	public exitRule(listener: Tads3Listener): void {
+		if (listener.exitArrowExpr2) {
+			listener.exitArrowExpr2(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitArrowExpr2) {
+			return visitor.visitArrowExpr2(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
+}
+export class ArrowExpr3Context extends ExprContext {
+	public STAR(): TerminalNode { return this.getToken(Tads3Parser.STAR, 0); }
+	public ARROW(): TerminalNode { return this.getToken(Tads3Parser.ARROW, 0); }
+	public expr(): ExprContext {
+		return this.getRuleContext(0, ExprContext);
+	}
+	constructor(ctx: ExprContext) {
+		super(ctx.parent, ctx.invokingState);
+		this.copyFrom(ctx);
+	}
+	// @Override
+	public enterRule(listener: Tads3Listener): void {
+		if (listener.enterArrowExpr3) {
+			listener.enterArrowExpr3(this);
+		}
+	}
+	// @Override
+	public exitRule(listener: Tads3Listener): void {
+		if (listener.exitArrowExpr3) {
+			listener.exitArrowExpr3(this);
+		}
+	}
+	// @Override
+	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
+		if (visitor.visitArrowExpr3) {
+			return visitor.visitArrowExpr3(this);
+		} else {
+			return visitor.visitChildren(this);
+		}
+	}
+}
 export class MultiplicationExprContext extends ExprContext {
 	public _op!: Token;
 	public _isInc!: Token;
@@ -9010,103 +9157,6 @@ export class EqualityExprContext extends ExprContext {
 		}
 	}
 }
-export class ArrowExprContext extends ExprContext {
-	public expr(): ExprContext[];
-	public expr(i: number): ExprContext;
-	public expr(i?: number): ExprContext | ExprContext[] {
-		if (i === undefined) {
-			return this.getRuleContexts(ExprContext);
-		} else {
-			return this.getRuleContext(i, ExprContext);
-		}
-	}
-	public ARROW(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ARROW, 0); }
-	constructor(ctx: ExprContext) {
-		super(ctx.parent, ctx.invokingState);
-		this.copyFrom(ctx);
-	}
-	// @Override
-	public enterRule(listener: Tads3Listener): void {
-		if (listener.enterArrowExpr) {
-			listener.enterArrowExpr(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: Tads3Listener): void {
-		if (listener.exitArrowExpr) {
-			listener.exitArrowExpr(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
-		if (visitor.visitArrowExpr) {
-			return visitor.visitArrowExpr(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
-}
-export class ArrowExpr2Context extends ExprContext {
-	public expr(): ExprContext {
-		return this.getRuleContext(0, ExprContext);
-	}
-	public ARROW(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.ARROW, 0); }
-	constructor(ctx: ExprContext) {
-		super(ctx.parent, ctx.invokingState);
-		this.copyFrom(ctx);
-	}
-	// @Override
-	public enterRule(listener: Tads3Listener): void {
-		if (listener.enterArrowExpr2) {
-			listener.enterArrowExpr2(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: Tads3Listener): void {
-		if (listener.exitArrowExpr2) {
-			listener.exitArrowExpr2(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
-		if (visitor.visitArrowExpr2) {
-			return visitor.visitArrowExpr2(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
-}
-export class ArrowExpr3Context extends ExprContext {
-	public STAR(): TerminalNode { return this.getToken(Tads3Parser.STAR, 0); }
-	public ARROW(): TerminalNode { return this.getToken(Tads3Parser.ARROW, 0); }
-	public expr(): ExprContext {
-		return this.getRuleContext(0, ExprContext);
-	}
-	constructor(ctx: ExprContext) {
-		super(ctx.parent, ctx.invokingState);
-		this.copyFrom(ctx);
-	}
-	// @Override
-	public enterRule(listener: Tads3Listener): void {
-		if (listener.enterArrowExpr3) {
-			listener.enterArrowExpr3(this);
-		}
-	}
-	// @Override
-	public exitRule(listener: Tads3Listener): void {
-		if (listener.exitArrowExpr3) {
-			listener.exitArrowExpr3(this);
-		}
-	}
-	// @Override
-	public accept<Result>(visitor: Tads3Visitor<Result>): Result {
-		if (visitor.visitArrowExpr3) {
-			return visitor.visitArrowExpr3(this);
-		} else {
-			return visitor.visitChildren(this);
-		}
-	}
-}
 export class UnaryExprContext extends ExprContext {
 	public expr(): ExprContext {
 		return this.getRuleContext(0, ExprContext);
@@ -9117,6 +9167,7 @@ export class UnaryExprContext extends ExprContext {
 	public PLUS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.PLUS, 0); }
 	public MINUS(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.MINUS, 0); }
 	public TILDE(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.TILDE, 0); }
+	public STAR(): TerminalNode | undefined { return this.tryGetToken(Tads3Parser.STAR, 0); }
 	constructor(ctx: ExprContext) {
 		super(ctx.parent, ctx.invokingState);
 		this.copyFrom(ctx);
