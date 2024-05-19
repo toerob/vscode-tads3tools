@@ -65,3 +65,4 @@ export const DIRECTION_ASSIGNMENT_REGEXP = new RegExp(
 // TODO: Remove once satisfied
 //const newAssignmentRegexp2 = /[=]\s*new\s*(.*)\s*\(/;
 //const propertyRegexp = /([a-zA-Z][a-zA-Z0-9]*)[.]\s*([a-zA-Z][a-zA-Z0-9]*)?$/;
+

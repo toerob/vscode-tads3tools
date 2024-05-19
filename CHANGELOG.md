@@ -12,7 +12,7 @@
 - go to definitions now walks hierarchically up the inheritance chain to the first object definitions regarding properties.
 - Going to macro definitions now goes to the correct row.
 - Completions can now automatically suggest members/inherited members of the class while writing code blocks in methods.
-- Completions now suggests macro defintions.
+- Completions now suggests macro definitions.
 - Go to references now returns more hits than before.
 - Grammar adjustment for the Parser, anonymous object declaration on root level is now parsed too.
 - Bug fixed that caused some preprocessed files to become shorter and causing the parser to fail.

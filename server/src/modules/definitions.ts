@@ -32,7 +32,6 @@ export async function onDefinition(
   docs: TextDocuments<TextDocument>,
   sm: TadsSymbolManager
 ) {
-  
   // ------------------------------------------------------------
   // Preparations and quick checks
   // ------------------------------------------------------------
@@ -139,6 +138,7 @@ export async function onDefinition(
     logElapsedTime(methodStartTime);
     return macros;
   }
+
   logElapsedTime(methodStartTime);
   return [];
 }
@@ -266,7 +266,7 @@ function findMembers(
 
     // If the owner of the symbol cannot be found, try fetch by old strategy
     // NOTE: It might lead to the wrong definition
-    const owner = sm.findSymbol(parentName);
+    const owner = sm.findSymbol(parentName, true);
     if (owner?.symbol === undefined) {
       connection.console.debug(
         `Can not find the ${owner} in the member call chain. `
@@ -325,6 +325,7 @@ function findMembers(
 
         if (instanceTypeName) {
           const { filePath, symbol } = sm.findAllSymbols(instanceTypeName, [
+            SymbolKind.Interface,
             SymbolKind.Class,
             SymbolKind.Object,
           ])?.[0];
@@ -367,7 +368,7 @@ function findMembers(
     const superClassNames = sm.getInheritanceChainFor(parentName);
 
     for (const superClassName of superClassNames) {
-      const potentialParent = sm.findSymbol(superClassName, false);
+      const potentialParent = sm.findSymbol(superClassName, true);
       // TODO: verify member is within instance:
       const foundMemberSymbol =
         potentialParent?.symbol?.children?.filter(
@@ -424,6 +425,7 @@ function findMembers(
 
     // Otherwise get the superclass symbol name of the containing object from its detail property
     const superclasses = sm.findAllSymbols(containingObject.detail, [
+      SymbolKind.Interface,
       SymbolKind.Class,
       SymbolKind.Object,
     ]);
@@ -618,6 +620,7 @@ function findInherited(
   if (containingObject) {
     if (enclosingMethod && containingObject?.detail) {
       const containingObjectKinds = sm.findAllSymbols(containingObject.detail, [
+        SymbolKind.Interface,
         SymbolKind.Class,
         SymbolKind.Object,
       ]);
@@ -706,6 +709,7 @@ function findSelf(
 function findObjects(sm: TadsSymbolManager, symbolName: string): Location[] {
   const locations = [];
   const objectsAndClasses = sm.findAllSymbols(symbolName, [
+    SymbolKind.Interface,
     SymbolKind.Class,
     SymbolKind.Object,
   ]);
