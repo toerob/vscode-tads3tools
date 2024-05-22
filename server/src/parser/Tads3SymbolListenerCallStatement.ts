@@ -1,12 +1,8 @@
-import { Range } from "vscode-languageserver";
-import {
-  CommaExprContext,
-  OptionallyTypedOptionalIdContext,
-  ParamsContext,
-} from "./Tads3Parser";
-import { Tads3Listener } from "./Tads3Listener";
-import { ParseTree } from "antlr4ts/tree/ParseTree";
 import { ParserRuleContext } from "antlr4ts/ParserRuleContext";
+import { ParseTree } from "antlr4ts/tree/ParseTree";
+import { Range } from "vscode-languageserver";
+import { Tads3Listener } from "./Tads3Listener";
+import { CommaExprContext, ParamsContext } from "./Tads3Parser";
 
 type ParameterInfo = {
   range: Range;
@@ -20,9 +16,7 @@ export default class Tads3SymbolListenerParameterCollector
   parameterCollection: ParameterInfo[] = [];
 
   enterParams(ctx: ParamsContext) {
-    let lst: ParameterInfo[] = [];
-    buildParamList(ctx.getChild(0), lst);
-    this.parameterCollection = lst;
+    buildParamList(ctx.getChild(0), this.parameterCollection);
   }
 }
 

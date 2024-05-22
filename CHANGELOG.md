@@ -1,8 +1,19 @@
 # Changelog
 
-## 0.6.3-alpha
+## 0.6.4
 
 ### Added
+- code actions - now there's a code action to allow a quickfix for creating local variables.
+- A snippet is created when adding classes via auto completions, this in unison with code actions and function signatures will help increase code writing effiency.
+
+### Fixed
+- The current parameter in the signature helper now works better.
+- A bug concering the signature helper was fixed. (Issue #42)
+- Auto completions has been optimized a bit. 
+- Cached symbols stopped working in 0.6.3, fixed again.
+- Preprocessor now works even if there's warnings in the current source code. This caused the parser not being able to update when a file was saved.
+
+## 0.6.3
 
 ### Fixed
 - Upgrades of dependencies - the client/server now adheres to the language server protocol of version 9.0.1.

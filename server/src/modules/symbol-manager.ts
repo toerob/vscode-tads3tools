@@ -495,7 +495,7 @@ export class TadsSymbolManager {
     const methodsContainingRange =
       allMethodsInFile
         ?.map((x) => x.symbol.range)
-        ?.filter((x) => pos.line >= x.start.line && pos.line <= x.end.line) ??
+        ?.filter((x) => pos.line > x.start.line && pos.line < x.end.line) ??
       [];
     return methodsContainingRange?.length > 0;
   }

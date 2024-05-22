@@ -7,6 +7,7 @@ import {
   CompletionList,
   CompletionItemKind,
   SymbolKind,
+  InsertTextFormat,
 } from "vscode-languageserver/node";
 import { flattenTreeToArray, TadsSymbolManager } from "./symbol-manager";
 import { TextDocument } from "vscode-languageserver-textdocument";
@@ -21,6 +22,7 @@ import { retrieveDocumentationForKeyword } from "./documentation";
 import { serverState } from "../state";
 import { glob } from "glob";
 import { getDefineMacrosMap } from "../parser/preprocessor";
+
 import {
   TADS3_KEYWORDS,
   WS,
@@ -31,12 +33,20 @@ import {
   NEW_ASSIGNMENT_REGEXP,
 } from "./constants";
 
-let cachedKeyWords: Set<CompletionItem> | undefined = undefined;
+let cachedKeyWords: Map<string,CompletionItem> | undefined = undefined;
+let shortTermMemoryKeyword: Set<string> = new Set();
 
 export function clearCompletionCache() {
   connection.console.debug("Clearing keyword cache");
   cachedKeyWords?.clear();
   cachedKeyWords = undefined;
+  shortTermMemoryKeyword?.clear();
+}
+
+export function addShortTermMemoryKeyword(word: string) {
+  if (!shortTermMemoryKeyword.has(word)) {
+    shortTermMemoryKeyword?.add(word);
+  }
 }
 
 export async function onCompletion(
@@ -45,23 +55,16 @@ export async function onCompletion(
   symbolManager: TadsSymbolManager
 ) {
   const methodStartTime = Date.now();
-
-  const suggestions: Set<CompletionItem> = new Set();
+  const suggestions: Map<string,CompletionItem> = new Map();
   const document = documents.get(handler.textDocument.uri);
-  const range = Range.create(
-    handler.position.line,
-    0,
-    handler.position.line,
-    handler.position.character
-  );
-  const lineTillCurrentPos = document?.getText(range) ?? "";
 
   if (document?.uri.endsWith(".t3m")) {
     return tads3MakefileSuggestions();
   }
 
+  // First try to get the word at the position
   let word = getWordAtPosition(document, handler.position);
-  // We might be right at the end of the word, try one character backwards before giving up:
+  // In case we are right beside the end of the word, try one character backwards before giving up:
   if (word === undefined) {
     word = getWordAtPosition(
       document,
@@ -75,13 +78,10 @@ export async function onCompletion(
     handler.position.line,
     handler.position.character
   );
-  const currentLineStr = document?.getText(currentLineRange) ?? "";
-  //const characterOffset = offsetAt(document, handler.position);
 
+  const currentLineStr = document?.getText(currentLineRange) ?? "";
   try {
-    // match "self[.](.*)"
     if (currentLineStr.match(`${WS}self.${word}`)) {
-      //TODO: default also?
       const fsPath = URI.parse(handler.textDocument.uri).fsPath;
       const symbol = symbolManager.findContainingObject(
         fsPath,
@@ -90,7 +90,7 @@ export async function onCompletion(
       if (symbol) {
         const item = CompletionItem.create(symbol.name);
         item.kind = CompletionItemKind.Class;
-        suggestions.add(item);
+        suggestions.set(symbol.name, item);
 
         if (symbol.children) {
           for (const prop of symbol.children) {
@@ -106,7 +106,7 @@ export async function onCompletion(
                 item.kind = CompletionItemKind.Function;
                 break;
             }
-            suggestions.add(item);
+            suggestions.set(symbol.name, item);
           }
         }
 
@@ -118,7 +118,7 @@ export async function onCompletion(
           if (result.symbol) {
             const item = CompletionItem.create(result.symbol.name);
             item.kind = CompletionItemKind.Class;
-            suggestions.add(item);
+            suggestions.set(symbol.name, item);
             for (const prop of result.symbol.children ?? []) {
               const item = CompletionItem.create(prop.name);
               switch (prop.kind) {
@@ -132,12 +132,12 @@ export async function onCompletion(
                   item.kind = CompletionItemKind.Function;
                   break;
               }
-              suggestions.add(item);
+              suggestions.set(symbol.name, item);
             }
           }
         }
 
-        const results = fuzzysort.go(word, [...suggestions], { key: "label" });
+        const results = fuzzysort.go(word, [...suggestions.values()], { key: "label" });
         connection.console.debug(results.map((x) => x.obj.label).join(","));
         return results.map((x: any) => x.obj);
       }
@@ -156,14 +156,12 @@ export async function onCompletion(
         const item = CompletionItem.create(className);
         item.kind = CompletionItemKind.Class;
         applyDocumentation(item);
-        suggestions.add(item);
+        suggestions.set(item.label, item);
       }
       if (word === undefined) {
         return [...suggestions];
       }
-
       const results = fuzzysort.go(word, [...suggestions], { key: "label" });
-      //connection.console.debug(results.map(x=>x.obj.label).join(','));
       return results.map((x: any) => x.obj);
     }
 
@@ -189,7 +187,7 @@ export async function onCompletion(
               const item = CompletionItem.create(symbol.name);
               item.kind = CompletionItemKind.Struct;
               applyDocumentation(item);
-              suggestions.add(item);
+              suggestions.set(symbol.name, item);
             }
           }
         }
@@ -197,7 +195,7 @@ export async function onCompletion(
       if (word === undefined) {
         return [...suggestions];
       }
-      const results = fuzzysort.go(word, [...suggestions], { key: "label" });
+      const results = fuzzysort.go(word, [...suggestions.values()], { key: "label" });
       connection.console.debug(results.map((x) => x.obj.label).join(","));
       return results.map((x: any) => x.obj);
     }
@@ -208,8 +206,9 @@ export async function onCompletion(
   const usedUpKeys = new Set();
 
   if (!cachedKeyWords) {
+    
     const startTime = Date.now();
-    connection.console.debug("Collecting keywords");
+    connection.console.debug("Creating cache for word completion");
 
     for (const file of symbolManager.keywords.keys()) {
       const localKeys = symbolManager.keywords.get(file);
@@ -221,17 +220,14 @@ export async function onCompletion(
           usedUpKeys.add(key);
           const item = CompletionItem.create(key);
           item.kind = CompletionItemKind.Keyword;
-          if (!suggestions.has(item)) {
-            //connection.console.debug(`Adding ${key} for ${file}`);
-            suggestions.add(item);
-          }
+          suggestions.set(key, item);
         }
       }
     }
 
     // Add all macros
     for (const m of getDefineMacrosMap().keys()) {
-      suggestions.add(CompletionItem.create(m));
+      suggestions.set(m, CompletionItem.create(m));
     }
 
     // Add known symbols
@@ -246,9 +242,9 @@ export async function onCompletion(
             }
             usedUpKeys.add(value.name);
             const item = CompletionItem.create(value.name);
-            item.kind = CompletionItemKind.Class;
+            //item.kind = CompletionItemKind.Class;
             applyDocumentation(item);
-            suggestions.add(item);
+            suggestions.set(value.name, item);
           }
         }
       }
@@ -258,10 +254,29 @@ export async function onCompletion(
     for (const keyword of TADS3_KEYWORDS) {
       const item = CompletionItem.create(keyword);
       item.kind = CompletionItemKind.Keyword;
-      suggestions.add(item);
+
+      suggestions.set(item.label, item);
     }
 
+    {
+      const item = CompletionItem.create("object");
+      item.kind = CompletionItemKind.Snippet;
+      item.insertTextFormat = InsertTextFormat.Snippet;
+      item.insertText = "object { $1 }$0";
+      item.preselect = true;
+      suggestions.set(item.label, item);
+    }
+
+    /*{
+      const item = CompletionItem.create("local");
+      item.kind = CompletionItemKind.Snippet;
+      item.insertTextFormat = InsertTextFormat.Snippet;
+      item.insertText = "local $1 = $0;";
+      suggestions.add(item);
+    }*/
+
     cachedKeyWords = suggestions;
+
     const elapsedTime = Date.now() - startTime;
     connection.console.debug(
       `Updating cache with keywords, elapsed time = ${elapsedTime} ms`
@@ -316,7 +331,7 @@ export async function onCompletion(
             className = resultOfRegexp[2].trim();
           }
         }
-        connection.console.log(foundMatches[0]?.name);
+        //connection.console.log(foundMatches[0]?.name);
 
         // TODO: now details isn't just holding the class name anymore, but also the whole expression
         //const TODO = symbolManager.assignmentDeclarations.get(fsPath)?.get(word);
@@ -335,13 +350,21 @@ export async function onCompletion(
       }
     }
   }
+  
+  // Add local keywords that hasn't yet been compiled and because of this isn't part
+  // of the collection
 
-  const results = fuzzysort.go(word, [...cachedKeyWords], { key: "label" });
+  for (const word of [...shortTermMemoryKeyword]) {
+    cachedKeyWords?.set(word, CompletionItem.create(word));
+  }
+  shortTermMemoryKeyword.clear();
+
+
+
+  const results = fuzzysort.go(word, [...cachedKeyWords.values()] ?? [], { key: "label" });
   const mappedResults = results.map((x: any) => x.obj);
   const methodTookMs = Date.now() - methodStartTime;
-  connection.console.debug(
-    `Completion took ${methodTookMs} ms+`
-  );
+  connection.console.debug(`Completion took ${methodTookMs} ms+`);
   return mappedResults;
 }
 
@@ -390,11 +413,23 @@ function tads3MakefileSuggestions(): CompletionItem[] | CompletionList {
 function getSuggestedClassNames(partialClassWord: string) {
   const suggestions = symbolManager
     .getAllWorkspaceSymbols(false)
-    .filter((x) => x.kind == SymbolKind.Class)
+    .filter(
+      (x) =>
+        x.kind === SymbolKind.Class ||
+        x.kind === SymbolKind.Object ||
+        x.kind === SymbolKind.Interface
+    )
     .map((x) => {
       const item = CompletionItem.create(x.name);
       item.kind = CompletionItemKind.Class;
       applyDocumentation(item);
+      item.insertText = x.name + "($1)$0";
+      item.kind = CompletionItemKind.Snippet;
+      item.insertTextFormat = InsertTextFormat.Snippet;
+      item.command = {
+        command: "editor.action.triggerParameterHints",
+        title: "Trigger Parameter Hints",
+      };
       return item;
     });
 

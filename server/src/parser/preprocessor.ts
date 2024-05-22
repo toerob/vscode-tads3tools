@@ -87,7 +87,7 @@ export async function preprocessTads3Files(
 ) {
   preprocessedFilesCacheMap.clear();
   rowsMap.clear();
-  const commandLine = `"${t3makeCompilerPath}" -P -q -f "${chosenMakefilePath}"`;
+  const commandLine = `"${t3makeCompilerPath}" -P -w0 -q -f "${chosenMakefilePath}"`;
   //connection?.console?.log(`command line: ${commandLine}`);
   const result: any = await runCommand(commandLine);
   if (result.match(/unable to open/i)) {
