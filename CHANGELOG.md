@@ -9,9 +9,8 @@
 ### Fixed
 - The current parameter in the signature helper now works better.
 - A bug concering the signature helper was fixed. (Issue #42)
-- Auto completions has been optimized a bit. 
-- Cached symbols stopped working in 0.6.3, fixed again.
-- Preprocessor now works even if there's warnings in the current source code. This caused the parser not being able to update when a file was saved.
+- Cached symbols stopped working in 0.6.3, now it is working again.
+- The preprocessor now works even if there's warnings in the current source code. (This used to cause the parser not being able to update the symbols when a file was saved.)
 
 ## 0.6.3
 
