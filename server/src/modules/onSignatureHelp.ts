@@ -13,7 +13,7 @@ import {
 } from "vscode-languageserver-protocol";
 import { retrieveDocumentationForKeyword } from "./documentation";
 import { simpleWholeLineRegExp, wholeLineRegExp } from "../parser/preprocessor";
-import { preprocessedFilesCacheMap } from "../server";
+import { connection, preprocessedFilesCacheMap } from "../server";
 import { CharStreams, CommonTokenStream } from "antlr4ts";
 import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
 import { Tads3Lexer } from "../parser/Tads3Lexer";
@@ -74,6 +74,7 @@ export async function onSignatureHelp(
         [
           SymbolKind.Function,
           SymbolKind.Method,
+          SymbolKind.Interface,
           SymbolKind.Class,
           SymbolKind.Object,
         ]
@@ -200,8 +201,12 @@ function parseToParameterList(currentLineAtPos: string) {
   const parseTree = parser.callStatement();
   const listener = new Tads3SymbolListenerParameterCollector();
   const parseTreeWalker = new ParseTreeWalker();
-
-  parseTreeWalker.walk<Tads3Listener>(listener, parseTree);
+  try {
+    parseTreeWalker.walk<Tads3Listener>(listener, parseTree);    
+  } catch(err) {
+    connection.console.debug(`Couln't parse parameters in: "${currentLineAtPos}" `);
+    return [];
+  }
   return listener.parameterCollection ?? [];
 }
 
