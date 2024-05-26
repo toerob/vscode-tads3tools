@@ -265,7 +265,11 @@
 		"description": "Tads3 <<oneof>><<or>><<stopping|at random|cycling|shuffled>> string interpolation"
 		
 	},
-
+	"Tads3 lambda" : { 
+		"prefix": ["lambda"], 
+		"body": [ "{${1:a}:${2:a}}$0"],
+		"description": "Tads3 lambda {: } function"
+	},
 	"Tads3 if-else-end string interpolation" : { 
 		"prefix": ["if-else-end"], 
 		"body": [ "<<if>>$1<<else>>$2<<end>>$0"],

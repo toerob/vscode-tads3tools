@@ -28,6 +28,7 @@ import {
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { DefaultMapObject } from "./modules/mapcrawling/DefaultMapObject";
 import MapObjectManager from "./modules/mapcrawling/map-mapping";
+import { onCodeAction } from './modules/onCodeAction';
 import { onCodeLens } from "./modules/codelens";
 import { onCompletion } from "./modules/completions";
 import { tokenizeQuotesWithIndex } from "./modules/text-utils";
@@ -106,6 +107,7 @@ connection.onInitialize((params: InitializeParams) => {
       documentLinkProvider: {
         resolveProvider: true,
       },
+      codeActionProvider: true,
       codeLensProvider: {
         resolveProvider: true,
       },
@@ -286,6 +288,10 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
+connection.onCodeAction(async (handler) =>
+  onCodeAction(handler, documents, symbolManager)
+);
+
 connection.onWorkspaceSymbol(async (handler) =>
   onWorkspaceSymbol(handler, documents, symbolManager)
 );
@@ -463,3 +469,4 @@ function parseDirection(directionName: any): string | undefined {
   return undefined;
   //throw new Error(`Not a valid direction`);
 }
+

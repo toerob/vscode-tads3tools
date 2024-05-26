@@ -9,19 +9,20 @@ import {
 import {
   SignatureHelpParams,
   SignatureHelp,
+  DocumentSymbol,
 } from "vscode-languageserver-protocol";
 import { retrieveDocumentationForKeyword } from "./documentation";
-import { wholeLineRegExp } from "../parser/preprocessor";
-import { preprocessedFilesCacheMap } from "../server";
+import { simpleWholeLineRegExp, wholeLineRegExp } from "../parser/preprocessor";
+import { connection, preprocessedFilesCacheMap } from "../server";
 import { CharStreams, CommonTokenStream } from "antlr4ts";
 import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
 import { Tads3Lexer } from "../parser/Tads3Lexer";
 import { Tads3Listener } from "../parser/Tads3Listener";
 import { Tads3Parser } from "../parser/Tads3Parser";
 import Tads3SymbolListenerParameterCollector from "../parser/Tads3SymbolListenerCallStatement";
-import { FilePathAndSymbols } from './types';
+import { FilePathAndSymbols } from "./types";
 
-const idWithParametersRegexp = /\s*(.*)[(](.*)?[)]/;
+const idWithParametersRegexp = /\s*([a-zA-Z][a-zA-Z0-9]*)\s*[(](.*)?[)]/;
 
 let activeParameter = 0;
 let activeSignature = 0;
@@ -39,13 +40,19 @@ export async function onSignatureHelp(
     return { signatures, activeSignature, activeParameter };
   }
 
-  const currentLineAtPos = currentDocument.getText().split(wholeLineRegExp)[
+  const currentLineAtPos = currentDocument.getText().split(simpleWholeLineRegExp)[
     position.line
   ]; // Get current line from editor
   const currentDocIdWithParamsMatch =
     idWithParametersRegexp.exec(currentLineAtPos); // Get the function name using regexp
-
+  if(currentLineAtPos === undefined) {
+    return { signatures, activeSignature, activeParameter };
+  }
   const userEnteredParameters = parseToParameterList(currentLineAtPos);
+
+  if(userEnteredParameters.length === 0) {
+    activeParameter = 0;
+  }
 
   if (currentDocIdWithParamsMatch && currentDocIdWithParamsMatch.length >= 3) {
     for (let nr = 0; nr < userEnteredParameters.length; nr++) {
@@ -64,10 +71,23 @@ export async function onSignatureHelp(
     if (symbolName) {
       const locations: FilePathAndSymbols[] = symbolManager.findSymbols(
         symbolName,
-        [SymbolKind.Function, SymbolKind.Method]
+        [
+          SymbolKind.Function,
+          SymbolKind.Method,
+          SymbolKind.Interface,
+          SymbolKind.Class,
+          SymbolKind.Object,
+        ]
       );
+
       for (const location of locations) {
-        for (const symbol of location.symbols) {
+        for (let symbolToBe of location.symbols) {
+          const symbol = isClassOrObject(symbolToBe)
+            ? swapSymbolForConstructor(symbolToBe)
+            : symbolToBe;
+
+            if (symbol === undefined) continue;
+
           const preprocessedDoc = preprocessedFilesCacheMap.get(
             location.filePath
           );
@@ -76,6 +96,7 @@ export async function onSignatureHelp(
           const rawSignatureLine =
             preprocessedFileAsArray[symbol.range.start.line - 1] ?? "";
           const signatureLine = rawSignatureLine.replace(/{\s*$/, "");
+
           if (signatureLine) {
             const signatureLineIdWithParametersRegexpMatch =
               idWithParametersRegexp.exec(signatureLine);
@@ -106,6 +127,14 @@ export async function onSignatureHelp(
     }
   }
 
+  /*
+  console.log(
+    `ActiveSignature: ${handler.context?.activeSignatureHelp?.activeSignature}`
+  );
+  console.log(
+    `ActiveParameter: ${handler.context?.activeSignatureHelp?.activeParameter}`
+  );*/
+
   // Keep the state of the last chosen signature so that the cursor can move sideways without changing it.
   activeSignature = handler.context?.activeSignatureHelp?.activeSignature ?? 0;
 
@@ -125,8 +154,11 @@ export async function onSignatureHelp(
   };
 }
 
-function getParametersFromSignature(params: string[], signatureLine: string) {
-  const parameters = [];
+function getParametersFromSignature(
+  params: string[],
+  signatureLine: string
+): ParameterInformation[] {
+  const parameters: ParameterInformation[] = [];
   for (let p of params) {
     /*
 		// TODO: add details for optional and typed parameter for better decision on which signature to use
@@ -147,7 +179,7 @@ function getParametersFromSignature(params: string[], signatureLine: string) {
       .replace(":", "\\:");
     const regexpExpressionForParam = `\\s*${p}\\s*`;
     const result = new RegExp(regexpExpressionForParam).exec(signatureLine);
-    if (result) {
+    if (result && result.length>0) {
       const startIndex = result?.index ?? 0;
       const stopIndex = startIndex + result[0].length;
       const parameterInformation = ParameterInformation.create(
@@ -165,9 +197,23 @@ function parseToParameterList(currentLineAtPos: string) {
   const lexer = new Tads3Lexer(input);
   const tokenStream = new CommonTokenStream(lexer);
   const parser = new Tads3Parser(tokenStream);
+  parser.removeErrorListeners();
   const parseTree = parser.callStatement();
   const listener = new Tads3SymbolListenerParameterCollector();
   const parseTreeWalker = new ParseTreeWalker();
-  parseTreeWalker.walk<Tads3Listener>(listener, parseTree);
+  try {
+    parseTreeWalker.walk<Tads3Listener>(listener, parseTree);    
+  } catch(err) {
+    connection.console.debug(`Couln't parse parameters in: "${currentLineAtPos}" `);
+    return [];
+  }
   return listener.parameterCollection ?? [];
+}
+
+function swapSymbolForConstructor(symbolToBe: DocumentSymbol): any {
+  return symbolToBe.children?.find((x) => x.name === "construct") ?? symbolToBe;
+}
+
+function isClassOrObject(symbol: any): boolean {
+  return symbol.kind === SymbolKind.Class || symbol.kind === SymbolKind.Object;
 }

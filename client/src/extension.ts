@@ -30,6 +30,7 @@ import {
   CancellationError,
   DiagnosticSeverity,
   Diagnostic,
+  Selection,
 } from "vscode";
 import {
   LanguageClient,
@@ -143,6 +144,7 @@ export async function activate(context: ExtensionContext) {
     clientOptions
   );
   await client.start();
+  globalStoragePath = context.globalStorageUri.fsPath;
 
   client.onNotification("response/extractQuotes", (payload) => {
     workspace
@@ -421,6 +423,36 @@ export async function activate(context: ExtensionContext) {
 
   storageManager = new LocalStorageService(context.workspaceState);
 
+  /*
+  context.subscriptions.push(
+    commands.registerCommand("extension.moveCursor", (uri, line, character) => {
+      const editor = window.activeTextEditor;
+      if (editor && editor.document.uri.toString() === uri.toString()) {
+        const newPosition = new Position(line, character);
+        editor.selection = new Selection(newPosition, newPosition);
+        editor.revealRange(new Range(newPosition, newPosition));
+      }
+    })
+  );
+  */
+  context.subscriptions.push(
+    commands.registerCommand(
+      "extension.insertLocalAssignmentSnippet",
+      async (uri, snippetString, line, startPos, endPos) => {
+        const snippet = new SnippetString(snippetString);
+        const editor = window.activeTextEditor;
+        if (editor && editor.document.uri.toString() === uri.toString()) {
+          const startPosition = new Position(line, startPos);
+          const endPosition = new Position(line, endPos);
+          const selection = new Selection(startPosition, endPosition);
+
+          await editor.edit((ed) => ed.delete(selection));
+          editor.insertSnippet(snippet, startPosition);
+        }
+      }
+    )
+  );
+
   context.subscriptions.push(
     workspace.onDidSaveTextDocument(async (textDocument: TextDocument) =>
       onDidSaveTextDocument(textDocument)
@@ -548,8 +580,6 @@ export async function activate(context: ExtensionContext) {
   );
 
   setupVisualEditorResponseHandler();
-
-  globalStoragePath = context.globalStorageUri.fsPath;
 
   extensionState.scriptsFolder = Uri.file(context.asAbsolutePath("scripts"));
 
