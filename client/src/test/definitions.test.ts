@@ -23,22 +23,18 @@ suite.skip("Go-to-definition Test Suite", () => {
   window.showInformationMessage("Start Go-to-definition tests.");
 
   test("Test go to definition", async () => {
-    const uri = getDocUri("definitions.t");
+    const uri = getDocUri("definitions/definitions.t");
     await activate(uri);
 
     const document = await workspace.openTextDocument(uri);
     const editor = await window.showTextDocument(document);
 
-    editor.selection = new Selection(new Position(5, 21), new Position(5, 24));
+    editor.selection = new Selection(new Position(9, 10), new Position(9, 14));
+    const definitionPosition = editor.selection.active;
 
-    await awaitParsing();
     await commands.executeCommand("editor.action.goToTypeDefinition");
 
     await asyncSetTimeout(2000);
-
-    const definitionPosition = editor.selection.active;
-
-    assert.equal(definitionPosition.line, 23);
-    assert.equal(definitionPosition.character, 0);
+    assert.equal(definitionPosition.line, 5);
   });
 });

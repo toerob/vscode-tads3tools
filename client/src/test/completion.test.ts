@@ -9,7 +9,7 @@ import { getDocUri, activate } from "./helper";
 import { CompletionItem, CompletionItemLabel } from "vscode";
 
 suite.skip("Should do completion", () => {
-  const docUri = getDocUri("diagnostics.t");
+  const docUri = getDocUri("diagnostics/diagnostics.t");
 
   test("Completes JS/TS in txt file", async () => {
     await testCompletion(docUri, new vscode.Position(0, 0), {

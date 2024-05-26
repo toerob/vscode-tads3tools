@@ -8,7 +8,7 @@ import * as assert from "assert";
 import { getDocUri, activate } from "./helper";
 
 suite.skip("Should get diagnostics", () => {
-  const docUri = getDocUri("diagnostics.t");
+  const docUri = getDocUri("diagnostics/diagnostics.t");
   test("Makefile missing essential configuration", async () => {
     await testDiagnostics(docUri, [
       {
