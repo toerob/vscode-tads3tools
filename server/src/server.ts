@@ -28,7 +28,7 @@ import {
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { DefaultMapObject } from "./modules/mapcrawling/DefaultMapObject";
 import MapObjectManager from "./modules/mapcrawling/map-mapping";
-import { onCodeAction } from './modules/onCodeAction';
+import { onCodeAction } from './modules/code-actions';
 import { onCodeLens } from "./modules/codelens";
 import { onCompletion } from "./modules/completions";
 import { tokenizeQuotesWithIndex } from "./modules/text-utils";

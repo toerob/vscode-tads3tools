@@ -3,8 +3,13 @@ import { dirname } from "path";
 import * as path from "path";
 import * as languageserver from "vscode-languageserver/node";
 import * as languageserverTextdocument from "vscode-languageserver-textdocument";
-import { Range } from "vscode-languageserver";
+import { Position, Range, SymbolKind } from "vscode-languageserver";
+import { TextDocument } from "vscode-languageserver-textdocument";
+import { wholeLineRegExp } from "../parser/preprocessor";
+import { preprocessedFilesCacheMap } from "../server";
 //import { connection } from '../server';
+
+export const idWithParametersRegexp = /\s*([a-zA-Z][a-zA-Z0-9]*)\s*[(](.*)?[)]/;
 
 export function filterForStandardLibraryFiles(array: string[] = []): string[] {
   if (array.length === 0) {
@@ -107,3 +112,84 @@ export const logElapsedTimeUsingConnection =
     `Finding definition took ${Date.now() - currentTimeUtc} ms`
   );*/
   };
+
+
+export function getCurrentLine(
+  currentDoc: TextDocument,
+  cursorPosition: Position
+): string {
+  let currentLine = currentDoc.getText(
+    Range.create(cursorPosition.line, 0, cursorPosition.line + 1, 0)
+  );
+  return currentLine.substring(0, currentLine.length - 1);
+}
+
+export function isSymbolKindOneOf(
+  symbolKind: SymbolKind,
+  kinds: SymbolKind[]
+): boolean {
+  if (symbolKind === undefined) {
+    return false;
+  }
+  for (const kind of kinds) {
+    if (symbolKind === kind) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function camelCase(symbolName: any) {
+  const first = symbolName[0].toLowerCase();
+  const rest = symbolName.substring(1);
+  return `${first}${rest}`;
+}
+
+export function getVariableNameAtPosition(
+  text: string,
+  position: Position
+): string | null {
+  const lines = text.split("\n");
+  const line = lines[position.line];
+  const prefix = line.substring(0, position.character);
+  const match = prefix.match(/(\w+)$/);
+  return match ? match[0] : null;
+}
+
+/**
+ * Uses the preprocessed document to find the method declaration and trims it after the last right parenthesis
+ * @param filePath
+ * @param lineOfDeclaration
+ * @returns the method signature line
+ */
+export function getLineOfMethodDeclaration(
+  filePath: string,
+  lineOfDeclaration: number
+) {
+  // Get the preprocessed document for the location
+  const preprocessedDoc = preprocessedFilesCacheMap.get(filePath);
+  const preprocessedFileAsArray = preprocessedDoc?.split(wholeLineRegExp) ?? [];
+  const rawSignatureLine = preprocessedFileAsArray[lineOfDeclaration] ?? "";
+  const lastRightParenthesis = rawSignatureLine.lastIndexOf(")") + 1;
+  const signatureLine = rawSignatureLine.substring(0, lastRightParenthesis);
+  return signatureLine.trimStart();
+}
+
+/**
+ * Extracts the symbol name and its parameters from a function/method call
+ */
+export function extractFunctionNameAndParams(
+  currentLine: string
+): undefined | { symbolName: string; params: string[] } 
+{
+  const symbolNameAndParamsMatch = idWithParametersRegexp.exec(currentLine);
+  if (symbolNameAndParamsMatch) {
+    const symbolName = symbolNameAndParamsMatch[1];
+    const params = (symbolNameAndParamsMatch[2] ?? "").split(/,/);
+    return {
+      symbolName,
+      params,
+    };
+  }
+  return undefined;
+}

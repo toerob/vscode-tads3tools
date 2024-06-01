@@ -32,6 +32,8 @@ export class TadsSymbolManager {
     string,
     Map<string, DocumentSymbolWithScope[]>
   > = new Map();
+  
+  symbolParameters:  Map<string, Map<string, DocumentSymbol[]>> = new Map();
 
   constructor() {
     // Windows doesn't recognize case differences in file paths, therefore we need to use case insensitive maps:
@@ -581,3 +583,12 @@ function translateRangeByLineOffset(range: Range, offsetLine = 0) {
     Position.create(range.end.line + offsetLine, range.end.character)
   );
 }
+
+export function swapToConstructor(symbolToBe: DocumentSymbol): any {
+  return symbolToBe.children?.find((x) => x.name === "construct") ?? symbolToBe;
+}
+
+export function isClassOrObject(symbol: any): boolean {
+  return symbol.kind === SymbolKind.Class || symbol.kind === SymbolKind.Object;
+}
+

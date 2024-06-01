@@ -1,41 +1,38 @@
-import { Tads3Listener } from "./Tads3Listener";
-import {
-  ObjectDeclarationContext,
-  PropertySetContext,
-  PropertyContext,
-  FunctionHeadContext,
-  IdAtomContext,
-  AssignmentStatementContext,
-  FunctionDeclarationContext,
-  CurlyObjectBodyContext,
-  MemberExprContext,
-  IntrinsicMethodDeclarationContext,
-  IntrinsicDeclarationContext,
-  GrammarDeclarationContext,
-  TemplateDeclarationContext,
-  AssignmentExprContext,
-  CallWithParamsExprContext,
-  NewExprContext,
-  ExprWithAnonymousObjectExpr2Context,
-  ExprWithAnonymousObjectUsingMultipleSuperTypesExprContext,
-  AnonymousFunctionExprContext,
-  ParamsContext,
-  ExprWithAnonymousObjectExprContext,
-} from "./Tads3Parser";
-import { ScopedEnvironment } from "./ScopedEnvironment";
+import { ParserRuleContext } from "antlr4ts";
+import { Interval } from "antlr4ts/misc/Interval";
+import { ErrorNode } from "antlr4ts/tree/ErrorNode";
+import { ParseTree } from "antlr4ts/tree/ParseTree";
 import {
   CompletionItem,
   DocumentSymbol,
   Position,
-  SymbolKind,
+  Range,
+  SymbolInformation,
+  SymbolKind
 } from "vscode-languageserver";
-import { Range } from "vscode-languageserver";
-import { Interval } from "antlr4ts/misc/Interval";
-import { ErrorNode } from "antlr4ts/tree/ErrorNode";
-import { ParseTree } from "antlr4ts/tree/ParseTree";
-import { T3StringVisitor } from "./Tads3StringVisitor";
 import { DocumentSymbolWithScope, ExpressionType } from "../modules/types";
-import { ParserRuleContext } from "antlr4ts";
+import { ScopedEnvironment } from "./ScopedEnvironment";
+import { Tads3Listener } from "./Tads3Listener";
+import {
+  AssignmentExprContext,
+  AssignmentStatementContext,
+  CallWithParamsExprContext,
+  CurlyObjectBodyContext,
+  FunctionDeclarationContext,
+  GrammarDeclarationContext,
+  IdAtomContext,
+  IntrinsicDeclarationContext,
+  IntrinsicMethodDeclarationContext,
+  MemberExprContext,
+  NewExprContext,
+  ObjectDeclarationContext,
+  ParamsContext,
+  PropertyContext,
+  PropertySetContext,
+  TemplateDeclarationContext,
+} from "./Tads3Parser";
+import { T3StringVisitor } from "./Tads3StringVisitor";
+//import { DocumentUri } from 'vscode-languageserver-textdocument';
 
 export class ExtendedDocumentSymbolProperties {
   level: number | undefined;
@@ -54,8 +51,14 @@ export class ExtendedDocumentSymbolProperties {
   travelConnectorMap = new Map();
 }
 
+//export type 
+
+
 export class Tads3SymbolListener implements Tads3Listener {
+  public constructor(private documentUri: string = '') { }
   symbols: DocumentSymbol[] = [];
+
+  symbolParameters: Map<string, DocumentSymbol[]> = new Map();
 
   additionalProperties: Map<DocumentSymbol, ExtendedDocumentSymbolProperties> =
     new Map();
@@ -272,7 +275,8 @@ export class Tads3SymbolListener implements Tads3Listener {
 
   enterObjectDeclaration(ctx: ObjectDeclarationContext) {
     // Use the given name, and if it doesn't exist give it the name anonymous. Count name 'object' as anonymous too.
-    const hasName = !!ctx.identifierAtom() && ctx.identifierAtom()!.text !== 'object';
+    const hasName =
+      !!ctx.identifierAtom() && ctx.identifierAtom()!.text !== "object";
     let name = hasName ? ctx.identifierAtom()!.text : "anonymous";
 
     const start = (ctx.start.line ?? 1) - 1;
@@ -615,15 +619,15 @@ export class Tads3SymbolListener implements Tads3Listener {
         "anonymous function";
       const range = createRangeFromContext(ctx);
       const props = new ExtendedDocumentSymbolProperties();
+      let symbol = undefined;
 
       if (this.currentObjectSymbol) {
-        const detail = "method";
         if (this.currentPropertySetName) {
           name = this.currentPropertySetName.replace("*", name);
         }
-        const symbol = DocumentSymbol.create(
+        symbol = DocumentSymbol.create(
           name,
-          detail,
+          'method',
           SymbolKind.Method,
           range,
           range,
@@ -636,10 +640,9 @@ export class Tads3SymbolListener implements Tads3Listener {
         this.currentFunctionSymbol = symbol;
         this.additionalProperties.set(symbol, props);
       } else {
-        const detail = "function";
-        const symbol = DocumentSymbol.create(
+        symbol = DocumentSymbol.create(
           name,
-          detail,
+          'function',
           SymbolKind.Function,
           range,
           range,
@@ -650,24 +653,18 @@ export class Tads3SymbolListener implements Tads3Listener {
         this.additionalProperties.set(symbol, props);
       }
 
-      // TODO: add params to local assignments
-      const params = ctx.functionHead()?.params()?.text?.split(",") ?? [];
-      for (const param of params) {
-        const symbol = DocumentSymbol.create(
-          param,
-          "parameter",
-          SymbolKind.Variable,
-          range,
-          range,
-          []
-        );
+      const parameters = createParameterSymbols(ctx.functionHead()?.params());
+      symbol.detail = parameters.map(x=>x.name).join(',');
+      this.symbolParameters.set(symbol.name, parameters);
 
+      for (const symbol of parameters) {
         const additionalProps = new ExtendedDocumentSymbolProperties();
         additionalProps.objectScope = this.currentObjectSymbol;
         additionalProps.functionScope = this.currentFunctionSymbol;
         this.additionalProperties.set(symbol, additionalProps);
         this.assignmentStatements.push(symbol);
       }
+
     } catch (err) {
       console.error(err);
     }
@@ -757,6 +754,22 @@ export function createRangeFromContext(ctx: ParserRuleContext): Range {
   const start = (ctx.start.line ?? 1) - 1;
   const stop = (ctx.stop?.line ?? ctx.start.line ?? 1) - 1;
   const startCharacter = ctx.start?.charPositionInLine ?? 0;
-  const stopCharacter = ctx.stop?.charPositionInLine ?? 0;
+  const stopCharacter = startCharacter + ctx.text.length - 1 ;  //(ctx.start.stopIndex -ctx.start.startIndex); // ctx.text.length - 1 // ctx.stop?.charPositionInLine ?? 0;
   return Range.create(start, startCharacter, stop, stopCharacter);
 }
+function createParameterSymbols(paramsContext: ParamsContext|undefined) {
+  const x = [];
+  let currentParam = paramsContext;
+  let counter = 0;
+  while(currentParam) {
+    const text = currentParam.getChild(0).text;
+    const ruleCtx = currentParam.getRuleContext(0, ParserRuleContext);
+    const range = createRangeFromContext(ruleCtx);
+    const s = DocumentSymbol.create(text, counter.toString(), SymbolKind.Variable, range, range);        
+    x.push(s);
+    counter++;
+    currentParam = currentParam._tail;
+  }
+  return x;  
+}
+

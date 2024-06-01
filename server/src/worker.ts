@@ -16,7 +16,7 @@ expose(function parseFunc(path: string, text: string) {
   const tokenStream = new CommonTokenStream(lexer);
   let parser = new Tads3Parser(tokenStream);
   const parseTreeWalker = new ParseTreeWalker();
-  const listener = new Tads3SymbolListener();
+  const listener = new Tads3SymbolListener(path);
   let parseTree;
   if (path.endsWith(".h")) {
     parser.interpreter.setPredictionMode(PredictionMode.SLL);
@@ -55,5 +55,6 @@ expose(function parseFunc(path: string, text: string) {
     inheritanceMap: listener.inheritanceMap,
     assignmentStatements: listener.assignmentStatements,
     expressionSymbols: listener.expressionSymbols,
+    symbolParameters: listener.symbolParameters,
   };
 });
