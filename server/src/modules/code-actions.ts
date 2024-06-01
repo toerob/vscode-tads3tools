@@ -8,9 +8,9 @@ import {
 } from "vscode-languageserver/node";
 import { TadsSymbolManager, symbolManager } from "./symbol-manager";
 import { Position, TextDocument } from "vscode-languageserver-textdocument";
-import { camelCase } from './utils';
-import { isSymbolKindOneOf } from './utils';
-import { getCurrentLine } from './utils';
+import { camelCase } from "./utils";
+import { isSymbolKindOneOf } from "./utils";
+import { getCurrentLine } from "./utils";
 import { addShortTermMemoryKeyword } from "./completions";
 import { URI } from "vscode-uri";
 
@@ -22,16 +22,15 @@ export async function onCodeAction(
   sm: TadsSymbolManager
 ) {
   const actions: CodeAction[] = [];
-
-  //const methodStartTime = Date.now();
   const fsPath = URI.parse(params.textDocument.uri).fsPath;
 
   const currentStartRange = { ...params.range.start };
   currentStartRange.line++;
 
   /*
-  TODO: this restriction works... but only if the document is saved in between.
-  If work has been done without saving, the parser has no clue if the current rows is within a code block or not.
+  TODO: the "sm.isPositionWithinCodeBlock" restriction works... but only if the document is saved in between.
+  If work has been done without saving (which is mostly the case), 
+  the parser has no clue if the current rows is within a code block or not.
 
   One option could be to try to preprocess and parse the incomplete document prior to this, 
     it the preprocessor and parser doesn't break
@@ -52,9 +51,8 @@ export async function onCodeAction(
   if (currentDoc === undefined || params.range?.start === undefined) {
     return [];
   }
-
   const cursorPosition = params.range.start;
-  const currentLine = getCurrentLine(currentDoc, cursorPosition);
+  const currentLine = getCurrentLine(currentDoc, cursorPosition.character);
   if (
     currentLine === undefined ||
     currentLine.match(/\b(for(each)?|local|while|if|else)\b/) // Skip rows with control flow symbols
@@ -75,14 +73,13 @@ export async function onCodeAction(
         ),
       ];
     }
-
     return [];
   }
 
   symbolName = match[1];
-  //connection.console.debug(`Last word found: ${symbolName}`);
 
   let symbol = undefined;
+
   const startingWord = currentLine.match(/\w/);
   const startPosition = startingWord?.index;
   if (symbolName === "inherited") {
@@ -96,6 +93,7 @@ export async function onCodeAction(
   } else {
     symbol = sm.findSymbol(symbolName);
   }
+
   if (symbol === undefined) {
     return [];
   }
@@ -182,36 +180,3 @@ function createArrayAssignmentAction(
   };
 }
 
-/*
-  const range = Range.create(cursorPosition.line, startPosition, cursorPosition.line, currentLine.length);
-  const newText = `local ${variableName} = ${maybeNewKeyword}${instanceName}${maybeParenthesis}${maybeSemicolon}`;
-  actions.push({
-    title: "Complete local assignment statement",
-    kind: CodeActionKind.RefactorExtract,
-    edit: { changes: { [currentDoc.uri]: [{ range, newText }] } },
-    command: {
-      title: "Move cursor",
-      command: "extension.moveCursor",
-      arguments: [
-        params.textDocument.uri,
-        cursorPosition.line,
-        newText.length + 20,
-      ],
-    },
-  });*/
-/*const range = Range.create(
-    cursorPosition.line,
-    startPosition ?? 0,
-    cursorPosition.line,
-    currentLine.length
-  );
-  return {
-    title: "Complete local array assignment statement",
-    kind: CodeActionKind.QuickFix,
-    edit: { changes: { [uri]: [{ range, newText }] } },
-    command: {
-      title: "Move cursor",
-      command: "extension.moveCursor",
-      arguments: [uri, cursorPosition.line, newText.length + 20],
-    },
-  };*/

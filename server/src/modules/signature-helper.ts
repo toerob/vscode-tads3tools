@@ -20,11 +20,12 @@ import { FilePathAndSymbols } from "./types";
 import { getCurrentLine } from "./utils";
 import { getLineOfMethodDeclaration } from "./utils";
 import { extractFunctionNameAndParams } from "./utils";
+import { preprocessedFilesCacheMap } from '../server';
 
 let activeParameter = 0;
 
 export async function onSignatureHelp(
-  { position, textDocument, context, workDoneToken }: SignatureHelpParams,
+  { position, textDocument, context }: SignatureHelpParams,
   documents: TextDocuments<TextDocument>,
   sm: TadsSymbolManager
 ): Promise<SignatureHelp> {
@@ -34,8 +35,9 @@ export async function onSignatureHelp(
   if (currentDocument === undefined) {
     return { signatures, activeSignature, activeParameter };
   }
-  const currentLine = getCurrentLine(currentDocument, position);
-  activeParameter = decideSelectedParameter(currentLine, position);
+  const currentLine = getCurrentLine(currentDocument, position.line);
+  activeParameter = decideSelectedParameter(currentLine, position.character);
+  console.log(activeParameter);
 
   const symbolNameAndParams = extractFunctionNameAndParams(currentLine);
   if (symbolNameAndParams) {
@@ -81,6 +83,7 @@ function createSignatures(
 
       const lineOfMethodDeclaration = symbol.range.start.line - 1;
       const signatureLine = getLineOfMethodDeclaration(
+        preprocessedFilesCacheMap,
         fsPath,
         lineOfMethodDeclaration
       );
@@ -106,6 +109,7 @@ function createSignature(
   location: FilePathAndSymbols,
   signatureLine: string
 ) {
+  // TODO: cannot find intrinsic methods like toString
   const symbolParameters =
     sm.symbolParameters.get(fsPath)?.get(symbol.name) ?? [];
 
@@ -131,12 +135,9 @@ function createSignature(
  */
 function decideSelectedParameter(
   currentLine: string,
-  cursorPosition: Position
+  cursorPosition: number
 ) {
-  const parametersToCursorPos = currentLine.substring(
-    0,
-    cursorPosition.character
-  );
+  const parametersToCursorPos = currentLine.substring(0,cursorPosition);
   const selectedParameter = parametersToCursorPos.match(/,/g)?.length ?? 0;
 
   // Note for further improvement:

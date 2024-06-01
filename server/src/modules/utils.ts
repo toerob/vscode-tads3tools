@@ -1,13 +1,9 @@
 import { URI } from "vscode-uri";
 import { dirname } from "path";
-import * as path from "path";
-import * as languageserver from "vscode-languageserver/node";
-import * as languageserverTextdocument from "vscode-languageserver-textdocument";
+import { join } from "path";
 import { Position, Range, SymbolKind } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { wholeLineRegExp } from "../parser/preprocessor";
-import { preprocessedFilesCacheMap } from "../server";
-//import { connection } from '../server';
 
 export const idWithParametersRegexp = /\s*([a-zA-Z][a-zA-Z0-9]*)\s*[(](.*)?[)]/;
 
@@ -45,7 +41,7 @@ export function filterForStandardLibraryFiles(array: string[] = []): string[] {
     adv3LiteHeaderFile,
   ]) {
     if (file) {
-      stdLibraryBasepaths.add(path.join(dirname(file)));
+      stdLibraryBasepaths.add(join(dirname(file)));
     }
   }
   const basePathsArray: string[] = Array.from(stdLibraryBasepaths.keys());
@@ -56,9 +52,9 @@ export function filterForStandardLibraryFiles(array: string[] = []): string[] {
 
 export function extractCurrentLineFromDocument(
   line: number,
-  document: languageserverTextdocument.TextDocument
+  document: TextDocument
 ) {
-  const currentLineRange = languageserver.Range.create(line, 0, line + 1, 0);
+  const currentLineRange = Range.create(line, 0, line + 1, 0);
   const currentLineStr = document.getText(currentLineRange) ?? "";
   return currentLineStr.trim();
 }
@@ -83,10 +79,7 @@ export function isRangeWithin(range: Range, containingRange: Range): boolean {
   return true;
 }
 
-export function isPositionWithinRange(
-  pos: languageserver.Position,
-  range: Range
-) {
+export function isPositionWithinRange(pos: Position, range: Range) {
   if (pos.line < range.start.line || pos.line > range.end.line) {
     return false;
   }
@@ -105,22 +98,8 @@ export function isPositionWithinRange(
   return true;
 }
 
-// Not really great to flood the logs with this one, but handy during optimization
-export const logElapsedTimeUsingConnection =
-  (connection: any) => (currentTimeUtc: number) => {
-    /*connection.console.debug(
-    `Finding definition took ${Date.now() - currentTimeUtc} ms`
-  );*/
-  };
-
-
-export function getCurrentLine(
-  currentDoc: TextDocument,
-  cursorPosition: Position
-): string {
-  let currentLine = currentDoc.getText(
-    Range.create(cursorPosition.line, 0, cursorPosition.line + 1, 0)
-  );
+export function getCurrentLine(currentDoc: TextDocument, line: number): string {
+  let currentLine = currentDoc.getText(Range.create(line, 0, line + 1, 0));
   return currentLine.substring(0, currentLine.length - 1);
 }
 
@@ -163,6 +142,7 @@ export function getVariableNameAtPosition(
  * @returns the method signature line
  */
 export function getLineOfMethodDeclaration(
+  preprocessedFilesCacheMap: Map<string, string>,
   filePath: string,
   lineOfDeclaration: number
 ) {
@@ -180,8 +160,7 @@ export function getLineOfMethodDeclaration(
  */
 export function extractFunctionNameAndParams(
   currentLine: string
-): undefined | { symbolName: string; params: string[] } 
-{
+): undefined | { symbolName: string; params: string[] } {
   const symbolNameAndParamsMatch = idWithParametersRegexp.exec(currentLine);
   if (symbolNameAndParamsMatch) {
     const symbolName = symbolNameAndParamsMatch[1];

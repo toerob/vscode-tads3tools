@@ -262,6 +262,10 @@ export class Tads3SymbolListener implements Tads3Listener {
   }
 
   enterParams(ctx: ParamsContext) {
+    /*if(ctx.text === 'toString') {
+      console.log('toString parent=',ctx.parent?.text);
+    }
+    console.log(ctx.text);*/
     /*for(const param of ctx.params()) {
       const name = param.text;
       const range = createRangeFromContext(ctx);
@@ -589,6 +593,8 @@ export class Tads3SymbolListener implements Tads3Listener {
     this.currentIntrinsicDeclarationSymbol = undefined;
   }
 
+  // TODO: take care of symbolParameters too... 
+  // "this.symbolParameters.set(symbol.name, parameters);""
   enterIntrinsicMethodDeclaration(ctx: IntrinsicMethodDeclarationContext) {
     const name = ctx.identifierAtom()?.ID()?.text?.trim();
     const start = (ctx.start.line ?? 1) - 1;
@@ -606,10 +612,16 @@ export class Tads3SymbolListener implements Tads3Listener {
       );
       this.currentIntrinsicDeclarationSymbol.children ??= [];
 
+      const parameters = createParameterSymbols(ctx.params());
+      symbol.detail = parameters.map(x=>x.name).join(',');
+      this.symbolParameters.set(name, parameters);
+
       if (!this.currentIntrinsicDeclarationSymbol.children.includes(symbol)) {
         this.currentIntrinsicDeclarationSymbol.children.push(symbol);
       }
     }
+
+
   }
 
   enterFunctionDeclaration(ctx: FunctionDeclarationContext) {

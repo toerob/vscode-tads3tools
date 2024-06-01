@@ -42,8 +42,7 @@ import { serverState } from "./state";
 import { onDocumentFormatting } from "./modules/document-formatting";
 import { onDocumentRangeFormatting } from "./modules/document-range-formatting";
 import { onImplementation } from "./modules/implementation";
-
-import { onSignatureHelp } from "./modules/onSignatureHelp";
+import { onSignatureHelp } from './modules/signature-helper';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require("wink-pos-tagger");

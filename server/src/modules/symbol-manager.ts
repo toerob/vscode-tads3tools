@@ -19,14 +19,10 @@ import {
 
 export class TadsSymbolManager {
   public symbols: Map<string, DocumentSymbol[]>;
-  // TODO: future tech - symbols2: Map<string, DocumentSymbolWithScope[]> = new Map();
-
   public keywords: Map<string, Map<string, Range[]>>;
-  public additionalProperties: Map<string, Map<DocumentSymbol, any>> =
-    new Map();
+  public additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
   public inheritanceMap: Map<string, string> = new Map();
   public onWindowsPlatform = false;
-
   public assignmentStatements: Map<string, DocumentSymbol[]> = new Map();
   public expressionSymbols: Map<
     string,
@@ -146,7 +142,6 @@ export class TadsSymbolManager {
         const fileLocalSymbols = this.symbols.get(filePath);
         if (fileLocalSymbols) {
           const flattened = flattenTreeToArray(fileLocalSymbols);
-
           const localSymbols = flattened
             ?.filter((s) =>
               kinds === undefined
@@ -559,6 +554,22 @@ export function addSymbolInformationRecursively(
 
 export const symbolManager = new TadsSymbolManager();
 
+export function translateRangeByLineOffset(range: Range, offsetLine = 0) {
+  return Range.create(
+    Position.create(range.start.line + offsetLine, range.start.character),
+    Position.create(range.end.line + offsetLine, range.end.character)
+  );
+}
+
+export function swapToConstructor(symbolToBe: DocumentSymbol): any {
+  return symbolToBe.children?.find((x) => x.name === "construct") ?? symbolToBe;
+}
+
+export function isClassOrObject(symbol: any): boolean {
+  return symbol.kind === SymbolKind.Class || symbol.kind === SymbolKind.Object;
+}
+
+
 /*
 export function swapParent(newParent: ExtendedDocumentSymbol, oldParent: ExtendedDocumentSymbol, symbolAsExtDocObj: ExtendedDocumentSymbol, symbols: any) {
   if (newParent) {
@@ -577,18 +588,3 @@ export function swapParent(newParent: ExtendedDocumentSymbol, oldParent: Extende
     symbolAsExtDocObj.parent = newParent;
   }
 }*/
-function translateRangeByLineOffset(range: Range, offsetLine = 0) {
-  return Range.create(
-    Position.create(range.start.line + offsetLine, range.start.character),
-    Position.create(range.end.line + offsetLine, range.end.character)
-  );
-}
-
-export function swapToConstructor(symbolToBe: DocumentSymbol): any {
-  return symbolToBe.children?.find((x) => x.name === "construct") ?? symbolToBe;
-}
-
-export function isClassOrObject(symbol: any): boolean {
-  return symbol.kind === SymbolKind.Class || symbol.kind === SymbolKind.Object;
-}
-

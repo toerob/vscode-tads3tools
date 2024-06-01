@@ -205,7 +205,7 @@ describe("Tads3 parser tests", () => {
     it("parses an anonymous object with superclasses, properties and methods correctly", () => {
       const { listener } = parseTextWithTads3SymbolListener(`Edible, Food 
 foodValue = 12
-getFoodValue() {
+getFoodValue(param1,param2) {
   return foodValue;
 };`);
 
@@ -230,7 +230,7 @@ getFoodValue() {
       const secondProperty = firstObject.children![1];
       assert.notEqual(secondProperty, undefined);
       assert.equal(secondProperty.name, "getFoodValue");
-      assert.equal(secondProperty.detail, "method");
+      assert.equal(secondProperty.detail, "param1,param2");
       assert.equal(secondProperty.kind, SymbolKind.Method);
       assert.equal(secondProperty.range.start.line, 2);
       assert.equal(secondProperty.range.end.line, 4);

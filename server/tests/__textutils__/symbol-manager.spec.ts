@@ -9,7 +9,7 @@ import {
   symbolManager,
   TadsSymbolManager,
 } from "../../../server/src/modules/symbol-manager";
-import * as assert from "assert";
+import { equal, notEqual, deepEqual } from "assert";
 
 const range = Range.create(10, 2, 14, 5);
 const symbol1 = DocumentSymbol.create(
@@ -40,80 +40,80 @@ describe("TadsSymbolManager", () => {
   describe("findSymbol", () => {
     it("can find one symbol and which filepath it is located in", () => {
       const { filePath, symbol } = sm.findSymbol("symbol1");
-      assert.equal(filePath, "file1");
-      assert.equal(symbol?.name, "symbol1");
-      assert.equal(symbol?.kind, SymbolKind.Class);
-      assert.equal(symbol?.range.start.line, 10);
-      assert.equal(symbol?.range.start.character, 2);
-      assert.equal(symbol?.range.end.line, 14);
-      assert.equal(symbol?.range.end.character, 5);
+      equal(filePath, "file1");
+      equal(symbol?.name, "symbol1");
+      equal(symbol?.kind, SymbolKind.Class);
+      equal(symbol?.range.start.line, 10);
+      equal(symbol?.range.start.character, 2);
+      equal(symbol?.range.end.line, 14);
+      equal(symbol?.range.end.character, 5);
     });
 
     it("will return an empty object when there is no match", () => {
       const result = sm.findSymbol("symbol0");
-      assert.notEqual(result, undefined);
+      notEqual(result, undefined);
 
       const { filePath, symbol } = result;
-      assert.equal(filePath, undefined);
-      assert.equal(symbol, undefined);
+      equal(filePath, undefined);
+      equal(symbol, undefined);
     });
   });
 
   describe("findSymbols", () => {
     it("can find several symbols by names and which filepaths they are located in", () => {
       const result = sm.findSymbols("symbol1");
-      assert.equal(result.length, 2);
+      equal(result.length, 2);
       {
         let { filePath, symbols } = result[0];
-        assert.equal(symbols.length, 1);
+        equal(symbols.length, 1);
 
         const symbol1 = symbols[0];
-        assert.equal(filePath, "file1");
-        assert.equal(symbol1?.name, "symbol1");
-        assert.equal(symbol1?.kind, SymbolKind.Class);
-        assert.equal(symbol1?.range.start.line, 10);
-        assert.equal(symbol1?.range.start.character, 2);
-        assert.equal(symbol1?.range.end.line, 14);
-        assert.equal(symbol1?.range.end.character, 5);
+        equal(filePath, "file1");
+        equal(symbol1?.name, "symbol1");
+        equal(symbol1?.kind, SymbolKind.Class);
+        equal(symbol1?.range.start.line, 10);
+        equal(symbol1?.range.start.character, 2);
+        equal(symbol1?.range.end.line, 14);
+        equal(symbol1?.range.end.character, 5);
       }
       {
         const { filePath, symbols } = result[1];
-        assert.equal(symbols.length, 1);
+        equal(symbols.length, 1);
 
         const symbol1 = symbols[0];
-        assert.equal(filePath, "file2");
-        assert.equal(symbol1?.name, "symbol1");
-        assert.equal(symbol1?.kind, SymbolKind.Class);
-        assert.equal(symbol1?.range.start.line, 10);
-        assert.equal(symbol1?.range.start.character, 2);
-        assert.equal(symbol1?.range.end.line, 14);
-        assert.equal(symbol1?.range.end.character, 5);
+        equal(filePath, "file2");
+        equal(symbol1?.name, "symbol1");
+        equal(symbol1?.kind, SymbolKind.Class);
+        equal(symbol1?.range.start.line, 10);
+        equal(symbol1?.range.start.character, 2);
+        equal(symbol1?.range.end.line, 14);
+        equal(symbol1?.range.end.character, 5);
       }
     });
 
     it("will return an empty array when there are no matches", () => {
       const result = sm.findSymbols("symbol0");
-      assert.equal(result.length, 0);
+      equal(result.length, 0);
     });
   });
 
   describe("mapHeritage", () => {
     it("returns an array containing the single name for a given symbol name when it has no ancestor(s)", () => {
       const result = sm.findHeritage("nonexistent");
-      assert.equal(result.length, 1);
-      assert.equal(result, "nonexistent");
+      equal(result.length, 1);
+      equal(result, "nonexistent");
     });
 
     it("returns an array of the symbol and superTyps for a given symbol name with one ancestor", () => {
       const result = sm.findHeritage("objectWithOneAncestor");
-      assert.equal(result.length, 2);
-      assert.deepEqual(result, ["objectWithOneAncestor", "AnotherSuperType"]);
+      equal(result.length, 2);
+      deepEqual(result, ["objectWithOneAncestor", "AnotherSuperType"]);
     });
 
     it("returns an array of several superTypes for a given symbol name with an ancestor", () => {
       const result = sm.findHeritage("objectWithAncestors");
-      assert.equal(result.length, 4);
-      assert.deepEqual(result, [
+      equal(result.length, 4);
+      deepEqual(result, [
         "objectWithAncestors",
         "SuperType",
         "GrandSuperType",
@@ -125,20 +125,20 @@ describe("TadsSymbolManager", () => {
   describe("findHeritage", () => {
     it("returns an array containing the single name for a given symbol name when it has no ancestor(s)", () => {
       const result = sm.findHeritage("nonexistent");
-      assert.equal(result.length, 1);
-      assert.equal(result, "nonexistent");
+      equal(result.length, 1);
+      equal(result, "nonexistent");
     });
 
     it("returns an array of the symbol and superTyps for a given symbol name with one ancestor", () => {
       const result = sm.findHeritage("objectWithOneAncestor");
-      assert.equal(result.length, 2);
-      assert.deepEqual(result, ["objectWithOneAncestor", "AnotherSuperType"]);
+      equal(result.length, 2);
+      deepEqual(result, ["objectWithOneAncestor", "AnotherSuperType"]);
     });
 
     it("returns an array of several superTypes for a given symbol name with an ancestor", () => {
       const result = sm.findHeritage("objectWithAncestors");
-      assert.equal(result.length, 4);
-      assert.deepEqual(result, [
+      equal(result.length, 4);
+      deepEqual(result, [
         "objectWithAncestors",
         "SuperType",
         "GrandSuperType",
@@ -159,11 +159,11 @@ describe("TadsSymbolManager", () => {
         []
       );
       const [result1, result2] = [...sm.mapHeritage(symbol2)];
-      assert.deepEqual(result1, [
+      deepEqual(result1, [
         "Decoration",
         ["Decoration", "Fixture", "NonPortable"],
       ]);
-      assert.deepEqual(result2, ["Fixture", ["Fixture", "NonPortable"]]);
+      deepEqual(result2, ["Fixture", ["Fixture", "NonPortable"]]);
     });
   });
 
@@ -195,13 +195,13 @@ describe("TadsSymbolManager", () => {
         [parent]
       );
       const symbols: DocumentSymbol[] = [grandparent];
-      assert.equal(symbols.length, 1);
+      equal(symbols.length, 1);
 
       const flattenedSymbols = flattenTreeToArray(symbols);
-      assert.equal(flattenedSymbols.length, 3);
-      assert.equal(flattenedSymbols[0].name, "grandparent");
-      assert.equal(flattenedSymbols[1].name, "parent");
-      assert.equal(flattenedSymbols[2].name, "child");
+      equal(flattenedSymbols.length, 3);
+      equal(flattenedSymbols[0].name, "grandparent");
+      equal(flattenedSymbols[1].name, "parent");
+      equal(flattenedSymbols[2].name, "child");
     });
   });
 
@@ -212,28 +212,28 @@ describe("TadsSymbolManager", () => {
         [SymbolKind.Class],
         Position.create(9, 0)
       );
-      assert.deepEqual(tooLowPosition, undefined);
+      deepEqual(tooLowPosition, undefined);
 
       const withinSymbol1 = sm.findClosestSymbolKindByPosition(
         "file1",
         [SymbolKind.Class],
         Position.create(10, 4)
       );
-      assert.deepEqual(withinSymbol1, symbol1);
+      deepEqual(withinSymbol1, symbol1);
 
       const alsoWithinSymbol1 = sm.findClosestSymbolKindByPosition(
         "file1",
         [SymbolKind.Class],
         Position.create(14, 5)
       );
-      assert.deepEqual(alsoWithinSymbol1, symbol1);
+      deepEqual(alsoWithinSymbol1, symbol1);
 
       const tooHighPosition = sm.findClosestSymbolKindByPosition(
         "file1",
         [SymbolKind.Class],
         Position.create(15, 0)
       );
-      assert.deepEqual(tooHighPosition, undefined);
+      deepEqual(tooHighPosition, undefined);
     });
   });
 });
