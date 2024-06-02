@@ -1,10 +1,11 @@
 import { URI } from "vscode-uri";
 import { dirname } from "path";
-import * as path from "path";
-import * as languageserver from "vscode-languageserver/node";
-import * as languageserverTextdocument from "vscode-languageserver-textdocument";
-import { Range } from "vscode-languageserver";
-//import { connection } from '../server';
+import { join } from "path";
+import { Position, Range, SymbolKind } from "vscode-languageserver";
+import { TextDocument } from "vscode-languageserver-textdocument";
+import { wholeLineRegExp } from "../parser/preprocessor";
+
+export const idWithParametersRegexp = /\s*([a-zA-Z][a-zA-Z0-9]*)\s*[(](.*)?[)]/;
 
 export function filterForStandardLibraryFiles(array: string[] = []): string[] {
   if (array.length === 0) {
@@ -40,7 +41,7 @@ export function filterForStandardLibraryFiles(array: string[] = []): string[] {
     adv3LiteHeaderFile,
   ]) {
     if (file) {
-      stdLibraryBasepaths.add(path.join(dirname(file)));
+      stdLibraryBasepaths.add(join(dirname(file)));
     }
   }
   const basePathsArray: string[] = Array.from(stdLibraryBasepaths.keys());
@@ -51,9 +52,9 @@ export function filterForStandardLibraryFiles(array: string[] = []): string[] {
 
 export function extractCurrentLineFromDocument(
   line: number,
-  document: languageserverTextdocument.TextDocument
+  document: TextDocument
 ) {
-  const currentLineRange = languageserver.Range.create(line, 0, line + 1, 0);
+  const currentLineRange = Range.create(line, 0, line + 1, 0);
   const currentLineStr = document.getText(currentLineRange) ?? "";
   return currentLineStr.trim();
 }
@@ -78,10 +79,7 @@ export function isRangeWithin(range: Range, containingRange: Range): boolean {
   return true;
 }
 
-export function isPositionWithinRange(
-  pos: languageserver.Position,
-  range: Range
-) {
+export function isPositionWithinRange(pos: Position, range: Range) {
   if (pos.line < range.start.line || pos.line > range.end.line) {
     return false;
   }
@@ -100,10 +98,77 @@ export function isPositionWithinRange(
   return true;
 }
 
-// Not really great to flood the logs with this one, but handy during optimization
-export const logElapsedTimeUsingConnection =
-  (connection: any) => (currentTimeUtc: number) => {
-    /*connection.console.debug(
-    `Finding definition took ${Date.now() - currentTimeUtc} ms`
-  );*/
-  };
+export function getCurrentLine(currentDoc: TextDocument, line: number): string {
+  let currentLine = currentDoc.getText(Range.create(line, 0, line + 1, 0));
+  return currentLine.substring(0, currentLine.length - 1);
+}
+
+export function isSymbolKindOneOf(
+  symbolKind: SymbolKind,
+  kinds: SymbolKind[]
+): boolean {
+  if (symbolKind === undefined) {
+    return false;
+  }
+  for (const kind of kinds) {
+    if (symbolKind === kind) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function camelCase(symbolName: any) {
+  const first = symbolName[0].toLowerCase();
+  const rest = symbolName.substring(1);
+  return `${first}${rest}`;
+}
+
+export function getVariableNameAtPosition(
+  text: string,
+  position: Position
+): string | null {
+  const lines = text.split("\n");
+  const line = lines[position.line];
+  const prefix = line.substring(0, position.character);
+  const match = prefix.match(/(\w+)$/);
+  return match ? match[0] : null;
+}
+
+/**
+ * Uses the preprocessed document to find the method declaration and trims it after the last right parenthesis
+ * @param filePath
+ * @param lineOfDeclaration
+ * @returns the method signature line
+ */
+export function getLineOfMethodDeclaration(
+  preprocessedFilesCacheMap: Map<string, string>,
+  filePath: string,
+  lineOfDeclaration: number
+) {
+  // Get the preprocessed document for the location
+  const preprocessedDoc = preprocessedFilesCacheMap.get(filePath);
+  const preprocessedFileAsArray = preprocessedDoc?.split(wholeLineRegExp) ?? [];
+  const rawSignatureLine = preprocessedFileAsArray[lineOfDeclaration] ?? "";
+  const lastRightParenthesis = rawSignatureLine.lastIndexOf(")") + 1;
+  const signatureLine = rawSignatureLine.substring(0, lastRightParenthesis);
+  return signatureLine.trimStart();
+}
+
+/**
+ * Extracts the symbol name and its parameters from a function/method call
+ */
+export function extractFunctionNameAndParams(
+  currentLine: string
+): undefined | { symbolName: string; params: string[] } {
+  const symbolNameAndParamsMatch = idWithParametersRegexp.exec(currentLine);
+  if (symbolNameAndParamsMatch) {
+    const symbolName = symbolNameAndParamsMatch[1];
+    const params = (symbolNameAndParamsMatch[2] ?? "").split(/,/);
+    return {
+      symbolName,
+      params,
+    };
+  }
+  return undefined;
+}

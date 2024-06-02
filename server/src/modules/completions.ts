@@ -54,7 +54,6 @@ export async function onCompletion(
   documents: TextDocuments<TextDocument>,
   symbolManager: TadsSymbolManager
 ) {
-  const methodStartTime = Date.now();
   const suggestions: Map<string,CompletionItem> = new Map();
   const document = documents.get(handler.textDocument.uri);
 
@@ -267,14 +266,6 @@ export async function onCompletion(
       suggestions.set(item.label, item);
     }
 
-    /*{
-      const item = CompletionItem.create("local");
-      item.kind = CompletionItemKind.Snippet;
-      item.insertTextFormat = InsertTextFormat.Snippet;
-      item.insertText = "local $1 = $0;";
-      suggestions.add(item);
-    }*/
-
     cachedKeyWords = suggestions;
 
     const elapsedTime = Date.now() - startTime;
@@ -359,12 +350,8 @@ export async function onCompletion(
   }
   shortTermMemoryKeyword.clear();
 
-
-
   const results = fuzzysort.go(word, [...cachedKeyWords.values()] ?? [], { key: "label" });
   const mappedResults = results.map((x: any) => x.obj);
-  const methodTookMs = Date.now() - methodStartTime;
-  connection.console.debug(`Completion took ${methodTookMs} ms+`);
   return mappedResults;
 }
 

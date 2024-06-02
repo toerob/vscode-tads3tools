@@ -4649,14 +4649,14 @@ export class Tads3Parser extends Parser {
 					{
 					{
 					this.state = 953;
-					this.match(Tads3Parser.COMMA);
+					_localctx._hasMore = this.match(Tads3Parser.COMMA);
 					this.state = 955;
 					this._errHandler.sync(this);
 					switch ( this.interpreter.adaptivePredict(this._input, 126, this._ctx) ) {
 					case 1:
 						{
 						this.state = 954;
-						this.params();
+						_localctx._tail = this.params();
 						}
 						break;
 					}
@@ -9631,6 +9631,8 @@ export class IdentifierAtomContext extends ParserRuleContext {
 
 
 export class ParamsContext extends ParserRuleContext {
+	public _hasMore!: Token;
+	public _tail!: ParamsContext;
 	public optionallyTypedOptionalId(): OptionallyTypedOptionalIdContext | undefined {
 		return this.tryGetRuleContext(0, OptionallyTypedOptionalIdContext);
 	}

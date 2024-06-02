@@ -6,8 +6,8 @@ import {
   isRangeWithin,
 } from "../../src/modules/utils";
 import { Range } from "vscode-languageserver";
+import * as assert from 'assert';
 
-const assert = require("assert");
 
 describe("filterForStandardLibraryFiles", () => {
   describe("filterForStandardLibraryFiles", () => {

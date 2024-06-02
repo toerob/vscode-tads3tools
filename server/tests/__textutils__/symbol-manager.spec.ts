@@ -1,239 +1,296 @@
-import {
-  DocumentSymbol,
-  Position,
-  Range,
-  SymbolKind,
-} from "vscode-languageserver";
-import {
-  flattenTreeToArray,
-  symbolManager,
-  TadsSymbolManager,
-} from "../../../server/src/modules/symbol-manager";
-import * as assert from "assert";
+import { DocumentSymbol, Position, Range, SymbolKind } from "vscode-languageserver";
+import { flattenTreeToArray, TadsSymbolManager } from "../../../server/src/modules/symbol-manager";
+import { equal, notEqual, deepEqual } from "assert";
 
 const range = Range.create(10, 2, 14, 5);
-const symbol1 = DocumentSymbol.create(
-  "symbol1",
-  "details here",
-  SymbolKind.Class,
-  range,
-  range,
-  []
-);
+const symbol1 = DocumentSymbol.create("symbol1", "details here", SymbolKind.Class, range, range, []);
 
 describe("TadsSymbolManager", () => {
-  let sm: TadsSymbolManager = symbolManager;
-
-  beforeEach(() => {
-    sm = new TadsSymbolManager();
-    sm.symbols.set("file1", [symbol1]);
-    sm.symbols.set("file2", [symbol1]);
-    sm.inheritanceMap.set("objectWithAncestors", "SuperType");
-    sm.inheritanceMap.set("SuperType", "GrandSuperType");
-    sm.inheritanceMap.set("GrandSuperType", "GreatGrandSuperType");
-    sm.inheritanceMap.set("objectWithOneAncestor", "AnotherSuperType");
-    sm.inheritanceMap.set("Decoration", "Fixture");
-    sm.inheritanceMap.set("Fixture", "NonPortable");
-    sm.inheritanceMap.set("BasicLocation", "Thing");
-  });
+  let sm: TadsSymbolManager;
 
   describe("findSymbol", () => {
+    beforeEach(() => {
+      sm = new TadsSymbolManager();
+      sm.symbols.set("file1", [symbol1]);
+      sm.symbols.set("file2", [symbol1]);
+    });
+
     it("can find one symbol and which filepath it is located in", () => {
       const { filePath, symbol } = sm.findSymbol("symbol1");
-      assert.equal(filePath, "file1");
-      assert.equal(symbol?.name, "symbol1");
-      assert.equal(symbol?.kind, SymbolKind.Class);
-      assert.equal(symbol?.range.start.line, 10);
-      assert.equal(symbol?.range.start.character, 2);
-      assert.equal(symbol?.range.end.line, 14);
-      assert.equal(symbol?.range.end.character, 5);
+      equal(filePath, "file1");
+      equal(symbol?.name, "symbol1");
+      equal(symbol?.kind, SymbolKind.Class);
+      equal(symbol?.range.start.line, 10);
+      equal(symbol?.range.start.character, 2);
+      equal(symbol?.range.end.line, 14);
+      equal(symbol?.range.end.character, 5);
     });
 
     it("will return an empty object when there is no match", () => {
       const result = sm.findSymbol("symbol0");
-      assert.notEqual(result, undefined);
+      notEqual(result, undefined);
 
       const { filePath, symbol } = result;
-      assert.equal(filePath, undefined);
-      assert.equal(symbol, undefined);
+      equal(filePath, undefined);
+      equal(symbol, undefined);
     });
   });
 
   describe("findSymbols", () => {
+    beforeEach(() => {
+      sm = new TadsSymbolManager();
+      sm.symbols.set("file1", [symbol1]);
+      sm.symbols.set("file2", [symbol1]);
+    });
+
     it("can find several symbols by names and which filepaths they are located in", () => {
       const result = sm.findSymbols("symbol1");
-      assert.equal(result.length, 2);
+      equal(result.length, 2);
       {
         let { filePath, symbols } = result[0];
-        assert.equal(symbols.length, 1);
+        equal(symbols.length, 1);
 
         const symbol1 = symbols[0];
-        assert.equal(filePath, "file1");
-        assert.equal(symbol1?.name, "symbol1");
-        assert.equal(symbol1?.kind, SymbolKind.Class);
-        assert.equal(symbol1?.range.start.line, 10);
-        assert.equal(symbol1?.range.start.character, 2);
-        assert.equal(symbol1?.range.end.line, 14);
-        assert.equal(symbol1?.range.end.character, 5);
+        equal(filePath, "file1");
+        equal(symbol1?.name, "symbol1");
+        equal(symbol1?.kind, SymbolKind.Class);
+        equal(symbol1?.range.start.line, 10);
+        equal(symbol1?.range.start.character, 2);
+        equal(symbol1?.range.end.line, 14);
+        equal(symbol1?.range.end.character, 5);
       }
       {
         const { filePath, symbols } = result[1];
-        assert.equal(symbols.length, 1);
+        equal(symbols.length, 1);
 
         const symbol1 = symbols[0];
-        assert.equal(filePath, "file2");
-        assert.equal(symbol1?.name, "symbol1");
-        assert.equal(symbol1?.kind, SymbolKind.Class);
-        assert.equal(symbol1?.range.start.line, 10);
-        assert.equal(symbol1?.range.start.character, 2);
-        assert.equal(symbol1?.range.end.line, 14);
-        assert.equal(symbol1?.range.end.character, 5);
+        equal(filePath, "file2");
+        equal(symbol1?.name, "symbol1");
+        equal(symbol1?.kind, SymbolKind.Class);
+        equal(symbol1?.range.start.line, 10);
+        equal(symbol1?.range.start.character, 2);
+        equal(symbol1?.range.end.line, 14);
+        equal(symbol1?.range.end.character, 5);
       }
     });
 
     it("will return an empty array when there are no matches", () => {
       const result = sm.findSymbols("symbol0");
-      assert.equal(result.length, 0);
+      equal(result.length, 0);
     });
   });
 
   describe("mapHeritage", () => {
+    beforeEach(() => {
+      sm = new TadsSymbolManager();
+      sm.symbols.set("file1", [symbol1]);
+      sm.symbols.set("file2", [symbol1]);
+      sm.inheritanceMap.set("objectWithAncestors", "SuperType");
+      sm.inheritanceMap.set("SuperType", "GrandSuperType");
+      sm.inheritanceMap.set("GrandSuperType", "GreatGrandSuperType");
+      sm.inheritanceMap.set("objectWithOneAncestor", "AnotherSuperType");
+      sm.inheritanceMap.set("Decoration", "Fixture");
+      sm.inheritanceMap.set("Fixture", "NonPortable");
+      sm.inheritanceMap.set("BasicLocation", "Thing");
+    });
+
     it("returns an array containing the single name for a given symbol name when it has no ancestor(s)", () => {
       const result = sm.findHeritage("nonexistent");
-      assert.equal(result.length, 1);
-      assert.equal(result, "nonexistent");
+      equal(result.length, 1);
+      equal(result, "nonexistent");
     });
 
     it("returns an array of the symbol and superTyps for a given symbol name with one ancestor", () => {
       const result = sm.findHeritage("objectWithOneAncestor");
-      assert.equal(result.length, 2);
-      assert.deepEqual(result, ["objectWithOneAncestor", "AnotherSuperType"]);
+      equal(result.length, 2);
+      deepEqual(result, ["objectWithOneAncestor", "AnotherSuperType"]);
     });
 
     it("returns an array of several superTypes for a given symbol name with an ancestor", () => {
       const result = sm.findHeritage("objectWithAncestors");
-      assert.equal(result.length, 4);
-      assert.deepEqual(result, [
-        "objectWithAncestors",
-        "SuperType",
-        "GrandSuperType",
-        "GreatGrandSuperType",
-      ]);
+      equal(result.length, 4);
+      deepEqual(result, ["objectWithAncestors", "SuperType", "GrandSuperType", "GreatGrandSuperType"]);
     });
   });
 
   describe("findHeritage", () => {
+    beforeEach(() => {
+      sm = new TadsSymbolManager();
+      sm.symbols.set("file1", [symbol1]);
+      sm.symbols.set("file2", [symbol1]);
+      sm.inheritanceMap.set("objectWithAncestors", "SuperType");
+      sm.inheritanceMap.set("SuperType", "GrandSuperType");
+      sm.inheritanceMap.set("GrandSuperType", "GreatGrandSuperType");
+      sm.inheritanceMap.set("objectWithOneAncestor", "AnotherSuperType");
+      sm.inheritanceMap.set("Decoration", "Fixture");
+      sm.inheritanceMap.set("Fixture", "NonPortable");
+      sm.inheritanceMap.set("BasicLocation", "Thing");
+    });
     it("returns an array containing the single name for a given symbol name when it has no ancestor(s)", () => {
       const result = sm.findHeritage("nonexistent");
-      assert.equal(result.length, 1);
-      assert.equal(result, "nonexistent");
+      equal(result.length, 1);
+      equal(result, "nonexistent");
     });
 
     it("returns an array of the symbol and superTyps for a given symbol name with one ancestor", () => {
       const result = sm.findHeritage("objectWithOneAncestor");
-      assert.equal(result.length, 2);
-      assert.deepEqual(result, ["objectWithOneAncestor", "AnotherSuperType"]);
+      equal(result.length, 2);
+      deepEqual(result, ["objectWithOneAncestor", "AnotherSuperType"]);
     });
 
     it("returns an array of several superTypes for a given symbol name with an ancestor", () => {
       const result = sm.findHeritage("objectWithAncestors");
-      assert.equal(result.length, 4);
-      assert.deepEqual(result, [
-        "objectWithAncestors",
-        "SuperType",
-        "GrandSuperType",
-        "GreatGrandSuperType",
-      ]);
+      equal(result.length, 4);
+      deepEqual(result, ["objectWithAncestors", "SuperType", "GrandSuperType", "GreatGrandSuperType"]);
     });
   });
 
   describe("mapHeritage", () => {
+    beforeEach(() => {
+      sm = new TadsSymbolManager();
+      sm.symbols.set("file1", [symbol1]);
+      sm.symbols.set("file2", [symbol1]);
+      sm.inheritanceMap.set("objectWithAncestors", "SuperType");
+      sm.inheritanceMap.set("SuperType", "GrandSuperType");
+      sm.inheritanceMap.set("GrandSuperType", "GreatGrandSuperType");
+      sm.inheritanceMap.set("objectWithOneAncestor", "AnotherSuperType");
+      sm.inheritanceMap.set("Decoration", "Fixture");
+      sm.inheritanceMap.set("Fixture", "NonPortable");
+      sm.inheritanceMap.set("BasicLocation", "Thing");
+    });
+
     it("takes a DocumentSymbol, extract data from its details, lookup heritages for each detail and add its data to a map of heritage of ancestor(s)", () => {
       const range = Range.create(10, 2, 14, 5);
-      const symbol2 = DocumentSymbol.create(
-        "symbol2",
-        "Decoration,Fixture",
-        SymbolKind.Object,
-        range,
-        range,
-        []
-      );
+      const symbol2 = DocumentSymbol.create("symbol2", "Decoration,Fixture", SymbolKind.Object, range, range, []);
       const [result1, result2] = [...sm.mapHeritage(symbol2)];
-      assert.deepEqual(result1, [
-        "Decoration",
-        ["Decoration", "Fixture", "NonPortable"],
-      ]);
-      assert.deepEqual(result2, ["Fixture", ["Fixture", "NonPortable"]]);
+      deepEqual(result1, ["Decoration", ["Decoration", "Fixture", "NonPortable"]]);
+      deepEqual(result2, ["Fixture", ["Fixture", "NonPortable"]]);
     });
   });
 
   describe("flattenTreeToArray", () => {
+    beforeEach(() => {
+      sm = new TadsSymbolManager();
+      sm.symbols.set("file1", [symbol1]);
+      sm.symbols.set("file2", [symbol1]);
+    });
+
     it("flattens an array containing children to a one level DocumentSymbol array", () => {
       const range = Range.create(10, 2, 14, 5);
-      const child = DocumentSymbol.create(
-        "child",
-        "details here",
-        SymbolKind.Class,
-        range,
-        range,
-        []
-      );
-      const parent = DocumentSymbol.create(
-        "parent",
-        "Decoration,Fixture",
-        SymbolKind.Object,
-        range,
-        range,
-        [child]
-      );
-      const grandparent = DocumentSymbol.create(
-        "grandparent",
-        "Decoration,Fixture",
-        SymbolKind.Object,
-        range,
-        range,
-        [parent]
-      );
+      const child = DocumentSymbol.create("child", "details here", SymbolKind.Class, range, range, []);
+      const parent = DocumentSymbol.create("parent", "Decoration,Fixture", SymbolKind.Object, range, range, [child]);
+      const grandparent = DocumentSymbol.create("grandparent", "Decoration,Fixture", SymbolKind.Object, range, range, [
+        parent,
+      ]);
       const symbols: DocumentSymbol[] = [grandparent];
-      assert.equal(symbols.length, 1);
+      equal(symbols.length, 1);
 
       const flattenedSymbols = flattenTreeToArray(symbols);
-      assert.equal(flattenedSymbols.length, 3);
-      assert.equal(flattenedSymbols[0].name, "grandparent");
-      assert.equal(flattenedSymbols[1].name, "parent");
-      assert.equal(flattenedSymbols[2].name, "child");
+      equal(flattenedSymbols.length, 3);
+      equal(flattenedSymbols[0].name, "grandparent");
+      equal(flattenedSymbols[1].name, "parent");
+      equal(flattenedSymbols[2].name, "child");
     });
   });
 
   describe("findClosestSymbolKindByPosition", () => {
+    beforeEach(() => {
+      sm = new TadsSymbolManager();
+      sm.symbols.set("file1", [symbol1]);
+      sm.symbols.set("file2", [symbol1]);
+    });
+
     it("looks within a file for a symbol type a given position and retrieves a symbol if within its position", () => {
-      const tooLowPosition = sm.findClosestSymbolKindByPosition(
-        "file1",
-        [SymbolKind.Class],
-        Position.create(9, 0)
-      );
-      assert.deepEqual(tooLowPosition, undefined);
+      const tooLowPosition = sm.findClosestSymbolKindByPosition("file1", [SymbolKind.Class], Position.create(9, 0));
+      deepEqual(tooLowPosition, undefined);
 
-      const withinSymbol1 = sm.findClosestSymbolKindByPosition(
-        "file1",
-        [SymbolKind.Class],
-        Position.create(10, 4)
-      );
-      assert.deepEqual(withinSymbol1, symbol1);
+      const withinSymbol1 = sm.findClosestSymbolKindByPosition("file1", [SymbolKind.Class], Position.create(10, 4));
+      deepEqual(withinSymbol1, symbol1);
 
-      const alsoWithinSymbol1 = sm.findClosestSymbolKindByPosition(
-        "file1",
-        [SymbolKind.Class],
-        Position.create(14, 5)
-      );
-      assert.deepEqual(alsoWithinSymbol1, symbol1);
+      const alsoWithinSymbol1 = sm.findClosestSymbolKindByPosition("file1", [SymbolKind.Class], Position.create(14, 5));
+      deepEqual(alsoWithinSymbol1, symbol1);
 
-      const tooHighPosition = sm.findClosestSymbolKindByPosition(
-        "file1",
-        [SymbolKind.Class],
-        Position.create(15, 0)
-      );
-      assert.deepEqual(tooHighPosition, undefined);
+      const tooHighPosition = sm.findClosestSymbolKindByPosition("file1", [SymbolKind.Class], Position.create(15, 0));
+      deepEqual(tooHighPosition, undefined);
+    });
+  });
+
+  describe("...", () => {
+    const startLine1 = 1;
+    const endLine1 = 2;
+    const startCharacter = 10;
+    const endCharacter = 10;
+
+    const startLine2 = 4;
+    const endLine2 = 5;
+
+    beforeEach(() => {
+      sm = new TadsSymbolManager();
+      let range1 = Range.create(startLine1, startCharacter, endLine1, endCharacter);
+      let c1Range = Range.create(startLine1 + 1, startCharacter, startLine1 + 1, endCharacter);
+
+      let range2 = Range.create(startLine2, startCharacter, endLine2, endCharacter);
+      let c2Range = Range.create(startLine2 + 1, startCharacter, startLine2 + 1, endCharacter);
+      sm.symbols.set("file1", [
+        DocumentSymbol.create("1", ".", SymbolKind.Class, range1, range1, [
+          DocumentSymbol.create("node1_1", ".", SymbolKind.Method, c1Range, c1Range),
+        ]),
+        DocumentSymbol.create("2", ".", SymbolKind.Class, range2, range2, [
+          DocumentSymbol.create("node2_1", ".", SymbolKind.Property, c2Range, c2Range),
+        ]),
+      ]);
+    });
+
+    it("It translates the symbols (line- not characterwise) below the cursor line by an offset of 3", () => {
+      // Arrange
+      const currentCursorLine = 1;
+      const lineOffset = 3;
+
+      // Act
+      sm.offsetSymbols("file1", currentCursorLine, lineOffset);
+
+      // Assert
+      {
+        // Check 1st symbol
+        const symbol1 = sm.findSymbol("1");
+        let r = symbol1.symbol!.range;
+        equal(r.start.line, startLine1 + lineOffset, "The start line wasn't translated by 3 lines");
+        equal(r.end.line, endLine1 + lineOffset, "The end line wasn't translated by 3 lines");
+
+        equal(r.start.character, startCharacter, "The start character has changed");
+        equal(r.end.character, endCharacter, "The end character has changed");
+
+        const childNode1 = symbol1.symbol!.children![0];
+        r = childNode1.range;
+
+        // The childNode has an offset of 1 from the its parent.
+        // It is only present on the same row (startLine1)
+
+        equal(r.start.line, startLine1 + 1 + lineOffset, "The start line wasn't translated by 3 lines");
+        equal(r.end.line, startLine1 + 1 + lineOffset, "The end line wasn't translated by 3 lines");
+        equal(r.start.character, startCharacter, "The start character has changed");
+        equal(r.end.character, endCharacter, "The end character has changed");
+      }
+
+      {
+        // Check 2nd symbol
+        const symbol2 = sm.findSymbol("2");
+        let r = symbol2.symbol!.range;
+        equal(r.start.line, startLine2 + lineOffset, "The start line wasn't translated by 3 lines");
+        equal(r.start.character, startCharacter, "The start character has changed");
+        equal(r.end.line, endLine2 + lineOffset, "The end line wasn't translated by 3 lines");
+        equal(r.end.character, endCharacter, "The end character has changed");
+
+        const childNode2 = symbol2.symbol!.children![0];
+        r = childNode2.range;
+
+        // The childNode has an offset of 1 from the its parent.
+        // It is only present on the same row (startLine2)
+        equal(r.start.line, startLine2 + 1 + lineOffset, "The start line wasn't translated by 3 lines");
+        equal(r.end.line, startLine2 + 1 + lineOffset, "The end line wasn't translated by 3 lines");
+        equal(r.start.character, startCharacter, "The start character has changed");
+        equal(r.end.character, endCharacter, "The end character has changed");
+      }
     });
   });
 });

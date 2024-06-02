@@ -28,7 +28,7 @@ import {
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { DefaultMapObject } from "./modules/mapcrawling/DefaultMapObject";
 import MapObjectManager from "./modules/mapcrawling/map-mapping";
-import { onCodeAction } from './modules/onCodeAction';
+import { onCodeAction } from './modules/code-actions';
 import { onCodeLens } from "./modules/codelens";
 import { onCompletion } from "./modules/completions";
 import { tokenizeQuotesWithIndex } from "./modules/text-utils";
@@ -42,8 +42,7 @@ import { serverState } from "./state";
 import { onDocumentFormatting } from "./modules/document-formatting";
 import { onDocumentRangeFormatting } from "./modules/document-range-formatting";
 import { onImplementation } from "./modules/implementation";
-
-import { onSignatureHelp } from "./modules/onSignatureHelp";
+import { onSignatureHelp } from './modules/signature-helper';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require("wink-pos-tagger");
@@ -159,6 +158,7 @@ connection.onInitialized(() => {
   connection.onNotification("symbolparsing/abort", () => {
     abortParsingProcess?.cancel();
   });
+
 
   connection.onNotification("request/mapsymbols", (options) => {
     if (options?.reset) {
@@ -373,6 +373,7 @@ connection.onRequest("request/preprocessed/file", async (params) => {
   });
 });
 
+
 connection.onRequest("request/analyzeText/findNouns", async (params) => {
   const { path, position, text } = params;
 
@@ -416,6 +417,12 @@ connection.onRequest(
     );
   }
 );
+
+
+connection.onRequest("request/offsetSymbols", ({filePath, line, offset}) => {
+  // TODO: this in itself won't be enough
+  symbolManager.offsetSymbols(filePath, line, offset);
+})
 
 connection.onRequest(
   "request/parseTads2Documents",

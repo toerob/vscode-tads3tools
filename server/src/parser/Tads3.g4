@@ -395,7 +395,7 @@ identifierAtom:
 ;
 
 params:
-    ( optionallyTypedOptionalId|SPREAD|array) (COMMA params?)*
+    ( optionallyTypedOptionalId|SPREAD|array) (hasMore=COMMA tail=params?)*
 ;
 
 optionallyTypedOptionalId:

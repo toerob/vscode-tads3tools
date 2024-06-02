@@ -231,27 +231,14 @@ export async function preprocessAndParseTads3Files(
     const text = preprocessedFilesCacheMap.get(filePath) ?? "";
     const jobResult = await worker(filePath, text);
     connection.console.debug(`Worker finished with result`);
-    const { symbols, keywords, additionalProperties, inheritanceMap, assignmentStatements, expressionSymbols } =
+    const { symbols, keywords, additionalProperties, inheritanceMap, assignmentStatements, expressionSymbols, symbolParameters } =
       jobResult;
 
     symbolManager.symbols.set(filePath, symbols ?? []);
-
-    /*
-    for(const symbol of symbols) {
-      const syminfo = { symbol, fsPath: filePath }
-      const s = symbolManager.symbols2.get(symbol.name);
-      if(s) {
-        s.push(syminfo);
-        symbolManager.symbols2.set(symbol.name, s);
-      } else {
-        symbolManager.symbols2.set(symbol.name, [syminfo]);
-      }
-    }    
-    */
-
     symbolManager.keywords.set(filePath, keywords ?? []);
     symbolManager.assignmentStatements, expressionSymbols.set(filePath, assignmentStatements, expressionSymbols ?? []);
     symbolManager.expressionSymbols.set(filePath, expressionSymbols)
+    symbolManager.symbolParameters.set(filePath, symbolParameters ?? []);
 
     inheritanceMap.forEach((value: string, key: string) =>
       symbolManager.inheritanceMap.set(key, value)
@@ -339,29 +326,14 @@ export async function preprocessAndParseTads3Files(
 
 
             const text = preprocessedFilesCacheMap.get(filePath) ?? "";
-            const { symbols, keywords, additionalProperties, inheritanceMap, assignmentStatements, expressionSymbols } =
+            const { symbols, keywords, additionalProperties, inheritanceMap, assignmentStatements, expressionSymbols, symbolParameters } =
               await parseJob(filePath, text);
 
             symbolManager.symbols.set(filePath, symbols ?? []);
-
-            /*
-            for(const symbol of symbols) {
-              const name = symbol?.name
-              if(name) {
-                const syminfo = { symbol, fsPath: filePath }
-                const s = symbolManager.symbols2.get(name);
-                if(s) {
-                  s.push(syminfo);
-                  symbolManager.symbols2.set(name, s);
-                } else {
-                  symbolManager.symbols2.set(name, [syminfo]);
-                }  
-              }
-            }  */  
-
             symbolManager.keywords.set(filePath, keywords ?? []);
             symbolManager.assignmentStatements.set(filePath, assignmentStatements ?? []);
             symbolManager.expressionSymbols.set(filePath, expressionSymbols ?? []);
+            symbolManager.symbolParameters.set(filePath, symbolParameters ?? []);
 
             inheritanceMap.forEach((value: string, key: string) =>
               symbolManager.inheritanceMap.set(key, value)

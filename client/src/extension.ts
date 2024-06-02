@@ -75,6 +75,8 @@ import {
   ReplayScriptTreeDataProvider,
 } from "./modules/replay-script";
 import { downloadAndInstallExtension } from "./ifarchive-extensions";
+import { version } from '../../package.json';
+
 
 const DEBOUNCE_TIME = 200;
 const collection = languages.createDiagnosticCollection("tads3diagnostics");
@@ -113,7 +115,21 @@ export function getLastChosenTextEditor() {
   return lastChosenTextEditor;
 }
 
-export async function activate(context: ExtensionContext) {
+export async function activate(context: ExtensionContext) {  
+
+  /*
+  TODO: make sure this works before activating it
+  // Check if running a different version, and in that case clear the cache
+  const currentVersion = version;
+  const previousVersion = context.globalState.get('extensionVersion');
+  if (previousVersion && previousVersion !== currentVersion) {
+    client.info(`Extension has been updated from version ${previousVersion} to ${currentVersion}. Clearing cache`);
+    await clearCache();
+  }
+  await context.globalState.update('extensionVersion', currentVersion);
+  */
+
+
   const serverModule = context.asAbsolutePath(
     path.join("server", "out", "server.js")
   );
@@ -537,7 +553,7 @@ export async function activate(context: ExtensionContext) {
     )
   );
   context.subscriptions.push(
-    commands.registerCommand("tads3.clearCache", () => clearCache(context))
+    commands.registerCommand("tads3.clearCache", () => clearCache())
   );
   context.subscriptions.push(
     commands.registerCommand("tads3.replayScript", (params) =>
@@ -559,10 +575,32 @@ export async function activate(context: ExtensionContext) {
       deleteReplayScript(params)
     )
   );
+    // WIP: Start from the bottom going upwards and applying offsets to the already parsed symbols
+
+      context.subscriptions.push(
+    workspace.onDidChangeTextDocument(async (event) => {
+      for (const change of event.contentChanges) {
+        let offset  = change.range.start.line - change.range.end.line;
+        if(offset === 0) {
+          offset = change.text.match(/\r?\n/g)?.length ?? 0;
+        }
+        if(offset != 0) {
+          // Note: Keeping this for debugging purposes:
+          // const msg =`Apply offset of ${offset} before/after line: ${change.range.start.line + 1}`;
+          // window.showInformationMessage(msg);
+          await client.sendRequest("request/offsetSymbols", {
+            filePath: event.document.uri.fsPath,
+            line: change.range.start.line,
+            offset
+          });
+        }
+      }
+  }));
+
 
   context.subscriptions.push(
     window.onDidChangeTextEditorSelection((textEditorSelectionChange) => {
-      lastChosenTextEditor = textEditorSelectionChange.textEditor;
+      lastChosenTextEditor = textEditorSelectionChange.textEditor;      
     })
   );
 
@@ -849,7 +887,6 @@ async function diagnose(textDocument: TextDocument) {
     const mainFilePath = extensionState.getTads2MainFile().fsPath;
     const projectBaseFolder = dirname(mainFilePath);
     const commandLine = `"${compilerPath}" -i "${tads2libraryPath}" -i "${projectBaseFolder}" -ds "${mainFilePath}"`;
-    console.log(commandLine);
     const resultOfCompilation = await runCommand(commandLine);
     parseDiagnostics(resultOfCompilation.toString(), textDocument, 2);
     extensionState.setDiagnosing(false);
@@ -1087,9 +1124,9 @@ function overridePositionWithPersistedCoordinates(mapObjects: any[]) {
   for (const node of mapObjects) {
     const persistedPosition = persistedObjectPositions.get(node.name);
     if (persistedPosition) {
-      console.log(
+      /*console.log(
         `${node.name} has persisted position: ${persistedPosition[0]}/${persistedPosition[1]}`
-      );
+      );*/
     }
     if (persistedPosition && persistedPosition.length === 2) {
       const x = persistedPosition[0];
@@ -1134,7 +1171,7 @@ async function initiallyParseTadsProject() {
   }
 }
 
-async function clearCache(context: ExtensionContext) {
+async function clearCache() {
   const userAnswer = await window.showInformationMessage(
     `This will clear all potential cache for the standard libraries adv3/adv3Lite. With the effect of all library files having to go through a full parse next time around.
 	Are you sure?`,

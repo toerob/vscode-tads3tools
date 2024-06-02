@@ -16,16 +16,15 @@ import { preprocessedFilesCacheMap } from "../server";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import {
   extractCurrentLineFromDocument,
-  logElapsedTimeUsingConnection,
 } from "./utils";
+
+//import { logElapsedTimeUsingConnection } from './logging';
 
 const onWindowsPlatform = process.platform === "win32";
 
 function windowsSafeUri(fsPath: string) {
   return onWindowsPlatform ? URI.file(fsPath)?.path : fsPath;
 }
-
-const logElapsedTime = logElapsedTimeUsingConnection(connection);
 
 export async function onDefinition(
   { textDocument: textDoc, position: pos }: DefinitionParams,
@@ -59,7 +58,7 @@ export async function onDefinition(
     if (params.length > 0) {
       const matchedParam = params.find((x) => x === symbolName);
       if (matchedParam) {
-        connection.console.log(
+        connection.console.debug(
           `Matched parameter within lambda ${matchedParam}`
         );
         const lambdaParamsStart = isWithinLambda.index + 1;
@@ -83,7 +82,6 @@ export async function onDefinition(
   if (isWithinCodeBlock) {
     const locals = findLocals(sm, symbolName, fsPath, pos);
     if (locals.length > 0) {
-      logElapsedTime(methodStartTime);
       return locals;
     }
   }
@@ -94,7 +92,6 @@ export async function onDefinition(
   if (symbolName === "inherited") {
     const inherited = findInherited(sm, fsPath, pos);
     if (inherited.length > 0) {
-      logElapsedTime(methodStartTime);
       return inherited;
     }
   }
@@ -105,7 +102,6 @@ export async function onDefinition(
   if (symbolName === "self") {
     const selfs = findSelf(sm, textDoc.uri, fsPath, pos);
     if (selfs.length > 0) {
-      logElapsedTime(methodStartTime);
       return selfs;
     }
   }
@@ -117,7 +113,6 @@ export async function onDefinition(
   // ------------------------------------------------------------
   const objects = findObjects(sm, symbolName);
   if (objects.length > 0) {
-    logElapsedTime(methodStartTime);
     return objects;
   }
 
@@ -126,7 +121,6 @@ export async function onDefinition(
   // ------------------------------------------------------------
   const members = findMembers(sm, pos, symbolName, fsPath, currentDoc);
   if (members.length > 0) {
-    logElapsedTime(methodStartTime);
     return members;
   }
 
@@ -135,11 +129,8 @@ export async function onDefinition(
   // ------------------------------------------------------------
   const macros = findMacros(symbolName);
   if (macros.length > 0) {
-    logElapsedTime(methodStartTime);
     return macros;
   }
-
-  logElapsedTime(methodStartTime);
   return [];
 }
 
