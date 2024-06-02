@@ -665,16 +665,19 @@ export class Tads3SymbolListener implements Tads3Listener {
         this.additionalProperties.set(symbol, props);
       }
 
-      const parameters = createParameterSymbols(ctx.functionHead()?.params());
-      symbol.detail = parameters.map(x=>x.name).join(',');
-      this.symbolParameters.set(symbol.name, parameters);
-
-      for (const symbol of parameters) {
-        const additionalProps = new ExtendedDocumentSymbolProperties();
-        additionalProps.objectScope = this.currentObjectSymbol;
-        additionalProps.functionScope = this.currentFunctionSymbol;
-        this.additionalProperties.set(symbol, additionalProps);
-        this.assignmentStatements.push(symbol);
+      const params = ctx.functionHead()?.params();
+      if(params) {
+        const parameters = createParameterSymbols(ctx.functionHead()?.params());
+        symbol.detail = parameters.map(x=>x.name).join(',');
+        this.symbolParameters.set(symbol.name, parameters);
+  
+        for (const symbol of parameters) {
+          const additionalProps = new ExtendedDocumentSymbolProperties();
+          additionalProps.objectScope = this.currentObjectSymbol;
+          additionalProps.functionScope = this.currentFunctionSymbol;
+          this.additionalProperties.set(symbol, additionalProps);
+          this.assignmentStatements.push(symbol);
+        }
       }
 
     } catch (err) {
@@ -774,12 +777,14 @@ function createParameterSymbols(paramsContext: ParamsContext|undefined) {
   let currentParam = paramsContext;
   let counter = 0;
   while(currentParam) {
-    const text = currentParam.getChild(0).text;
-    const ruleCtx = currentParam.getRuleContext(0, ParserRuleContext);
-    const range = createRangeFromContext(ruleCtx);
-    const s = DocumentSymbol.create(text, counter.toString(), SymbolKind.Variable, range, range);        
-    x.push(s);
-    counter++;
+    if(currentParam.childCount>0) {
+      const text = currentParam.getChild(0).text;
+      const ruleCtx = currentParam.getRuleContext(0, ParserRuleContext);
+      const range = createRangeFromContext(ruleCtx);
+      const s = DocumentSymbol.create(text, counter.toString(), SymbolKind.Variable, range, range);        
+      x.push(s);
+      counter++;
+    }
     currentParam = currentParam._tail;
   }
   return x;  

@@ -559,10 +559,32 @@ export async function activate(context: ExtensionContext) {
       deleteReplayScript(params)
     )
   );
+  /*
+    // WIP: Start from the bottom going upwards and applying offsets to the already parsed symbols
+
+      context.subscriptions.push(
+    workspace.onDidChangeTextDocument(async (event) => {
+      for (const change of event.contentChanges) {
+        let offset  = change.range.start.line - change.range.end.line;
+        if(offset === 0) {
+          offset = change.text.match(/\r?\n/g)?.length ?? 0;
+        }
+        if(offset != 0) {
+          const msg =`Apply offset of ${offset} before/after line: ${change.range.start.line + 1}`;
+          window.showInformationMessage(msg);
+          
+          await client.sendRequest("request/offsetSymbols", {
+            filePath: event.document.uri.fsPath,
+            line: change.range.start.line,
+            offset
+          });
+        }
+      }
+  }));*/
 
   context.subscriptions.push(
     window.onDidChangeTextEditorSelection((textEditorSelectionChange) => {
-      lastChosenTextEditor = textEditorSelectionChange.textEditor;
+      lastChosenTextEditor = textEditorSelectionChange.textEditor;      
     })
   );
 
@@ -849,7 +871,6 @@ async function diagnose(textDocument: TextDocument) {
     const mainFilePath = extensionState.getTads2MainFile().fsPath;
     const projectBaseFolder = dirname(mainFilePath);
     const commandLine = `"${compilerPath}" -i "${tads2libraryPath}" -i "${projectBaseFolder}" -ds "${mainFilePath}"`;
-    console.log(commandLine);
     const resultOfCompilation = await runCommand(commandLine);
     parseDiagnostics(resultOfCompilation.toString(), textDocument, 2);
     extensionState.setDiagnosing(false);
@@ -1087,9 +1108,9 @@ function overridePositionWithPersistedCoordinates(mapObjects: any[]) {
   for (const node of mapObjects) {
     const persistedPosition = persistedObjectPositions.get(node.name);
     if (persistedPosition) {
-      console.log(
+      /*console.log(
         `${node.name} has persisted position: ${persistedPosition[0]}/${persistedPosition[1]}`
-      );
+      );*/
     }
     if (persistedPosition && persistedPosition.length === 2) {
       const x = persistedPosition[0];

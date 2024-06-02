@@ -55,6 +55,7 @@ export const PROPERTY_REGEXP =
   /([a-zA-Z][a-zA-Z0-9]*)(\s*[(].*[)])?\s*[.]\s*([a-zA-Z][a-zA-Z0-9]*)?$/;
 
 export const ID = "[a-zA-Z0-9_]+";
+export const ID_V2 = "[a-zA-Z_][a-zA-Z0-9_]*";
 const DIR =
   "(north|south|east|west|northeast|northwest|southeast|southwest|up|down|in|out)";
 export const WS = "\\s*";

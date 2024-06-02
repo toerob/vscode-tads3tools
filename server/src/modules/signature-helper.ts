@@ -37,7 +37,6 @@ export async function onSignatureHelp(
   }
   const currentLine = getCurrentLine(currentDocument, position.line);
   activeParameter = decideSelectedParameter(currentLine, position.character);
-  console.log(activeParameter);
 
   const symbolNameAndParams = extractFunctionNameAndParams(currentLine);
   if (symbolNameAndParams) {

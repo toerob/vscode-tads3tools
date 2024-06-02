@@ -58,7 +58,7 @@ export async function onDefinition(
     if (params.length > 0) {
       const matchedParam = params.find((x) => x === symbolName);
       if (matchedParam) {
-        connection.console.log(
+        connection.console.debug(
           `Matched parameter within lambda ${matchedParam}`
         );
         const lambdaParamsStart = isWithinLambda.index + 1;

@@ -159,6 +159,7 @@ connection.onInitialized(() => {
     abortParsingProcess?.cancel();
   });
 
+
   connection.onNotification("request/mapsymbols", (options) => {
     if (options?.reset) {
       mapper.newlyCreatedRoomsSet.clear();
@@ -372,6 +373,7 @@ connection.onRequest("request/preprocessed/file", async (params) => {
   });
 });
 
+
 connection.onRequest("request/analyzeText/findNouns", async (params) => {
   const { path, position, text } = params;
 
@@ -415,6 +417,12 @@ connection.onRequest(
     );
   }
 );
+
+
+connection.onRequest("request/offsetSymbols", ({filePath, line, offset}) => {
+  // TODO: this in itself won't be enough
+  symbolManager.offsetSymbols(filePath, line, offset);
+})
 
 connection.onRequest(
   "request/parseTads2Documents",

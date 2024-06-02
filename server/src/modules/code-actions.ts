@@ -13,6 +13,7 @@ import { isSymbolKindOneOf } from "./utils";
 import { getCurrentLine } from "./utils";
 import { addShortTermMemoryKeyword } from "./completions";
 import { URI } from "vscode-uri";
+import { ID, ID_V2 } from "./constants";
 
 const lastWordRegExp = new RegExp(/\s*(\w+)[^\w]*(\s*[(].*[)]\s*[;]?)?$/); // RegExp for the Last occurring word
 
@@ -52,7 +53,7 @@ export async function onCodeAction(
     return [];
   }
   const cursorPosition = params.range.start;
-  const currentLine = getCurrentLine(currentDoc, cursorPosition.character);
+  const currentLine = getCurrentLine(currentDoc, cursorPosition.line);
   if (
     currentLine === undefined ||
     currentLine.match(/\b(for(each)?|local|while|if|else)\b/) // Skip rows with control flow symbols
@@ -94,7 +95,30 @@ export async function onCodeAction(
     symbol = sm.findSymbol(symbolName);
   }
 
-  if (symbol === undefined) {
+  if (symbol?.symbol === undefined) {
+    const exp = `(${ID})?\\s*[=]?\\s*(${ID})\\s*([+\\-\\*\\/])\\s*(${ID})([;])?`;
+    const aritmethicExpression = new RegExp(exp);
+    const aritmethicExpressionMatch = aritmethicExpression.exec(currentLine);
+    if (aritmethicExpressionMatch) {
+      const variable = aritmethicExpressionMatch[1];
+      const left = aritmethicExpressionMatch[2]?.trim();
+      const op = aritmethicExpressionMatch[3]?.trim();
+      const right = aritmethicExpressionMatch[4]?.trim();
+      const end = aritmethicExpressionMatch[5];
+
+      if (left && op && right) {
+        return [
+          createSumAction(currentLine, currentDoc.uri, cursorPosition, {
+            variable,
+            left,
+            op,
+            right,
+            end,
+          }),
+        ];
+      }
+    }
+
     return [];
   }
 
@@ -164,14 +188,14 @@ function createArrayAssignmentAction(
   const startingWord = currentLine.match(/\[/);
   const startPosition = startingWord?.index;
   return {
-    title: "Complete local assignment statement",
+    title: "Complete local assignment (array) statement",
     kind: CodeActionKind.RefactorExtract,
     command: {
       title: "Insert local assignment snippet",
       command: "extension.insertLocalAssignmentSnippet",
       arguments: [
         uri,
-        "local ${1:x} = [];$0",
+        `local \${1:x} = [];\$0`,
         cursorPosition.line,
         startPosition,
         currentLine.length,
@@ -180,3 +204,42 @@ function createArrayAssignmentAction(
   };
 }
 
+function createSumAction(
+  currentLine: string,
+  uri: string,
+  cursorPosition: Position,
+  parts: {
+    variable: string;
+    left: string;
+    op: string;
+    right: string;
+    end: string;
+  }
+): CodeAction {
+  const startingWord = currentLine.match(/\w/);
+  const startPosition = startingWord?.index;
+  const ending = parts.end ? parts.end : ";";
+
+  let variableName = parts.variable ? parts.variable : "sum";
+  if (variableName.startsWith("get") && variableName.length > 3) {
+    variableName = variableName.substring(3);
+  }
+
+  //const newText = `local \${1:${variableName}} = ${currentLine.trim()}${ending}\$0`;
+  const newText = `local \${1:${variableName}} = ${parts.left} ${parts.op} ${parts.right}${ending}\$0`;
+  return {
+    title: "Complete local assignment (arithemic) statement",
+    kind: CodeActionKind.RefactorExtract,
+    command: {
+      title: "Insert local assignment snippet",
+      command: "extension.insertLocalAssignmentSnippet",
+      arguments: [
+        uri,
+        newText,
+        cursorPosition.line,
+        startPosition,
+        currentLine.length,
+      ],
+    },
+  };
+}
