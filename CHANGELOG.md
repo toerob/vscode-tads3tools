@@ -11,6 +11,7 @@
 - A bug concering the signature helper was fixed. (Issue #42)
 - Cached symbols stopped working in 0.6.3, now it is working again.
 - The preprocessor now works even if there's warnings in the current source code. (This used to cause the parser not being able to update the symbols when a file was saved.)
+- Adding line breaks in the text will now translate the symbols so they are still clickable, even if no save has been done.
 
 ## 0.6.3
 

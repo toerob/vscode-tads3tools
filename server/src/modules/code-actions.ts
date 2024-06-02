@@ -1,11 +1,4 @@
-import {
-  CodeAction,
-  CodeActionParams,
-  TextDocuments,
-  CodeActionKind,
-  SymbolKind,
-  Range,
-} from "vscode-languageserver/node";
+import { CodeAction, CodeActionParams, TextDocuments, CodeActionKind, SymbolKind } from "vscode-languageserver/node";
 import { TadsSymbolManager, symbolManager } from "./symbol-manager";
 import { Position, TextDocument } from "vscode-languageserver-textdocument";
 import { camelCase } from "./utils";
@@ -13,14 +6,15 @@ import { isSymbolKindOneOf } from "./utils";
 import { getCurrentLine } from "./utils";
 import { addShortTermMemoryKeyword } from "./completions";
 import { URI } from "vscode-uri";
-import { ID, ID_V2 } from "./constants";
+import { ID } from "./constants";
 
 const lastWordRegExp = new RegExp(/\s*(\w+)[^\w]*(\s*[(].*[)]\s*[;]?)?$/); // RegExp for the Last occurring word
+const assignmentRegExp = new RegExp(/\s*(.*)\s*[=]\s*(new\s+)?(.*)\s*/);
 
 export async function onCodeAction(
   params: CodeActionParams,
   documents: TextDocuments<TextDocument>,
-  sm: TadsSymbolManager
+  sm: TadsSymbolManager,
 ) {
   const actions: CodeAction[] = [];
   const fsPath = URI.parse(params.textDocument.uri).fsPath;
@@ -33,11 +27,7 @@ export async function onCodeAction(
   If work has been done without saving (which is mostly the case), 
   the parser has no clue if the current rows is within a code block or not.
 
-  One option could be to try to preprocess and parse the incomplete document prior to this, 
-    it the preprocessor and parser doesn't break
-
-  This needs to depend on some easier way to determine that. Perhaps a simple regexp that checks the most common ways
-  a function and code block can be written.
+  This will be a coming improvement.
 
   const isValidPosition = sm.isPositionWithinCodeBlock(
     fsPath,
@@ -66,13 +56,7 @@ export async function onCodeAction(
   const match = lastWordRegExp.exec(currentLine); // Extract the last word on this line
   if (match === null) {
     if (currentLine.match(/^\s*\[\s*\]\s*;?$/)) {
-      return [
-        createArrayAssignmentAction(
-          currentLine,
-          currentDoc.uri,
-          cursorPosition
-        ),
-      ];
+      return [createArrayAssignmentAction(currentLine, currentDoc.uri, cursorPosition)];
     }
     return [];
   }
@@ -84,10 +68,7 @@ export async function onCodeAction(
   const startingWord = currentLine.match(/\w/);
   const startPosition = startingWord?.index;
   if (symbolName === "inherited") {
-    const result = symbolManager.findContainingObject(
-      fsPath,
-      params.range.start
-    );
+    const result = symbolManager.findContainingObject(fsPath, params.range.start);
     if (result) {
       symbol = { symbol: result, filePath: fsPath };
     }
@@ -124,17 +105,12 @@ export async function onCodeAction(
 
   const symbolKind = symbol.symbol?.kind;
 
-  if (
-    !(symbolKind && currentLine && startPosition !== undefined && symbolKind)
-  ) {
+  if (!(symbolKind && currentLine && startPosition !== undefined && symbolKind)) {
     return [];
   }
 
-  const hasNew = isSymbolKindOneOf(symbolKind, [
-    SymbolKind.Object,
-    SymbolKind.Class,
-    SymbolKind.Interface,
-  ]);
+  // TODO: refactorize this, for now - it works.
+  const hasNew = isSymbolKindOneOf(symbolKind, [SymbolKind.Object, SymbolKind.Class, SymbolKind.Interface]);
 
   const hasParenthesis = isSymbolKindOneOf(symbolKind, [
     SymbolKind.Object,
@@ -144,21 +120,32 @@ export async function onCodeAction(
     SymbolKind.Method,
   ]);
 
-  const isMissingParams =
-    hasParenthesis && currentLine.match(/[(].*[)]\s*[;]?\s*$/) === null;
+  const isMissingParams = hasParenthesis && currentLine.match(/[(].*[)]\s*[;]?\s*$/) === null;
 
-  const isMissingNewKeyword =
-    hasNew &&
-    hasParenthesis &&
-    currentLine.match(`\\s*new\\s+${symbolName}`) === null;
+  const isMissingNewKeyword = hasNew && hasParenthesis && currentLine.match(`\\s*new\\s+${symbolName}`) === null;
 
   const isMissingSemicolon = currentLine.match(/;\s*$/) === null;
-  const maybeNewKeyword = isMissingNewKeyword ? "new " : "";
   const maybeParenthesis = isMissingParams ? "()" : "";
   const maybeSemicolon = isMissingSemicolon ? ";" : "";
+  let maybeNewKeyword = isMissingNewKeyword ? "new " : "";
+  let instanceName = currentLine?.trim();
+  let variableName = camelCase(symbolName?.trim());
 
-  const instanceName = currentLine.trim();
-  const variableName = camelCase(symbolName.trim());
+  // Check for already existing variable names, e.g: "xyzzy = new Thing()"
+  // - in that case reuse that name
+
+  const variableNameExistsMatcher = assignmentRegExp.exec(instanceName);
+  if (variableNameExistsMatcher != null && variableNameExistsMatcher.length > 2) {
+    variableName = camelCase(variableNameExistsMatcher[1]?.trim()) ?? undefined;
+    if (variableNameExistsMatcher[2]?.trim() === "new") {
+      maybeNewKeyword = "new";
+    }
+    instanceName = variableNameExistsMatcher[3];
+  }
+  // Cut off the 'get' part for the variable name if this is a typical getter
+  if (variableName.startsWith("get") && variableName.length > 3) {
+    variableName = camelCase(variableName.substring(3));
+  }
 
   addShortTermMemoryKeyword(variableName);
 
@@ -180,11 +167,7 @@ export async function onCodeAction(
   return actions;
 }
 
-function createArrayAssignmentAction(
-  currentLine: string,
-  uri: string,
-  cursorPosition: Position
-): CodeAction {
+function createArrayAssignmentAction(currentLine: string, uri: string, cursorPosition: Position): CodeAction {
   const startingWord = currentLine.match(/\[/);
   const startPosition = startingWord?.index;
   return {
@@ -193,13 +176,7 @@ function createArrayAssignmentAction(
     command: {
       title: "Insert local assignment snippet",
       command: "extension.insertLocalAssignmentSnippet",
-      arguments: [
-        uri,
-        `local \${1:x} = [];\$0`,
-        cursorPosition.line,
-        startPosition,
-        currentLine.length,
-      ],
+      arguments: [uri, `local \${1:x} = [];\$0`, cursorPosition.line, startPosition, currentLine.length],
     },
   };
 }
@@ -214,7 +191,7 @@ function createSumAction(
     op: string;
     right: string;
     end: string;
-  }
+  },
 ): CodeAction {
   const startingWord = currentLine.match(/\w/);
   const startPosition = startingWord?.index;
@@ -233,13 +210,7 @@ function createSumAction(
     command: {
       title: "Insert local assignment snippet",
       command: "extension.insertLocalAssignmentSnippet",
-      arguments: [
-        uri,
-        newText,
-        cursorPosition.line,
-        startPosition,
-        currentLine.length,
-      ],
+      arguments: [uri, newText, cursorPosition.line, startPosition, currentLine.length],
     },
   };
 }

@@ -501,20 +501,16 @@ export class TadsSymbolManager {
     const symbols = this.symbols.get(filePath) ?? []; //?.filter(x=>x.range.start.line>=line) ?? [];
     for(const symbol of symbols) {
       if(symbol.range.start.line >= line) {
-        offsetSymbolByLines(symbol, lineOffset);
+        symbol.range.start.line += lineOffset;
+        symbol.range.end.line += lineOffset;
       }
       const childrenSymbols = symbol.children?.filter(x=>x.range.start.line>=line) ?? [];
-      for(const node of childrenSymbols) {
-        offsetSymbolByLines(node, lineOffset);
+      for(const symbol of childrenSymbols) {
+        symbol.range.start.line += lineOffset;
+        symbol.range.end.line += lineOffset;
       }
     }
   }
-}
-function offsetSymbolByLines(symbol: DocumentSymbol, lineOffset: any) {
-  symbol.range.start.line += lineOffset;
-  symbol.range.end.line += lineOffset;
-  symbol.selectionRange.start.line += lineOffset;
-  symbol.selectionRange.end.line += lineOffset;
 }
 
 export function flattenTreeToArray(localSymbols: DocumentSymbol[]) {
