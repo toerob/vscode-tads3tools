@@ -8,7 +8,7 @@ import {
   CompletionItemKind,
   SymbolKind,
   InsertTextFormat,
-} from "vscode-languageserver/node";
+} from "vscode-languageserver";
 import { flattenTreeToArray, TadsSymbolManager } from "./symbol-manager";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { connection } from "../server";
