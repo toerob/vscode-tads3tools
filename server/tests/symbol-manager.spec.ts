@@ -1,5 +1,5 @@
 import { DocumentSymbol, Position, Range, SymbolKind } from "vscode-languageserver";
-import { flattenTreeToArray, TadsSymbolManager } from "../../../server/src/modules/symbol-manager";
+import { flattenTreeToArray, TadsSymbolManager } from "../src/modules/symbol-manager";
 import { equal, notEqual, deepEqual } from "assert";
 
 const range = Range.create(10, 2, 14, 5);

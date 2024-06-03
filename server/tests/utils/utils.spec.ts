@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { TextDocument } from "vscode-languageserver-textdocument";
-import {
-  extractCurrentLineFromDocument,
+
+import {   extractCurrentLineFromDocument,
   filterForStandardLibraryFiles,
-  isRangeWithin,
-} from "../../src/modules/utils";
+  isRangeWithin, } from "../../src/modules/utils";
 import { Range } from "vscode-languageserver";
 import * as assert from 'assert';
 

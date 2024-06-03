@@ -1,4 +1,5 @@
-import { CodeAction, CodeActionParams, TextDocuments, CodeActionKind, SymbolKind } from "vscode-languageserver/node";
+import { TextDocuments } from "vscode-languageserver/node";
+import { SymbolKind, CodeActionKind, CodeAction, CodeActionParams } from "vscode-languageserver";
 import { TadsSymbolManager, symbolManager } from "./symbol-manager";
 import { Position, TextDocument } from "vscode-languageserver-textdocument";
 import { camelCase } from "./utils";
@@ -15,7 +16,7 @@ export async function onCodeAction(
   params: CodeActionParams,
   documents: TextDocuments<TextDocument>,
   sm: TadsSymbolManager,
-) {
+): Promise<CodeAction[]> {
   const actions: CodeAction[] = [];
   const fsPath = URI.parse(params.textDocument.uri).fsPath;
 
@@ -52,11 +53,11 @@ export async function onCodeAction(
   }
 
   let symbolName = "";
-
+  
   const match = lastWordRegExp.exec(currentLine); // Extract the last word on this line
   if (match === null) {
     if (currentLine.match(/^\s*\[\s*\]\s*;?$/)) {
-      return [createArrayAssignmentAction(currentLine, currentDoc.uri, cursorPosition)];
+      return [createArrayAssignmentAction(currentLine, params.textDocument.uri, cursorPosition)];
     }
     return [];
   }
@@ -89,7 +90,7 @@ export async function onCodeAction(
 
       if (left && op && right) {
         return [
-          createSumAction(currentLine, currentDoc.uri, cursorPosition, {
+          createSumAction(currentLine, params.textDocument.uri, cursorPosition, {
             variable,
             left,
             op,
@@ -205,7 +206,7 @@ function createSumAction(
   //const newText = `local \${1:${variableName}} = ${currentLine.trim()}${ending}\$0`;
   const newText = `local \${1:${variableName}} = ${parts.left} ${parts.op} ${parts.right}${ending}\$0`;
   return {
-    title: "Complete local assignment (arithemic) statement",
+    title: "Complete local assignment (arithmetic) statement",
     kind: CodeActionKind.RefactorExtract,
     command: {
       title: "Insert local assignment snippet",

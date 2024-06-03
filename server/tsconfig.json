@@ -10,6 +10,6 @@
 		"rootDir": "src",
 		"types": ["node", "jest"]
 	},
-	"include": ["src"],
+	"include": ["src", "tests/symbol-manager.spec.ts"],
 	"exclude": ["node_modules", ".vscode-test"]
 }

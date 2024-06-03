@@ -12,18 +12,21 @@ import { getWordAtPosition } from "./text-utils";
 import { retrieveDocumentationForKeyword } from "./documentation";
 import { pathExistsSync } from "fs-extra";
 
-const symbolsAllowingHoveringDocs = [
-  SymbolKind.Class,
-  SymbolKind.Object,
-  SymbolKind.TypeParameter,
-  SymbolKind.Interface,
-  SymbolKind.Method,
-  SymbolKind.Property,
-  SymbolKind.Function,
-];
+function symbolsAllowingHoveringDocs() {
+  return [
+    SymbolKind.Class,
+    SymbolKind.Object,
+    SymbolKind.TypeParameter,
+    SymbolKind.Interface,
+    SymbolKind.Method,
+    SymbolKind.Property,
+    SymbolKind.Function,
+  ];
+  
+}
 
 function checkSymbolsAllowingHoveringDocs(x: DocumentSymbol) {
-  for (const symbolKind of symbolsAllowingHoveringDocs) {
+  for (const symbolKind of symbolsAllowingHoveringDocs()) {
     if (x.kind === symbolKind) {
       return true;
     }
@@ -44,7 +47,7 @@ export function onHover(
     if (symbolName) {
       const symbolSearchResult = symbolManager.findSymbols(
         symbolName,
-        symbolsAllowingHoveringDocs
+        symbolsAllowingHoveringDocs()
       );
       if (
         symbolSearchResult &&

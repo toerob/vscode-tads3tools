@@ -1,10 +1,4 @@
-import {
-  LocationLink,
-  TextDocuments,
-  Position,
-  TextDocumentIdentifier,
-  DocumentSymbol,
-} from "vscode-languageserver";
+import { LocationLink, TextDocuments, Position, TextDocumentIdentifier, DocumentSymbol } from "vscode-languageserver";
 import { TadsSymbolManager, flattenTreeToArray } from "./symbol-manager";
 import { compareStringReverse, getWordAtPosition } from "./text-utils";
 import { DefinitionParams, Location, Range } from "vscode-languageserver";
@@ -14,11 +8,7 @@ import { getDefineMacrosMap } from "../parser/preprocessor";
 import { connection } from "../server";
 import { preprocessedFilesCacheMap } from "../server";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import {
-  extractCurrentLineFromDocument,
-} from "./utils";
-
-//import { logElapsedTimeUsingConnection } from './logging';
+import { extractCurrentLineFromDocument } from "./utils";
 
 const onWindowsPlatform = process.platform === "win32";
 
@@ -29,7 +19,7 @@ function windowsSafeUri(fsPath: string) {
 export async function onDefinition(
   { textDocument: textDoc, position: pos }: DefinitionParams,
   docs: TextDocuments<TextDocument>,
-  sm: TadsSymbolManager
+  sm: TadsSymbolManager,
 ) {
   // ------------------------------------------------------------
   // Preparations and quick checks
@@ -40,9 +30,7 @@ export async function onDefinition(
 
   if (currentDoc === undefined) return [];
 
-  const currentLine = currentDoc.getText(
-    Range.create(pos.line, 0, pos.line + 1, 0)
-  );
+  const currentLine = currentDoc.getText(Range.create(pos.line, 0, pos.line + 1, 0));
 
   let symbolName = getWordAtPosition(currentDoc, pos);
 
@@ -58,13 +46,11 @@ export async function onDefinition(
     if (params.length > 0) {
       const matchedParam = params.find((x) => x === symbolName);
       if (matchedParam) {
-        connection.console.debug(
-          `Matched parameter within lambda ${matchedParam}`
-        );
+        connection.console.debug(`Matched parameter within lambda ${matchedParam}`);
         const lambdaParamsStart = isWithinLambda.index + 1;
         const location = Location.create(
           windowsSafeUri(fsPath),
-          Range.create(pos.line, lambdaParamsStart, pos.line, lambdaParamsStart)
+          Range.create(pos.line, lambdaParamsStart, pos.line, lambdaParamsStart),
         );
         return [location];
       }
@@ -139,7 +125,7 @@ function findMembers(
   pos: Position,
   symbolName: string,
   fsPath: string,
-  document: TextDocument
+  document: TextDocument,
 ): Location[] {
   // TODO: there's might be possible to refine everything here now with the new structure DocumentSymbolWithScope
   let containingObject = undefined;
@@ -171,85 +157,54 @@ function findMembers(
 
   // TODO: look for parameters within a method in addition to local assignments
   // Look for local assignments (TODO: fix correct scope)
-  const locals =
-    sm.assignmentStatements.get(fsPath)?.filter((x) => x.name === symbolName) ??
-    [];
+  const locals = sm.assignmentStatements.get(fsPath)?.filter((x) => x.name === symbolName) ?? [];
 
   if (locals.length > 0) {
     const containingObject = sm.findContainingObject(fsPath, pos);
     if (containingObject) {
-      const containingMethod = containingObject.children?.find((x) =>
-        isPositionWithinRange(pos, x.range)
-      );
+      const containingMethod = containingObject.children?.find((x) => isPositionWithinRange(pos, x.range));
 
       if (containingMethod) {
         // TODO: find/make a rangeIntersects method
         // TODO: there can be competing local assignments, but for now take only the first found:
-        const closeAssignment = locals.find((x) =>
-          isRangeWithin(x.range, containingMethod.range)
-        );
+        const closeAssignment = locals.find((x) => isRangeWithin(x.range, containingMethod.range));
 
         if (closeAssignment) {
           if (closeAssignment.detail === "parameter") {
-            const startAlignedParameterRange = alignRangeToStart(
-              closeAssignment.range
-            );
-            return [
-              Location.create(
-                windowsSafeUri(fsPath),
-                startAlignedParameterRange
-              ),
-            ];
+            const startAlignedParameterRange = alignRangeToStart(closeAssignment.range);
+            return [Location.create(windowsSafeUri(fsPath), startAlignedParameterRange)];
           }
-          return [
-            Location.create(windowsSafeUri(fsPath), closeAssignment.range),
-          ];
+          return [Location.create(windowsSafeUri(fsPath), closeAssignment.range)];
         }
       }
     }
   }
 
-  const memberCallRegExp = new RegExp(
-    `([a-zA-Z][a-zA-Z0-9]*)\\s*([(].*[)])?\\s*[.]\\s*\\b(${symbolName})\\b\\s*`
-  );
+  const memberCallRegExp = new RegExp(`([a-zA-Z][a-zA-Z0-9]*)\\s*([(].*[)])?\\s*[.]\\s*\\b(${symbolName})\\b\\s*`);
   const memberCallMatch = memberCallRegExp.exec(currentLineStr);
 
   if (memberCallMatch) {
     // Since this is a member call, look within the parent too for the symbol
     const parentName = memberCallMatch[1];
 
-    const isInvocatingMethodCall =
-      memberCallMatch.length >= 2 && memberCallMatch[2] ? true : false;
+    const isInvocatingMethodCall = memberCallMatch.length >= 2 && memberCallMatch[2] ? true : false;
     if (isInvocatingMethodCall) {
       connection.console.debug(
-        `Can not yet handle evaluating methods ${parentName}${memberCallMatch[2]} in a method call chain. `
+        `Can not yet handle evaluating methods ${parentName}${memberCallMatch[2]} in a method call chain. `,
       );
       return fetchSymbolGlobally(symbolName, sm);
     }
 
-    const closestAssignment = sm.getClosestAssignmentDeclaration(
-      fsPath,
-      parentName,
-      pos
-    );
+    const closestAssignment = sm.getClosestAssignmentDeclaration(fsPath, parentName, pos);
     if (closestAssignment?.documentSymbol) {
       if (closestAssignment?.instanceType) {
         // TODO: fetch the property/method hierarcially correct. Make it reusable
 
         if (closestAssignment?.instanceType) {
-          const { filePath, symbol } = sm.findSymbol(
-            closestAssignment.instanceType
-          );
-          const definitionWithinSuperClass = symbol?.children?.find(
-            (x) => x.name === symbolName
-          );
+          const { filePath, symbol } = sm.findSymbol(closestAssignment.instanceType);
+          const definitionWithinSuperClass = symbol?.children?.find((x) => x.name === symbolName);
           if (filePath && definitionWithinSuperClass) {
-            return [
-              Location.create(
-                windowsSafeUri(filePath),
-                definitionWithinSuperClass.range
-              ),
-            ];
+            return [Location.create(windowsSafeUri(filePath), definitionWithinSuperClass.range)];
           }
         }
       }
@@ -259,54 +214,39 @@ function findMembers(
     // NOTE: It might lead to the wrong definition
     const owner = sm.findSymbol(parentName, true);
     if (owner?.symbol === undefined) {
-      connection.console.debug(
-        `Can not find the ${owner} in the member call chain. `
-      );
+      connection.console.debug(`Can not find the ${owner} in the member call chain. `);
       return fetchSymbolGlobally(symbolName, sm);
     }
 
     if (owner?.symbol?.kind === SymbolKind.Property) {
       // TODO: in case we have a indirect reference by a property, we need to try to determine its type here
       connection.console.log(
-        `${symbolName} is a member of ${owner.symbol.name} which is a property, will try to determine its type`
+        `${symbolName} is a member of ${owner.symbol.name} which is a property, will try to determine its type`,
       );
       sm.findSymbol(fsPath);
 
       // TODO: first check for exzpressionsymbols
-      const expressionSymbols =
-        sm.expressionSymbols.get(owner.filePath)?.get(owner.symbol.name) ?? []; // TODO: store the assign
+      const expressionSymbols = sm.expressionSymbols.get(owner.filePath)?.get(owner.symbol.name) ?? []; // TODO: store the assign
 
       const latestExpressionSymbols =
         expressionSymbols
-          ?.sort(
-            (a, b) =>
-              (a.documentSymbol?.range?.start?.line ?? 0) -
-              (b.documentSymbol?.range?.start?.line ?? 0)
-          )
+          ?.sort((a, b) => (a.documentSymbol?.range?.start?.line ?? 0) - (b.documentSymbol?.range?.start?.line ?? 0))
           .reverse() ?? [];
       const closestExpressionSymbol = latestExpressionSymbols?.[0];
       // TODO: handle the rest...
 
       // Then look for other symbols, in order to find anonymous objects accesses as well.
       const localSymbols =
-        sm
-          .findAllSymbols(owner.symbol.name)
-          .filter((x) => compareStringReverse(x.filePath, owner.filePath)) ??
-        [];
+        sm.findAllSymbols(owner.symbol.name).filter((x) => compareStringReverse(x.filePath, owner.filePath)) ?? [];
       const latestSymbolsFirst =
-        localSymbols
-          .sort((a, b) => a.symbol.range.start.line - b.symbol.range.start.line)
-          .reverse() ?? [];
+        localSymbols.sort((a, b) => a.symbol.range.start.line - b.symbol.range.start.line).reverse() ?? [];
       const closestSymbol = latestSymbolsFirst?.[0];
       if (closestSymbol) {
         // Look for the instanceType, first by searching for the closest expression to this position
         let instanceTypeName;
         if (closestSymbol?.symbol?.detail) {
           // TODO: use the method to find the closest expression instead of this:
-          const test =
-            sm.expressionSymbols
-              .get(closestSymbol.filePath)
-              ?.get(closestSymbol.symbol.detail) ?? []; // TODO: store the assign
+          const test = sm.expressionSymbols.get(closestSymbol.filePath)?.get(closestSymbol.symbol.detail) ?? []; // TODO: store the assign
           console.log(test);
           instanceTypeName = test[0]?.instanceType;
         } else {
@@ -322,17 +262,10 @@ function findMembers(
           ])?.[0];
           if (filePath && symbol) {
             // TODO: find the members within the symbolDefinition corresponding to the symbolName
-            const memberWithinDefinition = symbol?.children?.find(
-              (x) => x.name === symbolName
-            );
+            const memberWithinDefinition = symbol?.children?.find((x) => x.name === symbolName);
 
             if (memberWithinDefinition) {
-              return [
-                Location.create(
-                  windowsSafeUri(filePath),
-                  memberWithinDefinition.range
-                ),
-              ];
+              return [Location.create(windowsSafeUri(filePath), memberWithinDefinition.range)];
             }
           }
         }
@@ -343,13 +276,9 @@ function findMembers(
     }
 
     const isObjectOrClass =
-      owner?.symbol?.kind &&
-      (owner.symbol.kind === SymbolKind.Object ||
-        owner.symbol.kind === SymbolKind.Class);
+      owner?.symbol?.kind && (owner.symbol.kind === SymbolKind.Object || owner.symbol.kind === SymbolKind.Class);
     if (!isObjectOrClass) {
-      connection.console.debug(
-        `Can not handle anything else but objects and classes. `
-      );
+      connection.console.debug(`Can not handle anything else but objects and classes. `);
       return fetchSymbolGlobally(symbolName, sm);
     }
 
@@ -361,16 +290,9 @@ function findMembers(
     for (const superClassName of superClassNames) {
       const potentialParent = sm.findSymbol(superClassName, true);
       // TODO: verify member is within instance:
-      const foundMemberSymbol =
-        potentialParent?.symbol?.children?.filter(
-          (x) => x.name === symbolName
-        ) ?? [];
+      const foundMemberSymbol = potentialParent?.symbol?.children?.filter((x) => x.name === symbolName) ?? [];
 
-      if (
-        foundMemberSymbol.length > 0 &&
-        potentialParent.symbol &&
-        potentialParent.filePath
-      ) {
+      if (foundMemberSymbol.length > 0 && potentialParent.symbol && potentialParent.filePath) {
         // TODO: Decide which parent should be the containing object, for now we just grab the first
         containingObject = potentialParent?.symbol;
         fsPath = potentialParent?.filePath;
@@ -395,23 +317,13 @@ function findMembers(
 
   if (containingObject?.detail) {
     // First check the containing object for a method definition
-    const memberWithinInstance = containingObject?.children?.find(
-      (x: DocumentSymbol) => x.name === symbolName
-    );
+    const memberWithinInstance = containingObject?.children?.find((x: DocumentSymbol) => x.name === symbolName);
 
     // If the line of that method definition is not the same as the clicked position: go there!
-    if (
-      memberWithinInstance &&
-      pos.line !== memberWithinInstance?.range?.start?.line
-    ) {
+    if (memberWithinInstance && pos.line !== memberWithinInstance?.range?.start?.line) {
       // TODO: this might fail if the file isn't saved and recompiled. Rethink how this can be checked
 
-      return [
-        Location.create(
-          onWindowsPlatform ? URI.file(fsPath)?.path : fsPath,
-          memberWithinInstance.range
-        ),
-      ];
+      return [Location.create(onWindowsPlatform ? URI.file(fsPath)?.path : fsPath, memberWithinInstance.range)];
     }
 
     // Otherwise get the superclass symbol name of the containing object from its detail property
@@ -425,9 +337,7 @@ function findMembers(
     const compiledFilesList = [...preprocessedFilesCacheMap.keys()].reverse();
     let orderedSuperClasses = [];
     for (const compiledFile of compiledFilesList) {
-      const foundEntry = superclasses.find((x) =>
-        compareStringReverse(x.filePath, compiledFile)
-      );
+      const foundEntry = superclasses.find((x) => compareStringReverse(x.filePath, compiledFile));
       if (foundEntry) {
         // TODO: don't add methodWithinInstance into orderedSuperClasses
         orderedSuperClasses.push(foundEntry);
@@ -439,9 +349,7 @@ function findMembers(
     // isModification / isReplacement
     for (const superClassAndUri of orderedSuperClasses) {
       // Locate the method within the superclass's children
-      const memberWithinSuperClass = superClassAndUri?.symbol?.children?.find(
-        (x) => x.name === symbolName
-      );
+      const memberWithinSuperClass = superClassAndUri?.symbol?.children?.find((x) => x.name === symbolName);
 
       // Return the location of the superclass method definition
       if (memberWithinSuperClass) {
@@ -449,18 +357,14 @@ function findMembers(
         if (superClassAndUri.filePath === fsPath) {
           //connection.console.debug("Same path we are already in");
           if (memberWithinSuperClass.range.start.line == pos.line) {
-            connection.console.debug(
-              "Same position as starting position, skipping"
-            );
+            connection.console.debug("Same position as starting position, skipping");
             continue;
           }
         }
 
         const loc = Location.create(
-          onWindowsPlatform
-            ? URI.file(superClassAndUri.filePath)?.path
-            : superClassAndUri.filePath,
-          memberWithinSuperClass.range
+          onWindowsPlatform ? URI.file(superClassAndUri.filePath)?.path : superClassAndUri.filePath,
+          memberWithinSuperClass.range,
         );
         return [loc];
       }
@@ -479,9 +383,7 @@ function findMembers(
     if (functionSymbols.length > 0) {
       const symbols = functionSymbols
         .filter((x) => !isSameFileAndLine(x, fsPath, pos))
-        .map((x) =>
-          Location.create(windowsSafeUri(x.filePath), x.symbol.range)
-        );
+        .map((x) => Location.create(windowsSafeUri(x.filePath), x.symbol.range));
       return symbols;
     }
   }
@@ -490,42 +392,27 @@ function findMembers(
 }
 
 function alignRangeToStart(range: Range) {
-  return Range.create(
-    range.start.line,
-    range.start.character,
-    range.start.line,
-    range.start.character
-  );
+  return Range.create(range.start.line, range.start.character, range.start.line, range.start.character);
 }
 
 function isSameFileAndLine(
   x: { symbol: DocumentSymbol; filePath: string },
   fsPath: string,
-  position: Position
+  position: Position,
 ): unknown {
-  return (
-    compareStringReverse(x.filePath, fsPath) &&
-    x.symbol.range.start.line === position.line
-  );
+  return compareStringReverse(x.filePath, fsPath) && x.symbol.range.start.line === position.line;
 }
 
-function fetchSymbolGlobally(
-  symbolName: string,
-  sm: TadsSymbolManager
-): Location[] {
+function fetchSymbolGlobally(symbolName: string, sm: TadsSymbolManager): Location[] {
   const locations = [];
-  connection.console.debug(
-    `Searching definition(s) for word: ${symbolName} using (global) strategy`
-  );
+  connection.console.debug(`Searching definition(s) for word: ${symbolName} using (global) strategy`);
   for (const filePathKey of sm.symbols.keys()) {
     const localSymbols = sm.symbols.get(filePathKey);
     if (localSymbols) {
-      const symbol = flattenTreeToArray(localSymbols).find(
-        (x) => x.name === symbolName
-      );
+      const symbol = flattenTreeToArray(localSymbols).find((x) => x.name === symbolName);
       if (symbol !== undefined) {
         connection.console.debug(
-          `Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`
+          `Found definition of ${symbolName} in ${filePathKey} at line: ${symbol.range.start.line}`,
         );
         const filePath = URI.file(filePathKey).toString();
         locations.push(Location.create(filePath, symbol.range));
@@ -553,10 +440,7 @@ function isRangeWithin(range: Range, containingRange: Range): boolean {
   return true;
 }
 
-function isPositionWithinRange(
-  position: Position,
-  containingRange: Range
-): boolean {
+function isPositionWithinRange(position: Position, containingRange: Range): boolean {
   if (position.line < containingRange.start.line) {
     return false;
   }
@@ -574,39 +458,23 @@ function isPositionWithinRange(
   return true;
 }
 
-function findLocals(
-  sm: TadsSymbolManager,
-  symbolName: string,
-  fsPath: string,
-  position: Position
-): Location[] {
+function findLocals(sm: TadsSymbolManager, symbolName: string, fsPath: string, position: Position): Location[] {
   const locations = [];
-  const localAssignmentDeclarations = sm.getClosestAssignmentDeclaration(
-    fsPath,
-    symbolName,
-    position
-  );
+  const localAssignmentDeclarations = sm.getClosestAssignmentDeclaration(fsPath, symbolName, position);
   if (localAssignmentDeclarations?.documentSymbol) {
-    const location = Location.create(
-      windowsSafeUri(fsPath),
-      localAssignmentDeclarations.documentSymbol.range
-    );
+    const location = Location.create(windowsSafeUri(fsPath), localAssignmentDeclarations.documentSymbol.range);
     locations.push(location);
   }
   return locations;
 }
 
-function findInherited(
-  sm: TadsSymbolManager,
-  fsPath: string,
-  position: Position
-): Location[] {
+function findInherited(sm: TadsSymbolManager, fsPath: string, position: Position): Location[] {
   const locations = [];
   const containingObject = sm.findContainingObject(fsPath, position);
   const enclosingMethod = sm.findClosestSymbolKindByPosition(
     fsPath,
     [SymbolKind.Method, SymbolKind.Function],
-    position
+    position,
   );
   if (containingObject) {
     if (enclosingMethod && containingObject?.detail) {
@@ -621,9 +489,7 @@ function findInherited(
       // (Here we just cheat and might get several results)
       for (const containingObjectKind of containingObjectKinds) {
         const inheritedMethods =
-          containingObjectKind.symbol?.children?.filter(
-            (x) => x.name === enclosingMethod.name
-          ) ?? [];
+          containingObjectKind.symbol?.children?.filter((x) => x.name === enclosingMethod.name) ?? [];
         for (const inheritedMethod of inheritedMethods) {
           if (inheritedMethod) {
             // Skip the position we're currently at if it's in the same file
@@ -649,8 +515,7 @@ function findInherited(
 
     if (
       enclosingMethod &&
-      (containingObject.kind === SymbolKind.Object ||
-        containingObject.kind === SymbolKind.Class)
+      (containingObject.kind === SymbolKind.Object || containingObject.kind === SymbolKind.Class)
     ) {
       const foundSuperTypes = [];
       const superTypeSymbolNames = containingObject.detail?.split(",") ?? [];
@@ -662,9 +527,7 @@ function findInherited(
         foundSuperTypes.push(sm.findSymbol(superTypeName));
         const { filePath, symbol } = sm.findSymbol(superTypeName);
         if (filePath && symbol) {
-          const fileUri = onWindowsPlatform
-            ? URI.file(filePath)?.path
-            : filePath;
+          const fileUri = onWindowsPlatform ? URI.file(filePath)?.path : filePath;
           locations.push(Location.create(fileUri, symbol.range));
         }
       }
@@ -673,25 +536,16 @@ function findInherited(
   return locations;
 }
 
-function findSelf(
-  sm: TadsSymbolManager,
-  uri: string,
-  fsPath: string,
-  position: Position
-): LocationLink[] {
+function findSelf(sm: TadsSymbolManager, uri: string, fsPath: string, position: Position): LocationLink[] {
   const containingObject = sm.findContainingObject(fsPath, position);
   if (containingObject) {
     const toOfContainingObjectRange = Range.create(
       containingObject.range.start.line,
       containingObject.range.start.character,
       containingObject.range.start.line,
-      containingObject.range.start.character
+      containingObject.range.start.character,
     );
-    const locationLink = LocationLink.create(
-      uri,
-      containingObject.range,
-      toOfContainingObjectRange
-    );
+    const locationLink = LocationLink.create(uri, containingObject.range, toOfContainingObjectRange);
     return [locationLink];
   }
   return [];
@@ -699,21 +553,12 @@ function findSelf(
 
 function findObjects(sm: TadsSymbolManager, symbolName: string): Location[] {
   const locations = [];
-  const objectsAndClasses = sm.findAllSymbols(symbolName, [
-    SymbolKind.Interface,
-    SymbolKind.Class,
-    SymbolKind.Object,
-  ]);
+  const objectsAndClasses = sm.findAllSymbols(symbolName, [SymbolKind.Interface, SymbolKind.Class, SymbolKind.Object]);
 
   for (const superClass of objectsAndClasses) {
     if (superClass.symbol.name === symbolName) {
-      connection.console.debug(
-        `Found ${superClass.symbol.kind} in ${superClass.filePath}`
-      );
-      const location = Location.create(
-        windowsSafeUri(superClass.filePath),
-        superClass.symbol.range
-      );
+      connection.console.debug(`Found ${superClass.symbol.kind} in ${superClass.filePath}`);
+      const location = Location.create(windowsSafeUri(superClass.filePath), superClass.symbol.range);
       locations.push(location);
     }
   }
@@ -725,13 +570,10 @@ function findMacros(symbolName: any): Location[] {
   const macro = getDefineMacrosMap().get(symbolName);
   if (macro) {
     connection.console.debug(
-      `Found macro definition(s) for word: ${symbolName} within ${macro.uri} on row ${macro.row}`
+      `Found macro definition(s) for word: ${symbolName} within ${macro.uri} on row ${macro.row}`,
     );
     locations.push(
-      Location.create(
-        macro.uri,
-        Range.create(macro.row, 0, macro.endLine, macro.row + symbolName.length)
-      )
+      Location.create(macro.uri, Range.create(macro.row, 0, macro.endLine, macro.row + symbolName.length)),
     );
   }
   return locations;
@@ -759,7 +601,7 @@ function sameDocumentPosition(
   onWindowsPlatform: boolean,
   textDocument: TextDocumentIdentifier,
   loc: Location,
-  pos: Position
+  pos: Position,
 ) {
   const sameUri = onWindowsPlatform
     ? textDocument.uri.toLowerCase() === loc.uri.toLowerCase()

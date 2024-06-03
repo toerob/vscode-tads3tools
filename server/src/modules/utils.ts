@@ -100,7 +100,10 @@ export function isPositionWithinRange(pos: Position, range: Range) {
 
 export function getCurrentLine(currentDoc: TextDocument, line: number): string {
   let currentLine = currentDoc.getText(Range.create(line, 0, line + 1, 0));
-  return currentLine.substring(0, currentLine.length - 1);
+  if(currentDoc.lineCount === 1) {
+    return currentLine;
+  }
+  return currentLine.substring(0, currentLine.length-1);
 }
 
 export function isSymbolKindOneOf(
