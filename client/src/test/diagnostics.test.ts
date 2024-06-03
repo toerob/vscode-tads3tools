@@ -22,10 +22,7 @@ suite.skip("Should get diagnostics", () => {
   });
 });
 
-async function testDiagnostics(
-  docUri: vscode.Uri,
-  expectedDiagnostics: vscode.Diagnostic[]
-) {
+async function testDiagnostics(docUri: vscode.Uri, expectedDiagnostics: vscode.Diagnostic[]) {
   await activate(docUri);
   const actualDiagnostics = vscode.languages.getDiagnostics(docUri);
   assert.equal(actualDiagnostics.length, expectedDiagnostics.length);

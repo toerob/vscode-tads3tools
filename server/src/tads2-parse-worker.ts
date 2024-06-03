@@ -27,9 +27,7 @@ expose(function parseFunc(path: string, text: string) {
       console.log(`SLL parsing succeeded for: ${path}`);
     } catch (err) {
       // Silently fail in case SLL fails, error is thrown by BailErrorStrategy
-      console.error(
-        `Failing with (faster) SLL parsing for ${path}. Switching predicition mode to LL and retries`
-      );
+      console.error(`Failing with (faster) SLL parsing for ${path}. Switching predicition mode to LL and retries`);
       lexer.reset();
       const tokenStream = new CommonTokenStream(lexer);
       parser = new Tads2Parser(tokenStream);

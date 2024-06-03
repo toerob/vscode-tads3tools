@@ -1,11 +1,5 @@
 import axios from "axios";
-import {
-  copyFileSync,
-  createReadStream,
-  createWriteStream,
-  existsSync,
-  readdirSync,
-} from "fs";
+import { copyFileSync, createReadStream, createWriteStream, existsSync, readdirSync } from "fs";
 import { dirname } from "path";
 import path = require("path");
 import { Extract } from "unzipper";
@@ -17,12 +11,8 @@ import { ensureDirSync } from "fs-extra";
 let extensionDownloadMap: Map<any, any>;
 
 export async function downloadAndInstallExtension(context: ExtensionContext) {
-  const configuration = workspace.getConfiguration(
-    extensionState.isUsingTads2 ? "tads2" : "tads3"
-  );
-  const ifarchiveTads3ContributionsURL: string = configuration.get(
-    "ifArchiveExtensionURL"
-  );
+  const configuration = workspace.getConfiguration(extensionState.isUsingTads2 ? "tads2" : "tads3");
+  const ifarchiveTads3ContributionsURL: string = configuration.get("ifArchiveExtensionURL");
   try {
     //if (extensionDownloadMap === undefined) {
     const response = await axios.get(ifarchiveTads3ContributionsURL);
@@ -42,26 +32,15 @@ export async function downloadAndInstallExtension(context: ExtensionContext) {
   } catch (err) {
     const cachedDirs = readdirSync(extensionState.extensionCacheDirectory);
     if (cachedDirs.length === 0) {
-      window.showErrorMessage(
-        `Failed downloading extension list and no local cache to use: ${err}`
-      );
-      client.error(
-        `Failed downloading extension list and no local cache to use: ${err}`
-      );
+      window.showErrorMessage(`Failed downloading extension list and no local cache to use: ${err}`);
+      client.error(`Failed downloading extension list and no local cache to use: ${err}`);
       return;
     }
-    performLocalExtensionInstallation(
-      extensionState.extensionCacheDirectory,
-      cachedDirs,
-      extensionState
-    );
+    performLocalExtensionInstallation(extensionState.extensionCacheDirectory, cachedDirs, extensionState);
     return;
   }
 
-  const selections = await window.showQuickPick(
-    [...extensionDownloadMap.keys()],
-    { canPickMany: true }
-  );
+  const selections = await window.showQuickPick([...extensionDownloadMap.keys()], { canPickMany: true });
   if (selections === undefined || selections.length === 0) {
     return;
   }
@@ -75,28 +54,19 @@ export async function downloadAndInstallExtension(context: ExtensionContext) {
     infoEntries.push(entry);
   }
 
-  const action = await window.showInformationMessage(
-    infoEntries.join("\n\n***\n\n"),
-    { modal: true },
-    option1
-  );
+  const action = await window.showInformationMessage(infoEntries.join("\n\n***\n\n"), { modal: true }, option1);
 
   console.debug(`Choice: ${action}`);
   if (action?.title === "Install") {
     const makefileDir = dirname(
       extensionState.isUsingTads2
         ? extensionState.getTads2MainFile().fsPath
-        : extensionState.getChosenMakefileUri().fsPath
+        : extensionState.getChosenMakefileUri().fsPath,
     );
     for (const extKey of selections) {
       const downloadURL = ifarchiveTads3ContributionsURL + extKey;
       try {
-        await downloadAndCacheFile(
-          downloadURL,
-          makefileDir,
-          extKey,
-          extensionState.extensionCacheDirectory
-        );
+        await downloadAndCacheFile(downloadURL, makefileDir, extKey, extensionState.extensionCacheDirectory);
       } catch (err) {
         client.error(`Download failed for ${downloadURL}: ${err}`);
         window.showErrorMessage(`Download failed for ${downloadURL}: ${err}`);
@@ -105,10 +75,7 @@ export async function downloadAndInstallExtension(context: ExtensionContext) {
       if (extKey.endsWith(".zip")) {
         const extensionPath = path.join(makefileDir, extKey);
         const fileNameWithoutZipExt = extKey.substr(0, extKey.length - 4);
-        const extensionInstalledDirname = path.join(
-          makefileDir,
-          fileNameWithoutZipExt
-        );
+        const extensionInstalledDirname = path.join(makefileDir, fileNameWithoutZipExt);
         client.info(`Unzipping ${extKey} to ${extensionInstalledDirname}`);
         unzipFromFiletoFolder(extensionPath, extensionInstalledDirname);
       }
@@ -117,22 +84,13 @@ export async function downloadAndInstallExtension(context: ExtensionContext) {
   }
 }
 
-export function unzipFromFiletoFolder(
-  zipFile: string,
-  folderToUnzipTo: string
-) {
+export function unzipFromFiletoFolder(zipFile: string, folderToUnzipTo: string) {
   try {
     ensureDirSync(folderToUnzipTo);
     const readStream = createReadStream(zipFile);
-    readStream.on("open", () =>
-      readStream.pipe(Extract({ path: folderToUnzipTo }))
-    );
-    readStream.on("error", (err) =>
-      client.error(`Error during unzipping: ${err}`)
-    );
-    readStream.on("end", async () =>
-      client.info(`Unzipping finished to folder: "${folderToUnzipTo}".`)
-    );
+    readStream.on("open", () => readStream.pipe(Extract({ path: folderToUnzipTo })));
+    readStream.on("error", (err) => client.error(`Error during unzipping: ${err}`));
+    readStream.on("end", async () => client.info(`Unzipping finished to folder: "${folderToUnzipTo}".`));
   } catch (err) {
     client.error(`Setting up readstream for ${zipFile} failed: ${err}`);
   }
@@ -141,7 +99,7 @@ export function unzipFromFiletoFolder(
 export async function performLocalExtensionInstallation(
   extensionCacheDirectory: string,
   cachedDirs: string[],
-  extensionState
+  extensionState,
 ) {
   const selections = await window.showQuickPick(cachedDirs, {
     canPickMany: true,
@@ -151,13 +109,10 @@ export async function performLocalExtensionInstallation(
     const makefileDir = dirname(
       extensionState.isUsingTads2
         ? extensionState.getTads2MainFile().fsPath
-        : extensionState.getChosenMakefileUri().fsPath
+        : extensionState.getChosenMakefileUri().fsPath,
     );
     const fileNameWithoutZipExt = filename.substring(0, filename.length - 4);
-    const extensionInstalledDirname = path.join(
-      makefileDir,
-      fileNameWithoutZipExt
-    );
+    const extensionInstalledDirname = path.join(makefileDir, fileNameWithoutZipExt);
     const pathToStoreExtension = path.resolve(__dirname, makefileDir, filename);
     const cachedFilePath = path.join(extensionCacheDirectory, filename);
     if (existsSync(cachedFilePath)) {
@@ -170,12 +125,7 @@ export async function performLocalExtensionInstallation(
   });
 }
 
-async function downloadAndCacheFile(
-  requestUrl: string,
-  folder: string,
-  fileName: string,
-  extensionCacheDirectory
-) {
+async function downloadAndCacheFile(requestUrl: string, folder: string, fileName: string, extensionCacheDirectory) {
   ensureDirSync(extensionCacheDirectory);
   const cachedFilePath = path.join(extensionCacheDirectory, fileName);
   const pathToStoreExtension = path.resolve(__dirname, folder, fileName);
@@ -185,33 +135,29 @@ async function downloadAndCacheFile(
     return;
   }
   const writer = createWriteStream(pathToStoreExtension);
-  await axios({ method: "get", url: requestUrl, responseType: "stream" }).then(
-    (response) => {
-      return new Promise((resolve, reject) => {
-        response.data.pipe(writer);
-        let error = null;
-        writer.on("error", (err) => {
-          error = err;
-          writer.close();
-          reject(err);
-        });
-        writer.on("close", () => {
-          if (!error) {
-            resolve(true);
-          }
-        });
+  await axios({ method: "get", url: requestUrl, responseType: "stream" }).then((response) => {
+    return new Promise((resolve, reject) => {
+      response.data.pipe(writer);
+      let error = null;
+      writer.on("error", (err) => {
+        error = err;
+        writer.close();
+        reject(err);
+      });
+      writer.on("close", () => {
+        if (!error) {
+          resolve(true);
+        }
+      });
+    })
+      .then(() => {
+        copyFileSync(pathToStoreExtension, cachedFilePath);
+        client.info(`Download of ${fileName} to folder "${folder}" is completed`);
       })
-        .then(() => {
-          copyFileSync(pathToStoreExtension, cachedFilePath);
-          client.info(
-            `Download of ${fileName} to folder "${folder}" is completed`
-          );
-        })
-        .catch((err) => {
-          return client.error(err.message);
-        });
-    }
-  );
+      .catch((err) => {
+        return client.error(err.message);
+      });
+  });
 }
 
 /**

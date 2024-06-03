@@ -1,7 +1,4 @@
-import {
-  TextDocuments,
-  Location,
-} from "vscode-languageserver";
+import { TextDocuments, Location } from "vscode-languageserver";
 
 import { ReferenceParams } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
@@ -40,7 +37,7 @@ export async function onReferences(
   handler: ReferenceParams,
   documents: TextDocuments<TextDocument>,
   symbolManager: TadsSymbolManager,
-  preprocessedFilesCacheMap: Map<string, string>
+  preprocessedFilesCacheMap: Map<string, string>,
 ) {
   const { position, textDocument } = handler;
   const currentDocument = documents.get(textDocument.uri);
@@ -51,22 +48,12 @@ export async function onReferences(
     const symbolName = getWordAtPosition(currentDocument, position);
     if (symbolName) {
       // Strategy 1:
-      connection.console.debug(
-        `Searching reference(s) for word: ${symbolName}`
-      );
-      const locations = symbolManager.getAllWorkspaceKeywordLocations(
-        symbolName,
-        false
-      );
+      connection.console.debug(`Searching reference(s) for word: ${symbolName}`);
+      const locations = symbolManager.getAllWorkspaceKeywordLocations(symbolName, false);
 
       const allOtherSymbols = symbolManager
         .findAllSymbols(symbolName)
-        .map((x) =>
-          Location.create(
-            onWindowsPlatform ? URI.file(x.filePath)?.path : x.filePath,
-            x.symbol.range
-          )
-        );
+        .map((x) => Location.create(onWindowsPlatform ? URI.file(x.filePath)?.path : x.filePath, x.symbol.range));
 
       locations.push(...allOtherSymbols);
 
@@ -76,9 +63,7 @@ export async function onReferences(
 				.forEach(x => locations.push(x.location));*/
 
       if (locations.length == 0) {
-        connection.console.debug(
-          `No reference(s) found for word: ${symbolName}.`
-        );
+        connection.console.debug(`No reference(s) found for word: ${symbolName}.`);
       }
       return locations;
 

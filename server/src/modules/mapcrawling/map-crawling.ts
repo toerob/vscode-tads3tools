@@ -45,15 +45,9 @@ let minZ = 0;
 
 let symbols: any[];
 
-const unlistedProxyRegExp = new RegExp(
-  /static[(]{2}(.*)[)][.]createUnlistedProxy/
-);
-const unlistedProxyRegExpAdv3Lite = new RegExp(
-  /UnlistedProxyConnector{\s*direction\s*[=]\s*(.*)\s*}/
-);
-const travelConnectorRegExp = new RegExp(
-  /TravelConnector.*destination[=](.*)travelDesc.*/
-);
+const unlistedProxyRegExp = new RegExp(/static[(]{2}(.*)[)][.]createUnlistedProxy/);
+const unlistedProxyRegExpAdv3Lite = new RegExp(/UnlistedProxyConnector{\s*direction\s*[=]\s*(.*)\s*}/);
+const travelConnectorRegExp = new RegExp(/TravelConnector.*destination[=](.*)travelDesc.*/);
 
 const dirCoordsMap: any = {
   north: [0, -1, 0],
@@ -84,7 +78,7 @@ function setAdjacentRoomName(room: any, direction: string, newname: string) {
 export function crawlRooms(
   mapObjects: DefaultMapObject[],
   objectsAsArray: DocumentSymbol[],
-  startRoom: any = undefined
+  startRoom: any = undefined,
 ) {
   const tadsVersion = serverState.tadsVersion;
   if (startRoom === undefined) {
@@ -92,21 +86,15 @@ export function crawlRooms(
       // Find the first Object with a direction property:
       startRoom = mapObjects
         .filter((x) => x.kind === SymbolKind.Object)
-        .find((x) =>
-          dirArray.find((dir) => getAdjacentRoomName(x, dir) !== undefined)
-        );
+        .find((x) => dirArray.find((dir) => getAdjacentRoomName(x, dir) !== undefined));
 
       if (startRoom === undefined) {
-        startRoom = mapObjects.find(
-          (x) => x.kind === SymbolKind.Object && x.detail?.includes("Room")
-        );
+        startRoom = mapObjects.find((x) => x.kind === SymbolKind.Object && x.detail?.includes("Room"));
       }
     } else {
       // Tads2
       if (startRoom === undefined) {
-        startRoom = mapObjects.find(
-          (x) => x.kind === SymbolKind.Object && x.detail?.includes("room")
-        );
+        startRoom = mapObjects.find((x) => x.kind === SymbolKind.Object && x.detail?.includes("room"));
       }
     }
   } else {
@@ -130,24 +118,15 @@ export function crawlRooms(
   return crawledRooms;
 }
 
-export function flattenArrayByType(
-  objects: DocumentSymbol[],
-  kind: SymbolKind
-): DocumentSymbol[] {
+export function flattenArrayByType(objects: DocumentSymbol[], kind: SymbolKind): DocumentSymbol[] {
   const objectArray: DocumentSymbol[] = [...objects];
   for (const o of objectArray) {
-    objectArray.push(
-      ...flattenArrayByType(o.children as DocumentSymbol[], kind)
-    );
+    objectArray.push(...flattenArrayByType(o.children as DocumentSymbol[], kind));
   }
   return objectArray;
 }
 
-function crawlRoomTads3(
-  room: DefaultMapObject,
-  coords: any[],
-  mapObjects: any[]
-) {
+function crawlRoomTads3(room: DefaultMapObject, coords: any[], mapObjects: any[]) {
   if (crawledRooms.includes(room)) {
     return;
   }
@@ -192,9 +171,7 @@ function crawlRoomTads3(
         nextRoomName = getAdjacentRoomName(room, dir);
 
         if (nextRoomName === undefined) {
-          console.error(
-            `${match[1]} as property wasn't found within ${room.name}`
-          );
+          console.error(`${match[1]} as property wasn't found within ${room.name}`);
         }
         setAdjacentRoomName(room, dir, nextRoomName);
         //console.log(`Replacing proxy direction match ${match[1]} with: ${nextRoomName}`);
@@ -225,15 +202,10 @@ function crawlRoomTads3(
       continue;
     }
 
-    if (
-      nextRoom.detail.includes("Door") ||
-      nextRoom.detail.includes("Stairway")
-    ) {
+    if (nextRoom.detail.includes("Door") || nextRoom.detail.includes("Stairway")) {
       if (nextRoom.arrowConnection) {
         const parentNode = symbols.find((x) =>
-          x.children?.find(
-            (x: DefaultMapObject) => x.name === nextRoom.arrowConnection
-          )
+          x.children?.find((x: DefaultMapObject) => x.name === nextRoom.arrowConnection),
         );
         if (parentNode) {
           nextRoom = mapObjects.find((x) => x.name === parentNode.name);
@@ -251,18 +223,12 @@ function crawlRoomTads3(
       nextCoords[2] = room.z + offsetCoords[2];
       crawlRoomTads3(nextRoom, nextCoords, mapObjects);
     } catch (error) {
-      console.error(
-        `room ${room} and direction: ${dir}, crawling failure: ${error}`
-      );
+      console.error(`room ${room} and direction: ${dir}, crawling failure: ${error}`);
     }
   }
 }
 
-function crawlRoomTads2(
-  room: DefaultMapObject,
-  coords: any[],
-  mapObjects: any[]
-) {
+function crawlRoomTads2(room: DefaultMapObject, coords: any[], mapObjects: any[]) {
   if (crawledRooms.includes(room)) {
     return;
   }
@@ -290,23 +256,15 @@ function crawlRoomTads2(
 
     if (nextRoom.detail.includes("doorway")) {
       if (nextRoom.doordest) {
-        const doorwayParentNode = symbols.find(
-          (x) => x.name === nextRoom.doordest
-        );
+        const doorwayParentNode = symbols.find((x) => x.name === nextRoom.doordest);
         if (doorwayParentNode) {
           nextRoom = mapObjects.find((x) => x.name === doorwayParentNode.name);
           setAdjacentRoomName(room, dir, nextRoom.name);
         }
       } else if (nextRoom.arrowConnection) {
-        const doorwayNode = symbols.find(
-          (x) => x.name === nextRoom.arrowConnection
-        );
-        const doorwayLocationChildNode = doorwayNode.children.find(
-          (x: any) => x.name === "location"
-        );
-        const doorwayParentNode = symbols.find(
-          (x) => x.name === doorwayLocationChildNode.detail
-        );
+        const doorwayNode = symbols.find((x) => x.name === nextRoom.arrowConnection);
+        const doorwayLocationChildNode = doorwayNode.children.find((x: any) => x.name === "location");
+        const doorwayParentNode = symbols.find((x) => x.name === doorwayLocationChildNode.detail);
         if (doorwayParentNode) {
           nextRoom = mapObjects.find((x) => x.name === doorwayParentNode.name);
 
@@ -324,9 +282,7 @@ function crawlRoomTads2(
       nextCoords[2] = room.z + offsetCoords[2];
       crawlRoomTads2(nextRoom, nextCoords, mapObjects);
     } catch (error) {
-      console.error(
-        `room ${room} and direction: ${dir}, crawling failure: ${error}`
-      );
+      console.error(`room ${room} and direction: ${dir}, crawling failure: ${error}`);
     }
   }
 }

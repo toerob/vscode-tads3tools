@@ -1,10 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { ExtensionContext, Uri, Webview } from "vscode";
-import {
-  client,
-  getLastChosenTextEditor,
-  resetPersistedPositions,
-} from "../extension";
+import { client, getLastChosenTextEditor, resetPersistedPositions } from "../extension";
 import { extensionState } from "./state";
 
 export const visualEditorResponseHandlerMap = new Map();
@@ -210,38 +206,17 @@ export function onDidAddRoom(payload, persistedObjectPositions) {
   }
 }
 
-export function getHtmlForWebview(
-  context: ExtensionContext,
-  webview: Webview,
-  extensionUri: Uri
-): string {
+export function getHtmlForWebview(context: ExtensionContext, webview: Webview, extensionUri: Uri): string {
   const scriptPath = "media";
   const litegraphScriptUri =
     webview.asWebviewUri(
-      Uri.joinPath(
-        context.extensionUri,
-        "client",
-        "node_modules",
-        "litegraph.js",
-        "build",
-        "litegraph.js"
-      )
+      Uri.joinPath(context.extensionUri, "client", "node_modules", "litegraph.js", "build", "litegraph.js"),
     ) ?? "";
   const litegraphCssUri =
     webview.asWebviewUri(
-      Uri.joinPath(
-        context.extensionUri,
-        "client",
-        "node_modules",
-        "litegraph.js",
-        "css",
-        "litegraph.css"
-      )
+      Uri.joinPath(context.extensionUri, "client", "node_modules", "litegraph.js", "css", "litegraph.css"),
     ) ?? "";
-  const mapLogicUri =
-    webview.asWebviewUri(
-      Uri.joinPath(extensionUri, scriptPath, "maprenderer.js")
-    ) ?? "";
+  const mapLogicUri = webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, "maprenderer.js")) ?? "";
   const html = `
 		<html>
 			<head>

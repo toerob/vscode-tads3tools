@@ -1,8 +1,5 @@
 import { TextDocument } from "vscode-languageserver-textdocument";
-import {
-  TextDocuments,
-  DocumentRangeFormattingParams,
-} from "vscode-languageserver";
+import { TextDocuments, DocumentRangeFormattingParams } from "vscode-languageserver";
 import { TextEdit } from "vscode-languageserver-types";
 import { preprocessedFilesCacheMap } from "../server";
 import { URI } from "vscode-uri";
@@ -11,7 +8,7 @@ import { Range } from "vscode-languageserver";
 
 export function onDocumentRangeFormatting(
   handler: DocumentRangeFormattingParams,
-  documents: TextDocuments<TextDocument>
+  documents: TextDocuments<TextDocument>,
 ): TextEdit[] {
   const edits: TextEdit[] = [];
   const { textDocument, range } = handler;
@@ -24,24 +21,14 @@ export function onDocumentRangeFormatting(
   const formattedDocumentArray = formatDocument(
     preprocessedText,
     currentDocument?.getText() ?? "",
-    currentDocument?.lineCount ?? 0
+    currentDocument?.lineCount ?? 0,
   );
 
   // Then a slice per row basis:
-  const rangedFormattedDocumentArray = formattedDocumentArray.slice(
-    range.start.line,
-    range.end.line + 1
-  );
+  const rangedFormattedDocumentArray = formattedDocumentArray.slice(range.start.line, range.end.line + 1);
 
   // And then replacement is done on whole rows:
-  const wholeLineRange = Range.create(
-    range.start.line,
-    0,
-    range.end.line,
-    range.end.character
-  );
-  edits.push(
-    TextEdit.replace(wholeLineRange, rangedFormattedDocumentArray.join(`\n`))
-  );
+  const wholeLineRange = Range.create(range.start.line, 0, range.end.line, range.end.character);
+  edits.push(TextEdit.replace(wholeLineRange, rangedFormattedDocumentArray.join(`\n`)));
   return edits;
 }

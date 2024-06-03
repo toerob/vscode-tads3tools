@@ -33,7 +33,7 @@ import {
   NEW_ASSIGNMENT_REGEXP,
 } from "./constants";
 
-let cachedKeyWords: Map<string,CompletionItem> | undefined = undefined;
+let cachedKeyWords: Map<string, CompletionItem> | undefined = undefined;
 let shortTermMemoryKeyword: Set<string> = new Set();
 
 export function clearCompletionCache() {
@@ -52,9 +52,9 @@ export function addShortTermMemoryKeyword(word: string) {
 export async function onCompletion(
   handler: CompletionParams,
   documents: TextDocuments<TextDocument>,
-  symbolManager: TadsSymbolManager
+  symbolManager: TadsSymbolManager,
 ) {
-  const suggestions: Map<string,CompletionItem> = new Map();
+  const suggestions: Map<string, CompletionItem> = new Map();
   const document = documents.get(handler.textDocument.uri);
 
   if (document?.uri.endsWith(".t3m")) {
@@ -65,27 +65,16 @@ export async function onCompletion(
   let word = getWordAtPosition(document, handler.position);
   // In case we are right beside the end of the word, try one character backwards before giving up:
   if (word === undefined) {
-    word = getWordAtPosition(
-      document,
-      Position.create(handler.position.line, handler.position.character - 1)
-    );
+    word = getWordAtPosition(document, Position.create(handler.position.line, handler.position.character - 1));
   }
 
-  const currentLineRange = Range.create(
-    handler.position.line,
-    0,
-    handler.position.line,
-    handler.position.character
-  );
+  const currentLineRange = Range.create(handler.position.line, 0, handler.position.line, handler.position.character);
 
   const currentLineStr = document?.getText(currentLineRange) ?? "";
   try {
     if (currentLineStr.match(`${WS}self.${word}`)) {
       const fsPath = URI.parse(handler.textDocument.uri).fsPath;
-      const symbol = symbolManager.findContainingObject(
-        fsPath,
-        handler.position
-      );
+      const symbol = symbolManager.findContainingObject(fsPath, handler.position);
       if (symbol) {
         const item = CompletionItem.create(symbol.name);
         item.kind = CompletionItemKind.Class;
@@ -145,9 +134,7 @@ export async function onCompletion(
     // An object declaration where the word is a class, show all class alternatives:
     if (
       currentLineStr.match(`${WS}(class)?${ID}${WS}:${WS}${word}`) ||
-      currentLineStr.match(
-        `${WS}(class)?${ID}${WS}:${WS}(${ID}${WS},${WS})*${word}`
-      )
+      currentLineStr.match(`${WS}(class)?${ID}${WS}:${WS}(${ID}${WS},${WS})*${word}`)
     ) {
       connection.console.debug(`Matching object declaration for: "${word}"`);
       const classNames = [...symbolManager.inheritanceMap.keys()];
@@ -176,12 +163,8 @@ export async function onCompletion(
         for (const symbol of symbolManager.symbols.get(key) ?? []) {
           if (symbol.kind === SymbolKind.Object) {
             const inheritanceMap = symbolManager.mapHeritage(symbol);
-            const commonRoomType = isUsingAdv3Lite()
-              ? "Room"
-              : "TravelConnector";
-            const addSymbol = inheritanceMap
-              .get(symbol.detail)
-              ?.includes(commonRoomType);
+            const commonRoomType = isUsingAdv3Lite() ? "Room" : "TravelConnector";
+            const addSymbol = inheritanceMap.get(symbol.detail)?.includes(commonRoomType);
             if (addSymbol) {
               const item = CompletionItem.create(symbol.name);
               item.kind = CompletionItemKind.Struct;
@@ -205,7 +188,6 @@ export async function onCompletion(
   const usedUpKeys = new Set();
 
   if (!cachedKeyWords) {
-    
     const startTime = Date.now();
     connection.console.debug("Creating cache for word completion");
 
@@ -269,9 +251,7 @@ export async function onCompletion(
     cachedKeyWords = suggestions;
 
     const elapsedTime = Date.now() - startTime;
-    connection.console.debug(
-      `Updating cache with keywords, elapsed time = ${elapsedTime} ms`
-    );
+    connection.console.debug(`Updating cache with keywords, elapsed time = ${elapsedTime} ms`);
   }
 
   // TODO: Experimenting
@@ -282,11 +262,7 @@ export async function onCompletion(
   // TODO: check if inside code block for these
   {
     const newInstanceMatch = NEW_INSTANCE_REGEXP.exec(currentLineStr);
-    if (
-      newInstanceMatch &&
-      newInstanceMatch.length > 0 &&
-      newInstanceMatch[1]
-    ) {
+    if (newInstanceMatch && newInstanceMatch.length > 0 && newInstanceMatch[1]) {
       return getSuggestedClassNames(newInstanceMatch[1]);
     }
 
@@ -302,14 +278,13 @@ export async function onCompletion(
           document!,
           className,
           memberCallMatch[1],
-          memberCallMatch[3] ?? ""
+          memberCallMatch[3] ?? "",
         );
       }
 
       const word = memberCallMatch[1];
       const fsPath = URI.parse(handler.textDocument.uri).fsPath;
-      const localAssignments =
-        symbolManager.assignmentStatements.get(fsPath) ?? [];
+      const localAssignments = symbolManager.assignmentStatements.get(fsPath) ?? [];
       const foundMatches = localAssignments.filter((x) => x.name === word);
       if (foundMatches.length > 0) {
         // TODO: decide the one match with most closest scope around this
@@ -335,13 +310,13 @@ export async function onCompletion(
             document!,
             variableName,
             className,
-            memberCallMatch[3] ?? ""
+            memberCallMatch[3] ?? "",
           );
         }
       }
     }
   }
-  
+
   // Add local keywords that hasn't yet been compiled and because of this isn't part
   // of the collection
 
@@ -357,9 +332,7 @@ export async function onCompletion(
 
 function applyDocumentation(item: CompletionItem) {
   let documentation = "";
-  const symbolSearchResult = symbolManager.findSymbols(item.label, [
-    SymbolKind.Class,
-  ]);
+  const symbolSearchResult = symbolManager.findSymbols(item.label, [SymbolKind.Class]);
   if (symbolSearchResult && symbolSearchResult.length > 0) {
     for (const eachPathAndSymbolResult of symbolSearchResult) {
       const filePath = eachPathAndSymbolResult.filePath;
@@ -385,7 +358,7 @@ function tads3MakefileSuggestions(): CompletionItem[] | CompletionList {
         cwd: x.fsPath,
         nodir: true,
         ignore: "*.{t3s,t3o}",
-      })
+      }),
     )
     .map((x) => {
       const itemPathWithoutExt = x.replace(/[.][th]$/, "");
@@ -400,12 +373,7 @@ function tads3MakefileSuggestions(): CompletionItem[] | CompletionList {
 function getSuggestedClassNames(partialClassWord: string) {
   const suggestions = symbolManager
     .getAllWorkspaceSymbols(false)
-    .filter(
-      (x) =>
-        x.kind === SymbolKind.Class ||
-        x.kind === SymbolKind.Object ||
-        x.kind === SymbolKind.Interface
-    )
+    .filter((x) => x.kind === SymbolKind.Class || x.kind === SymbolKind.Object || x.kind === SymbolKind.Interface)
     .map((x) => {
       const item = CompletionItem.create(x.name);
       item.kind = CompletionItemKind.Class;
@@ -439,7 +407,7 @@ function getSuggestedProperty(
   document: TextDocument,
   variableName: string,
   className: string | undefined,
-  partialPropertyWord: string
+  partialPropertyWord: string,
 ) {
   if (className === undefined) {
     return [];
@@ -461,16 +429,13 @@ function getSuggestedProperty(
       return (
         symbol.containerName !== undefined &&
         containerNames.includes(symbol.containerName) &&
-        (symbol.kind === SymbolKind.Property ||
-          symbol.kind === SymbolKind.Method)
+        (symbol.kind === SymbolKind.Property || symbol.kind === SymbolKind.Method)
       );
     })
     .map((x) => x.name);
 
   const uniquePropertyNames = [...new Set(propertyNames).values()];
-  const propertyNameSuggestions = uniquePropertyNames.map(
-    CompletionItem.create
-  );
+  const propertyNameSuggestions = uniquePropertyNames.map(CompletionItem.create);
 
   if (partialPropertyWord === "") {
     return propertyNameSuggestions;
@@ -480,9 +445,7 @@ function getSuggestedProperty(
     key: "label",
   });
 
-  connection.console.debug(
-    `Suggestions: ${results.map((x) => x.obj.label).join(" ")}`
-  );
+  connection.console.debug(`Suggestions: ${results.map((x) => x.obj.label).join(" ")}`);
   const mappedResult = results.map((x: any) => x.obj);
   return mappedResult;
 }

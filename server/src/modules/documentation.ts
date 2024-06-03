@@ -24,10 +24,7 @@ const documentationDontCheckCachedKeywords = new LRUCache<string, boolean>({
  * @param filePath string - the filepath to check for information
  * @returns a string - possibly a string of suitable documentation or at least an empty string
  */
-export function retrieveDocumentationForKeyword(
-  symbol: DocumentSymbol,
-  filePath: string
-): string {
+export function retrieveDocumentationForKeyword(symbol: DocumentSymbol, filePath: string): string {
   const keyword = symbol?.name;
   if (keyword) {
     // Create a unique hashed identifier for this symbol, (storing the symbol as key doesn't work)
@@ -48,25 +45,18 @@ export function retrieveDocumentationForKeyword(
       const startOfClassLine = symbol.range.start.line;
       if (startOfClassLine) {
         try {
-          const offset = strOffsetAt(
-            originalSourceCode,
-            Position.create(startOfClassLine, 0)
-          );
-          const firstCommentEndBeforeClassIdx =
-            originalSourceCode.toString().lastIndexOf("*/", offset) + 2;
+          const offset = strOffsetAt(originalSourceCode, Position.create(startOfClassLine, 0));
+          const firstCommentEndBeforeClassIdx = originalSourceCode.toString().lastIndexOf("*/", offset) + 2;
           const firstCommentStartBeforeClassIdx = originalSourceCode
             .toString()
             .lastIndexOf("/*", firstCommentEndBeforeClassIdx);
 
           // Assure there's only blanks between the comment and the class, otherwise this comment doesn't belong to the following code
-          const spaceBetween = originalSourceCode.substring(
-            firstCommentEndBeforeClassIdx,
-            offset
-          );
+          const spaceBetween = originalSourceCode.substring(firstCommentEndBeforeClassIdx, offset);
           if (spaceBetween.match(/^\s*$/g)) {
             const tads3DocString = originalSourceCode.substr(
               firstCommentStartBeforeClassIdx,
-              firstCommentEndBeforeClassIdx - firstCommentStartBeforeClassIdx
+              firstCommentEndBeforeClassIdx - firstCommentStartBeforeClassIdx,
             );
             const doc = stripComments(tads3DocString);
 
@@ -94,12 +84,6 @@ export function retrieveDocumentationForKeyword(
  */
 function hashSymbol(symbol: DocumentSymbol, filePath: string) {
   const hash =
-    symbol.name +
-    "|" +
-    symbol.range.start.line +
-    ":" +
-    symbol.range.start.character +
-    "|" +
-    basename(filePath);
+    symbol.name + "|" + symbol.range.start.line + ":" + symbol.range.start.character + "|" + basename(filePath);
   return hash;
 }

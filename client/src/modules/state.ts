@@ -48,8 +48,7 @@ export class ExtensionStateStore {
       if (this.diagnosing) text.push("[Diagnosing]");
       if (this.longProcessing) text.push("[Longprocessing]");
       if (this.isUsingTads2) text.push("[Detected using Tads2]");
-      if (this.tads2MainFile)
-        text.push(`[Detected Tads2 main file: ${this.tads2MainFile}]`);
+      if (this.tads2MainFile) text.push(`[Detected Tads2 main file: ${this.tads2MainFile}]`);
       setTimeout(() => reportState(text.length > 0 ? text.join(", ") : "Done"));
     });
   }

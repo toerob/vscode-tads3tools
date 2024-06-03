@@ -1,9 +1,7 @@
 import { window } from "vscode";
 import { client } from "../../extension";
 
-export const findQuoteInStringRegExp = new RegExp(
-  /["](.*)["]|['](.*)[']|["]{3}(.*)["]{3}|[']{3}(.*)[']{3}/
-);
+export const findQuoteInStringRegExp = new RegExp(/["](.*)["]|['](.*)[']|["]{3}(.*)["]{3}|[']{3}(.*)[']{3}/);
 
 export function analyzeTextAtPosition() {
   if (window.activeTextEditor.selection.isEmpty) {

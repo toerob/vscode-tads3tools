@@ -1,6 +1,4 @@
-import {
-  DocumentSymbol,
-} from "vscode-languageserver";
+import { DocumentSymbol } from "vscode-languageserver";
 
 export type FilePathAndSymbols = {
   filePath: string;

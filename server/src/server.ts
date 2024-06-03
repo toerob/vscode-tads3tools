@@ -21,14 +21,11 @@ import { symbolManager, TadsSymbolManager } from "./modules/symbol-manager";
 import { onDocumentSymbol } from "./modules/symbols";
 import { onReferences } from "./modules/references";
 import { onDefinition } from "./modules/definitions";
-import {
-  preprocessAndParseTads3Files,
-  preprocessAndParseTads2Files,
-} from "./parse-workers-manager";
+import { preprocessAndParseTads3Files, preprocessAndParseTads2Files } from "./parse-workers-manager";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { DefaultMapObject } from "./modules/mapcrawling/DefaultMapObject";
 import MapObjectManager from "./modules/mapcrawling/map-mapping";
-import { onCodeAction } from './modules/code-actions';
+import { onCodeAction } from "./modules/code-actions";
 import { onCodeLens } from "./modules/codelens";
 import { onCompletion } from "./modules/completions";
 import { tokenizeQuotesWithIndex } from "./modules/text-utils";
@@ -42,7 +39,7 @@ import { serverState } from "./state";
 import { onDocumentFormatting } from "./modules/document-formatting";
 import { onDocumentRangeFormatting } from "./modules/document-range-formatting";
 import { onImplementation } from "./modules/implementation";
-import { onSignatureHelp } from './modules/signature-helper';
+import { onSignatureHelp } from "./modules/signature-helper";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require("wink-pos-tagger");
@@ -55,10 +52,7 @@ export const preprocessedFilesCacheMap = onWindowsPlatform
 
 export const mapper = new MapObjectManager(symbolManager);
 
-export default function processMapSymbols(
-  symbolManager: TadsSymbolManager,
-  callback: any
-) {
+export default function processMapSymbols(symbolManager: TadsSymbolManager, callback: any) {
   const symbols = mapper.mapGameObjectsToMapObjects();
   callback(symbols);
 }
@@ -72,9 +66,7 @@ export const connection = createConnection(ProposedFeatures.all);
 }*/
 
 // Create a simple text document manager.
-export const documents: TextDocuments<TextDocument> = new TextDocuments(
-  TextDocument
-);
+export const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
@@ -85,12 +77,8 @@ connection.onInitialize((params: InitializeParams) => {
 
   // Does the client support the `workspace/configuration` request?
   // If not, we fall back using global settings.
-  hasConfigurationCapability = !!(
-    capabilities.workspace && !!capabilities.workspace.configuration
-  );
-  hasWorkspaceFolderCapability = !!(
-    capabilities.workspace && !!capabilities.workspace.workspaceFolders
-  );
+  hasConfigurationCapability = !!(capabilities.workspace && !!capabilities.workspace.configuration);
+  hasWorkspaceFolderCapability = !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders);
   hasDiagnosticRelatedInformationCapability = !!(
     capabilities.textDocument &&
     capabilities.textDocument.publishDiagnostics &&
@@ -144,10 +132,7 @@ export let abortParsingProcess: CancellationTokenSource | undefined;
 connection.onInitialized(() => {
   if (hasConfigurationCapability) {
     // Register for all configuration changes.
-    connection.client.register(
-      DidChangeConfigurationNotification.type,
-      undefined
-    );
+    connection.client.register(DidChangeConfigurationNotification.type, undefined);
   }
   if (hasWorkspaceFolderCapability) {
     connection.workspace.onDidChangeWorkspaceFolders((_event) => {
@@ -158,7 +143,6 @@ connection.onInitialized(() => {
   connection.onNotification("symbolparsing/abort", () => {
     abortParsingProcess?.cancel();
   });
-
 
   connection.onNotification("request/mapsymbols", (options) => {
     if (options?.reset) {
@@ -198,39 +182,31 @@ connection.onInitialized(() => {
     mapper.persistedObjectPositions.set(room.name, room.pos);
   });
 
-  connection.onRequest(
-    "request/connectrooms",
-    ({ currentPayload, previousPayload }) => {
-      const fromObject = {
-        roomName: previousPayload.from,
-        directionName: previousPayload.directionName,
-      };
-      const toObject = {
-        roomName: currentPayload.from,
-        directionName: currentPayload.directionName,
-      };
+  connection.onRequest("request/connectrooms", ({ currentPayload, previousPayload }) => {
+    const fromObject = {
+      roomName: previousPayload.from,
+      directionName: previousPayload.directionName,
+    };
+    const toObject = {
+      roomName: currentPayload.from,
+      directionName: currentPayload.directionName,
+    };
 
-      const fromRoom = symbolManager.findSymbol(fromObject.roomName);
-      const toRoom = symbolManager.findSymbol(toObject.roomName);
+    const fromRoom = symbolManager.findSymbol(fromObject.roomName);
+    const toRoom = symbolManager.findSymbol(toObject.roomName);
 
-      const validDirection1 = parseDirection(fromObject.directionName);
-      const validDirection2 = parseDirection(toObject.directionName);
+    const validDirection1 = parseDirection(fromObject.directionName);
+    const validDirection2 = parseDirection(toObject.directionName);
 
-      if (
-        fromRoom.symbol?.name &&
-        toRoom.symbol?.name &&
-        validDirection1 &&
-        validDirection2
-      ) {
-        const response = { fromRoom, toRoom, validDirection1, validDirection2 };
-        connection.sendNotification("response/connectrooms", response);
-      } else {
-        connection.console.error(
-          `Cannot connect rooms: ${fromRoom.symbol?.name} with ${toRoom.symbol?.name} via ${validDirection1}/${validDirection2}`
-        );
-      }
+    if (fromRoom.symbol?.name && toRoom.symbol?.name && validDirection1 && validDirection2) {
+      const response = { fromRoom, toRoom, validDirection1, validDirection2 };
+      connection.sendNotification("response/connectrooms", response);
+    } else {
+      connection.console.error(
+        `Cannot connect rooms: ${fromRoom.symbol?.name} with ${toRoom.symbol?.name} via ${validDirection1}/${validDirection2}`,
+      );
     }
-  );
+  });
 });
 
 // The tads3 global settings
@@ -288,46 +264,20 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
-connection.onCodeAction(async (handler) =>
-  onCodeAction(handler, documents, symbolManager)
-);
+connection.onCodeAction(async (handler) => onCodeAction(handler, documents, symbolManager));
 
-connection.onWorkspaceSymbol(async (handler) =>
-  onWorkspaceSymbol(handler, documents, symbolManager)
-);
-connection.onDocumentSymbol(async (handler) =>
-  onDocumentSymbol(handler, documents, symbolManager)
-);
-connection.onReferences(async (handler) =>
-  onReferences(handler, documents, symbolManager, preprocessedFilesCacheMap)
-);
-connection.onDefinition(async (handler) =>
-  onDefinition(handler, documents, symbolManager)
-);
-connection.onCompletion(async (handler) =>
-  onCompletion(handler, documents, symbolManager)
-);
-connection.onDocumentLinks(async (handler) =>
-  onDocumentLinks(handler, documents, symbolManager)
-);
-connection.onCodeLens(async (handler) =>
-  onCodeLens(handler, documents, symbolManager)
-);
-connection.onHover(async (handler) =>
-  onHover(handler, documents, symbolManager)
-);
-connection.onDocumentFormatting(async (handler) =>
-  onDocumentFormatting(handler, documents)
-);
-connection.onDocumentRangeFormatting(async (handler) =>
-  onDocumentRangeFormatting(handler, documents)
-);
-connection.onImplementation(async (handler) =>
-  onImplementation(handler, documents, symbolManager)
-);
-connection.onSignatureHelp(async (handler) =>
-  onSignatureHelp(handler, documents, symbolManager)
-);
+connection.onWorkspaceSymbol(async (handler) => onWorkspaceSymbol(handler, documents, symbolManager));
+connection.onDocumentSymbol(async (handler) => onDocumentSymbol(handler, documents, symbolManager));
+connection.onReferences(async (handler) => onReferences(handler, documents, symbolManager, preprocessedFilesCacheMap));
+connection.onDefinition(async (handler) => onDefinition(handler, documents, symbolManager));
+connection.onCompletion(async (handler) => onCompletion(handler, documents, symbolManager));
+connection.onDocumentLinks(async (handler) => onDocumentLinks(handler, documents, symbolManager));
+connection.onCodeLens(async (handler) => onCodeLens(handler, documents, symbolManager));
+connection.onHover(async (handler) => onHover(handler, documents, symbolManager));
+connection.onDocumentFormatting(async (handler) => onDocumentFormatting(handler, documents));
+connection.onDocumentRangeFormatting(async (handler) => onDocumentRangeFormatting(handler, documents));
+connection.onImplementation(async (handler) => onImplementation(handler, documents, symbolManager));
+connection.onSignatureHelp(async (handler) => onSignatureHelp(handler, documents, symbolManager));
 
 connection.onRequest("request/extractQuotes", async (params) => {
   if (params.fsPath === undefined) {
@@ -373,7 +323,6 @@ connection.onRequest("request/preprocessed/file", async (params) => {
   });
 });
 
-
 connection.onRequest("request/analyzeText/findNouns", async (params) => {
   const { path, position, text } = params;
 
@@ -387,14 +336,9 @@ connection.onRequest("request/analyzeText/findNouns", async (params) => {
     const tree = analyzeText(line);
 
     // Calculate where to best put the suggestions
-    const symbol = symbolManager.findClosestSymbolKindByPosition(
-      path,
-      [SymbolKind.Object],
-      position
-    );
+    const symbol = symbolManager.findClosestSymbolKindByPosition(path, [SymbolKind.Object], position);
     if (symbol) {
-      const level =
-        symbolManager.additionalProperties.get(path)?.get(symbol)?.level + 1;
+      const level = symbolManager.additionalProperties.get(path)?.get(symbol)?.level + 1;
       //connection.console.debug(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
       await connection.sendNotification("response/analyzeText/findNouns", {
         tree,
@@ -405,36 +349,22 @@ connection.onRequest("request/analyzeText/findNouns", async (params) => {
   }
 });
 
-connection.onRequest(
-  "request/parseDocuments",
-  async ({ globalStoragePath, makefileLocation, filePaths, token }) => {
-    serverState.tadsVersion = 3;
-    await preprocessAndParseTads3Files(
-      globalStoragePath,
-      makefileLocation,
-      filePaths,
-      token
-    );
-  }
-);
+connection.onRequest("request/parseDocuments", async ({ globalStoragePath, makefileLocation, filePaths, token }) => {
+  serverState.tadsVersion = 3;
+  await preprocessAndParseTads3Files(globalStoragePath, makefileLocation, filePaths, token);
+});
 
-
-connection.onRequest("request/offsetSymbols", ({filePath, line, offset}) => {
+connection.onRequest("request/offsetSymbols", ({ filePath, line, offset }) => {
   // TODO: this in itself won't be enough
   symbolManager.offsetSymbols(filePath, line, offset);
-})
+});
 
 connection.onRequest(
   "request/parseTads2Documents",
   async ({ globalStoragePath, mainFileLocation, filePaths, token }) => {
     serverState.tadsVersion = 2;
-    await preprocessAndParseTads2Files(
-      globalStoragePath,
-      mainFileLocation,
-      filePaths,
-      token
-    );
-  }
+    await preprocessAndParseTads2Files(globalStoragePath, mainFileLocation, filePaths, token);
+  },
 );
 
 // Make the text document manager listen on the connection
@@ -476,4 +406,3 @@ function parseDirection(directionName: any): string | undefined {
   return undefined;
   //throw new Error(`Not a valid direction`);
 }
-

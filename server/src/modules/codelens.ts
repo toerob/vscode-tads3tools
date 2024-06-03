@@ -1,10 +1,4 @@
-import {
-  CodeLens,
-  TextDocuments,
-  Range,
-  CodeLensParams,
-  Command,
-} from "vscode-languageserver";
+import { CodeLens, TextDocuments, Range, CodeLensParams, Command } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { URI } from "vscode-uri";
 import { connection, preprocessedFilesCacheMap } from "../server";
@@ -13,13 +7,12 @@ import { TadsSymbolManager } from "./symbol-manager";
 export async function onCodeLens(
   { textDocument }: CodeLensParams,
   documents: TextDocuments<TextDocument>,
-  symbolManager: TadsSymbolManager
+  symbolManager: TadsSymbolManager,
 ) {
   const codeLenses: CodeLens[] = [];
 
   const configuration = await connection.workspace.getConfiguration("tads3");
-  const enablePreprocessorCodeLens =
-    configuration["enablePreprocessorCodeLens"];
+  const enablePreprocessorCodeLens = configuration["enablePreprocessorCodeLens"];
 
   const uri = URI.parse(textDocument.uri);
   const fsPath = uri.fsPath;
@@ -30,9 +23,7 @@ export async function onCodeLens(
   }
 
   const preprocessedDocument = preprocessedFilesCacheMap.get(fsPath);
-  const preprocessedDocumentArray = preprocessedDocument
-    ?.trimEnd()
-    .split(/\r?\n/);
+  const preprocessedDocumentArray = preprocessedDocument?.trimEnd().split(/\r?\n/);
 
   if (!currentDoc || !preprocessedDocumentArray) {
     return [];
@@ -48,7 +39,7 @@ export async function onCodeLens(
 
   if (currentDocArray.length !== preprocessedDocumentArray.length) {
     connection.console.debug(
-      `Document number of rows diverging from preprocessed document, skipping codelens this time around`
+      `Document number of rows diverging from preprocessed document, skipping codelens this time around`,
     );
     return [];
   }
@@ -84,11 +75,11 @@ export async function onCodeLens(
           command:
             // TODO: find another solution so the preprocessed text
             // doesn't need to be sent until the player clicks the CodeLens
-            Command.create(
-              `preprocessed to: ${preprocessedLine}`,
-              "tads3.showPreprocessedTextAction",
-              [range, currentDoc.uri, preprocessedDocument]
-            ),
+            Command.create(`preprocessed to: ${preprocessedLine}`, "tads3.showPreprocessedTextAction", [
+              range,
+              currentDoc.uri,
+              preprocessedDocument,
+            ]),
         });
       }
     }

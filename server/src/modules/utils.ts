@@ -13,20 +13,12 @@ export function filterForStandardLibraryFiles(array: string[] = []): string[] {
   }
   // Locate a common file used in both an adv3 or adv3Lite project: "tads.h"
   // Comparison needs to be done using URI to match windows file path system also.
-  const genericTadsHeaderFile = array.find((x) =>
-    URI.file(x).path.match(/include[/]tads.h$/)
-  );
+  const genericTadsHeaderFile = array.find((x) => URI.file(x).path.match(/include[/]tads.h$/));
 
   // Locate files used in adv3/adv3Lite
-  const adv3HeaderFile = array.find((x) =>
-    URI.file(x).path.match(/[/]adv3.h$/)
-  );
-  const adv3MainLibFile = array.find((x) =>
-    URI.file(x).path.match(/tads3[/]lib[/]_main.t$/)
-  );
-  const adv3LiteHeaderFile = array.find((x) =>
-    URI.file(x).path.match(/[/]advlite.h$/)
-  );
+  const adv3HeaderFile = array.find((x) => URI.file(x).path.match(/[/]adv3.h$/));
+  const adv3MainLibFile = array.find((x) => URI.file(x).path.match(/tads3[/]lib[/]_main.t$/));
+  const adv3LiteHeaderFile = array.find((x) => URI.file(x).path.match(/[/]advlite.h$/));
 
   // Create a set with folder base paths for:
   // * system include files
@@ -34,26 +26,16 @@ export function filterForStandardLibraryFiles(array: string[] = []): string[] {
   // * adv3lite system library
   // And filter out files starting with these paths
   const stdLibraryBasepaths = new Set<string>();
-  for (const file of [
-    genericTadsHeaderFile,
-    adv3HeaderFile,
-    adv3MainLibFile,
-    adv3LiteHeaderFile,
-  ]) {
+  for (const file of [genericTadsHeaderFile, adv3HeaderFile, adv3MainLibFile, adv3LiteHeaderFile]) {
     if (file) {
       stdLibraryBasepaths.add(join(dirname(file)));
     }
   }
   const basePathsArray: string[] = Array.from(stdLibraryBasepaths.keys());
-  return (
-    array.filter((x) => basePathsArray.find((y) => !!x.startsWith(y))) ?? []
-  );
+  return array.filter((x) => basePathsArray.find((y) => !!x.startsWith(y))) ?? [];
 }
 
-export function extractCurrentLineFromDocument(
-  line: number,
-  document: TextDocument
-) {
+export function extractCurrentLineFromDocument(line: number, document: TextDocument) {
   const currentLineRange = Range.create(line, 0, line + 1, 0);
   const currentLineStr = document.getText(currentLineRange) ?? "";
   return currentLineStr.trim();
@@ -100,16 +82,13 @@ export function isPositionWithinRange(pos: Position, range: Range) {
 
 export function getCurrentLine(currentDoc: TextDocument, line: number): string {
   let currentLine = currentDoc.getText(Range.create(line, 0, line + 1, 0));
-  if(currentDoc.lineCount === 1) {
+  if (currentDoc.lineCount === 1) {
     return currentLine;
   }
-  return currentLine.substring(0, currentLine.length-1);
+  return currentLine.substring(0, currentLine.length - 1);
 }
 
-export function isSymbolKindOneOf(
-  symbolKind: SymbolKind,
-  kinds: SymbolKind[]
-): boolean {
+export function isSymbolKindOneOf(symbolKind: SymbolKind, kinds: SymbolKind[]): boolean {
   if (symbolKind === undefined) {
     return false;
   }
@@ -127,10 +106,7 @@ export function camelCase(symbolName: any) {
   return `${first}${rest}`;
 }
 
-export function getVariableNameAtPosition(
-  text: string,
-  position: Position
-): string | null {
+export function getVariableNameAtPosition(text: string, position: Position): string | null {
   const lines = text.split("\n");
   const line = lines[position.line];
   const prefix = line.substring(0, position.character);
@@ -147,7 +123,7 @@ export function getVariableNameAtPosition(
 export function getLineOfMethodDeclaration(
   preprocessedFilesCacheMap: Map<string, string>,
   filePath: string,
-  lineOfDeclaration: number
+  lineOfDeclaration: number,
 ) {
   // Get the preprocessed document for the location
   const preprocessedDoc = preprocessedFilesCacheMap.get(filePath);
@@ -162,7 +138,7 @@ export function getLineOfMethodDeclaration(
  * Extracts the symbol name and its parameters from a function/method call
  */
 export function extractFunctionNameAndParams(
-  currentLine: string
+  currentLine: string,
 ): undefined | { symbolName: string; params: string[] } {
   const symbolNameAndParamsMatch = idWithParametersRegexp.exec(currentLine);
   if (symbolNameAndParamsMatch) {

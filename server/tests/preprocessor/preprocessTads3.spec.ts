@@ -1,8 +1,5 @@
 import { readFileSync } from "fs";
-import {
-  preprocessTads3Files,
-  wholeLineRegExp,
-} from "../../src/parser/preprocessor";
+import { preprocessTads3Files, wholeLineRegExp } from "../../src/parser/preprocessor";
 import * as assert from "assert";
 
 // TODO:

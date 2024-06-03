@@ -2,8 +2,7 @@ import { TextDocument, Position } from "vscode-languageserver-textdocument";
 
 const tokenizeRegExp = /[a-zA-Z0-9_]+/g;
 
-const quoteMatchRegExp =
-  /(['](.*)[']|[']{3}(.*)[']{3}|["](.*)["]|["]{3}(.*)["]{3})/g;
+const quoteMatchRegExp = /(['](.*)[']|[']{3}(.*)[']{3}|["](.*)["]|["]{3}(.*)["]{3})/g;
 
 /**
  * Converts a Position to Character offset.
@@ -11,10 +10,7 @@ const quoteMatchRegExp =
  * @param position - The position to convert
  * @returns a number of the converted position
  */
-export function offsetAt(
-  document: TextDocument | undefined,
-  position: Position
-) {
+export function offsetAt(document: TextDocument | undefined, position: Position) {
   const rows = document?.getText().split(/\n/);
   let offset = 0;
   if (rows && position.line < rows.length) {
@@ -52,7 +48,7 @@ export function strOffsetAt(text: string, position: Position) {
     }
   } else {
     throw new Error(
-      `Can not calculate offset. the line position ${position.line} is greater than the rows in the text`
+      `Can not calculate offset. the line position ${position.line} is greater than the rows in the text`,
     );
   }
   return offset;
@@ -90,10 +86,7 @@ export function withinQuote(document: TextDocument | any, position: Position) {
   for (const quotePosition of tokenizedQuotes.keys()) {
     const quoteString = tokenizedQuotes.get(quotePosition);
     const endOfQuotePosition = quotePosition + quoteString.length;
-    if (
-      quotePosition <= characterPosition &&
-      characterPosition <= endOfQuotePosition
-    ) {
+    if (quotePosition <= characterPosition && characterPosition <= endOfQuotePosition) {
       //connection.console.debug(`Position found within quote ${quoteString}`);
       return {
         characterPosition,
@@ -134,11 +127,7 @@ export function tokenizeQuotesWithIndex(text: string) {
  * @param asPosition - boolean: true/false, affects the return value, default false
  * @returns  if asPosition=true the index where word starts false, otherwise returns the wor
  */
-export function getWordAtPosition(
-  document: TextDocument | any,
-  position: Position,
-  asPosition = false
-) {
+export function getWordAtPosition(document: TextDocument | any, position: Position, asPosition = false) {
   const text = document.getText();
   const textRows = text.split(/\r?\n/);
   if (position.line > textRows.length) {

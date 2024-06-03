@@ -130,7 +130,7 @@ suite.skip("Should do completion", () => {
 async function testCompletion(
   docUri: vscode.Uri,
   position: vscode.Position,
-  expectedCompletionList: vscode.CompletionList
+  expectedCompletionList: vscode.CompletionList,
 ) {
   await activate(docUri);
 
@@ -138,31 +138,23 @@ async function testCompletion(
   const actualCompletionList = (await vscode.commands.executeCommand(
     "vscode.executeCompletionItemProvider",
     docUri,
-    position
+    position,
   )) as vscode.CompletionList;
 
   assert.ok(actualCompletionList.items.length >= 2);
 
   actualCompletionList.items.forEach((expectedItem, i) => {
-    const expectedCompletionItemLabel =
-      expectedItem.label as CompletionItemLabel;
+    const expectedCompletionItemLabel = expectedItem.label as CompletionItemLabel;
     console.log(expectedCompletionItemLabel.label);
     console.log(expectedCompletionItemLabel.description);
   });
 
   expectedCompletionList.items.forEach((expectedItem, i) => {
-    const expectedCompletionItemLabel =
-      expectedItem.label as CompletionItemLabel;
+    const expectedCompletionItemLabel = expectedItem.label as CompletionItemLabel;
     const actualItem: CompletionItem = actualCompletionList.items[i];
     const actualCompletionItemLabel = actualItem.label as CompletionItemLabel;
-    assert.equal(
-      actualCompletionItemLabel.label,
-      expectedCompletionItemLabel.label
-    );
-    assert.equal(
-      actualCompletionItemLabel.description,
-      expectedCompletionItemLabel.description
-    );
+    assert.equal(actualCompletionItemLabel.label, expectedCompletionItemLabel.label);
+    assert.equal(actualCompletionItemLabel.description, expectedCompletionItemLabel.description);
     assert.equal(actualItem.kind, expectedItem.kind);
   });
 }

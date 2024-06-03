@@ -1,9 +1,5 @@
 import { TextDocument } from "vscode-languageserver-textdocument";
-import {
-  DocumentFormattingParams,
-  TextDocuments,
-  Range,
-} from "vscode-languageserver";
+import { DocumentFormattingParams, TextDocuments, Range } from "vscode-languageserver";
 import { TextEdit } from "vscode-languageserver-types";
 import { wholeLineRegExp } from "../parser/preprocessor";
 import { preprocessedFilesCacheMap } from "../server";
@@ -17,7 +13,7 @@ import { URI } from "vscode-uri";
 
 export function onDocumentFormatting(
   handler: DocumentFormattingParams,
-  documents: TextDocuments<TextDocument>
+  documents: TextDocuments<TextDocument>,
 ): TextEdit[] {
   const edits: TextEdit[] = [];
   const { textDocument } = handler;
@@ -28,22 +24,15 @@ export function onDocumentFormatting(
   const formattedDocumentArray = formatDocument(
     preprocessedText,
     currentDocument?.getText() ?? "",
-    currentDocument?.lineCount ?? 0
+    currentDocument?.lineCount ?? 0,
   );
   const lastRowLength = rows[rows.length - 1].length;
-  const edit = TextEdit.replace(
-    Range.create(0, 0, rows.length, lastRowLength),
-    formattedDocumentArray.join(`\n`)
-  );
+  const edit = TextEdit.replace(Range.create(0, 0, rows.length, lastRowLength), formattedDocumentArray.join(`\n`));
   edits.push(edit);
   return edits;
 }
 
-export function formatDocument(
-  preprocessedText: string,
-  orgInput: string,
-  lineCount: number
-) {
+export function formatDocument(preprocessedText: string, orgInput: string, lineCount: number) {
   const input = CharStreams.fromString(preprocessedText);
   const lexer = new Tads3Lexer(input);
   const tokenStream = new CommonTokenStream(lexer);
@@ -84,12 +73,8 @@ export function formatDocument(
       formattedDocumentArray.push(formattedRow);
       //connection.console.debug(`Current indentation: ${indentation}: ${formattedRow}`);
     } else {
-      const prunedWhiteSpaceOriginalRow = trimmedOriginalRow.replace(
-        /\s{2,}/g,
-        " "
-      );
-      const formattedRow =
-        "\t".repeat(indentation) + prunedWhiteSpaceOriginalRow;
+      const prunedWhiteSpaceOriginalRow = trimmedOriginalRow.replace(/\s{2,}/g, " ");
+      const formattedRow = "\t".repeat(indentation) + prunedWhiteSpaceOriginalRow;
       formattedDocumentArray.push(formattedRow);
       //connection.console.debug(`Current indentation: ${indentation}: ${formattedRow}`);
     }

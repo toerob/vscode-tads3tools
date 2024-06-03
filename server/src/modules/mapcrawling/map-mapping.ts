@@ -13,7 +13,7 @@ enum EditorMode {
 
 export default class MapObjectManager {
   static npcSpecificRegexp = new RegExp(
-    /ActorState|AccompanyingState|AgendaItem|Topic|ConvNode|ConversationReadyState|InConversationState/
+    /ActorState|AccompanyingState|AgendaItem|Topic|ConvNode|ConversationReadyState|InConversationState/,
   );
 
   showAllRooms = true;
@@ -31,9 +31,7 @@ export default class MapObjectManager {
    * @param fsPath setting it to undefined means: map all possible objects
    * @returns
    */
-  public mapGameObjectsToMapObjects(
-    fsPath: string | undefined = undefined
-  ): DefaultMapObject[] {
+  public mapGameObjectsToMapObjects(fsPath: string | undefined = undefined): DefaultMapObject[] {
     let mappedSymbols: DocumentSymbol[] = [];
 
     // Hold a temporary map structure of additionalProperties where the symbol name acts as key
@@ -41,8 +39,7 @@ export default class MapObjectManager {
 
     if (this.showAllRooms || this.selectedEditor === EditorMode.NPC) {
       for (const fileNameKey of this.symbolManager.symbols.keys()) {
-        const localFileSymbols =
-          this.symbolManager.symbols.get(fileNameKey) ?? [];
+        const localFileSymbols = this.symbolManager.symbols.get(fileNameKey) ?? [];
         for (const localSymbol of localFileSymbols) {
           mappedSymbols.push(localSymbol);
           //this.addAdditionalPropsToMap(localSymbol, fileNameKey, additionalProps);
@@ -97,8 +94,7 @@ export default class MapObjectManager {
     // TODO: tweak this for Tads2?
     setupClassInheritanceDefaultsTads3(classInheritanceMap);
 
-    const roomOrDoorPredicate =
-      serverState.tadsVersion === 3 ? this.isRoomOrDoorT3 : this.isRoomOrDoorT2;
+    const roomOrDoorPredicate = serverState.tadsVersion === 3 ? this.isRoomOrDoorT3 : this.isRoomOrDoorT2;
 
     if (mappedSymbols.length > 0) {
       const objectsAsArray = Array.from(mappedSymbols);
@@ -109,10 +105,7 @@ export default class MapObjectManager {
       const roomsWithConnections = objectsAsArray
         .filter((x) => roomOrDoorPredicate.bind(this)(x))
         .filter((x) => !classList.has(x.name))
-        .filter(
-          (x) =>
-            !["unknownDest_", "varDest_"].includes(x.name) && isUsingAdv3Lite
-        );
+        .filter((x) => !["unknownDest_", "varDest_"].includes(x.name) && isUsingAdv3Lite);
 
       // And the first level of children of each:
       const childrenMap: DocumentSymbol[] = [];
@@ -148,29 +141,18 @@ export default class MapObjectManager {
         // afterwards crawling (they are needed during crawling to make door
         // connections work) and just return room objects
 
-        const crawledObjects = crawlRooms(
-          mapObjects,
-          objectsAsArray,
-          this.startRoom
-        );
+        const crawledObjects = crawlRooms(mapObjects, objectsAsArray, this.startRoom);
 
         // Remove already mapped objects
         const crawledObjectNames = crawledObjects.map((x) => x.name);
-        const uncrawledObjects = mapObjects.filter(
-          (x) => !crawledObjectNames.includes(x.name)
-        );
+        const uncrawledObjects = mapObjects.filter((x) => !crawledObjectNames.includes(x.name));
 
         // Remove properties
         const propertiesAsNames = childrenMap.map((x) => x.name);
-        const nonPropertiesAndUncrawledObjects = uncrawledObjects.filter(
-          (x) => !propertiesAsNames.includes(x.name)
-        );
+        const nonPropertiesAndUncrawledObjects = uncrawledObjects.filter((x) => !propertiesAsNames.includes(x.name));
 
         // Return crawled (and uncrawled rooms (only))
-        const collection = [
-          ...crawledObjects,
-          ...nonPropertiesAndUncrawledObjects,
-        ];
+        const collection = [...crawledObjects, ...nonPropertiesAndUncrawledObjects];
 
         const sortedCollection = collection.sort(function (a, b) {
           if (a.name < b.name) return -1;
@@ -194,14 +176,10 @@ export default class MapObjectManager {
 		return sortedMapObjects;*/
   }
 
-  private findAdditionalProps(
-    symbol: DocumentSymbol
-  ): ExtendedDocumentSymbolProperties | undefined {
+  private findAdditionalProps(symbol: DocumentSymbol): ExtendedDocumentSymbolProperties | undefined {
     if (symbol) {
       for (const eachFileKey of this.symbolManager.additionalProperties.keys()) {
-        const symbolAdditionalProps = this.symbolManager.additionalProperties
-          .get(eachFileKey)
-          ?.get(symbol);
+        const symbolAdditionalProps = this.symbolManager.additionalProperties.get(eachFileKey)?.get(symbol);
         if (symbolAdditionalProps) {
           return symbolAdditionalProps;
         }
@@ -210,9 +188,7 @@ export default class MapObjectManager {
     return undefined;
   }
 
-  craftClassInheritanceArrayFromCommaDelimDetail(
-    commaDelimitedClassList: string
-  ) {
+  craftClassInheritanceArrayFromCommaDelimDetail(commaDelimitedClassList: string) {
     const classList = [];
     for (const kind of commaDelimitedClassList.split(",")) {
       classList.push(kind);
@@ -221,13 +197,9 @@ export default class MapObjectManager {
     return classList;
   }
 
-  craftClassInheritanceArray(
-    derivedClassName: string,
-    collection: string[] = []
-  ) {
+  craftClassInheritanceArray(derivedClassName: string, collection: string[] = []) {
     try {
-      const superClass =
-        this.symbolManager.inheritanceMap.get(derivedClassName);
+      const superClass = this.symbolManager.inheritanceMap.get(derivedClassName);
       if (superClass && superClass.length > 0 && superClass !== "__root__") {
         collection.push(superClass);
         this.craftClassInheritanceArray(superClass, collection);
@@ -280,11 +252,7 @@ export default class MapObjectManager {
         return false;
       }
       if (o.detail) {
-        if (
-          o.detail.includes("Door") ||
-          o.detail.includes("Stairway") ||
-          o.detail.includes("Passage")
-        ) {
+        if (o.detail.includes("Door") || o.detail.includes("Stairway") || o.detail.includes("Passage")) {
           if (a) {
             a.superClassRoot ??= "Door";
           }
@@ -345,7 +313,7 @@ export default class MapObjectManager {
 
   isDir(str: string) {
     return str.match(
-      /north|south|east|west|northeast|northwest|southeast|southwest|up|down|in|out|fore|port|aft|starboard/
+      /north|south|east|west|northeast|northwest|southeast|southwest|up|down|in|out|fore|port|aft|starboard/,
     );
   }
 
@@ -356,24 +324,14 @@ export default class MapObjectManager {
    * @param childrenKinds - only create children of the types defined in childrenKinds
    * @returns
    */
-  createMapObject(
-    symbol: DocumentSymbol,
-    skipChildren = true,
-    childrenKinds: SymbolKind[] = []
-  ): DefaultMapObject {
+  createMapObject(symbol: DocumentSymbol, skipChildren = true, childrenKinds: SymbolKind[] = []): DefaultMapObject {
     const mapObj: DefaultMapObject = new DefaultMapObject(symbol.name);
     if (!skipChildren) {
       const children: DocumentSymbol[] = symbol.children ?? [];
       for (const child of children) {
         if (childrenKinds === undefined || childrenKinds.includes(child.kind)) {
           try {
-            mapObj.children.push(
-              this.createMapObject(
-                child as DocumentSymbol,
-                false,
-                childrenKinds
-              )
-            );
+            mapObj.children.push(this.createMapObject(child as DocumentSymbol, false, childrenKinds));
           } catch (err) {
             console.error(err);
           }
@@ -392,83 +350,45 @@ export default class MapObjectManager {
       return isAssignment;
     };
 
-    mapObj.north = symbol.children?.find(
-      (x) => isAssignment(x) && x.name === "north"
-    )?.detail;
-    mapObj.south = symbol.children?.find(
-      (x) => isAssignment(x) && x.name === "south"
-    )?.detail;
+    mapObj.north = symbol.children?.find((x) => isAssignment(x) && x.name === "north")?.detail;
+    mapObj.south = symbol.children?.find((x) => isAssignment(x) && x.name === "south")?.detail;
 
     if (serverState.tadsVersion === 3) {
-      mapObj.northeast = symbol.children?.find(
-        (x) => isAssignment(x) && x.name === "northeast"
-      )?.detail;
-      mapObj.northwest = symbol.children?.find(
-        (x) => isAssignment(x) && x.name === "northwest"
-      )?.detail;
-      mapObj.southeast = symbol.children?.find(
-        (x) => isAssignment(x) && x.name === "southeast"
-      )?.detail;
-      mapObj.southwest = symbol.children?.find(
-        (x) => isAssignment(x) && x.name === "southwest"
-      )?.detail;
+      mapObj.northeast = symbol.children?.find((x) => isAssignment(x) && x.name === "northeast")?.detail;
+      mapObj.northwest = symbol.children?.find((x) => isAssignment(x) && x.name === "northwest")?.detail;
+      mapObj.southeast = symbol.children?.find((x) => isAssignment(x) && x.name === "southeast")?.detail;
+      mapObj.southwest = symbol.children?.find((x) => isAssignment(x) && x.name === "southwest")?.detail;
     } else {
-      mapObj.northeast = symbol.children?.find(
-        (x) => isAssignment(x) && x.name === "ne"
-      )?.detail;
-      mapObj.northwest = symbol.children?.find(
-        (x) => isAssignment(x) && x.name === "nw"
-      )?.detail;
-      mapObj.southeast = symbol.children?.find(
-        (x) => isAssignment(x) && x.name === "se"
-      )?.detail;
-      mapObj.southwest = symbol.children?.find(
-        (x) => isAssignment(x) && x.name === "sw"
-      )?.detail;
+      mapObj.northeast = symbol.children?.find((x) => isAssignment(x) && x.name === "ne")?.detail;
+      mapObj.northwest = symbol.children?.find((x) => isAssignment(x) && x.name === "nw")?.detail;
+      mapObj.southeast = symbol.children?.find((x) => isAssignment(x) && x.name === "se")?.detail;
+      mapObj.southwest = symbol.children?.find((x) => isAssignment(x) && x.name === "sw")?.detail;
 
-      mapObj.doordest = symbol.children?.find(
-        (x) => isAssignment(x) && x.name === "doordest"
-      )?.detail;
+      mapObj.doordest = symbol.children?.find((x) => isAssignment(x) && x.name === "doordest")?.detail;
     }
 
-    mapObj.east = symbol.children?.find(
-      (x) => isAssignment(x) && x.name === "east"
-    )?.detail;
-    mapObj.west = symbol.children?.find(
-      (x) => isAssignment(x) && x.name === "west"
-    )?.detail;
+    mapObj.east = symbol.children?.find((x) => isAssignment(x) && x.name === "east")?.detail;
+    mapObj.west = symbol.children?.find((x) => isAssignment(x) && x.name === "west")?.detail;
 
-    mapObj.up = symbol.children?.find(
-      (x) => isAssignment(x) && x.name === "up"
-    )?.detail;
-    mapObj.down = symbol.children?.find(
-      (x) => isAssignment(x) && x.name === "down"
-    )?.detail;
+    mapObj.up = symbol.children?.find((x) => isAssignment(x) && x.name === "up")?.detail;
+    mapObj.down = symbol.children?.find((x) => isAssignment(x) && x.name === "down")?.detail;
 
-    mapObj.in = symbol.children?.find(
-      (x) => isAssignment(x) && x.name === "in"
-    )?.detail;
-    mapObj.out = symbol.children?.find(
-      (x) => isAssignment(x) && x.name === "out"
-    )?.detail;
+    mapObj.in = symbol.children?.find((x) => isAssignment(x) && x.name === "in")?.detail;
+    mapObj.out = symbol.children?.find((x) => isAssignment(x) && x.name === "out")?.detail;
 
     // Sets north to fore if north is not already set, etc...
     mapObj.north = mapObj.north
       ? mapObj.north
-      : symbol.children?.find((x) => isAssignment(x) && x.name === "fore")
-          ?.detail;
+      : symbol.children?.find((x) => isAssignment(x) && x.name === "fore")?.detail;
     mapObj.south = mapObj.south
       ? mapObj.south
-      : symbol.children?.find((x) => isAssignment(x) && x.name === "aft")
-          ?.detail;
+      : symbol.children?.find((x) => isAssignment(x) && x.name === "aft")?.detail;
     mapObj.west = mapObj.west
       ? mapObj.west
-      : symbol.children?.find((x) => isAssignment(x) && x.name === "port")
-          ?.detail;
+      : symbol.children?.find((x) => isAssignment(x) && x.name === "port")?.detail;
     mapObj.east = mapObj.east
       ? mapObj.east
-      : symbol.children?.find((x) => isAssignment(x) && x.name === "starboard")
-          ?.detail;
+      : symbol.children?.find((x) => isAssignment(x) && x.name === "starboard")?.detail;
 
     // Go through each travelConnector's destination value and assign it:
     const possibleExits = [
@@ -508,9 +428,7 @@ function setExit(obj: any, dir: any, exit: any) {
   obj[dir] = exit;
 }
 
-function setupClassInheritanceDefaultsTads3(
-  classInheritanceMap: Map<string, string>
-) {
+function setupClassInheritanceDefaultsTads3(classInheritanceMap: Map<string, string>) {
   if (!classInheritanceMap.get("object")) {
     classInheritanceMap.set("object", "__root__");
   }

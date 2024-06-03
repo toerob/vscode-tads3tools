@@ -66,8 +66,7 @@ describe("Tads3 parser tests", () => {
 
   describe("Sweeping tests", () => {
     it("parses a game object with simple direction properties with no errors", () => {
-      const { listener } =
-        parseTextWithSimpleErrorListener(`theHouse: Room 'the house on the hill'
+      const { listener } = parseTextWithSimpleErrorListener(`theHouse: Room 'the house on the hill'
 			"the description goes here..."
 			south = hill
 			east = lake
@@ -78,10 +77,7 @@ describe("Tads3 parser tests", () => {
       assert.equal(listener.properties.length, 3);
       assert.equal(listener.objects[0].roomId, "theHouse");
       assert.equal(listener.objects[0].roomName, "'the house on the hill'");
-      assert.equal(
-        listener.objects[0].roomDesc,
-        '"the description goes here..."'
-      );
+      assert.equal(listener.objects[0].roomDesc, '"the description goes here..."');
       assert.equal(listener.properties.join(","), "south,east,west");
     });
 
@@ -168,7 +164,7 @@ describe("Tads3 parser tests", () => {
       const { listener } = parseTextWithTads3SymbolListener(
         `front: Room 'In front of a white house' 
   east = eastSideOfHouse
-;`
+;`,
       );
 
       assert.equal(listener.symbols.length, 1);

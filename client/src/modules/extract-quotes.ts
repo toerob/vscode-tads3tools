@@ -2,10 +2,7 @@ import { ExtensionContext, window } from "vscode";
 import { client } from "../extension";
 
 export async function extractAllQuotes(context: ExtensionContext) {
-  const files = await window.showQuickPick([
-    "All project files",
-    "current file",
-  ]);
+  const files = await window.showQuickPick(["All project files", "current file"]);
   const types = await window.showQuickPick(["both", "double", "single"]);
 
   if (files.startsWith("current")) {

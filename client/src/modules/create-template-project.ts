@@ -1,12 +1,5 @@
 import { existsSync, readFileSync } from "fs";
-import {
-  workspace,
-  ExtensionContext,
-  window,
-  Uri,
-  Position,
-  SnippetString,
-} from "vscode";
+import { workspace, ExtensionContext, window, Uri, Position, SnippetString } from "vscode";
 import { writeFileSync } from "fs";
 import { ensureDirSync } from "fs-extra";
 import { extensionState } from "./state";
@@ -30,7 +23,7 @@ export async function createTemplateProject(context: ExtensionContext) {
       const userAnswer = await window.showInformationMessage(
         `Project already have either a Makefile.t3m or a gameMain.t, do you want to overwrite them with a fresh template?`,
         { title: "Yes" },
-        { title: "No" }
+        { title: "No" },
       );
       if (userAnswer === undefined || userAnswer.title === "No") {
         return;
@@ -43,44 +36,19 @@ export async function createTemplateProject(context: ExtensionContext) {
     const isAdv3LiteLibUsed = result === "adv3Lite" ? true : false;
     extensionState.setUsingAdv3LiteStatus(isAdv3LiteLibUsed);
 
-    const makefileResourceFilename = isAdv3LiteLibUsed
-      ? "Makefile-adv3Lite.t3m"
-      : "Makefile.t3m";
-    const gamefileResourceFilename = isAdv3LiteLibUsed
-      ? "gameMain-adv3Lite.t"
-      : "gameMain.t";
+    const makefileResourceFilename = isAdv3LiteLibUsed ? "Makefile-adv3Lite.t3m" : "Makefile.t3m";
+    const gamefileResourceFilename = isAdv3LiteLibUsed ? "gameMain-adv3Lite.t" : "gameMain.t";
 
-    const makefileResourceFileUri = Uri.joinPath(
-      context.extensionUri,
-      "resources",
-      makefileResourceFilename
-    );
-    const gamefileResourceFileUri = Uri.joinPath(
-      context.extensionUri,
-      "resources",
-      gamefileResourceFilename
-    );
+    const makefileResourceFileUri = Uri.joinPath(context.extensionUri, "resources", makefileResourceFilename);
+    const gamefileResourceFileUri = Uri.joinPath(context.extensionUri, "resources", gamefileResourceFilename);
 
-    let makefileResourceFileContent = readFileSync(
-      makefileResourceFileUri.fsPath
-    ).toString();
-    const gamefileResourceFileContent = readFileSync(
-      gamefileResourceFileUri.fsPath
-    ).toString();
+    let makefileResourceFileContent = readFileSync(makefileResourceFileUri.fsPath).toString();
+    const gamefileResourceFileContent = readFileSync(gamefileResourceFileUri.fsPath).toString();
 
-    if (
-      !existsSync("/usr/local/share/frobtads/tads3/include") &&
-      !existsSync("/usr/local/share/frobtads/tads3/lib")
-    ) {
+    if (!existsSync("/usr/local/share/frobtads/tads3/include") && !existsSync("/usr/local/share/frobtads/tads3/lib")) {
       makefileResourceFileContent = makefileResourceFileContent
-        .replace(
-          "-FI /usr/local/share/frobtads/tads3/include",
-          "#-FI /usr/local/share/frobtads/tads3/include"
-        )
-        .replace(
-          "-FL /usr/local/share/frobtads/tads3/lib",
-          "#-FL /usr/local/share/frobtads/tads3/lib"
-        );
+        .replace("-FI /usr/local/share/frobtads/tads3/include", "#-FI /usr/local/share/frobtads/tads3/include")
+        .replace("-FL /usr/local/share/frobtads/tads3/lib", "#-FL /usr/local/share/frobtads/tads3/lib");
     }
 
     ensureDirSync(objFolderUri.fsPath);
@@ -92,8 +60,6 @@ export async function createTemplateProject(context: ExtensionContext) {
     await workspace
       .openTextDocument(gameFileUri.fsPath)
       .then((doc) => window.showTextDocument(doc))
-      .then((editor) =>
-        editor.insertSnippet(gameFilecontent, new Position(0, 0))
-      );
+      .then((editor) => editor.insertSnippet(gameFilecontent, new Position(0, 0)));
   }
 }

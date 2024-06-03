@@ -53,7 +53,7 @@ export async function onCodeAction(
   }
 
   let symbolName = "";
-  
+
   const match = lastWordRegExp.exec(currentLine); // Extract the last word on this line
   if (match === null) {
     if (currentLine.match(/^\s*\[\s*\]\s*;?$/)) {

@@ -27,11 +27,9 @@ const autoScriptRegExp = new RegExp(/Auto [0-9].cmd$/);
 let configuredInterpreter: string | undefined;
 
 export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
-  private _onDidChangeTreeData: EventEmitter<string | void | string[]> =
-    new EventEmitter<string | void | string[]>();
+  private _onDidChangeTreeData: EventEmitter<string | void | string[]> = new EventEmitter<string | void | string[]>();
 
-  readonly onDidChangeTreeData: Event<string | void | string[]> =
-    this._onDidChangeTreeData.event;
+  readonly onDidChangeTreeData: Event<string | void | string[]> = this._onDidChangeTreeData.event;
 
   context: ExtensionContext;
 
@@ -48,16 +46,12 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
     }
 
     if (extensionState.getChosenMakefileUri()) {
-      this.scriptFolderName = workspace
-        .getConfiguration("tads3")
-        .get("scriptFolderName");
+      this.scriptFolderName = workspace.getConfiguration("tads3").get("scriptFolderName");
       const scriptsPath = Uri.joinPath(wp, this.scriptFolderName);
       ensureDirSync(scriptsPath.fsPath);
       this.scriptFolderPattern = new RelativePattern(scriptsPath, "**/*.cmd");
 
-      this.scriptFileSystemWatcher = workspace.createFileSystemWatcher(
-        this.scriptFolderPattern
-      );
+      this.scriptFileSystemWatcher = workspace.createFileSystemWatcher(this.scriptFolderPattern);
       this.scriptFileSystemWatcher.onDidChange((_) => this.updateFiles());
       this.scriptFileSystemWatcher.onDidDelete((_) => this.updateFiles());
       this.scriptFileSystemWatcher.onDidCreate(async (_) => {
@@ -75,9 +69,7 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
   getTreeItem(element: string): TreeItem | Thenable<TreeItem> {
     const treeItem = new TreeItem(element);
     treeItem.contextValue = "string";
-    treeItem.iconPath = this.context.asAbsolutePath(
-      path.join("resources", "icons", "script.svg")
-    );
+    treeItem.iconPath = this.context.asAbsolutePath(path.join("resources", "icons", "script.svg"));
     return treeItem;
   }
 
@@ -90,9 +82,7 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
   }
 
   async updateFiles() {
-    configuredInterpreter =
-      workspace.getConfiguration("tads3").get("gameRunnerInterpreter") ??
-      undefined;
+    configuredInterpreter = workspace.getConfiguration("tads3").get("gameRunnerInterpreter") ?? undefined;
     extensionState.scriptFolderContent.clear();
     const files = await workspace.findFiles(this.scriptFolderPattern);
     if (files.length === 0) {
@@ -113,43 +103,25 @@ export class ReplayScriptTreeDataProvider implements TreeDataProvider<string> {
   }
 
   async trimToMaxFiles() {
-    const maxScriptFiles: number = workspace
-      .getConfiguration("tads3")
-      .get("maximumScriptFiles");
+    const maxScriptFiles: number = workspace.getConfiguration("tads3").get("maximumScriptFiles");
     const files = await workspace.findFiles(this.scriptFolderPattern);
     if (files.length > maxScriptFiles) {
-      const customFilesNotToTrim = files.filter(
-        (f) => !autoScriptRegExp.test(f.fsPath)
-      );
+      const customFilesNotToTrim = files.filter((f) => !autoScriptRegExp.test(f.fsPath));
       const autoScriptFilesNotToTrim = files
         .filter((f) => !customFilesNotToTrim.includes(f))
-        .sort(
-          (a, b) =>
-            this.convertToSerial(b.fsPath) - this.convertToSerial(a.fsPath)
-        )
+        .sort((a, b) => this.convertToSerial(b.fsPath) - this.convertToSerial(a.fsPath))
         .splice(0, maxScriptFiles);
 
-      const filesNotToTrim = [
-        ...autoScriptFilesNotToTrim,
-        ...customFilesNotToTrim,
-      ];
+      const filesNotToTrim = [...autoScriptFilesNotToTrim, ...customFilesNotToTrim];
 
-      files
-        .filter((x) => !filesNotToTrim.includes(x))
-        .forEach((x) => unlinkSync(x.fsPath));
+      files.filter((x) => !filesNotToTrim.includes(x)).forEach((x) => unlinkSync(x.fsPath));
     }
   }
 
   async updateFile(fname: string, file: Uri) {
-    const docText = await (
-      await workspace.openTextDocument(file.fsPath)
-    ).getText();
-    const trimExpression = new RegExp(
-      /[<]line[>]\s*q(uit)?\s*\n+[<]line[>]\s*y(es)?\s*$/gim
-    );
-    const trimmedDocText = trimExpression
-      ? docText.replace(trimExpression, "")
-      : docText;
+    const docText = await (await workspace.openTextDocument(file.fsPath)).getText();
+    const trimExpression = new RegExp(/[<]line[>]\s*q(uit)?\s*\n+[<]line[>]\s*y(es)?\s*$/gim);
+    const trimmedDocText = trimExpression ? docText.replace(trimExpression, "") : docText;
     if (trimmedDocText.match(/^\s*[<]eventscript[>]/gm)) {
       extensionState.scriptFolderContent.set(fname, {
         uri: file,
@@ -165,9 +137,7 @@ export async function replayScript(scriptName: string, restart = false) {
     await findAndStartGameFile();
     await sleep(1000);
   }
-  const currentTerminal = window.terminals.filter(
-    (x) => x.name === "Tads3 Game runner terminal"
-  )[0];
+  const currentTerminal = window.terminals.filter((x) => x.name === "Tads3 Game runner terminal")[0];
   if (currentTerminal) {
     const scriptInfo = extensionState.scriptFolderContent.get(scriptName);
     const rows = scriptInfo.content.split(/\r?\n/);
@@ -181,18 +151,14 @@ export async function replayScript(scriptName: string, restart = false) {
 }
 
 export function openReplayScript(scriptFileName: string): any {
-  const scriptInfo: ScriptInfo =
-    extensionState.scriptFolderContent.get(scriptFileName);
+  const scriptInfo: ScriptInfo = extensionState.scriptFolderContent.get(scriptFileName);
   workspace
     .openTextDocument(scriptInfo.uri.fsPath)
-    .then((doc) =>
-      window.showTextDocument(doc, { viewColumn: ViewColumn.Beside })
-    );
+    .then((doc) => window.showTextDocument(doc, { viewColumn: ViewColumn.Beside }));
 }
 
 export async function deleteReplayScript(scriptFileName: string) {
-  const scriptInfo: ScriptInfo =
-    extensionState.scriptFolderContent.get(scriptFileName);
+  const scriptInfo: ScriptInfo = extensionState.scriptFolderContent.get(scriptFileName);
   try {
     unlinkSync(scriptInfo.uri.fsPath);
   } catch (error) {
@@ -207,10 +173,7 @@ function extractAndStoreLargestAutoScriptSerialNumber(fname: string) {
   if (embeddedSerialAsString && embeddedSerialAsString[2]) {
     const embeddedSerialAsNumber = parseInt(embeddedSerialAsString[2]);
     if (embeddedSerialAsNumber) {
-      extensionState.autoScriptFileSerial = Math.max(
-        extensionState.autoScriptFileSerial,
-        embeddedSerialAsNumber
-      );
+      extensionState.autoScriptFileSerial = Math.max(extensionState.autoScriptFileSerial, embeddedSerialAsNumber);
     }
   }
 }
@@ -224,11 +187,9 @@ async function findAndStartGameFile(interpreterOptions = "") {
       await window
         .showQuickPick(
           files.map((x) => x.fsPath),
-          { title: "Which file should be run?" }
+          { title: "Which file should be run?" },
         )
-        .then((filepath) =>
-          startGameWithInterpreter(filepath, interpreterOptions)
-        );
+        .then((filepath) => startGameWithInterpreter(filepath, interpreterOptions));
     }
   }
 }

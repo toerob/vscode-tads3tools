@@ -1,33 +1,20 @@
-import {
-  ParameterInformation,
-  Position,
-  SignatureInformation,
-  SymbolKind,
-  TextDocuments,
-} from "vscode-languageserver";
-import {
-  SignatureHelp,
-  SignatureHelpParams,
-} from "vscode-languageserver-protocol";
+import { ParameterInformation, Position, SignatureInformation, SymbolKind, TextDocuments } from "vscode-languageserver";
+import { SignatureHelp, SignatureHelpParams } from "vscode-languageserver-protocol";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { retrieveDocumentationForKeyword } from "./documentation";
-import {
-  TadsSymbolManager,
-  isClassOrObject,
-  swapToConstructor,
-} from "./symbol-manager";
+import { TadsSymbolManager, isClassOrObject, swapToConstructor } from "./symbol-manager";
 import { FilePathAndSymbols } from "./types";
 import { getCurrentLine } from "./utils";
 import { getLineOfMethodDeclaration } from "./utils";
 import { extractFunctionNameAndParams } from "./utils";
-import { preprocessedFilesCacheMap } from '../server';
+import { preprocessedFilesCacheMap } from "../server";
 
 let activeParameter = 0;
 
 export async function onSignatureHelp(
   { position, textDocument, context }: SignatureHelpParams,
   documents: TextDocuments<TextDocument>,
-  sm: TadsSymbolManager
+  sm: TadsSymbolManager,
 ): Promise<SignatureHelp> {
   let signatures: SignatureInformation[] = [];
   const activeSignature = context?.activeSignatureHelp?.activeSignature ?? 0; // Set the signature to the last chosen signature
@@ -54,10 +41,7 @@ export async function onSignatureHelp(
   };
 }
 
-function createSignatures(
-  symbolName: string,
-  sm: TadsSymbolManager
-): SignatureInformation[] {
+function createSignatures(symbolName: string, sm: TadsSymbolManager): SignatureInformation[] {
   const signatures: SignatureInformation[] = [];
 
   const locations: FilePathAndSymbols[] = sm.findSymbols(symbolName, [
@@ -81,19 +65,9 @@ function createSignatures(
       }
 
       const lineOfMethodDeclaration = symbol.range.start.line - 1;
-      const signatureLine = getLineOfMethodDeclaration(
-        preprocessedFilesCacheMap,
-        fsPath,
-        lineOfMethodDeclaration
-      );
+      const signatureLine = getLineOfMethodDeclaration(preprocessedFilesCacheMap, fsPath, lineOfMethodDeclaration);
       if (signatureLine) {
-        const signature = createSignature(
-          sm,
-          fsPath,
-          symbol,
-          location,
-          signatureLine
-        );
+        const signature = createSignature(sm, fsPath, symbol, location, signatureLine);
         signatures.push(signature);
       }
     }
@@ -106,21 +80,14 @@ function createSignature(
   fsPath: string,
   symbol: any,
   location: FilePathAndSymbols,
-  signatureLine: string
+  signatureLine: string,
 ) {
   // TODO: cannot find intrinsic methods like toString
-  const symbolParameters =
-    sm.symbolParameters.get(fsPath)?.get(symbol.name) ?? [];
+  const symbolParameters = sm.symbolParameters.get(fsPath)?.get(symbol.name) ?? [];
 
-  const parameters = symbolParameters.map((x) =>
-    ParameterInformation.create(x.name)
-  );
+  const parameters = symbolParameters.map((x) => ParameterInformation.create(x.name));
   const doc = retrieveDocumentationForKeyword(symbol, location.filePath);
-  const signature = SignatureInformation.create(
-    signatureLine,
-    doc,
-    ...parameters
-  );
+  const signature = SignatureInformation.create(signatureLine, doc, ...parameters);
   return signature;
 }
 
@@ -132,11 +99,8 @@ function createSignature(
  * @param cursorPosition
  * @returns n of position
  */
-function decideSelectedParameter(
-  currentLine: string,
-  cursorPosition: number
-) {
-  const parametersToCursorPos = currentLine.substring(0,cursorPosition);
+function decideSelectedParameter(currentLine: string, cursorPosition: number) {
+  const parametersToCursorPos = currentLine.substring(0, cursorPosition);
   const selectedParameter = parametersToCursorPos.match(/,/g)?.length ?? 0;
 
   // Note for further improvement:
