@@ -47,7 +47,6 @@ export async function onReferences(
   if (currentDocument) {
     const symbolName = getWordAtPosition(currentDocument, position);
     if (symbolName) {
-      // Strategy 1:
       connection.console.debug(`Searching reference(s) for word: ${symbolName}`);
       const locations = symbolManager.getAllWorkspaceKeywordLocations(symbolName, false);
 
@@ -56,11 +55,6 @@ export async function onReferences(
         .map((x) => Location.create(onWindowsPlatform ? URI.file(x.filePath)?.path : x.filePath, x.symbol.range));
 
       locations.push(...allOtherSymbols);
-
-      // Additional references could we added via symbol defintions, e.g if Property's should be allowed.
-      /*symbolManager.getAllWorkspaceSymbols(false)
-				.filter(x => allowedSymbolAsKeywordPredicate(x) && x.name === symbolName)
-				.forEach(x => locations.push(x.location));*/
 
       if (locations.length == 0) {
         connection.console.debug(`No reference(s) found for word: ${symbolName}.`);

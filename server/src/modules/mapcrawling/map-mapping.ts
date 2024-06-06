@@ -159,7 +159,6 @@ export default class MapObjectManager {
           if (a.name > b.name) return 1;
           return 0;
         });
-        //console.dir(sortedCollection);
         return sortedCollection;
       } catch (error) {
         console.error("Crawling failed", error);

@@ -103,6 +103,7 @@ export class TadsSymbolManager {
     return symbols;
   }
 
+  // Optimize
   findAllSymbols(
     name: string,
     kinds: SymbolKind[] | undefined = undefined,
@@ -368,7 +369,7 @@ export class TadsSymbolManager {
     const localExpressionSymbols = this.expressionSymbols.get(fsPath);
     const assignmentDeclarationsSortedByLine = localExpressionSymbols
       ?.get(symbolName)
-      ?.filter((x) => x.epxressionType === type)
+      ?.filter((x) => x.expressionType === type)
       ?.filter((x) => (x.documentSymbol?.range?.start?.line ?? 0) <= position.line) // Filter everything greater than the current line
       ?.sort((a, b) => (a.documentSymbol?.range?.start?.line ?? 0) - (b.documentSymbol?.range?.start?.line ?? 0))
       ?.reverse();
@@ -410,17 +411,60 @@ export class TadsSymbolManager {
   }
 }
 
+/*
+export function flattenTreeToArray(localSymbols: DocumentSymbol[]) {
+  return addIterativelyDFS(localSymbols);
+}*/
 export function flattenTreeToArray(localSymbols: DocumentSymbol[]) {
   const basketOfSymbols: DocumentSymbol[] = [];
-  addRecursively(localSymbols, basketOfSymbols);
+  addRecursivelyDFS(localSymbols, basketOfSymbols);
   return basketOfSymbols;
 }
 
-export function addRecursively(localSymbols: DocumentSymbol[], basketOfSymbols: any) {
-  for (const symbol of localSymbols) {
-    basketOfSymbols.push(symbol);
+// Note: benchmark shows recursively vs iteratively is mostly on par with each other.
+export function addIterativelyDFS(localSymbols: DocumentSymbol[]): DocumentSymbol[] {
+  const result = [];
+  const stack: DocumentSymbol[] = [];
+  for (let i = localSymbols.length - 1; i >= 0; i--) {
+    stack.push(localSymbols[i]);
+  }
+  while (stack.length > 0) {
+    const symbol = stack.pop();
+    if (symbol === undefined) continue;
+    result.push(symbol);
     if (symbol.children) {
-      addRecursively(symbol.children, basketOfSymbols);
+      for (let i = symbol.children.length; i >= 0; i--) {
+        stack.push(symbol.children[i]);
+      }
+    }
+  }
+  return result;
+}
+
+// Alternative if the order of addIterativelyDFS doesn't matter, just the flatness (which should be sufficient in most cases)
+export function addIterativelyDFS2(localSymbols: DocumentSymbol[]): DocumentSymbol[] {
+  const result = [];
+  const stack: DocumentSymbol[] = [...localSymbols];
+  while (stack.length > 0) {
+    const symbol = stack.pop();
+    if (symbol === undefined) continue;
+    result.push(symbol);
+    if (symbol.children) {
+      for (let i = symbol.children.length; i >= 0; i--) {
+        stack.push(symbol.children[i]);
+      }
+    }
+  }
+  return result;
+}
+
+
+// NOTE: TOO SLOW?
+export function addRecursivelyDFS(localSymbols: DocumentSymbol[], collection: any) {
+  for (const symbol of localSymbols) {
+    collection.push(symbol);
+    if (symbol.children) {
+      addRecursivelyDFS(symbol.children, collection);
     }
   }
 }

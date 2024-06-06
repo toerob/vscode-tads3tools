@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "fs";
 import { workspace, ExtensionContext, window, Uri, Position, SnippetString } from "vscode";
 import { writeFileSync } from "fs";
 import { ensureDirSync } from "fs-extra";
-import { extensionState } from "./state";
+import { extensionState } from "../state";
 
 export async function createTemplateProject(context: ExtensionContext) {
   const projectFolder: Uri[] = await window.showOpenDialog({

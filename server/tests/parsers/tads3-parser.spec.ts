@@ -174,8 +174,6 @@ describe("Tads3 parser tests", () => {
 ;`,
       );
       expect(listener.symbols).toHaveLength(1);
-      console.dir(listener.symbols[0]);
-
       expect(listener.symbols[0]).toStrictEqual({
         name: "front",
         detail: "Room",

@@ -19,5 +19,5 @@ export type DocumentSymbolWithScope = {
   callChainStr?: string; // Clean this one if not needed
   constructorArgs?: string; // Or DocumentSymbol if possible
   instanceType?: string; // Or DocumentSymbol if possible
-  epxressionType: ExpressionType;
+  expressionType: ExpressionType;
 };

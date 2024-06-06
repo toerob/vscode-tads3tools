@@ -1,5 +1,5 @@
 import { workspace, window, ViewColumn, Position } from "vscode";
-import { client } from "../extension";
+import { client } from "../../extension";
 
 async function connectRoomViaDirection(room: any, validDirection: any, nextRoom: any) {
   await workspace.openTextDocument(room.filePath).then((doc) =>

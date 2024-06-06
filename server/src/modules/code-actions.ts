@@ -12,6 +12,7 @@ import { ID } from "./constants";
 const lastWordRegExp = new RegExp(/\s*(\w+)[^\w]*(\s*[(].*[)]\s*[;]?)?$/); // RegExp for the Last occurring word
 const assignmentRegExp = new RegExp(/\s*(.*)\s*[=]\s*(new\s+)?(.*)\s*/);
 
+// TODO: Make run findSymbol less frequent?
 export async function onCodeAction(
   params: CodeActionParams,
   documents: TextDocuments<TextDocument>,

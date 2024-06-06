@@ -14,8 +14,8 @@ import {
   ExtensionContext,
 } from "vscode";
 import { CompletionItemKind } from "vscode-languageclient";
-import { client } from "../extension";
-import { extensionState } from "./state";
+import { client } from "../../extension";
+import { extensionState } from "../state";
 
 export class SnippetCompletionItemProvider implements CompletionItemProvider {
   private snippets = [];

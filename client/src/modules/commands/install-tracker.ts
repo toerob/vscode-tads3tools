@@ -3,7 +3,7 @@ import * as path from "path";
 import { dirname } from "path";
 import { workspace, ExtensionContext, window, Uri, Range, ViewColumn } from "vscode";
 import { writeFileSync } from "fs";
-import { extensionState } from "./state";
+import { extensionState } from "../state";
 
 export async function installTracker(context: ExtensionContext) {
   const filePath = extensionState.getUsingAdv3LiteStatus() ? "_gameTrackerAdv3Lite.t" : "_gameTrackerAdv3.t";

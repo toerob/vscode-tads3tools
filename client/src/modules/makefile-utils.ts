@@ -1,6 +1,9 @@
 import { basename } from "path";
-import { workspace, window, Uri } from "vscode";
+import { workspace, window, Uri, CancellationError } from "vscode";
 import { selectMakefileWithDialog } from "../extension";
+import { extensionState } from "./state";
+import { diagnose } from "./diagnose";
+import { client, errorDiagnostics, preprocessAndParseDocument } from "../extension";
 
 export async function findAndSelectMakefileUri(askIfNotFound = false) {
   let choice: Uri = undefined;
@@ -44,4 +47,43 @@ export async function findAndSelectMakefileUri(askIfNotFound = false) {
     console.error(`No Makefile.t3m found, source code could not be processed.`);
   }
   return Promise.resolve(choice);
+}
+
+export async function setMakeFile() {
+  if (extensionState.isLongProcessingInAction()) {
+    window.showWarningMessage(
+      `Cannot change makefile and reparse right now, since a full project parsing is already in progress. Try again later. `,
+      { modal: true },
+    );
+    return;
+  }
+  const newMakefile = await findAndSelectMakefileUri();
+  if (newMakefile === undefined) {
+    client.info(`No makefile, cannot parse document symbols. `);
+    return;
+  }
+  extensionState.setChosenMakefileUri(newMakefile);
+
+  client.info(`Chosen makefile set to: ${basename(extensionState.getChosenMakefileUri().fsPath)}`);
+  const makefileDoc = await workspace.openTextDocument(extensionState.getChosenMakefileUri().fsPath);
+
+  try {
+    await diagnose(makefileDoc);
+  } catch (err) {
+    if (!(err instanceof CancellationError)) {
+      window.showErrorMessage(`Error while diagnosing: ${err}`);
+      client.error(`Error while diagnosing: ${err.message}`);
+    }
+    extensionState.setDiagnosing(false);
+    return;
+  }
+
+  if (errorDiagnostics.length > 0) {
+    window.showErrorMessage(`Error during compilation:\n${errorDiagnostics.map((e) => e.message).join("\n")}`);
+    return;
+  }
+
+  extensionState.setLongProcessing(true);
+  client.info(`Preprocess and parse all documents`);
+  await preprocessAndParseDocument();
 }

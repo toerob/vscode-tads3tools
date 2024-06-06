@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { ExtensionContext, Uri, Webview } from "vscode";
-import { client, getLastChosenTextEditor, resetPersistedPositions } from "../extension";
-import { extensionState } from "./state";
+import { ExtensionContext, TextDocument, TextEditor, Uri, Webview } from "vscode";
+import { client, resetPersistedPositions } from "../../extension";
+import { extensionState } from "../state";
 
 export const visualEditorResponseHandlerMap = new Map();
 
-export function setupVisualEditorResponseHandler() {
+export async function setupVisualEditorResponseHandler() {
   visualEditorResponseHandlerMap.set("refresh", onDidRefresh);
   visualEditorResponseHandlerMap.set("reset", onDidReset);
   visualEditorResponseHandlerMap.set("select", onDidSelectMapObject);
@@ -53,7 +53,7 @@ export function onDidUpdatePosition(payload, persistedObjectPositions) {
   /*
 	TODO:
 		
-		let persistedMapObjectPositions = this.storageManager.getValue('persistedMapObjectPositions');
+		let persistedMapObjectPositions = extensionState.storageManager.getValue('persistedMapObjectPositions');
 		let mapObject = persistedMapObjectPositions.find(x=>x.name===payload.name);
 		if (mapObject) {
 			mapObject.x = payload.pos[0];
@@ -159,7 +159,7 @@ function camelCaseName(name: string) {
 }
 
 export function onDidAddRoom(payload, persistedObjectPositions) {
-  const editorOfChoice = getLastChosenTextEditor();
+  const editorOfChoice: TextEditor | undefined = extensionState.lastChosenTextDocument;
   if (payload && editorOfChoice && payload.name) {
     const camelCasedName = camelCaseName(payload.name);
 
@@ -186,7 +186,7 @@ export function onDidAddRoom(payload, persistedObjectPositions) {
         persistedObjectPositions.set(camelCasedName, payload.pos);
       })
       .then(() => {
-        //this.lastChosenTextEditor = editorOfChoice;
+        //extensionState.lastChosenTextEditor = editorOfChoice;
         editorOfChoice.document
           .save()
           .then((saveResult) => {

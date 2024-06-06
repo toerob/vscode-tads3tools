@@ -101,6 +101,9 @@ export function isSymbolKindOneOf(symbolKind: SymbolKind, kinds: SymbolKind[]): 
 }
 
 export function camelCase(symbolName: any) {
+  if (symbolName === '') {
+    return symbolName;
+  }
   const first = symbolName[0].toLowerCase();
   const rest = symbolName.substring(1);
   return `${first}${rest}`;

@@ -1,6 +1,7 @@
 import { autorun, makeAutoObservable, observable } from "mobx";
-import { Progress, Uri } from "vscode";
+import { DocumentSymbol, FileSystemWatcher, Progress, TextDocument, TextEditor, Uri } from "vscode";
 import { client } from "../extension";
+import { LocalStorageService } from "./local-storage-service";
 
 export type ScriptInfo = {
   uri: Uri;
@@ -25,14 +26,49 @@ export class ExtensionStateStore {
   private _scriptFolderContent = new Map<string, ScriptInfo>();
   private _makefileKeyMapValues: any[];
   private _currentPreprocessAndParseProgress: Progress<any>;
+  private _preprocessedList: string[];
 
   private _projectRootPath: Uri;
   private _extensionCacheDirectory: string;
-  public get extensionCacheDirectory(): string {
-    return this._extensionCacheDirectory;
+
+  private _gameFileSystemWatcher: FileSystemWatcher;
+  private _lastChosenTextDocument: TextEditor | undefined;
+
+  private _preprocessDocument: TextDocument;
+  private _storageManager: LocalStorageService;
+  private _selectedObject: DocumentSymbol;
+  private _lastChosenTextEditor: TextEditor;
+
+  public get storageManager(): LocalStorageService {
+    return this._storageManager;
   }
-  public set extensionCacheDirectory(value: string) {
-    this._extensionCacheDirectory = value;
+  public set storageManager(value: LocalStorageService) {
+    this._storageManager = value;
+  }
+  public get preprocessDocument(): TextDocument {
+    return this._preprocessDocument;
+  }
+  public set preprocessDocument(value: TextDocument) {
+    this._preprocessDocument = value;
+  }
+
+  public get gameFileSystemWatcher(): FileSystemWatcher {
+    return this._gameFileSystemWatcher;
+  }
+  public set gameFileSystemWatcher(value: FileSystemWatcher) {
+    this._gameFileSystemWatcher = value;
+  }
+  public get lastChosenTextEditor(): TextEditor {
+    return this._lastChosenTextEditor;
+  }
+  public set lastChosenTextEditor(value: TextEditor) {
+    this._lastChosenTextEditor = value;
+  }
+  public get lastChosenTextDocument(): TextEditor | undefined {
+    return this._lastChosenTextDocument;
+  }
+  public set lastChosenTextDocument(value: TextEditor | undefined) {
+    this._lastChosenTextDocument = value;
   }
 
   constructor() {
@@ -101,6 +137,19 @@ export class ExtensionStateStore {
   public set scriptsFolder(value: Uri) {
     this._projectRootPath = value;
   }
+  public get selectedObject(): DocumentSymbol {
+    return this._selectedObject;
+  }
+  public set selectedObject(value: DocumentSymbol) {
+    this._selectedObject = value;
+  }
+
+  public get extensionCacheDirectory(): string {
+    return this._extensionCacheDirectory;
+  }
+  public set extensionCacheDirectory(value: string) {
+    this._extensionCacheDirectory = value;
+  }
 
   setUsingTads2(state: boolean) {
     this.isUsingTads2 = state;
@@ -136,6 +185,13 @@ export class ExtensionStateStore {
 
   setPreprocessing(state: boolean) {
     this.preprocessing = state;
+  }
+
+  public get preprocessedList(): string[] {
+    return this._preprocessedList;
+  }
+  public set preprocessedList(value: string[]) {
+    this._preprocessedList = value;
   }
 
   isPreprocessing() {

@@ -4,8 +4,8 @@ import { dirname } from "path";
 import path = require("path");
 import { Extract } from "unzipper";
 import { ExtensionContext, MessageItem, window, workspace } from "vscode";
-import { client } from "./extension";
-import { extensionState } from "./modules/state";
+import { client } from "../../extension";
+import { extensionState } from "../state";
 import { ensureDirSync } from "fs-extra";
 
 let extensionDownloadMap: Map<any, any>;

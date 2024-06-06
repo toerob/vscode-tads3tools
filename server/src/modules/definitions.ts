@@ -24,8 +24,6 @@ export async function onDefinition(
   // ------------------------------------------------------------
   // Preparations and quick checks
   // ------------------------------------------------------------
-  const methodStartTime = Date.now();
-
   const currentDoc = docs.get(textDoc.uri);
 
   if (currentDoc === undefined) return [];
@@ -63,6 +61,8 @@ export async function onDefinition(
 
   // Before checking for locals we must decide if we are within an object definition's code block range or not.
   // Otherwise we won't find inner properties of anyonmous objects contained within a code block range.
+
+
   const isWithinCodeBlock = sm.isPositionWithinCodeBlock(fsPath, pos);
 
   if (isWithinCodeBlock) {

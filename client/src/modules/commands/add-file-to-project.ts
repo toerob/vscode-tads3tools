@@ -1,5 +1,5 @@
 import { ExtensionContext, Position, Range, SnippetString, Uri, ViewColumn, window, workspace } from "vscode";
-import { extensionState } from "./state";
+import { extensionState } from "../state";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { ensureDirSync } from "fs-extra";
 import { basename, dirname } from "path";

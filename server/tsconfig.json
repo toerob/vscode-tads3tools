@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
-		"target": "es2019",
-		"lib": ["ES2019"],
+		"target": "esnext",
+		"lib": ["esnext"],
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"sourceMap": true,
@@ -10,6 +10,6 @@
 		"rootDir": "src",
 		"types": ["node", "jest"]
 	},
-	"include": ["src", "tests/symbol-manager.spec.ts"],
+	"include": ["src"],
 	"exclude": ["node_modules", ".vscode-test"]
 }
