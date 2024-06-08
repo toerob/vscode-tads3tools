@@ -1,12 +1,35 @@
 import { DocumentSymbol, Position, Range, SymbolKind } from "vscode-languageserver";
-import { flattenTreeToArray, TadsSymbolManager } from "../../../server/src/modules/symbol-manager";
+import {
+  addIterativelyDFS,
+  addRecursivelyDFS,
+  flattenTreeToArray,
+  TadsSymbolManager,
+} from "../../src/modules/symbol-manager";
 import { equal, notEqual, deepEqual } from "assert";
+import { expect, test } from "@jest/globals";
+import { symbolHierarchy1 } from "./symbols-for-test";
 
 const range = Range.create(10, 2, 14, 5);
 const symbol1 = DocumentSymbol.create("symbol1", "details here", SymbolKind.Class, range, range, []);
+let sm: TadsSymbolManager;
 
-describe("TadsSymbolManager", () => {
-  let sm: TadsSymbolManager;
+describe("TadsSymbolManager test suite", () => {
+  test("addRecursively correctness", () => {
+    let result: DocumentSymbol[] = [];
+    addRecursivelyDFS(symbolHierarchy1, result);
+    const names = result.map((x) => x.name).join(", ");
+    expect(names).toBe(
+      "A, A_1, A_1_1, A_1_2, A_1_3, A_1_3_1, A_1_3_2, A_1_3_3, A_1_3_3_1, A_1_3_3_1_1, A_1_3_3_1_1_1, A_1_3_3_1_1_2, A_1_3_3_1_1_3, A_1_3_3_1_1_3_1, A_1_3_3_1_1_3_2, A_1_3_3_1_1_3_3, B, B_1, B_1_1, B_1_2, B_1_3, B_1_3_1, B_1_3_2, B_1_3_3, B_1_3_3_1, B_1_3_3_1_1, B_1_3_3_1_1_1, B_1_3_3_1_1_2, B_1_3_3_1_1_3, B_1_3_3_1_1_3_1, B_1_3_3_1_1_3_2, B_1_3_3_1_1_3_3, C, C_1, C_1_1, C_1_2, C_1_3, C_1_3_1, C_1_3_2, C_1_3_3, C_1_3_3_1, C_1_3_3_1_1, C_1_3_3_1_1_1, C_1_3_3_1_1_2, C_1_3_3_1_1_3, C_1_3_3_1_1_3_1, C_1_3_3_1_1_3_2, C_1_3_3_1_1_3_3",
+    );
+  });
+
+  test("addIteratively correctness", () => {
+    const flattened = addIterativelyDFS(symbolHierarchy1);
+    const names = flattened.map((x) => x.name).join(", ");
+    expect(names).toBe(
+      "A, A_1, A_1_1, A_1_2, A_1_3, A_1_3_1, A_1_3_2, A_1_3_3, A_1_3_3_1, A_1_3_3_1_1, A_1_3_3_1_1_1, A_1_3_3_1_1_2, A_1_3_3_1_1_3, A_1_3_3_1_1_3_1, A_1_3_3_1_1_3_2, A_1_3_3_1_1_3_3, B, B_1, B_1_1, B_1_2, B_1_3, B_1_3_1, B_1_3_2, B_1_3_3, B_1_3_3_1, B_1_3_3_1_1, B_1_3_3_1_1_1, B_1_3_3_1_1_2, B_1_3_3_1_1_3, B_1_3_3_1_1_3_1, B_1_3_3_1_1_3_2, B_1_3_3_1_1_3_3, C, C_1, C_1_1, C_1_2, C_1_3, C_1_3_1, C_1_3_2, C_1_3_3, C_1_3_3_1, C_1_3_3_1_1, C_1_3_3_1_1_1, C_1_3_3_1_1_2, C_1_3_3_1_1_3, C_1_3_3_1_1_3_1, C_1_3_3_1_1_3_2, C_1_3_3_1_1_3_3",
+    );
+  });
 
   describe("findSymbol", () => {
     beforeEach(() => {

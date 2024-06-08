@@ -51,19 +51,14 @@ export const TADS3_KEYWORDS = [
 
 export const NEW_INSTANCE_REGEXP = /\s*new\s+([a-zA-Z][a-zA-Z0-9]*)?$/;
 export const NEW_ASSIGNMENT_REGEXP = /(.*)\s*[=]\s*new\s*(.*)\s*\(/;
-export const PROPERTY_REGEXP =
-  /([a-zA-Z][a-zA-Z0-9]*)(\s*[(].*[)])?\s*[.]\s*([a-zA-Z][a-zA-Z0-9]*)?$/;
+export const PROPERTY_REGEXP = /([a-zA-Z][a-zA-Z0-9]*)(\s*[(].*[)])?\s*[.]\s*([a-zA-Z][a-zA-Z0-9]*)?$/;
 
 export const ID = "[a-zA-Z0-9_]+";
 //export const ID_V2 = "[a-zA-Z_][a-zA-Z0-9_]*";
-const DIR =
-  "(north|south|east|west|northeast|northwest|southeast|southwest|up|down|in|out)";
+const DIR = "(north|south|east|west|northeast|northwest|southeast|southwest|up|down|in|out)";
 export const WS = "\\s*";
-export const DIRECTION_ASSIGNMENT_REGEXP = new RegExp(
-  `^${WS}${DIR}${WS}=${WS}(${ID})?`
-);
+export const DIRECTION_ASSIGNMENT_REGEXP = new RegExp(`^${WS}${DIR}${WS}=${WS}(${ID})?`);
 
 // TODO: Remove once satisfied
 //const newAssignmentRegexp2 = /[=]\s*new\s*(.*)\s*\(/;
 //const propertyRegexp = /([a-zA-Z][a-zA-Z0-9]*)[.]\s*([a-zA-Z][a-zA-Z0-9]*)?$/;
-

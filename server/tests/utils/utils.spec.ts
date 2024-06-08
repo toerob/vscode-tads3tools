@@ -1,13 +1,9 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { TextDocument } from "vscode-languageserver-textdocument";
-import {
-  extractCurrentLineFromDocument,
-  filterForStandardLibraryFiles,
-  isRangeWithin,
-} from "../../src/modules/utils";
-import { Range } from "vscode-languageserver";
-import * as assert from 'assert';
 
+import { extractCurrentLineFromDocument, filterForStandardLibraryFiles, isRangeWithin } from "../../src/modules/utils";
+import { Range } from "vscode-languageserver";
+import * as assert from "assert";
 
 describe("filterForStandardLibraryFiles", () => {
   describe("filterForStandardLibraryFiles", () => {
@@ -23,12 +19,7 @@ describe("filterForStandardLibraryFiles", () => {
         "/elsewhere/but/still/not/this/one",
       ];
 
-      const expected = [
-        "/anywhere/tads.h",
-        "/anywhere/tads3/lib/_main.t",
-        "/anywhere/adv3.h",
-        "/anywhere/advlite.h",
-      ];
+      const expected = ["/anywhere/tads.h", "/anywhere/tads3/lib/_main.t", "/anywhere/adv3.h", "/anywhere/advlite.h"];
 
       assert.deepEqual(filterForStandardLibraryFiles(libraries), expected);
     });
@@ -60,7 +51,7 @@ describe("filterForStandardLibraryFiles", () => {
       const range_1_0_20_10 = Range.create(1, 0, 20, 10);
       const range_0_0_0_0 = Range.create(0, 0, 0, 0);
       const range_1_0_1_0 = Range.create(1, 0, 1, 0);
-      const range_1_4_20_0 = Range.create(1,4,20,0);
+      const range_1_4_20_0 = Range.create(1, 4, 20, 0);
 
       assert.equal(isRangeWithin(range_0_0_0_0, range_0_0_0_0), true);
       assert.equal(isRangeWithin(range_0_0_0_0, range_1_0_1_0), false);

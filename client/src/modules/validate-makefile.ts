@@ -28,7 +28,7 @@ export async function validateMakefile(chosenMakefileUri: Uri) {
         const result = await window.showWarningMessage(
           `The tads3tools extension detected that there's either no -Fy or -Fo definition in "${basename(chosenMakefileUri.path)}". \nThis will cause all symbol/object files to be generated in the same directory as the source files instead of in a dedicated folder "obj". e.g: \n\t-Fy obj\n\t-Fo obj\n\n`,
           { modal: true },
-          { title: "Continue anyway" }
+          { title: "Continue anyway" },
         );
         return result === undefined;
       }

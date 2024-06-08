@@ -152,17 +152,11 @@ describe("Tads2 parser tests", () => {
 
     assert.equal(listener.objects.get("house"), "room,decoration");
     assert.equal(listener.properties.get(`house.sdesc`), `'the house'`);
-    assert.equal(
-      listener.properties.get(`house.ldesc`),
-      `"the description goes here..."`
-    );
+    assert.equal(listener.properties.get(`house.ldesc`), `"the description goes here..."`);
     assert.equal(listener.properties.get(`house.south`), `hill`);
     assert.equal(listener.properties.get(`house.east`), `lake`);
     assert.equal(listener.properties.get(`house.west`), `forest`);
-    assert.equal(
-      listener.methodsWithParameters.get(`house.tads2Func`),
-      "parameter1"
-    );
+    assert.equal(listener.methodsWithParameters.get(`house.tads2Func`), "parameter1");
 
     assert.equal(listener.objects.get("lawn"), "room");
     assert.equal(listener.properties.get(`lawn.sdesc`), `'A lawn'`);

@@ -11,6 +11,12 @@
     "type": "git",
     "url": "https://github.com/Microsoft/vscode-extension-samples"
   },
+  "scripts": {
+    "test": "jest --verbose",
+    "coverage": "jest --reporter=lcov --collect-coverage --verbose",
+    "coveralls": "npx coveralls < ./coverage/lcov.info",
+    "coveralls_old": "cat coverage/lcov.info | coveralls"    
+  },
   "dependencies": {
     "@types/glob": "^8.1.0",
     "@types/lru-cache": "^7.10.10",
@@ -29,14 +35,18 @@
     "wink-pos-tagger": "^2.2.2"
   },
   "devDependencies": {
+    "@types/benchmark": "^2.1.5",
     "@types/fs-extra": "^11.0.4",
     "@types/jasmine": "^5.1.4",
     "@types/jest": "^29.5.12",
+    "benchmark": "^2.1.4",
+    "coveralls": "^3.1.1",
     "install": "^0.13.0",
     "jasmine-spec-reporter": "^7.0.0",
     "jasmine-ts": "^0.4.0",
-    "npm": "^10.7.0",
     "jest": "^29.1.2",
+    "jest-junit": "^16.0.0",
+    "npm": "^10.7.0",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2"
   }

@@ -14,35 +14,23 @@ export async function parseTads2Files(filePaths: string[] | undefined = []) {
   if (filePaths.length === 1) {
     const filePath = filePaths[0];
     const startTime = Date.now();
-    connection.console.debug(
-      `Spawning worker to parse a single file: ${filePath}`
-    );
+    connection.console.debug(`Spawning worker to parse a single file: ${filePath}`);
 
     const worker = await spawn(new Worker("./tads2-parse-worker"));
     const text = preprocessedFilesCacheMap.get(filePath) ?? "";
     const jobResult = await worker(filePath, text);
 
     connection.console.debug(`Worker finished with result`);
-    const { symbols, keywords, additionalProperties, inheritanceMap } =
-      jobResult;
+    const { symbols, keywords, additionalProperties, inheritanceMap } = jobResult;
     symbolManager.symbols.set(filePath, symbols ?? []);
     symbolManager.keywords.set(filePath, keywords ?? []);
-    inheritanceMap.forEach((value: string, key: string) =>
-      symbolManager.inheritanceMap.set(key, value)
-    );
+    inheritanceMap.forEach((value: string, key: string) => symbolManager.inheritanceMap.set(key, value));
     clearCompletionCache();
     symbolManager.additionalProperties.set(filePath, additionalProperties);
     tracker++;
     const elapsedTime = Date.now() - startTime;
-    await connection.sendNotification("symbolparsing/success", [
-      filePath,
-      tracker,
-      totalFiles,
-      1,
-    ]);
-    connection.console.debug(
-      `${filePath} parsed successfully in ${elapsedTime} ms`
-    );
+    await connection.sendNotification("symbolparsing/success", [filePath, tracker, totalFiles, 1]);
+    connection.console.debug(`${filePath} parsed successfully in ${elapsedTime} ms`);
     try {
       await Thread.terminate(worker);
       connection.console.debug(`[worker unassigned]`);
@@ -50,43 +38,26 @@ export async function parseTads2Files(filePaths: string[] | undefined = []) {
       connection.console.error(`Error during thread termination: ${err}`);
     }
   } else {
-    const maxNumberOfParseWorkerThreads: number =
-      await connection.workspace.getConfiguration(
-        "tads3.maxNumberOfParseWorkerThreads"
-      );
+    const maxNumberOfParseWorkerThreads: number = await connection.workspace.getConfiguration(
+      "tads3.maxNumberOfParseWorkerThreads",
+    );
     let allFilePaths = [...preprocessedFilesCacheMap.keys()];
-    connection.console.debug(
-      `Preparing to parse a total of ${allFilePaths.length} files`
-    );
-    const poolSize =
-      allFilePaths.length >= maxNumberOfParseWorkerThreads
-        ? maxNumberOfParseWorkerThreads
-        : 1;
+    connection.console.debug(`Preparing to parse a total of ${allFilePaths.length} files`);
+    const poolSize = allFilePaths.length >= maxNumberOfParseWorkerThreads ? maxNumberOfParseWorkerThreads : 1;
     connection.console.debug(`Setting worker thread poolsize to: ${poolSize}`); // Default 6 threads
-    const workerPool = Pool(
-      () => spawn(new Worker("./tads2-parse-worker")),
-      poolSize
-    );
+    const workerPool = Pool(() => spawn(new Worker("./tads2-parse-worker")), poolSize);
     for (const filePath of allFilePaths) {
       connection.console.debug(`Queuing parsing job ${filePath}`);
       workerPool.queue(async (parseJob) => {
         const text = preprocessedFilesCacheMap.get(filePath) ?? "";
-        const { symbols, keywords, additionalProperties, inheritanceMap } =
-          await parseJob(filePath, text);
+        const { symbols, keywords, additionalProperties, inheritanceMap } = await parseJob(filePath, text);
         symbolManager.symbols.set(filePath, symbols ?? []);
         symbolManager.keywords.set(filePath, keywords ?? []);
-        inheritanceMap.forEach((value: string, key: string) =>
-          symbolManager.inheritanceMap.set(key, value)
-        );
+        inheritanceMap.forEach((value: string, key: string) => symbolManager.inheritanceMap.set(key, value));
         clearCompletionCache();
         symbolManager.additionalProperties.set(filePath, additionalProperties);
         tracker++;
-        await connection.sendNotification("symbolparsing/success", [
-          filePath,
-          tracker,
-          totalFiles,
-          poolSize,
-        ]);
+        await connection.sendNotification("symbolparsing/success", [filePath, tracker, totalFiles, poolSize]);
         connection.console.debug(`${filePath} parsed successfully`);
       });
     }
@@ -94,9 +65,7 @@ export async function parseTads2Files(filePaths: string[] | undefined = []) {
       await workerPool.completed();
       await workerPool.terminate();
     } catch (err) {
-      connection.console.error(
-        `Error happened during awaiting pool completion/termination: ` + err
-      );
+      connection.console.error(`Error happened during awaiting pool completion/termination: ` + err);
     }
 
     const elapsedTime = Date.now() - startTime;

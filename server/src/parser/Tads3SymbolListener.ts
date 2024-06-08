@@ -121,17 +121,18 @@ export class Tads3SymbolListener implements Tads3Listener {
       name = ctx?.identifierAtom()?.ID()?.text?.trim();
       if (name !== undefined) {
         this.completionItems.add(CompletionItem.create(name));
-        const start = ctx.start.line ?? 1 - 1;
-        const stop = ctx.stop?.line ?? 1 - 1;
-        //console.error(`${name} added`);
-        //this.scopedEnvironment.environment.set(name, new Location(this.currentUri, Range.create(start, 0, stop, 0)));
+        const stop = ctx.stop?.line ?? 0;
         try {
-          const range = Range.create(start, 0, stop, 0);
-          if (!this.localKeywords.has(name)) {
+          const range = Range.create(stop, 0, stop, 0);
+
+          // Note: localKeywords are used by the reference provider solely
+          if (!this.localKeywords.has(name)) { 
             this.localKeywords.set(name, [range]);
           } else {
             this.localKeywords.get(name)?.push(range);
           }
+
+          
         } catch (err) {
           console.error(`enterIdAtom ${err}`);
         }
@@ -141,13 +142,14 @@ export class Tads3SymbolListener implements Tads3Listener {
     }
   }
 
+
   enterCallWithParamsExpr(ctx: CallWithParamsExprContext) {
     const name = ctx.expr()?.text;
     if (name === undefined) {
       return;
     }
-    const start = (ctx.start.line ?? 1) - 1;
-    const stop = (ctx.stop?.line ?? 1) - 1;
+    const start = (ctx.start.line ?? 1) - 1; // TODO: handle 0 that becomes -1
+    const stop = (ctx.stop?.line ?? 1) - 1;  // ODO: handle 0 that becomes -1
     const range = Range.create(start, 0, stop, 0);
     const symbol = DocumentSymbol.create(
       name,
@@ -163,7 +165,7 @@ export class Tads3SymbolListener implements Tads3Listener {
     this.addOrChangeExpression(name, start, {
       documentSymbol: symbol,
       callChainStr: this.currentCallChain,
-      epxressionType: ExpressionType.METHOD_INVOCATION,
+      expressionType: ExpressionType.METHOD_INVOCATION,
     });
   }
 
@@ -199,7 +201,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 
       this.addOrChangeExpression(name, start, {
         documentSymbol: symbol,
-        epxressionType: ExpressionType.LOCAL_ASSIGNMENT,
+        expressionType: ExpressionType.LOCAL_ASSIGNMENT,
       });
     }
   }
@@ -272,7 +274,7 @@ export class Tads3SymbolListener implements Tads3Listener {
       const symbol = DocumentSymbol.create(name, 'parameter', SymbolKind.Variable,range,range);
       this.addOrChangeExpression(name, param.start.line , {
         documentSymbol: symbol,
-        epxressionType: ExpressionType.METHOD_PARAMETER,
+        expressionType: ExpressionType.METHOD_PARAMETER,
       });
     }*/
   }
@@ -750,7 +752,7 @@ export class Tads3SymbolListener implements Tads3Listener {
       ?.get(symbolName)
       ?.filter(
         (
-          x // Doubt this check is needed: x.epxressionType === ExpressionType.LOCAL_ASSIGNMENT &&
+          x // Doubt this check is needed: x.expressionType === ExpressionType.LOCAL_ASSIGNMENT &&
         ) => (x.documentSymbol?.range?.start?.line ?? 0) <= position.line
       ) // Filter everything grater than the current line
       ?.sort(
@@ -765,13 +767,14 @@ export class Tads3SymbolListener implements Tads3Listener {
   }
 }
 
-export function createRangeFromContext(ctx: ParserRuleContext): Range {
+export function createRangeFromContext(ctx: ParserRuleContext, name?: string): Range {
   const start = (ctx.start.line ?? 1) - 1;
   const stop = (ctx.stop?.line ?? ctx.start.line ?? 1) - 1;
   const startCharacter = ctx.start?.charPositionInLine ?? 0;
-  const stopCharacter = startCharacter + ctx.text.length - 1 ;  //(ctx.start.stopIndex -ctx.start.startIndex); // ctx.text.length - 1 // ctx.stop?.charPositionInLine ?? 0;
+  const stopCharacter = startCharacter + (name? name.length : ctx.text.length) - 1;  //(ctx.start.stopIndex -ctx.start.startIndex); // ctx.text.length - 1 // ctx.stop?.charPositionInLine ?? 0;
   return Range.create(start, startCharacter, stop, stopCharacter);
 }
+
 function createParameterSymbols(paramsContext: ParamsContext|undefined) {
   const x = [];
   let currentParam = paramsContext;
@@ -789,4 +792,3 @@ function createParameterSymbols(paramsContext: ParamsContext|undefined) {
   }
   return x;  
 }
-

@@ -14,8 +14,8 @@ import {
   ExtensionContext,
 } from "vscode";
 import { CompletionItemKind } from "vscode-languageclient";
-import { client } from "../extension";
-import { extensionState } from "./state";
+import { client } from "../../extension";
+import { extensionState } from "../state";
 
 export class SnippetCompletionItemProvider implements CompletionItemProvider {
   private snippets = [];
@@ -24,16 +24,14 @@ export class SnippetCompletionItemProvider implements CompletionItemProvider {
     reaction(
       () => extensionState.isUsingAdv3Lite,
       (usingAdv3Lite: Boolean) => {
-        client.info(
-          `Loading snippets for Tads3 ${usingAdv3Lite ? "Adv3" : "Adv3Lite"} library`
-        );
+        client.info(`Loading snippets for Tads3 ${usingAdv3Lite ? "Adv3" : "Adv3Lite"} library`);
         const liberarySnippetfileResourceFileUri = Uri.joinPath(
           this.context.extensionUri,
           "snippets",
-          usingAdv3Lite ? "snippets_adv3Lite.json" : "snippets_adv3.json"
+          usingAdv3Lite ? "snippets_adv3Lite.json" : "snippets_adv3.json",
         );
         this.populateSnippetsFromFileUri(liberarySnippetfileResourceFileUri);
-      }
+      },
     );
 
     reaction(
@@ -43,17 +41,15 @@ export class SnippetCompletionItemProvider implements CompletionItemProvider {
         const liberarySnippetfileResourceFileUri = Uri.joinPath(
           this.context.extensionUri,
           "snippets",
-          "snippets_tads2.json"
+          "snippets_tads2.json",
         );
         this.populateSnippetsFromFileUri(liberarySnippetfileResourceFileUri);
-      }
+      },
     );
   }
 
   populateSnippetsFromFileUri(snippetfileResourceFileUri: Uri) {
-    const snippetfileResourceFileContent = readFileSync(
-      snippetfileResourceFileUri.fsPath
-    ).toString();
+    const snippetfileResourceFileContent = readFileSync(snippetfileResourceFileUri.fsPath).toString();
     const parsedSnippetFile = JSON.parse(snippetfileResourceFileContent);
     for (const key in parsedSnippetFile) {
       let data = parsedSnippetFile[key];
@@ -70,7 +66,7 @@ export class SnippetCompletionItemProvider implements CompletionItemProvider {
     document: TextDocument,
     position: Position,
     token: CancellationToken,
-    context: CompletionContext
+    context: CompletionContext,
   ): ProviderResult<CompletionItem[] | CompletionList<CompletionItem>> {
     return this.snippets;
   }

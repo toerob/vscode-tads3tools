@@ -6,13 +6,10 @@ import { promisify } from "util";
 
 const awaitParsing = () => {
   return new Promise<void>((resolve) => {
-    const disposable = client.onNotification(
-      "symbolparsing/allfiles/success",
-      async ({ elapsedTime }) => {
-        disposable.dispose();
-        resolve();
-      }
-    );
+    const disposable = client.onNotification("symbolparsing/allfiles/success", async ({ elapsedTime }) => {
+      disposable.dispose();
+      resolve();
+    });
   });
 };
 

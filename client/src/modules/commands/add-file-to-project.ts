@@ -1,14 +1,5 @@
-import {
-  ExtensionContext,
-  Position,
-  Range,
-  SnippetString,
-  Uri,
-  ViewColumn,
-  window,
-  workspace,
-} from "vscode";
-import { extensionState } from "./state";
+import { ExtensionContext, Position, Range, SnippetString, Uri, ViewColumn, window, workspace } from "vscode";
+import { extensionState } from "../state";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { ensureDirSync } from "fs-extra";
 import { basename, dirname } from "path";
@@ -43,14 +34,8 @@ export async function addFileToProject(context: ExtensionContext) {
     const gamefileResourceFilename = extensionState.getUsingAdv3LiteStatus()
       ? "gameFileTemplateAdv3Lite.t"
       : "gameFileTemplateAdv3.t";
-    const gamefileResourceFileUri = Uri.joinPath(
-      context.extensionUri,
-      "resources",
-      gamefileResourceFilename
-    );
-    const gamefileResourceFileContent = readFileSync(
-      gamefileResourceFileUri.fsPath
-    ).toString();
+    const gamefileResourceFileUri = Uri.joinPath(context.extensionUri, "resources", gamefileResourceFilename);
+    const gamefileResourceFileContent = readFileSync(gamefileResourceFileUri.fsPath).toString();
     const gameFilecontent = new SnippetString(gamefileResourceFileContent);
 
     if (existsSync(newFile.fsPath)) {
@@ -64,9 +49,7 @@ export async function addFileToProject(context: ExtensionContext) {
     await workspace
       .openTextDocument(newFile.fsPath)
       .then((doc) => window.showTextDocument(doc))
-      .then((editor) =>
-        editor.insertSnippet(gameFilecontent, new Position(0, 0))
-      );
+      .then((editor) => editor.insertSnippet(gameFilecontent, new Position(0, 0)));
 
     await workspace
       .openTextDocument(makefileUri.fsPath)
@@ -75,45 +58,29 @@ export async function addFileToProject(context: ExtensionContext) {
         await editor.edit((ed) => {
           const newFileBaseName = basename(newFile.fsPath);
           const makeFileDirname = dirname(makefileUri.fsPath);
-          let newFileRelativeFromMakefile = path.relative(
-            makeFileDirname,
-            newFile.fsPath
-          );
+          let newFileRelativeFromMakefile = path.relative(makeFileDirname, newFile.fsPath);
           if (newFileRelativeFromMakefile.endsWith(".t")) {
             newFileRelativeFromMakefile = newFileRelativeFromMakefile.substring(
               0,
-              newFileRelativeFromMakefile.length - 2
+              newFileRelativeFromMakefile.length - 2,
             );
           }
 
           const makefileText = editor.document.getText();
-          const isNewFileAlreadyIncluded = makefileText.includes(
-            `-source ${newFileRelativeFromMakefile}`
-          );
+          const isNewFileAlreadyIncluded = makefileText.includes(`-source ${newFileRelativeFromMakefile}`);
           if (isNewFileAlreadyIncluded) {
-            return window.showWarningMessage(
-              `${newFile.fsPath} was already included in ${makefileUri.fsPath}`
-            );
+            return window.showWarningMessage(`${newFile.fsPath} was already included in ${makefileUri.fsPath}`);
           }
           const idx = makefileText.lastIndexOf("-source");
           const lastSourceRowPosition = editor.document.positionAt(idx);
-          const lineBelow = lastSourceRowPosition
-            .translate(1)
-            .with({ character: 0 });
+          const lineBelow = lastSourceRowPosition.translate(1).with({ character: 0 });
           ed.insert(lineBelow, `-source ${newFileRelativeFromMakefile}\n`);
-          const includedFileRange = new Range(
-            lineBelow.line,
-            0,
-            lineBelow.line,
-            0
-          );
+          const includedFileRange = new Range(lineBelow.line, 0, lineBelow.line, 0);
           editor.revealRange(includedFileRange);
           return editor;
         });
         await editor.document.save();
-        await workspace
-          .openTextDocument(newFile.fsPath)
-          .then((doc) => window.showTextDocument(doc, ViewColumn.Active));
+        await workspace.openTextDocument(newFile.fsPath).then((doc) => window.showTextDocument(doc, ViewColumn.Active));
       });
   }
 }

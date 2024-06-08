@@ -1,11 +1,7 @@
 import { workspace, window, ViewColumn, Position } from "vscode";
-import { client } from "../extension";
+import { client } from "../../extension";
 
-async function connectRoomViaDirection(
-  room: any,
-  validDirection: any,
-  nextRoom: any
-) {
+async function connectRoomViaDirection(room: any, validDirection: any, nextRoom: any) {
   await workspace.openTextDocument(room.filePath).then((doc) =>
     window.showTextDocument(doc, ViewColumn.One).then((editor) => {
       editor.edit((editor) => {
@@ -14,7 +10,7 @@ async function connectRoomViaDirection(
         editor.insert(pos, text);
       });
       return editor;
-    })
+    }),
   );
 }
 
@@ -22,7 +18,7 @@ export async function connectRoomsWithProperties(
   fromRoom: any,
   toRoom: any,
   validDirection1: any,
-  validDirection2: any
+  validDirection2: any,
 ) {
   if (fromRoom.symbol.range.start.line > toRoom.symbol.range.start.line) {
     // Must begin with the room furthest down in the document,

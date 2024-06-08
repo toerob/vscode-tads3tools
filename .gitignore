@@ -6,3 +6,4 @@ client/server
 gen
 client/testFixture/obj
 server/coverage
+resources/obj/
