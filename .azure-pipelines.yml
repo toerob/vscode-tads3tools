@@ -1,56 +1,60 @@
 trigger:
   branches:
     include:
-    - main
+      - main
   tags:
     include:
-    - v*
-    - refs/tags/v*
+      - v*
+      - refs/tags/v*
 
 strategy:
   matrix:
     linux:
-      imageName: 'ubuntu-latest'
-    mac:
-      imageName: 'macos-latest'
-    windows:
-      imageName: 'windows-latest'
+      imageName: "ubuntu-latest"
+    # mac:
+    #   imageName: 'macos-latest'
+    # windows:
+    #   imageName: 'windows-latest'
 
 pool:
   vmImage: $(imageName)
 
+variables:
+  COVERALLS_REPO_TOKEN: $(CoverallsToken)
+
 steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: "^18.18.0"
+    displayName: "Install Node.js"
 
-- task: NodeTool@0
-  inputs:
-    versionSpec: '16.6'
-  displayName: 'Install Node.js'
+  - bash: |
+      /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+      echo ">>> Started xvfb"
+    displayName: Start xvfb
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
-- bash: |
-    /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-    echo ">>> Started xvfb"
-  displayName: Start xvfb
-  condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+  - bash: |
+      echo ">>> Compile vscode-test"
+      yarn && yarn compile
+      echo ">>> Compiled vscode-test"
 
-- bash: |
-    echo ">>> Compile vscode-test"
-    yarn && yarn compile
-    echo ">>> Compiled vscode-test"
+      echo ">>> Run unit tests test"
+      yarn && yarn compile && yarn coverage
+      echo ">>> Unit tests finished"
 
-    echo ">>> Run unit tests test"
-    yarn && yarn compile && yarn test
-    echo ">>> Unit tests finished"
+      echo ">>> Publish coverage to coveralls"
+      cd server && npx coveralls < ./coverage/lcov.info
 
-    echo ">>> TODO: Run integration test"
+    displayName: Run Tests
+    env:
+      COVERALLS_REPO_TOKEN: $(CoverallsToken)
+      DISPLAY: ":99.0"
 
-  displayName: Run Tests
-  env:
-    DISPLAY: ':99.0'
-
-- bash: |
-    echo ">>> Publish"
-    yarn deploy
-  displayName: Publish
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), eq(variables['Agent.OS'], 'Linux'))
-  env:
-    VSCE_PAT: $(BUILDSECRET)
+  - bash: |
+      echo ">>> Publish"
+      yarn deploy
+    displayName: Publish
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), eq(variables['Agent.OS'], 'Linux'))
+    env:
+      VSCE_PAT: $(BUILDSECRET)

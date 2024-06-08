@@ -1,6 +1,8 @@
 
 # vscode-tads3tools
 
+[![Coverage Status](https://coveralls.io/repos/github/toerob/vscode-tads3tools/badge.svg?branch=main)](https://coveralls.io/github/toerob/vscode-tads3tools?branch=main)
+
 A language server/client for the Tads3/Tads2 programming language and tailored made for Visual Studio Code. 
 
 Prioritized to work on **linux** and **mac** platform but also supported on **windows**.
