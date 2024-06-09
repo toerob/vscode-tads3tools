@@ -1,5 +1,5 @@
 import { setupMockedEnvironment, setupTextDocuments } from "./test-utilities";
-import { jest, expect } from "@jest/globals";
+import { expect } from "@jest/globals";
 
 setupMockedEnvironment();
 

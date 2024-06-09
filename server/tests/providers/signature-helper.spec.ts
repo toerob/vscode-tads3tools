@@ -2,10 +2,8 @@ import { setupMockedEnvironment, setupTextDocuments } from "./test-utilities";
 
 setupMockedEnvironment();
 
-import { expect } from "@jest/globals";
-import { Range, DocumentSymbol, SymbolKind, Location, Position } from "vscode-languageserver";
+import { Range, DocumentSymbol, SymbolKind, Position } from "vscode-languageserver";
 import { TadsSymbolManager } from "../../src/modules/symbol-manager";
-import { onDefinition } from "../../src/modules/definitions";
 import { onSignatureHelp } from "../../src/modules/signature-helper";
 
 describe.skip("Definition Provider Test Suite", () => {

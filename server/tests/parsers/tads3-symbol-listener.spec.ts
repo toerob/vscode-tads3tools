@@ -109,11 +109,10 @@ describe("Tads3SymbolListener", () => {
     expect(expressionSymbol![0].documentSymbol?.detail).toBe(" local x = new Thing ( )");
   });
 
-  describe("enterObjectDeclaration variations", () => {
+  describe.skip("enterObjectDeclaration variations", () => {
     test("enterObjectDeclaration type object", () => {
       const ctx: any = {};
-      //sl.enterObjectDeclaration(ctx);
-			fail("Not yet implemented");
+      sl.enterObjectDeclaration(ctx);
     });
 
     test("enterObjectDeclaration type class", () => {

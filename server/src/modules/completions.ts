@@ -20,7 +20,7 @@ import { URI } from "vscode-uri";
 import { isUsingAdv3Lite } from "../parse-workers-manager";
 import { retrieveDocumentationForKeyword } from "./documentation";
 import { serverState } from "../state";
-import { glob } from "glob";
+import { glob } from "fast-glob";
 import { getDefineMacrosMap } from "../parser/preprocessor";
 
 import {
@@ -356,8 +356,8 @@ function tads3MakefileSuggestions(): CompletionItem[] | CompletionList {
     .flatMap((x) =>
       glob.sync("**/*.{t,h}", {
         cwd: x.fsPath,
-        nodir: true,
-        ignore: "*.{t3s,t3o}",
+        onlyFiles: true,
+        ignore: ["*.{t3s,t3o}"],
       }),
     )
     .map((x) => {
