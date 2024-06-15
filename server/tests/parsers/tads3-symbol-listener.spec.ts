@@ -2,10 +2,15 @@ import { Tads3SymbolListener } from "../../src/parser/Tads3SymbolListener";
 import { DocumentSymbol, Position, Range } from "vscode-languageserver";
 import { describe, expect, test, beforeEach, jest } from "@jest/globals";
 import { DocumentSymbolWithScope, ExpressionType } from "../../src/modules/types";
-import { AssignmentStatementContext, Tads3Parser } from "../../src/parser/Tads3Parser";
+import {
+  AssignmentStatementContext,
+  ObjectDeclarationContext,
+  Tads3Parser,
+  TemplateDeclarationContext,
+} from "../../src/parser/Tads3Parser";
 import { TerminalNode } from "antlr4ts/tree/TerminalNode";
 import { Token } from "antlr4ts";
-import { fail } from 'assert';
+import { fail } from "assert";
 
 describe("Tads3SymbolListener", () => {
   let sl: Tads3SymbolListener;
@@ -109,30 +114,172 @@ describe("Tads3SymbolListener", () => {
     expect(expressionSymbol![0].documentSymbol?.detail).toBe(" local x = new Thing ( )");
   });
 
-  describe.skip("enterObjectDeclaration variations", () => {
+  describe("enterObjectDeclaration variations", () => {
     test("enterObjectDeclaration type object", () => {
-      const ctx: any = {};
+      // Arrange
+      let ctx: any = new ObjectDeclarationContext(undefined, 0);
+      ctx.identifierAtom = () => {
+        return {
+          text: "namedObjectId",
+        };
+      };
+      ctx._start = { line: 1, character: 0 };
+      ctx._stop = { line: 1, charPositionInLine: 5 };
+      ctx._level = [];
+      ctx.superTypes = () => {
+        return {
+          payload: {
+            text: "superclass",
+          },
+        };
+      };
+      // Act
       sl.enterObjectDeclaration(ctx);
+
+      // Assert
+      const symbol = sl.symbols[0];
+      expect(symbol).not.toBeUndefined();
+      expect(sl.lastObjectLevelMap.get(0)).toBe(symbol);
+      expect(symbol).toStrictEqual({
+        detail: "superclass",
+        kind: 19,
+        name: "namedObjectId",
+        range: Range.create(0, 0, 0, 0),
+        selectionRange: Range.create(0, 0, 0, 0),
+        children: [],
+      });
     });
 
-    test("enterObjectDeclaration type class", () => {
+    test("enterObjectDeclaration type object on second level (with parent node)", () => {
+      // Arrange
+      // - Create a parent object
+      let parentCtx: any = new ObjectDeclarationContext(undefined, 0);
+      parentCtx.identifierAtom = () => {
+        return {
+          text: "parentObjectId",
+        };
+      };
+      parentCtx._start = { line: 1, character: 0 };
+      parentCtx._stop = { line: 8, charPositionInLine: 0 };
+      parentCtx._level = [];
+      parentCtx.superTypes = () => {
+        return {
+          payload: {
+            text: "object",
+          },
+        };
+      };
+      sl.enterObjectDeclaration(parentCtx);
+
+      // - Create the the second level object
+      let ctx: any = new ObjectDeclarationContext(undefined, 0);
+      ctx.identifierAtom = () => {
+        return {
+          text: "namedObjectId",
+        };
+      };
+      ctx._start = { line: 10, character: 0 };
+      ctx._stop = { line: 20, charPositionInLine: 0 };
+      ctx._level = [createMockedToken("+", Tads3Parser.PLUS)];
+      ctx.superTypes = () => {
+        return {
+          payload: {
+            text: "superclass",
+          },
+        };
+      };
+      // Act
+      sl.enterObjectDeclaration(ctx);
+
+      // Assert
+      expect(sl.symbols).toHaveLength(1);
+      const parentSymbol = sl.symbols[0];
+
+      expect(parentSymbol.children).toHaveLength(1);
+      const symbol = parentSymbol.children![0];
+      expect(symbol).not.toBeUndefined();
+
+      expect(sl.lastObjectLevelMap.get(0)).toBe(parentSymbol);
+      expect(sl.lastObjectLevelMap.get(1)).toBe(symbol);
+
+      expect(sl.additionalProperties.get(symbol)!.parent).toBe(parentSymbol);
+
+      expect(parentSymbol).toStrictEqual({
+        detail: "object",
+        kind: 19,
+        name: "parentObjectId",
+        range: Range.create(0, 0, 7, 0),
+        selectionRange: Range.create(0, 0, 7, 0),
+        children: [
+          {
+            detail: "superclass",
+            kind: 19,
+            name: "namedObjectId",
+            range: Range.create(9, 0, 19, 0),
+            selectionRange: Range.create(9, 0, 19, 0),
+            children: [],
+          },
+        ],
+      });
+    });
+
+    test.skip("enterObjectDeclaration type class", () => {
       const ctx: any = {};
       //sl.enterObjectDeclaration(ctx);
-			fail("Not yet implemented");
+      fail("Not yet implemented");
     });
 
-    test("enterObjectDeclaration curly bracket style", () => {
+    test.skip("enterObjectDeclaration curly bracket style", () => {
       const ctx: any = {};
       //sl.enterObjectDeclaration(ctx);
-			fail("Not yet implemented");
+      fail("Not yet implemented");
     });
 
-    test("enterObjectDeclaration level 1", () => {
+    test.skip("enterObjectDeclaration level 1", () => {
       const ctx: any = {};
       //sl.enterObjectDeclaration(ctx);
-			fail("Not yet implemented");
+      fail("Not yet implemented");
     });
+  });
 
+  describe("TemplateDeclaration", () => {
+    test("enterTemplateDeclaration", () => {
+      // Arrange
+      const name = "Thing";
+      const templateText = `Thing template 'vocab' @location? "desc"?;`
+      // - Create the template
+      let ctx: any = new TemplateDeclarationContext(undefined, 0);
+      ctx._className = {
+        ID: () => {
+          return {
+            text: name,
+          };
+        },
+      };
+      ctx._start = {
+        inputStream: {
+          getText: (interval: any) => {
+            return templateText;
+          },
+        },
+        startIndex: 0,
+        line: 10,
+        character: 0,
+      };
+      ctx._stop = { stopIndex: name.length, line: 1, charPositionInLine: 0 };
+
+      // Act
+      sl.enterTemplateDeclaration(ctx);
+
+      // Assert
+      expect(sl.symbols[0]).toStrictEqual({
+        name: name,
+        kind: 26,
+        detail: templateText,
+        range: Range.create(9, 0, 0, 0),
+        selectionRange: Range.create(9, 0, 0, 0),
+      });
+    });
   });
 });
 

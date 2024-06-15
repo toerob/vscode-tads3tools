@@ -693,7 +693,7 @@ export class Tads3SymbolListener implements Tads3Listener {
       let detail;
       const a = ctx.start.startIndex;
       const b = ctx.stop?.stopIndex;
-      if (a && b) {
+      if (a !== undefined && b !== undefined) {
         const interval = new Interval(a, b);
         detail = ctx.start.inputStream?.getText(interval) ?? "template";
       }
