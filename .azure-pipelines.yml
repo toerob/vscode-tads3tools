@@ -44,7 +44,7 @@ steps:
       echo ">>> Unit tests finished"
 
       echo ">>> Publish coverage to coveralls"
-      cd server && npx coveralls < ./coverage/lcov.info
+      npx coveralls < ./coverage/lcov.info
 
     displayName: Run Tests
     env:
