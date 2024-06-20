@@ -14,8 +14,7 @@
   "scripts": {
     "start": "node out/server.js --node-ipc",
     "test": "jest --verbose",
-    "coverage": "jest --reporter=lcov --collect-coverage --verbose",
-    "coveralls": "npx coveralls < ./coverage/lcov.info",
+    "coverage": "jest  --reporter=lcov --collect-coverage && cp coverage/lcov.info ../coverage/server-lcov.info",
     "build": "pkg . --out-path ./bin"
   },
   "bin": "./out/server.js",

@@ -20,7 +20,7 @@
     "multi-root ready"
   ],
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.82.0"
   },
   "main": "./client/out/extension",
   "activationEvents": [
@@ -380,6 +380,25 @@
       }
     }
   },
+  "nyc": {
+    "all": true,
+    "include": [
+      "client/src/**/*.js",
+      "server/src/**/*.js"
+    ],
+    "reporter": [
+      "lcov",
+      "text"
+    ],
+    "extension": [
+      ".js",
+      ".jsx"
+    ],
+    "report-dir": "./coverage",
+    "temp-dir": "./coverage/.nyc_output",
+    "cache": false,
+    "check-coverage": true
+  },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "antlr4ts": "npm run antlr4ts_t2;npm run antlr4ts_t3",
@@ -387,18 +406,32 @@
     "antlr4ts_t3": "antlr4ts -visitor server/src/parser/Tads3.g4",
     "build": "vsce package --no-yarn",
     "compile": "tsc -b",
+    "test-compile": "tsc -p ./",
     "watch": "tsc -b -w",
-    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+
+    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",    
+
+    "prefix-server-fspath": "(cd coverage; sed 's/SF:/SF:server\\//g' server-lcov.info > server-lcov2.info  )",
+    "prefix-client-fspath": "(cd coverage; sed 's/SF:/SF:client\\//g' client-lcov.info > client-lcov2.info  )",
+    "merge-coverage": "npm run prefix-client-fspath && npm run prefix-server-fspath && lcov-result-merger 'coverage/*2.info' './coverage/lcov.info' ",
+
+    "coverage:server": "cd server && npm run coverage",
+    "coverage:client": "cd client && npm run coverage",
+    "prepare-coverage-folder": "if [ -d coverage ]; then rm -r coverage; fi && mkdir coverage",
+    "coverage":  "npm run prepare-coverage-folder && npm run coverage:client && npm run coverage:server && npm run merge-coverage",
+
+    "test:client": "cd client && npm test",
+    "test:server": "cd server && npm test",
+    "test": "npm run test:client && npm run test:server",
+    "coveralls": "npx coveralls < ./coverage/lcov.info",
+
     "e2e-test": "npm run compile && sh ./scripts/e2e.sh",
-    "test": "cd server; jest --verbose",
-    "coverage": "cd server; jest --reporter=lcov --collect-coverage --verbose",
-    "coveralls": "cd server; npm run coveralls",
     "prettier": "npx prettier '**/*.ts' --write",
     "rebuild": "rm package-lock.json;rm client/package-lock.json;rm server/package-lock.json;rm -r node_modules;rm -r client/node_modules;rm -r server/node_modules;npm install",
     "esbuild-base": "esbuild ./client/src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
     "esbuild": "npm run esbuild-base -- --sourcemap",
     "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
-    "test-compile": "tsc -p ./"
+    "deploy": "echo 'Deploy script not added yet'"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
@@ -409,15 +442,16 @@
     "jest": "^29.7.0",
     "jest-junit": "^16.0.0",
     "jest-mock-extended": "^3.0.7",
+    "lcov-result-merger": "^5.0.1",
     "mocha": "^10.4.0",
     "prettier": "^3.2.5",
+    "ts-jest": "^29.1.5",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "@types/unzipper": "^0.10.9",
     "@types/vscode": "^1.89.0",
     "npm": "^10.7.0",
-    "ts-jest": "^29.1.2",
     "unzipper": "^0.11.4",
     "vsce": "^2.15.0",
     "yarn": "^1.22.22"

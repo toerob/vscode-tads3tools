@@ -18,7 +18,7 @@ import { closeAllTerminalsNamed, startGameWithInterpreter } from "../extension";
 
 import path = require("path");
 import { unlinkSync } from "fs";
-import { sleep } from "../test/helper";
+import { sleep } from "../e2e-test/helper";
 import { ensureDirSync } from "fs-extra";
 
 const lineScriptRegExp = new RegExp(/[<]line[>](.*)/);

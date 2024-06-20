@@ -1,9 +1,5 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable @typescript-eslint/no-empty-function */
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
 import {
   createConnection,
   TextDocuments,

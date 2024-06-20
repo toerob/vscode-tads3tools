@@ -6,4 +6,14 @@ client/server
 gen
 client/testFixture/obj
 server/coverage
+client/coverage
+coverage
 resources/obj/
+server/src/parser/.idea/
+
+.DS_Store
+server/.DS_Store
+server/bin
+client/.DS_Store
+**/*.iml
+server/src/parser/.idea

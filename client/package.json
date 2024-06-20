@@ -10,7 +10,13 @@
     "url": "https://github.com/Microsoft/vscode-extension-samples"
   },
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.82.0"
+  },
+  "scripts": {
+    "test": "jest --verbose",
+    "coverage_old": "nyc jest --reporter=lcov --collect-coverage --verbose",
+    "coverage_C8": "npx c8 --nycrc-path=../.nycrc jest",
+    "coverage": "jest  --reporter=lcov --collect-coverage && cp coverage/lcov.info ../coverage/client-lcov.info"
   },
   "dependencies": {
     "@types/unzipper": "^0.10.9",
