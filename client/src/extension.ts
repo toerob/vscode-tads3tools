@@ -53,7 +53,6 @@ import {
   ReplayScriptTreeDataProvider,
 } from "./modules/replay-script";
 import { downloadAndInstallExtension as dlInstallExtension } from "./modules/commands/ifarchive-extensions";
-import { Tads3CustomTextEditorProvider } from "./modules/custom-editor";
 import { initiallyParseTadsProject } from "./modules/parse-tads-project";
 import { insertLocalAssignment } from "./modules/snippets/snippet-insert-local-assignment";
 import { diagnose } from "./modules/diagnose";
