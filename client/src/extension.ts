@@ -59,7 +59,7 @@ import { diagnose } from "./modules/diagnose";
 import { setMakeFile } from "./modules/makefile-utils";
 import { offsetSymbols } from "./modules/offset-symbols";
 import { setupClientNotifications } from "./modules/client-notifications";
-import { diagnoseAndCompile } from './modules/diagnoseAndCompile';
+import { diagnoseAndCompile } from "./modules/diagnoseAndCompile";
 
 //////////
 // Globals
@@ -83,7 +83,6 @@ export let errorDiagnostics = [];
 export let tads3VisualEditorPanel: WebviewPanel | undefined = undefined;
 export let client: LanguageClient;
 
-
 ///////////////////////////
 // Extension starting point
 ///////////////////////////
@@ -105,7 +104,7 @@ export async function activate(ctx: ExtensionContext) {
   registerExtensionCommands(ctx);
   registerVscodeSpecificProviders(ctx);
 
-  await registerWorkspaceAndWindowHooks(ctx);
+  await registerWorkspaceAndWindowHooks(ctx, client);
 
   setupVisualEditorResponseHandler();
   setupClientNotifications(client);
@@ -125,7 +124,6 @@ export function deactivate(): Thenable<void> | undefined {
   client.info(`Tads3 Language Client - stopping`);
   return client.stop();
 }
-
 
 /**
  * Ceremony to set up the connection with the server
@@ -597,7 +595,7 @@ function registerExtensionCommands(ctx: ExtensionContext) {
   );
   */
 }
-async function registerWorkspaceAndWindowHooks(ctx: ExtensionContext) {
+async function registerWorkspaceAndWindowHooks(ctx: ExtensionContext, client: LanguageClient) {
   ctx.subscriptions.push(
     workspace.onDidChangeConfiguration(async (config) => {
       if (config.affectsConfiguration("tads3.compiler.path")) {
@@ -613,16 +611,17 @@ async function registerWorkspaceAndWindowHooks(ctx: ExtensionContext) {
   );
 
   ctx.subscriptions.push(workspace.onDidSaveTextDocument(async (doc: TextDocument) => onDidSaveTextDocument(doc)));
-  ctx.subscriptions.push(workspace.onDidChangeTextDocument(offsetSymbols));
+  ctx.subscriptions.push(workspace.onDidChangeTextDocument((evt) => offsetSymbols(evt, client)));
 
-  ctx.subscriptions.push(window.onDidChangeTextEditorSelection((evt:TextEditorSelectionChangeEvent) => {
-    extensionState.lastChosenTextEditor = evt.textEditor;
-  }));
+  ctx.subscriptions.push(
+    window.onDidChangeTextEditorSelection((evt: TextEditorSelectionChangeEvent) => {
+      extensionState.lastChosenTextEditor = evt.textEditor;
+    }),
+  );
 
   ctx.subscriptions.push(
     window.onDidChangeActiveTextEditor((event: any) => {
       if (event.document !== undefined) {
-        
         extensionState.lastChosenTextDocument = event.document;
         if (lastChosenTextDocument) {
           client.info(`Last chosen editor changed to: ${lastChosenTextDocument.uri}`);

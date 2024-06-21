@@ -1,0 +1,20 @@
+
+## Makefile for an adv3 standard library game template
+
+-D LANGUAGE=en_us
+-D MESSAGESTYLE=neu
+-Fy obj
+-Fo obj
+-FI /usr/local/share/frobtads/tads3/include
+-FL /usr/local/share/frobtads/tads3/lib
+-we
+-v
+-d
+
+##sources
+-lib system
+-lib adv3/adv3
+-source main.t
+
+-res
+GameInfo.txt

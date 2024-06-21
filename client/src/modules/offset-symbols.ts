@@ -1,7 +1,7 @@
 import { TextDocumentChangeEvent } from "vscode";
-import { client } from '../extension';
+import { LanguageClient } from "vscode-languageclient/node";
 
-export async function offsetSymbols(event: TextDocumentChangeEvent) {
+export async function offsetSymbols(event: TextDocumentChangeEvent, client: LanguageClient) {
   // Take care of offsetting symbols if a change contains line breaks
   // Start from the bottom going upwards and applying offsets to the already parsed symbols
   for (const change of event.contentChanges) {
