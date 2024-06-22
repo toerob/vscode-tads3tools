@@ -10,9 +10,7 @@ export async function offsetSymbols(event: TextDocumentChangeEvent, client: Lang
       offset = change.text.match(/\r?\n/g)?.length ?? 0;
     }
     if (offset != 0) {
-      // Note: Keeping this for debugging purposes:
-      // const msg =`Apply offset of ${offset} before/after line: ${change.range.start.line + 1}`;
-      // window.showInformationMessage(msg);
+      // window.showInformationMessage(`Apply offset of ${offset} before/after line: ${change.range.start.line + 1}`);
       await client.sendRequest("request/offsetSymbols", {
         filePath: event.document.uri.fsPath,
         line: change.range.start.line,

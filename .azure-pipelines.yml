@@ -35,12 +35,12 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   - bash: |
-      echo ">>> Compile vscode-test"
-      yarn && yarn compile
-      echo ">>> Compiled vscode-test"
+      # echo ">>> Compile vscode-test"
+      yarn --ignore-engines && yarn compile 
+      # echo ">>> Compiled vscode-test"
 
       echo ">>> Run unit tests test"
-      yarn && yarn compile && yarn coverage
+      yarn coverage
       echo ">>> Unit tests finished"
 
       echo ">>> Publish coverage to coveralls"

@@ -1,14 +1,5 @@
 import { existsSync } from "fs";
-import {
-  TextDocument,
-  Diagnostic,
-  DiagnosticSeverity,
-  Position,
-  Range,
-  DiagnosticCollection,
-  Uri,
-  workspace,
-} from "vscode";
+import { TextDocument, Diagnostic, DiagnosticSeverity, Position, Range, DiagnosticCollection, Uri } from "vscode";
 import { extensionState } from "./state";
 
 const errorOrWarningRegExp = /((.*?)[(]([0-9]+)[)]:\s*)?([Ee]rror|[Ww]arning):\s*(.*)/;

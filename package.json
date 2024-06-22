@@ -405,7 +405,7 @@
     "antlr4ts_t2": "antlr4ts -visitor server/src/parser/Tads2.g4",
     "antlr4ts_t3": "antlr4ts -visitor server/src/parser/Tads3.g4",
     "build": "vsce package --no-yarn",
-    "compile": "tsc -b",
+    "compile": "tsc -b ",
     "test-compile": "tsc -p ./",
     "watch": "tsc -b -w",
 

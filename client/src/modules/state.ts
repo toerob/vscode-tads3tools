@@ -205,7 +205,7 @@ export class ExtensionStateStore {
   getUsingAdv3LiteStatus() {
     return this.isUsingAdv3Lite;
   }
-
+  
   getChosenMakefileUri(): Uri | undefined {
     return this.chosenMakefileUri;
   }

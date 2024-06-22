@@ -14,12 +14,12 @@ import {
   RelativePattern,
 } from "vscode";
 import { extensionState, ScriptInfo } from "./state";
-import { closeAllTerminalsNamed, startGameWithInterpreter } from "../extension";
 
 import path = require("path");
 import { unlinkSync } from "fs";
 import { sleep } from "../e2e-test/helper";
 import { ensureDirSync } from "fs-extra";
+import { closeAllTerminalsNamed, startGameWithInterpreter } from './game-monitor';
 
 const lineScriptRegExp = new RegExp(/[<]line[>](.*)/);
 const autoScriptFileRegExp = new RegExp(/(Auto) ([0-9]+)(.cmd)$/);

@@ -8,7 +8,8 @@
 		"strict": true,
 		"outDir": "out",
 		"rootDir": "src",
-		"types": ["node", "jest"]
+		"types": ["node", "jest"],
+		"skipLibCheck": true
 	},
 	"include": ["src"],
 	"exclude": ["node_modules", ".vscode-test"]

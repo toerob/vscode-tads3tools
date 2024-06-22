@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { expect, jest } from "@jest/globals";
+import { expect, jest, describe } from "@jest/globals";
 import { offsetSymbols } from "../modules/offset-symbols";
 import { TextDocumentChangeEvent } from "vscode";
 
