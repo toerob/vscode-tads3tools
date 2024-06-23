@@ -1,7 +1,8 @@
+# vscode-tads3tools
+
+<a href="https://www.buymeacoffee.com/tomaserikoa" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 [![Coverage Status](https://coveralls.io/repos/github/toerob/vscode-tads3tools/badge.svg?branch=main)](https://coveralls.io/github/toerob/vscode-tads3tools?branch=main)
-
-# vscode-tads3tools
 
 A language server/client for the Tads3/Tads2 programming language and tailored made for Visual Studio Code. 
 
