@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { ExtensionContext, TextDocument, TextEditor, Uri, Webview } from "vscode";
-import { client, resetPersistedPositions } from "../../extension";
+import { ExtensionContext, TextEditor, Uri, Webview, window, ViewColumn, WebviewOptions } from "vscode";
 import { extensionState } from "../state";
+import { LanguageClient } from "vscode-languageclient/node";
+import {
+  client,
+  resetPersistedPositions,
+  getVisualEditor,
+  setVisualEditor,
+  persistedObjectPositions,
+} from "../../extension";
 
 export const visualEditorResponseHandlerMap = new Map();
 
@@ -259,4 +266,68 @@ export function getHtmlForWebview(context: ExtensionContext, webview: Webview, e
 			</body>
 		</html>`;
   return html;
+}
+
+/**
+ * Visual editor webview for the project. Draws a map or npc details
+ * @param context
+ * @returns
+ */
+export async function openInVisualEditor(context: ExtensionContext, client: LanguageClient) {
+  let tads3VisualEditorPanel = getVisualEditor();
+
+  if (tads3VisualEditorPanel) {
+    tads3VisualEditorPanel.reveal();
+    await client.sendNotification("request/mapsymbols");
+    return;
+  }
+
+  tads3VisualEditorPanel = window.createWebviewPanel("tads3VisualEditor", "Tads3 visual editor", {
+    viewColumn: ViewColumn.Beside,
+    preserveFocus: true,
+  });
+  setVisualEditor(tads3VisualEditorPanel);
+
+  const options: WebviewOptions = {
+    enableScripts: true,
+    //localResourceRoots: [Uri.joinPath(context.extensionUri, 'media')],
+    localResourceRoots: [
+      Uri.joinPath(context.extensionUri, "media"),
+      Uri.joinPath(context.extensionUri, "client", "node_modules", "litegraph.js/build"),
+      Uri.joinPath(context.extensionUri, "client", "node_modules", "litegraph.js/css"),
+    ],
+  };
+
+  tads3VisualEditorPanel.webview.options = options;
+  tads3VisualEditorPanel.webview.html = getHtmlForWebview(
+    context,
+    tads3VisualEditorPanel.webview,
+    context.extensionUri,
+  );
+  tads3VisualEditorPanel.onDidDispose(
+    () => {
+      tads3VisualEditorPanel = undefined;
+    },
+    null,
+    context.subscriptions,
+  );
+
+  tads3VisualEditorPanel.onDidChangeViewState(async (e) => {
+    if (e.webviewPanel.active) {
+      client.info(`Refresh map view`);
+      await client.sendNotification("request/mapsymbols");
+    }
+  });
+
+  client.info(`Opening up the webview and ask server for map symbols`);
+  await client.sendNotification("request/mapsymbols");
+
+  tads3VisualEditorPanel.webview.onDidReceiveMessage((event) => {
+    const routine = visualEditorResponseHandlerMap.get(event.command);
+    if (!routine) {
+      console.error(`No handler installed for: ${event.command}`);
+      return;
+    }
+    routine(event.payload, persistedObjectPositions);
+  });
 }

@@ -156,7 +156,7 @@ export async function onCodeAction(
     kind: CodeActionKind.RefactorExtract,
     command: {
       title: "Insert local assignment snippet",
-      command: "extension.insertLocalAssignmentSnippet",
+      command: "tads3.insertLocalAssignmentSnippet",
       arguments: [
         params.textDocument.uri,
         `local \${1:${variableName}} = ${maybeNewKeyword}${instanceName}${maybeParenthesis}${maybeSemicolon}$0`,
@@ -177,7 +177,7 @@ function createArrayAssignmentAction(currentLine: string, uri: string, cursorPos
     kind: CodeActionKind.RefactorExtract,
     command: {
       title: "Insert local assignment snippet",
-      command: "extension.insertLocalAssignmentSnippet",
+      command: "tads3.insertLocalAssignmentSnippet",
       arguments: [uri, `local \${1:x} = [];\$0`, cursorPosition.line, startPosition, currentLine.length],
     },
   };
@@ -211,7 +211,7 @@ function createSumAction(
     kind: CodeActionKind.RefactorExtract,
     command: {
       title: "Insert local assignment snippet",
-      command: "extension.insertLocalAssignmentSnippet",
+      command: "tads3.insertLocalAssignmentSnippet",
       arguments: [uri, newText, cursorPosition.line, startPosition, currentLine.length],
     },
   };

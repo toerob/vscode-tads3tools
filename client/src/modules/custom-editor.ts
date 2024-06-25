@@ -1,16 +1,26 @@
-import * as vscode from "vscode";
+import {
+  CancellationToken,
+  CustomTextEditorProvider,
+  ExtensionContext,
+  TextDocument,
+  Webview,
+  WebviewPanel,
+  commands,
+  window,
+  Disposable,
+} from "vscode";
 
-export class Tads3CustomTextEditorProvider implements vscode.CustomTextEditorProvider {
-  public static register(context: vscode.ExtensionContext): vscode.Disposable {
+export class Tads3CustomTextEditorProvider implements CustomTextEditorProvider {
+  public static register(context: ExtensionContext): Disposable {
     const provider = new Tads3CustomTextEditorProvider();
-    const providerRegistration = vscode.window.registerCustomEditorProvider("tads3.customEditor", provider);
+    const providerRegistration = window.registerCustomEditorProvider("tads3.customEditor", provider);
     return providerRegistration;
   }
 
   public resolveCustomTextEditor(
-    document: vscode.TextDocument,
-    webviewPanel: vscode.WebviewPanel,
-    token: vscode.CancellationToken,
+    document: TextDocument,
+    webviewPanel: WebviewPanel,
+    token: CancellationToken,
   ): void | Thenable<void> {
     webviewPanel.webview.options = {
       enableScripts: true,
@@ -18,7 +28,7 @@ export class Tads3CustomTextEditorProvider implements vscode.CustomTextEditorPro
     webviewPanel.webview.html = this.getHtmlForWebview(document, webviewPanel.webview);
   }
 
-  private getHtmlForWebview(document: vscode.TextDocument, webview: vscode.Webview): string {
+  private getHtmlForWebview(document: TextDocument, webview: Webview): string {
     const text = document.getText();
     const escapedText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     return `<!DOCTYPE html>
@@ -32,4 +42,15 @@ export class Tads3CustomTextEditorProvider implements vscode.CustomTextEditorPro
         </body>
         </html>`;
   }
+}
+
+export async function switchToTads3CustomEditor() {
+  const activeEditor = window.activeTextEditor;
+  if (!activeEditor) {
+    return;
+  }
+  const document = activeEditor.document;
+  const viewType = "tads3.customEditor";
+  const isCustomEditor = activeEditor.viewColumn === undefined;
+  await commands.executeCommand("vscode.openWith", document.uri, isCustomEditor ? "default" : viewType);
 }

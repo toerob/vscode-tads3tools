@@ -1,12 +1,14 @@
 import { basename } from "path";
-import { workspace, window, Uri, ViewColumn, DocumentSymbol } from "vscode";
+import { workspace, window, Uri, ViewColumn, DocumentSymbol, WebviewPanel } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
-import { extensionState } from "./state";
 import { connectRoomsWithProperties } from "./visual-editor/map-editor-sync";
 import { findNouns } from "./commands/find-nouns";
-import { tads3VisualEditorPanel, overridePositionWithPersistedCoordinates, preprocessedFilesMap } from "../extension";
+import { preprocessedFilesMap, getPersistedObjectPositions, getVisualEditor } from "../extension";
+import { ExtensionStateStore } from "./state";
 
-export function setupClientNotifications(client: LanguageClient) {
+export function setupClientNotifications(
+  client: LanguageClient,
+  extensionState: ExtensionStateStore) {
   client.onNotification("response/extractQuotes", (payload) => {
     workspace
       .openTextDocument({
@@ -33,11 +35,12 @@ export function setupClientNotifications(client: LanguageClient) {
   client.onNotification("response/analyzeText/findNouns", findNouns);
 
   client.onNotification("response/mapsymbols", (symbols) => {
-    if (tads3VisualEditorPanel && symbols && symbols.length > 0) {
+    const visualEditorPanel = getVisualEditor();
+    if (visualEditorPanel && symbols && symbols.length > 0) {
       client.info(`Updating webview with new symbols`);
       try {
-        overridePositionWithPersistedCoordinates(symbols);
-        tads3VisualEditorPanel.webview.postMessage({
+        overridePositionWithPersistedCoordinates(symbols, extensionState);
+        visualEditorPanel.webview.postMessage({
           command: "tads3.addNode",
           objects: symbols,
         });
@@ -90,7 +93,7 @@ export function setupClientNotifications(client: LanguageClient) {
 
   client.onNotification("symbolparsing/success", async ([filePath, tracker, totalFiles, poolSize]) => {
     if (extensionState.allFilesBeenProcessed && !extensionState.isLongProcessingInAction()) {
-      if (tads3VisualEditorPanel) {
+      if (getVisualEditor()) {
         client.info(`Refreshing the map view`);
         await client.sendNotification("request/mapsymbols");
       }
@@ -124,4 +127,27 @@ export function setupClientNotifications(client: LanguageClient) {
     extensionState.setPreprocessing(false);
     extensionState.allFilesBeenProcessed = false;
   });
+}
+
+export function overridePositionWithPersistedCoordinates(mapObjects: any[], extensionState: ExtensionStateStore) {
+  const itemsToPersist = [];
+  for (const node of mapObjects) {
+    const persistedPosition = getPersistedObjectPositions().get(node.name);
+    if (persistedPosition) {
+      //console.log(`${node.name} has persisted position: ${persistedPosition[0]}/${persistedPosition[1]}`);
+    }
+    if (persistedPosition && persistedPosition.length === 2) {
+      const x = persistedPosition[0];
+      const y = persistedPosition[1];
+      if (x && y) {
+        node.x = x;
+        node.y = y;
+        node.hasAbsolutePosition = true;
+        itemsToPersist.push(node);
+      }
+    }
+  }
+  if (itemsToPersist.length > 0) {
+    extensionState.storageManager.setValue("persistedMapObjectPositions", itemsToPersist);
+  }
 }

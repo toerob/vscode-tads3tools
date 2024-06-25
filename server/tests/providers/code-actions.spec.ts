@@ -45,7 +45,7 @@ describe("CodeActionProvider", () => {
     expect(result[0].kind).toEqual("refactor.extract");
 
     expect(result[0].command!.title).toEqual("Insert local assignment snippet");
-    expect(result[0].command!.command).toEqual("extension.insertLocalAssignmentSnippet");
+    expect(result[0].command!.command).toEqual("tads3.insertLocalAssignmentSnippet");
     expect(result[0].command!.arguments).toStrictEqual(["file:///test.txt", "local ${1:x} = newThing();$0", 0, 0, 13]);
   });
 
@@ -75,7 +75,7 @@ describe("CodeActionProvider", () => {
     expect(result[0].kind).toEqual("refactor.extract");
 
     expect(result[0].command!.title).toEqual("Insert local assignment snippet");
-    expect(result[0].command!.command).toEqual("extension.insertLocalAssignmentSnippet");
+    expect(result[0].command!.command).toEqual("tads3.insertLocalAssignmentSnippet");
     expect(result[0].command!.arguments).toStrictEqual(["file:///test.txt", "local ${1:sum} = 1 + 2;$0", 0, 0, 3]);
   });
 
@@ -105,7 +105,7 @@ describe("CodeActionProvider", () => {
     expect(result[0].kind).toEqual("refactor.extract");
 
     expect(result[0].command!.title).toEqual("Insert local assignment snippet");
-    expect(result[0].command!.command).toEqual("extension.insertLocalAssignmentSnippet");
+    expect(result[0].command!.command).toEqual("tads3.insertLocalAssignmentSnippet");
     expect(result[0].command!.arguments).toStrictEqual(["file:///test.txt", "local ${1:x} = [];$0", 0, 0, 2]);
   });
 });

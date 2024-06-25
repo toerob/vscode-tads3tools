@@ -1,9 +1,20 @@
 import { basename } from "path";
-import { workspace, window, Uri, CancellationError } from "vscode";
-import { selectMakefileWithDialog } from "../extension";
+import {
+  workspace,
+  window,
+  Uri,
+  CancellationError,
+  TextDocument,
+  CancellationTokenSource,
+  ExtensionContext,
+} from "vscode";
+import { setErrorDiagnostics } from "../extension";
+import { selectMakefileWithDialog } from './select-makefile-dialog';
 import { extensionState } from "./state";
-import { diagnose } from "./diagnose";
-import { client, errorDiagnostics, preprocessAndParseDocument } from "../extension";
+import { diagnose } from "./diagnosing";
+import { LanguageClient } from "vscode-languageclient/node";
+import { parseDocument } from "./parsing";
+import { ExtensionStateStore } from "./state";
 
 export async function findAndSelectMakefileUri(askIfNotFound = false) {
   let choice: Uri = undefined;
@@ -49,7 +60,12 @@ export async function findAndSelectMakefileUri(askIfNotFound = false) {
   return Promise.resolve(choice);
 }
 
-export async function setMakeFile() {
+export async function setMakeFile(
+  ctx: ExtensionContext,
+  serverProcessCancelTokenSource: CancellationTokenSource,
+  client: LanguageClient,
+  collection: any,
+) {
   if (extensionState.isLongProcessingInAction()) {
     window.showWarningMessage(
       `Cannot change makefile and reparse right now, since a full project parsing is already in progress. Try again later. `,
@@ -65,10 +81,19 @@ export async function setMakeFile() {
   extensionState.setChosenMakefileUri(newMakefile);
 
   client.info(`Chosen makefile set to: ${basename(extensionState.getChosenMakefileUri().fsPath)}`);
-  const makefileDoc = await workspace.openTextDocument(extensionState.getChosenMakefileUri().fsPath);
+  const makefileDoc: TextDocument = await workspace.openTextDocument(extensionState.getChosenMakefileUri().fsPath);
 
   try {
-    await diagnose(makefileDoc);
+    const errors = await diagnose(makefileDoc, collection, extensionState);
+    if (errors.length > 0) {
+      window.showErrorMessage(`Error during compilation:\n${errors.map((e) => e.message).join("\n")}`);
+      setErrorDiagnostics(errors);
+      return;
+    }
+
+    extensionState.setLongProcessing(true);
+    client.info(`Preprocess and parse all documents`);
+    await parseDocument(3, ctx, undefined, serverProcessCancelTokenSource, client, extensionState);
   } catch (err) {
     if (!(err instanceof CancellationError)) {
       window.showErrorMessage(`Error while diagnosing: ${err}`);
@@ -77,13 +102,16 @@ export async function setMakeFile() {
     extensionState.setDiagnosing(false);
     return;
   }
+}
 
-  if (errorDiagnostics.length > 0) {
-    window.showErrorMessage(`Error during compilation:\n${errorDiagnostics.map((e) => e.message).join("\n")}`);
-    return;
+
+
+export async function selectTads2MainFile(extensionState: ExtensionStateStore) {
+  const userChoice = await window.showOpenDialog({
+    title: "Select the main file for the tads2 project",
+  });
+  if (userChoice.length === 1) {
+    extensionState.setTads2MainFile(userChoice[0]);
+    extensionState.setUsingTads2(true);
   }
-
-  extensionState.setLongProcessing(true);
-  client.info(`Preprocess and parse all documents`);
-  await preprocessAndParseDocument();
 }
