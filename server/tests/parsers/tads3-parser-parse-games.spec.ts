@@ -20,7 +20,7 @@ function parseTextWithTads3SymbolListener(text: string) {
   return { parseTree, listener };
 }
 
-describe.skip("Complete Game parsing integration tests", () => {
+describe("Complete Game parsing integration tests", () => {
   it("preprocesses and parses a game with the standard library with no errors", async () => {
     // Arrange
     const expectedPreprocessedResult = readFileSync("tests/t3testgames/game1/main-preprocessed.t").toString();
