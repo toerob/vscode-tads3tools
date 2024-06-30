@@ -12,7 +12,7 @@ strategy:
     linux:
       imageName: "ubuntu-latest"
     # mac:
-    #   imageName: 'macos-latest'
+    #  imageName: 'macos-latest'
     # windows:
     #   imageName: 'windows-latest'
 
@@ -27,6 +27,28 @@ steps:
     inputs:
       versionSpec: "^18.18.0"
     displayName: "Install Node.js"
+
+  - bash: |
+      sudo apt-get update
+      sudo apt-get -y install curl g++ libcurl4-openssl-dev libncurses5-dev make cmake git tar 
+    displayName: "Install dependencies via apt-get"
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
+  - bash: |
+      git clone https://github.com/realnc/frobtads.git
+      cd frobtads
+      ./configure
+      mkdir build
+      cd build
+      cmake ..
+      cmake --build . --target install 
+      sudo make install
+    displayName: "Fetch, build and install the latest version of frobtads"
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    
+# TODO: build for tads3 for mac & windows
+# condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+# condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
   - bash: |
       /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &

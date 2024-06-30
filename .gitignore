@@ -20,3 +20,5 @@ server/src/parser/.idea
 
 server/tests/t3testgames/game1/obj
 server/tests/t3testgames/game1/*.t3
+
+**/*.t3
