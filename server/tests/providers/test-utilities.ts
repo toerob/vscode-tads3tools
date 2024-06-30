@@ -17,6 +17,7 @@ export function setupMockedEnvironment() {
         return {
           console: {
             debug: jest.fn(),
+            error: jest.fn(),
           },
 
           onInitialize: jest.fn(),

@@ -34,7 +34,8 @@ export const getDocPath = (p: string) => {
   return path.resolve(__dirname, "../../testFixture", p);
 };
 export const getDocUri = (p: string) => {
-  return vscode.Uri.file(getDocPath(p));
+  const path = getDocPath(p);
+  return vscode.Uri.file(path);
 };
 
 export async function setTestContent(content: string): Promise<boolean> {

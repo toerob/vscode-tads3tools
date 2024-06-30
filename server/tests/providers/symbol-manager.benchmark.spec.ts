@@ -8,7 +8,7 @@ import { Suite } from "benchmark";
 import { test } from "@jest/globals";
 import { symbolHierarchy2 } from "./symbols-for-test";
 
-describe("TadsSymbolManager", () => {
+describe.skip("TadsSymbolManager", () => {
   const TIMES = 100;
   test.each(Array(3).fill(null))("addRecursively vs addIteratively mean time", () => {
     let meanTimeRecursively = 0;

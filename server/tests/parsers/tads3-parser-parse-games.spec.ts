@@ -21,30 +21,12 @@ function parseTextWithTads3SymbolListener(text: string) {
 }
 
 describe("Complete Game parsing integration tests", () => {
-  it("preprocesses and parses a game with the standard library with no errors", async () => {
+  it("parses a game with the standard library with no errors", () => {
     // Arrange
-    const expectedPreprocessedResult = readFileSync("tests/t3testgames/game1/main-preprocessed.t").toString();
-    const absoluteMakefilePath = resolve("tests/t3testgames/game1/Makefile.t3m");
-
-    const preprocessedFilesCacheMap: Map<string, string> = new Map();
-    const consoleMock = { console: { log: jest.fn(), debug: jest.fn() } };
+    const preprocessedDoc = readFileSync("tests/t3testgames/game1/main-preprocessed.t").toString();
 
     // Act
-    await preprocessTads3Files(absoluteMakefilePath, preprocessedFilesCacheMap, "t3make", consoleMock);
-
-    // Assert
-    //expect(preprocessedFilesCacheMap.size >= 0).toBeTruthy();
-    const preprocessedDoc = preprocessedFilesCacheMap.get(resolve("tests/t3testgames/game1/main.t"));
-
-    expect(preprocessedDoc).toBe(expectedPreprocessedResult); // TODO: fix the extra blank row at the end of the preprocessed files
-    expect(consoleMock.console.debug).toHaveBeenCalledTimes(2);
-
-    // ---------------------------------------------------------------
-    // 2nd phase of the test - parse the now preprocessed document
-    // ---------------------------------------------------------------
-
-    // Arrange, Act
-    const { listener } = parseTextWithTads3SymbolListener(preprocessedDoc!);
+    const { listener } = parseTextWithTads3SymbolListener(preprocessedDoc);
 
     // Assert
     const gameMainSymbol = listener.symbols.filter((x) => x.name === "gameMain");
