@@ -8,11 +8,11 @@ import {
   CancellationTokenSource,
   ExtensionContext,
 } from "vscode";
+import { LanguageClient } from "vscode-languageclient/node";
 import { setErrorDiagnostics } from "../extension";
 import { selectMakefileWithDialog } from './select-makefile-dialog';
 import { extensionState } from "./state";
 import { diagnose } from "./diagnosing";
-import { LanguageClient } from "vscode-languageclient/node";
 import { parseDocument } from "./parsing";
 import { ExtensionStateStore } from "./state";
 
@@ -37,8 +37,7 @@ export async function findAndSelectMakefileUri(askIfNotFound = false) {
       // Locate the path with least path delimiters. (Counting '/' tokens on *nix systems and '\' tokens on windows systems.)
       // Compare any default Makefile.t3m files found and see if matching wiht the path with the least delimiters
       // If so, use this file, otherwise use shortestPath.
-
-      const pathDelimNr = (a) => a.match(process.platform === "win32" ? /\\/g : /\//g).length;
+      const pathDelimNr = (a) => a.match(process.platform === "win32" ? /\\/g : /\//g)?.length ?? 0;
       const shortestPath = files.reduce((a, b) => (pathDelimNr(a.fsPath) <= pathDelimNr(b.fsPath) ? a : b));
       const defaultMakefile = files.find(
         (x) => x.fsPath.endsWith("Makefile.t3m") && pathDelimNr(x.fsPath) === shortestPath.fsPath,

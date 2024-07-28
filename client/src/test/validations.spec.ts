@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-//import { Uri } from "vscode";
-import { expect, describe, jest } from "@jest/globals";
 
-jest.mock("vscode");
+import { expect, describe, jest } from "@jest/globals";
+import { resolve } from "path";
 
 jest.mock("../modules/run-command", () => ({
   runCommand: jest.fn(),
@@ -18,6 +17,7 @@ import {
   validateTads2Settings,
 } from "../modules/validations";
 
+import { Uri } from "vscode";
 const { window, workspace } = require("vscode");
 
 describe("validations", () => {
@@ -98,10 +98,65 @@ describe("validations", () => {
     expect(window.showErrorMessage).not.toBeCalled();
   });
 
-  // TODO: validateMakefile
-  test("validateMakefile", async () => {
-    // Arrange, Act, Assert
-    
-		// expect(await validateMakefile(Uri.parse(""))).toBeTruthy();
+  describe("validateMakefile", () => {
+    const validMakefile = `
+    -D LANGUAGE=en_us
+    -D MESSAGESTYLE=neu
+    -Fy obj
+    -Fo obj
+    -FI /usr/local/share/frobtads/tads3/include
+    -FL /usr/local/share/frobtads/qtads3/lib
+    -w0
+    -v
+    -d
+    -source definitions.t
+
+    -res
+    GameInfo.txt
+    `;
+
+    test("validateMakefile validates with valid makefile", async () => {
+      // Arrange
+      workspace.openTextDocument.mockResolvedValue({
+        getText: jest.fn().mockReturnValue(validMakefile),
+      });
+      // Act, Assert
+      expect(async () => await validateMakefile(Uri.parse("mocking/requires/no/need/for/real/path"))).not.toThrow();
+      expect(window.showWarningMessage).not.toBeCalled();
+    });
+
+    test("validateMakefile throws CancellationError with invalid makefile missing a '-Fy' row", async () => {
+      // Arrange
+      function removeRowMatching(match: RegExp, text: string) {
+        const rows = text.split(/\n/);
+        const newRows = [];
+        for (const row of rows) {
+          if (!row.match(match)) {
+            newRows.push(row);
+          }
+        }
+        return newRows.join("\n");
+      }
+
+      const invalidMakefile = removeRowMatching(/\s*[-]Fy/, validMakefile);
+      workspace.openTextDocument.mockResolvedValue({
+        getText: jest.fn().mockReturnValue(invalidMakefile),
+        Uri: jest.fn().mockImplementation(() => {
+          return {
+            parse: jest.fn().mockReturnValue({ path: "path" }),
+          };
+        }),
+      });
+
+      // Take note that this file contents isn't used within validateMakefile, since that content is mocked
+      // but a real path is needed for the error message to work
+      const uri: any = { path: resolve("resources/Makefile.t3m") };
+
+      // Act, Assert
+      try {
+        await validateMakefile(uri);
+      } catch (err) {}
+      expect(window.showWarningMessage).toBeCalledTimes(1);
+    });
   });
 });
