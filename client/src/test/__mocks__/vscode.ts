@@ -1,17 +1,24 @@
 import { jest } from "@jest/globals";
 
-const CancellationError = Error // jest.fn()
+import path = require("path");
+
+const CancellationError = Error; // jest.fn()
 
 const Uri = {
   parse: jest.fn(),
   file: jest.fn(),
+  joinPath: jest.fn().mockImplementation(() => {
+    return {
+      parse: jest.fn(),
+    };
+  }),
 };
 const window = {
   showInformationMessage: jest.fn(),
   showWarningMessage: jest.fn(),
   showErrorMessage: jest.fn(),
   showOpenDialog: jest.fn(),
-  showQuickPick: jest.fn()
+  showQuickPick: jest.fn(),
 };
 const workspace = {
   openTextDocument: jest.fn(),
@@ -20,7 +27,7 @@ const workspace = {
     get: jest.fn(),
     update: jest.fn(),
   }),
-  findFiles: jest.fn()
+  findFiles: jest.fn(),
 };
 
 module.exports = { CancellationError, Uri, window, workspace };

@@ -6,9 +6,7 @@ import { findNouns } from "./commands/find-nouns";
 import { preprocessedFilesMap, getPersistedObjectPositions, getVisualEditor } from "../extension";
 import { ExtensionStateStore } from "./state";
 
-export function setupClientNotifications(
-  client: LanguageClient,
-  extensionState: ExtensionStateStore) {
+export function setupClientNotifications(client: LanguageClient, extensionState: ExtensionStateStore) {
   client.onNotification("response/extractQuotes", (payload) => {
     workspace
       .openTextDocument({
@@ -23,6 +21,13 @@ export function setupClientNotifications(
     //extensionState.makefileKeyMapValues = new Map<string,string>(makefileStructure.map(i => [i.key, i.value] ));
     extensionState.makefileKeyMapValues = makefileStructure;
     extensionState.setUsingAdv3LiteStatus(usingAdv3Lite);
+
+    const makefileDefinitionsRaw = makefileStructure
+                                    .filter((x) => x.key === "-D")
+                                    .map((x) => x.value.split("="));
+
+    extensionState.makefileDefinitions = new Map(makefileDefinitionsRaw);
+    
   });
 
   client.onNotification("response/connectrooms", async ({ fromRoom, toRoom, validDirection1, validDirection2 }) => {

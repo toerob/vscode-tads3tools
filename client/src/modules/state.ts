@@ -39,6 +39,8 @@ export class ExtensionStateStore {
   private _selectedObject: DocumentSymbol;
   private _lastChosenTextEditor: TextEditor;
 
+  makefileDefinitions: Map<string, string>;
+
   public get storageManager(): LocalStorageService {
     return this._storageManager;
   }

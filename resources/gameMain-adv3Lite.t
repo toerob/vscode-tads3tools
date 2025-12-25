@@ -2,10 +2,6 @@
 #include <tads.h>
 #include "advlite.h"
 
-gameMain: GameMainDef
-	initialPlayerChar = ${6:me}
-;
-
 versionInfo: GameID
 	IFID = '$UUID'
 	name = '$1'
@@ -15,6 +11,10 @@ versionInfo: GameID
 	authorEmail = '$2 $3'
 	desc = '$4'
 	htmlDesc = '$4'
+;
+
+gameMain: GameMainDef
+	initialPlayerChar = ${6:me}
 ;
 
 ${5:startRoom}: Room '$5'

@@ -180,7 +180,7 @@ function registerVscodeSpecificProviders(ctx: ExtensionContext) {
 function registerExtensionCommands(ctx: ExtensionContext, state: ExtensionStateStore) {
   const tads3Commands = [
     commands.registerCommand("tads3.switchEditor", switchToTads3CustomEditor),
-    commands.registerCommand("tads3.addFileToProject", () => addFileToProject(ctx)),
+    commands.registerCommand("tads3.addFileToProject", () => addFileToProject(ctx, extensionState)),
     commands.registerCommand("tads2.parseTads2Project", () => selectTads2MainFile(state)),
     commands.registerCommand("tads3.createTads3TemplateProject", () => createProject(ctx)),
     commands.registerCommand("tads3.insertLocalAssignmentSnippet", insertLocalAssignment),
