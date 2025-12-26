@@ -3,7 +3,7 @@
   "description": "Language server extension for Tads3",
   "author": "Tomas Öberg",
   "license": "MIT",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "repository": {
     "type": "git",
     "url": "https://github.com/toerob/vscode-tads3tools.git"
@@ -408,23 +408,18 @@
     "compile": "tsc -b ",
     "test-compile": "tsc -p ./",
     "watch": "tsc -b -w",
-
-    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",    
-
+    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "prefix-server-fspath": "(cd coverage; sed 's/SF:/SF:server\\//g' server-lcov.info > server-lcov2.info  )",
     "prefix-client-fspath": "(cd coverage; sed 's/SF:/SF:client\\//g' client-lcov.info > client-lcov2.info  )",
     "merge-coverage": "npm run prefix-client-fspath && npm run prefix-server-fspath && lcov-result-merger 'coverage/*2.info' './coverage/lcov.info' ",
-
     "coverage:server": "cd server && npm run coverage",
     "coverage:client": "cd client && npm run coverage",
     "prepare-coverage-folder": "if [ -d coverage ]; then rm -r coverage; fi && mkdir coverage",
-    "coverage":  "npm run prepare-coverage-folder && npm run coverage:client && npm run coverage:server && npm run merge-coverage",
-
+    "coverage": "npm run prepare-coverage-folder && npm run coverage:client && npm run coverage:server && npm run merge-coverage",
     "test:client": "cd client && npm test",
     "test:server": "cd server && npm test",
     "test": "npm run test:client && npm run test:server",
     "coveralls": "npx coveralls < ./coverage/lcov.info",
-
     "e2e-test": "npm run compile && sh ./scripts/e2e.sh",
     "prettier": "npx prettier '**/*.ts' --write",
     "rebuild": "rm package-lock.json;rm client/package-lock.json;rm server/package-lock.json;rm -r node_modules;rm -r client/node_modules;rm -r server/node_modules;npm install",

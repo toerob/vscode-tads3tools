@@ -68,7 +68,7 @@ function parseTads3Makefile(text: string): DocumentSymbol[] {
           const symbol = DocumentSymbol.create(type, path, SymbolKind.Module, range, range);
           documentSymbols.push(symbol);
         }
-        if (type.match(/lib|source/i)) {
+        if (type.match(/(lib|source)$/i)) {
           // Game libraries | source files:
           const range = Range.create(rowIdx, 0, rowIdx, row.length);
           const symbol = DocumentSymbol.create(type, path, SymbolKind.Constant, range, range);

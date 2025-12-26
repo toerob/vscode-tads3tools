@@ -41,7 +41,7 @@ export class TadsSymbolManager {
   }
 
   findSymbol(name: any, deepSearch = true) {
-    if (name) {
+     if (name) {
       for (const filePath of this.symbols.keys()) {
         const fileLocalSymbols = this.symbols.get(filePath);
         if (fileLocalSymbols) {

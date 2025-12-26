@@ -31,7 +31,9 @@ import {
   PROPERTY_REGEXP,
   NEW_INSTANCE_REGEXP,
   NEW_ASSIGNMENT_REGEXP,
+  ID_U,
 } from "./constants";
+import { getCurrentLine } from "./utils";
 
 let cachedKeyWords: Map<string, CompletionItem> | undefined = undefined;
 let shortTermMemoryKeyword: Set<string> = new Set();
@@ -57,7 +59,11 @@ export async function onCompletion(
   const suggestions: Map<string, CompletionItem> = new Map();
   const document = documents.get(handler.textDocument.uri);
 
-  if (document?.uri.endsWith(".t3m")) {
+  if (document == undefined) {
+    return;
+  }
+
+  if (document.uri.endsWith(".t3m")) {
     return tads3MakefileSuggestions();
   }
 
@@ -67,6 +73,7 @@ export async function onCompletion(
   if (word === undefined) {
     word = getWordAtPosition(document, Position.create(handler.position.line, handler.position.character - 1));
   }
+  const currentTotalLineStr = getCurrentLine(document, handler.position.line);
 
   const currentLineRange = Range.create(handler.position.line, 0, handler.position.line, handler.position.character);
 
@@ -132,23 +139,56 @@ export async function onCompletion(
     }
 
     // An object declaration where the word is a class, show all class alternatives:
-    if (
-      currentLineStr.match(`${WS}(class)?${ID}${WS}:${WS}${word}`) ||
-      currentLineStr.match(`${WS}(class)?${ID}${WS}:${WS}(${ID}${WS},${WS})*${word}`)
-    ) {
+    //const objRegexp1 = new RegExp(`${WS}(class)?(${ID})${WS}[:]${WS}${word}`);
+    //const result1 = objRegexp1.exec(currentLineStr);
+
+    const objDeclarationMatcher = new RegExp(`${WS}(class)?(${ID_U})${WS}[:]${WS}(${ID}${WS},${WS})*${word}`, "u");
+    const objDeclarationMatcherResult = objDeclarationMatcher.exec(currentLineStr);
+    if (objDeclarationMatcherResult) {
       connection.console.debug(`Matching object declaration for: "${word}"`);
       const classNames = [...symbolManager.inheritanceMap.keys()];
       for (const className of classNames) {
         const item = CompletionItem.create(className);
         item.kind = CompletionItemKind.Class;
-        applyDocumentation(item);
         suggestions.set(item.label, item);
       }
       if (word === undefined) {
         return [...suggestions];
       }
-      const results = fuzzysort.go(word, [...suggestions], { key: "label" });
-      return results.map((x: any) => x.obj);
+
+      // Add a base object suggestion
+      const item = CompletionItem.create("object");
+      item.kind = CompletionItemKind.Snippet;
+      item.insertTextFormat = InsertTextFormat.Snippet;
+      item.insertText = "object { $1 }$0";
+      item.preselect = true;
+      suggestions.set(item.label, item);
+
+      const results = fuzzysort.go(word, [...suggestions.values()], { key: "label" });
+
+      return results.map((x: any) => {
+        const item = x.obj;
+        const inheritsThingTemplate = symbolManager.findHeritage(item.label)?.includes("Thing");
+        applyDocumentation(item);
+
+        // Only add snippet if there's nothing after the matched object declaration.
+        // We don't want to add a snippet with for instance 'vocabWords' and 'name'
+        // if that is already in place
+        if (currentTotalLineStr.trim().length <= currentLineStr.trim().length) {
+          if (inheritsThingTemplate) {
+            item.kind = CompletionItemKind.Snippet;
+            item.insertTextFormat = InsertTextFormat.Snippet;
+
+            const objId = objDeclarationMatcherResult[2] ?? "";
+            if (isUsingAdv3Lite()) {
+              item.inserotText = item.label + " '${2:" + objId + "}' '$4;\n$0";
+            } else {
+              item.insertText = item.label + " '${2:" + objId + "}' '${3:" + objId + "}'$4;\n$0";
+            }
+          }
+        }
+        return item;
+      });
     }
 
     // Matches a direction assignment, collect all symbols inheriting TravelConnector
@@ -325,7 +365,7 @@ export async function onCompletion(
   }
   shortTermMemoryKeyword.clear();
 
-  const results = fuzzysort.go(word, [...cachedKeyWords.values()] ?? [], { key: "label" });
+  const results = fuzzysort.go(word, [...cachedKeyWords.values()], { key: "label" });
   const mappedResults = results.map((x: any) => x.obj);
   return mappedResults;
 }
@@ -348,6 +388,7 @@ function applyDocumentation(item: CompletionItem) {
   }
   if (documentation.length > 0) {
     item.documentation = documentation;
+    item.detail = documentation;
   }
 }
 

@@ -1,12 +1,25 @@
 # Changelog
 
+## 0.6.5
+
+### Added
+
+- Handy Completion snippets added for all objects deriving from 'Thing'.
+
+### Fixed
+
+- code actions - allow simple assignment expressions to be expanded into local assignments.
+- Adding new project files now adds language specific headers. Currently supported language codes are: en_us, sv_se, de_de, cs_cz.
+
 ## 0.6.4
 
 ### Added
+
 - code actions - now there's a code action to allow a quickfix for creating local variables.
 - A snippet is created when adding classes via auto completions, this in unison with code actions and function signatures will help increase code writing effiency.
 
 ### Fixed
+
 - The current parameter in the signature helper now works better.
 - A bug concering the signature helper was fixed. (Issue #42)
 - Cached symbols stopped working in 0.6.3, now it is working again.
@@ -16,6 +29,7 @@
 ## 0.6.3
 
 ### Fixed
+
 - Upgrades of dependencies - the client/server now adheres to the language server protocol of version 9.0.1.
 - Macro definitions lookup now goes to the correct row.
 - The extension downloader now caches files correctly, displays the options better and doesn't crash on cancel. Also, the abort button is removed.
