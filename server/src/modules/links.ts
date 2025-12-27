@@ -32,7 +32,7 @@ export async function onDocumentLinks(
         const line = documentArray[nr];
         const match = includeRegexp.exec(line);
         if (match && match.length === 3) {
-          const startOfLink = match[1]?.length + 1 ?? 0;
+          const startOfLink = match[1]?.length + 1;
           const nameOfLink = match[2] ?? "";
           const endOfLink = startOfLink + nameOfLink.length;
           const documentLink = DocumentLink.create(Range.create(nr, startOfLink, nr, endOfLink));

@@ -349,45 +349,45 @@ export default class MapObjectManager {
       return isAssignment;
     };
 
-    mapObj.north = symbol.children?.find((x) => isAssignment(x) && x.name === "north")?.detail;
-    mapObj.south = symbol.children?.find((x) => isAssignment(x) && x.name === "south")?.detail;
+    mapObj.north = symbol.children?.find((x:any) => isAssignment(x) && x.name === "north")?.detail;
+    mapObj.south = symbol.children?.find((x:any) => isAssignment(x) && x.name === "south")?.detail;
 
     if (serverState.tadsVersion === 3) {
-      mapObj.northeast = symbol.children?.find((x) => isAssignment(x) && x.name === "northeast")?.detail;
-      mapObj.northwest = symbol.children?.find((x) => isAssignment(x) && x.name === "northwest")?.detail;
-      mapObj.southeast = symbol.children?.find((x) => isAssignment(x) && x.name === "southeast")?.detail;
-      mapObj.southwest = symbol.children?.find((x) => isAssignment(x) && x.name === "southwest")?.detail;
+      mapObj.northeast = symbol.children?.find((x:any) => isAssignment(x) && x.name === "northeast")?.detail;
+      mapObj.northwest = symbol.children?.find((x:any) => isAssignment(x) && x.name === "northwest")?.detail;
+      mapObj.southeast = symbol.children?.find((x:any) => isAssignment(x) && x.name === "southeast")?.detail;
+      mapObj.southwest = symbol.children?.find((x:any) => isAssignment(x) && x.name === "southwest")?.detail;
     } else {
-      mapObj.northeast = symbol.children?.find((x) => isAssignment(x) && x.name === "ne")?.detail;
-      mapObj.northwest = symbol.children?.find((x) => isAssignment(x) && x.name === "nw")?.detail;
-      mapObj.southeast = symbol.children?.find((x) => isAssignment(x) && x.name === "se")?.detail;
-      mapObj.southwest = symbol.children?.find((x) => isAssignment(x) && x.name === "sw")?.detail;
+      mapObj.northeast = symbol.children?.find((x:any) => isAssignment(x) && x.name === "ne")?.detail;
+      mapObj.northwest = symbol.children?.find((x:any) => isAssignment(x) && x.name === "nw")?.detail;
+      mapObj.southeast = symbol.children?.find((x:any) => isAssignment(x) && x.name === "se")?.detail;
+      mapObj.southwest = symbol.children?.find((x:any) => isAssignment(x) && x.name === "sw")?.detail;
 
-      mapObj.doordest = symbol.children?.find((x) => isAssignment(x) && x.name === "doordest")?.detail;
+      mapObj.doordest = symbol.children?.find((x:any) => isAssignment(x) && x.name === "doordest")?.detail;
     }
 
-    mapObj.east = symbol.children?.find((x) => isAssignment(x) && x.name === "east")?.detail;
-    mapObj.west = symbol.children?.find((x) => isAssignment(x) && x.name === "west")?.detail;
+    mapObj.east = symbol.children?.find((x:any) => isAssignment(x) && x.name === "east")?.detail;
+    mapObj.west = symbol.children?.find((x:any) => isAssignment(x) && x.name === "west")?.detail;
 
-    mapObj.up = symbol.children?.find((x) => isAssignment(x) && x.name === "up")?.detail;
-    mapObj.down = symbol.children?.find((x) => isAssignment(x) && x.name === "down")?.detail;
+    mapObj.up = symbol.children?.find((x:any) => isAssignment(x) && x.name === "up")?.detail;
+    mapObj.down = symbol.children?.find((x:any) => isAssignment(x) && x.name === "down")?.detail;
 
-    mapObj.in = symbol.children?.find((x) => isAssignment(x) && x.name === "in")?.detail;
-    mapObj.out = symbol.children?.find((x) => isAssignment(x) && x.name === "out")?.detail;
+    mapObj.in = symbol.children?.find((x:any) => isAssignment(x) && x.name === "in")?.detail;
+    mapObj.out = symbol.children?.find((x:any) => isAssignment(x) && x.name === "out")?.detail;
 
     // Sets north to fore if north is not already set, etc...
     mapObj.north = mapObj.north
       ? mapObj.north
-      : symbol.children?.find((x) => isAssignment(x) && x.name === "fore")?.detail;
+      : symbol.children?.find((x:any) => isAssignment(x) && x.name === "fore")?.detail;
     mapObj.south = mapObj.south
       ? mapObj.south
-      : symbol.children?.find((x) => isAssignment(x) && x.name === "aft")?.detail;
+      : symbol.children?.find((x:any) => isAssignment(x) && x.name === "aft")?.detail;
     mapObj.west = mapObj.west
       ? mapObj.west
-      : symbol.children?.find((x) => isAssignment(x) && x.name === "port")?.detail;
+      : symbol.children?.find((x:any) => isAssignment(x) && x.name === "port")?.detail;
     mapObj.east = mapObj.east
       ? mapObj.east
-      : symbol.children?.find((x) => isAssignment(x) && x.name === "starboard")?.detail;
+      : symbol.children?.find((x:any) => isAssignment(x) && x.name === "starboard")?.detail;
 
     // Go through each travelConnector's destination value and assign it:
     const possibleExits = [

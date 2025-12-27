@@ -15,7 +15,7 @@ export function parseAndPopulateErrors(text: string, textDocument: TextDocument,
   const unbrokenErrorText = text.replace(/\n/g, "");
   const result = errorOrWarningRegExp.exec(unbrokenErrorText);
   if (result) {
-    const line: number = (result[3] ? Number.parseInt(result[3] as string) : 1) - 1 ?? 0;
+    const line: number = (result[3] ? Number.parseInt(result[3] as string) : 1) - 1;
     if (result.length >= 4) {
       const characterLengthOfIssueLine = textDocument.positionAt(line).character.valueOf();
       const severity = convertMessageToSeverity(result[4]);
@@ -48,7 +48,7 @@ export function parseAndPopulateTads2Errors(
   for (const row of text.split(/\r?\n/)) {
     const result = tads2WarningRegExp.exec(row);
     if (result) {
-      const line: number = (result[2] ? Number.parseInt(result[2] as string) : 1) - 1 ?? 0;
+      const line: number = (result[2] ? Number.parseInt(result[2] as string) : 1) - 1;
       const message = row;
       const characterLengthOfIssueLine = textDocument.positionAt(line).character.valueOf();
       const position = new Position(line, characterLengthOfIssueLine);

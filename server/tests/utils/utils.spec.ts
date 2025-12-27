@@ -2,7 +2,7 @@
 import { TextDocument } from "vscode-languageserver-textdocument";
 
 import { extractCurrentLineFromDocument, filterForStandardLibraryFiles, isRangeWithin } from "../../src/modules/utils";
-import { Range } from "vscode-languageserver";
+import { Range } from "vscode-languageserver/node";
 import * as assert from "assert";
 
 describe("filterForStandardLibraryFiles", () => {

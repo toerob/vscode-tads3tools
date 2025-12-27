@@ -105,9 +105,9 @@ export async function preprocessAndParseTads3Files(
   if (lastMakeFileLocation !== makefileLocation) {
     lastMakeFileLocation = makefileLocation;
     makefileStructure = analyzeMakefile(makefileLocation);
-    usingAdv3Lite =
-      !!makefileStructure?.find((keyvalue) => keyvalue.key.match(/-lib/) && keyvalue.value.match(adv3LitePathRegExp)) ??
-      false;
+    usingAdv3Lite = !!makefileStructure?.find(
+      (keyvalue) => keyvalue.key.match(/-lib/) && keyvalue.value.match(adv3LitePathRegExp),
+    );
     connection.console.debug("Project using " + (usingAdv3Lite ? "adv3Lite" : "standard adv3 library"));
     await connection.sendNotification("response/makefile/keyvaluemap", {
       makefileStructure,

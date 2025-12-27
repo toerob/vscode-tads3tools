@@ -13,7 +13,10 @@ import {
   version,
   workspace,
 } from "vscode";
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from "vscode-languageclient/node";
+
+import { TransportKind } from "vscode-languageclient/node";
+import { LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
+
 import { openInVisualEditor, setupVisualEditorResponseHandler } from "./modules/visual-editor/visual-editor";
 import { Subject, debounceTime } from "rxjs";
 import { LocalStorageService } from "./modules/local-storage-service";
@@ -152,6 +155,7 @@ function getServerConfiguration(ctx: ExtensionContext) {
       options: debugOptions,
     },
   };
+
   return serverOptions;
 }
 

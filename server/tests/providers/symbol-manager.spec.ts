@@ -1,4 +1,4 @@
-import { DocumentSymbol, Position, Range, SymbolKind } from "vscode-languageserver";
+import { DocumentSymbol, Position, Range, SymbolKind } from "vscode-languageserver/node";
 import {
   addIterativelyDFS,
   addRecursivelyDFS,

@@ -27,8 +27,6 @@ THE SOFTWARE.
 /* eslint-disable no-mixed-spaces-and-tabs */
 /* eslint-disable no-undef */
 
-var acquireVsCodeApi;
-
 const vscode = acquireVsCodeApi();
 
 

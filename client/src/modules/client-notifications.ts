@@ -1,6 +1,6 @@
 import { basename } from "path";
 import { workspace, window, Uri, ViewColumn, DocumentSymbol, WebviewPanel } from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
+import { LanguageClient } from 'vscode-languageclient/node';
 import { connectRoomsWithProperties } from "./visual-editor/map-editor-sync";
 import { findNouns } from "./commands/find-nouns";
 import { preprocessedFilesMap, getPersistedObjectPositions, getVisualEditor } from "../extension";

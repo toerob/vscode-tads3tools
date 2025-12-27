@@ -7,7 +7,7 @@ import { Tads3Parser } from "./parser/Tads3Parser";
 import { Tads3SymbolListener } from "./parser/Tads3SymbolListener";
 import { expose } from "threads";
 import { PredictionMode } from "antlr4ts/atn/PredictionMode";
-import { DocumentSymbol } from "vscode-languageserver";
+import { DocumentSymbol } from "vscode-languageserver/node";
 
 expose(function parseFunc(path: string, text: string) {
   const symbols: DocumentSymbol[] = [];

@@ -50,8 +50,9 @@
     "lru-cache": "^10.2.2",
     "mobx": "^6.12.3",
     "threads": "^1.7.0",
-    "vscode-languageserver": "^9.0.1",
-    "vscode-languageserver-textdocument": "^1.0.11",
+    "vscode-languageserver-protocol": "3.17.6-next.16",
+    "vscode-languageserver": "^10.0.0-next.16",
+    "vscode-languageserver-textdocument": "^1.0.12",    
     "vscode-uri": "^3.0.8",
     "wink-pos-tagger": "^2.2.2"
   },
@@ -67,7 +68,7 @@
     "jasmine-ts": "^0.4.0",
     "jest": "^29.1.2",
     "jest-junit": "^16.0.0",
-    "npm": "^10.7.0",
+    "npm": "^11.7.0",
     "pkg": "^5.8.1",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2"

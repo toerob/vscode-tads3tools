@@ -1,7 +1,7 @@
 import * as assert from "assert";
 
 import { compareStringReverse, getWordAtPosition, tokenizeWithIndex } from "../../src/modules/text-utils";
-import { Position } from "vscode-languageserver";
+import { Position } from "vscode-languageserver/node";
 
 function mocument(content: string) {
   return {

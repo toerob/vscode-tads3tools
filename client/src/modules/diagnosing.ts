@@ -4,7 +4,7 @@ import { workspace, TextDocument, CancellationError, window, Diagnostic, Diagnos
 import { ExtensionStateStore } from "./state";
 import { findAndSelectMakefileUri } from "./makefile-utils";
 import { setupAndMonitorBinaryGamefileChanges } from "./game-monitor";
-import { LanguageClient } from "vscode-languageclient/node";
+import { LanguageClient } from 'vscode-languageclient/node';
 import { ensureDirSync } from "fs-extra";
 import { join } from "path";
 import { validateMakefile } from "./validations";

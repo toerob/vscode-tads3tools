@@ -225,6 +225,7 @@ export function getHtmlForWebview(context: ExtensionContext, webview: Webview, e
     ) ?? "";
   const mapLogicUri = webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, "maprenderer.js")) ?? "";
   const html = `
+    <!DOCTYPE html>
 		<html>
 			<head>
 				<meta charset="UTF-8">
@@ -282,12 +283,6 @@ export async function openInVisualEditor(context: ExtensionContext, client: Lang
     return;
   }
 
-  tads3VisualEditorPanel = window.createWebviewPanel("tads3VisualEditor", "Tads3 visual editor", {
-    viewColumn: ViewColumn.Beside,
-    preserveFocus: true,
-  });
-  setVisualEditor(tads3VisualEditorPanel);
-
   const options: WebviewOptions = {
     enableScripts: true,
     //localResourceRoots: [Uri.joinPath(context.extensionUri, 'media')],
@@ -298,15 +293,34 @@ export async function openInVisualEditor(context: ExtensionContext, client: Lang
     ],
   };
 
-  tads3VisualEditorPanel.webview.options = options;
-  tads3VisualEditorPanel.webview.html = getHtmlForWebview(
-    context,
-    tads3VisualEditorPanel.webview,
-    context.extensionUri,
+  
+  tads3VisualEditorPanel = window.createWebviewPanel(
+    "tads3VisualEditor",
+    "Tads3 visual editor",
+    {
+      viewColumn: ViewColumn.Beside,
+      preserveFocus: true,
+    },
+    options,
   );
+  
+
+  setVisualEditor(tads3VisualEditorPanel);
+
+  try {
+    tads3VisualEditorPanel.webview.html = getHtmlForWebview(
+      context,
+      tads3VisualEditorPanel.webview,
+      context.extensionUri,
+    );
+  } catch(e) {
+    console.error(e);
+  }
+
   tads3VisualEditorPanel.onDidDispose(
     () => {
-      tads3VisualEditorPanel = undefined;
+      setVisualEditor(undefined);
+      //this.tads3VisualEditorPanel = undefined;
     },
     null,
     context.subscriptions,

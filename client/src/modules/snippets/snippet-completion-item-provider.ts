@@ -13,7 +13,7 @@ import {
   Uri,
   ExtensionContext,
 } from "vscode";
-import { CompletionItemKind } from "vscode-languageclient";
+import { CompletionItemKind } from "vscode";
 import { client } from "../../extension";
 import { extensionState } from "../state";
 

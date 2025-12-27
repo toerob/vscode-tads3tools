@@ -3,7 +3,7 @@ import { expect } from "@jest/globals";
 
 setupMockedEnvironment();
 
-import { Range, DocumentSymbol, SymbolKind, CompletionList } from "vscode-languageserver";
+import { Range, DocumentSymbol, SymbolKind, CompletionList } from "vscode-languageserver/node";
 import { TadsSymbolManager } from "../../src/modules/symbol-manager";
 import { onCompletion } from "../../src/modules/completions";
 

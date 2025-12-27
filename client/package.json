@@ -18,14 +18,15 @@
   },
   "dependencies": {
     "@types/unzipper": "^0.10.9",
-    "axios": "^1.6.8",
+    "axios": "^1.13.2",
     "fs-extra": "^11.2.0",
     "litegraph.js": "^0.7.18",
     "minimist": ">=1.2.8",
     "mobx": "^6.12.3",
     "rxjs": "^7.8.1",
     "unzipper": "^0.11.4",
-    "vscode-languageclient": "^9.0.1"
+    "vscode-languageserver-protocol": "3.17.6-next.16",
+    "vscode-languageclient": "^10.0.0-next.19"    
   },
   "devDependencies": {
     "@types/vscode": "^1.89.0",

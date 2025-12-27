@@ -1,5 +1,5 @@
 import { Tads3SymbolListener } from "../../src/parser/Tads3SymbolListener";
-import { DocumentSymbol, Position, Range } from "vscode-languageserver";
+import { DocumentSymbol, Position, Range } from "vscode-languageserver/node";
 import { describe, expect, test, beforeEach, jest } from "@jest/globals";
 import { DocumentSymbolWithScope, ExpressionType } from "../../src/modules/types";
 import {

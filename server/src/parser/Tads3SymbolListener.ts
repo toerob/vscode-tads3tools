@@ -7,7 +7,6 @@ import {
   DocumentSymbol,
   Position,
   Range,
-  SymbolInformation,
   SymbolKind
 } from "vscode-languageserver";
 import { DocumentSymbolWithScope, ExpressionType } from "../modules/types";
@@ -481,7 +480,7 @@ export class Tads3SymbolListener implements Tads3Listener {
       console.error(`Couldn't process symbol at row ${start}`);
       return;
     }
-    const stop = (ctx.stop?.line ?? 1) - 1 ?? start;
+    const stop = (ctx.stop?.line ?? 1) - 1;
     const startCharacter = ctx.start?.charPositionInLine ?? 0;
     const stopCharacter = ctx.stop?.charPositionInLine ?? 0;
     const range = Range.create(start, startCharacter, stop, stopCharacter); // TODO: stop character here.

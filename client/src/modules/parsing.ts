@@ -10,7 +10,7 @@ import {
 import { ExtensionStateStore } from "./state";
 import { findAndSelectMakefileUri } from "./makefile-utils";
 import { setupAndMonitorBinaryGamefileChanges } from "./game-monitor";
-import { LanguageClient } from "vscode-languageclient/node";
+import { LanguageClient } from 'vscode-languageclient/node';
 import { diagnoseDocument } from "./diagnosing";
 import { basename } from "path";
 import { validateTads2Settings } from "./validations";
@@ -24,7 +24,10 @@ export async function initiallyParseTadsProject(
   serverProcessCancelTokenSource: any,
   collection,
 ) {
-  if (window.activeTextEditor.document) {
+  console.log("test");
+  window.activeTextEditor;
+
+  if (window?.activeTextEditor?.document) {
     const textDocument = window.activeTextEditor.document;
     client.info(`Trying to locate a default tads3 makefile`);
 
