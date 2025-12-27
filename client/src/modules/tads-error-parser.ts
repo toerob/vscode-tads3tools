@@ -1,4 +1,4 @@
-import { existsSync } from "fs";
+import * as fs from "fs";
 import { TextDocument, Diagnostic, DiagnosticSeverity, Position, Range, DiagnosticCollection, Uri } from "vscode";
 import { extensionState } from "./state";
 
@@ -12,7 +12,7 @@ const tads2WarningRegExp = /(.*)[(]([0-9]+)[)][:]\s+(.+)/;
 export function parseAndPopulateErrors(text: string, textDocument: TextDocument, collection: DiagnosticCollection) {
   collection.clear();
   const diagnostics: Diagnostic[] = [];
-  const unbrokenErrorText = text.replace(/\n/g, "");
+  const unbrokenErrorText = text.replace(/\n/g, " ").replace(/\s{2,}/, " ");
   const result = errorOrWarningRegExp.exec(unbrokenErrorText);
   if (result) {
     const line: number = (result[3] ? Number.parseInt(result[3] as string) : 1) - 1;
@@ -30,7 +30,13 @@ export function parseAndPopulateErrors(text: string, textDocument: TextDocument,
       };
       diagnostics.push(diagnostic);
       const filename = result[2] ? Uri.parse(result[2]) : extensionState.getChosenMakefileUri();
-      if (existsSync(filename.fsPath)) {
+      const exists = fs.existsSync(filename.fsPath);
+      if (!exists) {
+        // t3make reports back in ascii only so we can't extract the correct
+        // filename the path contains utf-8 tokens, in that case, we just set
+        // the error to the project path instead
+        collection.set(extensionState.projectFolderUri, diagnostics);
+      } else {
         collection.set(filename, diagnostics);
       }
     }
@@ -61,7 +67,7 @@ export function parseAndPopulateTads2Errors(
         source: "tads2",
       };
       const filename = result[1] ? mapToFullPath(result[1]) : extensionState.getTads2MainFile();
-      if (existsSync(filename.fsPath)) {
+      if (fs.existsSync(filename.fsPath)) {
         const setOfDiagnostics = diagnostics.get(filename) ?? new Set();
         setOfDiagnostics.add(diagnostic);
         diagnostics.set(filename, setOfDiagnostics);

@@ -4,6 +4,7 @@ import {
   FileSystemWatcher,
   ProgressLocation,
   TextDocument,
+  Uri,
   window,
   workspace,
 } from "vscode";
@@ -12,7 +13,7 @@ import { findAndSelectMakefileUri } from "./makefile-utils";
 import { setupAndMonitorBinaryGamefileChanges } from "./game-monitor";
 import { LanguageClient } from 'vscode-languageclient/node';
 import { diagnoseDocument } from "./diagnosing";
-import { basename } from "path";
+import { basename, dirname } from "path";
 import { validateTads2Settings } from "./validations";
 import { DependencyNode } from "../models/DependencyNode";
 
@@ -34,6 +35,14 @@ export async function initiallyParseTadsProject(
     if (extensionState.getChosenMakefileUri() === undefined) {
       extensionState.setChosenMakefileUri(await findAndSelectMakefileUri());
     }
+
+    if (extensionState.projectFolderUri === undefined) {
+      const makefileUri = extensionState.getChosenMakefileUri();
+      const projectDirPath = dirname(makefileUri.fsPath);
+      const projectDirUri = Uri.file(projectDirPath);
+      extensionState.projectFolderUri = projectDirUri;
+    }
+
 
     if (extensionState.getChosenMakefileUri() === undefined) {
       client.info(`No tads3 makefile could be found`);

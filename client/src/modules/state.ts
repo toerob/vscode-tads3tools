@@ -16,6 +16,7 @@ export class ExtensionStateStore {
 
   isUsingAdv3Lite = undefined;
   chosenMakefileUri: Uri | undefined;
+  _projectFolderUri: Uri | undefined;
 
   tads2MainFile: Uri | undefined = undefined;
   isUsingTads2: boolean = undefined;
@@ -28,7 +29,7 @@ export class ExtensionStateStore {
   private _currentPreprocessAndParseProgress: Progress<any>;
   private _preprocessedList: string[];
 
-  private _projectRootPath: Uri;
+  private _scriptsFolder: Uri;
   private _extensionCacheDirectory: string;
 
   private _gameFileSystemWatcher: FileSystemWatcher;
@@ -134,11 +135,19 @@ export class ExtensionStateStore {
   }
 
   public get scriptsFolder(): Uri {
-    return this._projectRootPath;
+    return this._scriptsFolder;
   }
   public set scriptsFolder(value: Uri) {
-    this._projectRootPath = value;
+    this._scriptsFolder = value;
   }
+
+  public get projectFolderUri(): Uri {
+    return this._projectFolderUri;
+  }
+  public set projectFolderUri(value: Uri) {
+    this._projectFolderUri = value;
+  }
+
   public get selectedObject(): DocumentSymbol {
     return this._selectedObject;
   }
