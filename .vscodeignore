@@ -1,14 +1,91 @@
-.vscode/**
 **/*.ts
 **/*.g4
 **/*.spec.ts
 **/*.map
-.gitignore
 **/tsconfig.json
 **/tsconfig.base.json
-contributing.md
-.travis.yml
 
+# Hidden configuraton files / devtools etc
+vscode-tads3tools.iml
+.azure-pipelines.yml
+.prettierignore
+.eslintignore
+.travis.yml
+.vscode/**
+.gitignore
+.github
+.idea
+.lsp
+
+
+screenshots/**
+
+server/src/parser 
+# TODO: these are probably not needed after the parser is built. Why were they saved?
+!server/src/parser/Tads3.g4
+!server/src/parser/Tads3.tokens
+!server/src/parser/Tads3Lexer.interp
+!server/src/parser/Tads3Lexer.tokens
+
+# These takes a lot of space:
+server/bin/**
+server/out/vscode-tads3tools-server*
+#----------------------------
+
+# Documentation
+contributing.md
+CHANGELOG.md
+worklog.md
+docs/**
+
+
+# Tests
+client/coverage
+client/jest.config.js
+client/out/test/
+
+client/testFixture
+
+server/testFixture/**
+server/coverage/
+server/out/test/
+server/tests/**
+coverage/
+
+# TODO: Find out why this cannot be removed. 
+# (The VSIX package won't work for some reason.)
+#client/out/e2e-test 
+
+# If there's any files left from compilation during tests, make sure it isn't packaged
+resources/obj
+*.t3
+
+# Package.json(s), build scripts etc..
+server/package-lock.json
+server/package.json
+
+client/package-lock.json
+client/package.json
+client/yarn.lock
+
+package.lock.json
+**/*.lock
+
+scripts
+
+# Typescript source files not needed 
+server/src/**
+client/src/**
+
+# The project's node_modules folder
+node_modules
+
+
+#---------------
+# TODO: find out what more can be removed from these two:
+#server/node_modules
+#client/node_modules
+#---------------
 node_modules/typescript/**
 node_modules/esbuild/**
 node_modules/esbuild-linux-64/**
@@ -25,8 +102,6 @@ server/node_modules/npm/**
 server/node_modules/@babel/**
 server/node_modules/antlr4ts-cli/**
 server/tests/**
-
-
 
 ##client/node_modules/**
 ##server/node_modules/**
@@ -67,12 +142,3 @@ server/tests/**
 !server/node_modules/threads/dist/**/*
 !server/node_modules/wink-pos-tagger/**
 !server/node_modules/fuzzysort/**
-
-screenshots/**
-server/tests/**
-server/testFixture/**
-
-!server/src/parser/Tads3.g4
-!server/src/parser/Tads3.tokens
-!server/src/parser/Tads3Lexer.interp
-!server/src/parser/Tads3Lexer.tokens
