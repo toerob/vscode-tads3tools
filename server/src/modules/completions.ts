@@ -174,7 +174,8 @@ export async function onCompletion(
         // Only add snippet if there's nothing after the matched object declaration.
         // We don't want to add a snippet with for instance 'vocabWords' and 'name'
         // if that is already in place
-        if (currentTotalLineStr.trim().length <= currentLineStr.trim().length) {
+        
+        if (currentTotalLineStr?.trim()?.length <= currentLineStr?.trim()?.length) {
           if (inheritsThingTemplate) {
             item.kind = CompletionItemKind.Snippet;
             item.insertTextFormat = InsertTextFormat.Snippet;

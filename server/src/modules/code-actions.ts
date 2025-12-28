@@ -104,14 +104,14 @@ export async function onCodeAction(
     const simpleExp = new RegExp(`(${ID})?\\s*[=]\\s*([^\\s]+.*)`);
     const simpleExpMatch = simpleExp.exec(currentLine);
     if (simpleExpMatch) {
-      const variable = simpleExpMatch[1].trim();
+      const variable = simpleExpMatch[1]?.trim();
       const expression = simpleExpMatch[2]?.trim();
       const maybeSemicolon = expression.endsWith(';') ? '' : ';';
       if (expression) {
         const newLocal = `local ${variable} = ${expression}${maybeSemicolon}`;
         return [
             {
-              title: "Complete local assignment (arithmetic) statement",
+              title: "Complete local assignment statement",
               kind: CodeActionKind.RefactorExtract,
               command: {
                 title: "Insert local assignment snippet",
