@@ -10,8 +10,9 @@ import {
   TemplateExprContext,
 } from "../../src/parser/Tads3Parser";
 import * as assert from "assert";
-import { Range, SymbolKind } from "vscode-languageserver/node";
+import { DocumentSymbol, Range, SymbolKind } from "vscode-languageserver/node";
 import { expect, it } from "@jest/globals";
+import { ScopedEnvironment } from "../../src/parser/ScopedEnvironment";
 
 function parseTextWithTads3SymbolListener(text: string) {
   const input = CharStreams.fromString(text);
@@ -353,6 +354,102 @@ describe("Tads3 parser tests", () => {
     });
   });
 
+  describe("ScopedEnvironments", () => {
+    it("enterObjectDeclaration", () => {
+      const { listener } = parseTextWithTads3SymbolListener(`
+                
+        xyzzy: Thing 'x' 'y'
+          methodA() {
+            local x = 10;
+
+            local y = x;
+
+          }
+          methodB(abc, def,  ghi) {}
+        ;
+        +Decoration 'sceneries' 'scenery' "sdfsdf" firstAnonymousDecoration = 12;
+        
+        Thing 'cloud' 'cloud' firstAnonymousThing = 15;
+        +Decoration 'sceneries2' 'scenery2'  secondAnonymousDecoration = 23;
+
+        // END
+      `);
+
+      // TODO: there seems to be an historical bug concerning anonymous objects here. 
+      // Only the first anonymous object is found in the example above. 
+      // It doesn't matter if it has the same parent or different parents.
+      // Or if it is nestled further with (++).
+      //
+      // Only the first anonymous object is catched.
+      expect(listener.symbols).toHaveLength(2);
+      expect(listener.symbols[0].children).toHaveLength(3); // 2 methods + Decoration
+      expect(listener.symbols[1].children).toHaveLength(2); // 1 Anonymous Decoration
+
+
+      const paths = [...listener.scopedEnvironments.keys()];
+      expect(paths).toStrictEqual([
+        "xyzzy",
+
+        "xyzzy.methodA()",
+        "xyzzy.methodA().x",
+
+        "xyzzy.methodA().y",
+        "xyzzy.methodB(abc,def,ghi)",
+
+        "anonymousObject#0",
+        "anonymousObject#0.firstAnonymousDecoration",
+
+        "anonymousObject#1",
+        "anonymousObject#1.firstAnonymousThing",
+
+        "anonymousObject#2",
+        "anonymousObject#2.secondAnonymousDecoration"
+      ]);
+
+
+      // Verify the parent scope is correct from object xyzzy
+      const xyzzyEnv = listener.scopedEnvironments.get("xyzzy");
+      expect(xyzzyEnv?.getSymbol("xyzzy").name).toStrictEqual("xyzzy");
+
+      // Verify the parent scope is correct from methodA
+      const methodAEnv = listener.scopedEnvironments.get("xyzzy.methodA()");
+      expect(methodAEnv?.getSymbol("xyzzy").name).toStrictEqual("xyzzy");
+
+      // Verify the parent scope is correct from methodB
+      const methodBEnv = listener.scopedEnvironments.get("xyzzy.methodB(abc,def,ghi)");
+      expect(methodBEnv?.getSymbol("xyzzy").name).toStrictEqual("xyzzy");
+
+      // Verify the parent scope is correct from local assignment x
+      const xEnv = listener.scopedEnvironments.get("xyzzy.methodA().x");
+      expect(xEnv).not.toBeUndefined();
+      expect(xEnv!.getSymbol("x").name).toStrictEqual("x");
+
+      // Verify the parent scope is correct from local assignment x
+      const yEnv = listener.scopedEnvironments.get("xyzzy.methodA().y");
+      expect(yEnv).not.toBeUndefined();
+      expect(yEnv!.getSymbol("y").name).toStrictEqual("y");
+
+      // Verify the parent scope is correct from anonymousObject#0
+      const anonymousObject0Env = listener.scopedEnvironments.get("anonymousObject#0");
+      expect(anonymousObject0Env).not.toBeUndefined();
+      expect(anonymousObject0Env!.getSymbol('anonymousObject#0').name).toStrictEqual("y");
+
+
+      // ETC:
+      /*
+        "anonymousObject#0",
+        "anonymousObject#0.firstAnonymousDecoration",
+
+        "anonymousObject#1",
+        "anonymousObject#1.firstAnonymousThing",
+
+        "anonymousObject#2",
+        "anonymousObject#2.secondAnonymousDecoration"
+        */
+    });
+  });
+  
+  
   /*
   TODO: area of improvement, map the control flows
   describe("Control Flows", () => {

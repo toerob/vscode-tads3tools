@@ -277,7 +277,6 @@ connection.onCodeLens(async (handler: any) => onCodeLens(handler, documents, sym
 
 
 connection.onHover(async (handler:any) => onHover(handler, documents, symbolManager));
-
 connection.onDocumentFormatting(async (handler: any) => onDocumentFormatting(handler, documents));
 connection.onDocumentRangeFormatting(async (handler: any) => onDocumentRangeFormatting(handler, documents));
 connection.onImplementation(async (handler: any) => onImplementation(handler, documents, symbolManager));

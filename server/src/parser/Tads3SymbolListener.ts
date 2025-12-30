@@ -13,6 +13,7 @@ import { DocumentSymbolWithScope, ExpressionType } from "../modules/types";
 import { ScopedEnvironment } from "./ScopedEnvironment";
 import { Tads3Listener } from "./Tads3Listener";
 import {
+  AnonymousObjectExprContext,
   AssignmentExprContext,
   AssignmentStatementContext,
   CallWithParamsExprContext,
@@ -26,6 +27,7 @@ import {
   NewExprContext,
   ObjectDeclarationContext,
   ParamsContext,
+  ProgramContext,
   PropertyContext,
   PropertySetContext,
   TemplateDeclarationContext,
@@ -48,14 +50,48 @@ export class ExtendedDocumentSymbolProperties {
   parent: DocumentSymbol | undefined;
   superClassRoot: string | undefined;
   travelConnectorMap = new Map();
+
+  constructor({
+    level = undefined,
+    arrowConnection = undefined,
+    at = undefined,
+    objectScope = undefined,
+    functionScope = undefined,
+    symbol = undefined,
+    isClass = undefined,
+    isAssignment = undefined,
+    isModification = undefined,
+    isReplacement = undefined,
+    shortName = undefined,
+    parent = undefined,
+    superClassRoot = undefined,
+    travelConnectorMap = new Map()
+   } = {}) {
+    this.level = level
+    this.arrowConnection = arrowConnection
+    this.at = at
+    this.objectScope = objectScope
+    this.functionScope = functionScope
+    this.symbol = symbol
+    this.isClass = isClass
+    this.isAssignment = isAssignment
+    this.isModification = isModification
+    this.isReplacement = isReplacement
+    this.shortName = shortName
+    this.parent = parent
+    this.superClassRoot = superClassRoot
+    this.travelConnectorMap = travelConnectorMap
+  }
 }
 
 //export type 
-
+export const globalEnvironment: ScopedEnvironment = new ScopedEnvironment();
 
 export class Tads3SymbolListener implements Tads3Listener {
   public constructor(private documentUri: string = '') { }
   symbols: DocumentSymbol[] = [];
+
+  static anonymousObjectCounter: number = 0;
 
   symbolParameters: Map<string, DocumentSymbol[]> = new Map();
 
@@ -73,6 +109,8 @@ export class Tads3SymbolListener implements Tads3Listener {
   currentInnerObjectSymbol: DocumentSymbol | undefined;
 
   currentAssignment: DocumentSymbol | undefined;
+
+  currentSymbolNamePath: string[] = [];
 
   public assignmentStatements: DocumentSymbol[] = [];
 
@@ -96,11 +134,12 @@ export class Tads3SymbolListener implements Tads3Listener {
 
   progressCallback: any;
 
-  scopedEnvironment: ScopedEnvironment | undefined;
-
   currentUri!: string;
 
-  scopedEnvironments: any;
+  scopedEnvironments: Map<string, ScopedEnvironment> = new Map();
+  stackScope: ScopedEnvironment[] = [];
+
+  currentScope: ScopedEnvironment|undefined = globalEnvironment;
 
   localKeywords: Map<string, Range[]> = new Map();
 
@@ -143,7 +182,10 @@ export class Tads3SymbolListener implements Tads3Listener {
 
 
   enterCallWithParamsExpr(ctx: CallWithParamsExprContext) {
+    this.currentScope = new ScopedEnvironment({}, this.currentScope);
+    
     const name = ctx.expr()?.text;
+    this.currentSymbolNamePath.push(name ?? '?');
     if (name === undefined) {
       return;
     }
@@ -160,6 +202,14 @@ export class Tads3SymbolListener implements Tads3Listener {
     );
     this.currentAssignment = symbol;
 
+    // Add this symbol to the current environment
+    this.currentScope.envs[name] = symbol;
+
+    // Add a reference to the environment so it won't go out of scope
+    const path = this.currentSymbolNamePath.join('.')
+    this.scopedEnvironments.set(path, this.currentScope);
+
+
     // Store method invocations together with is call chain inside expressionSymbols.
     this.addOrChangeExpression(name, start, {
       documentSymbol: symbol,
@@ -168,8 +218,15 @@ export class Tads3SymbolListener implements Tads3Listener {
     });
   }
 
+  exitCallWithParamsExpr(ctx: CallWithParamsExprContext) {
+    this.revertScope();
+  }
+
   enterAssignmentStatement(ctx: AssignmentStatementContext) {
+    this.currentScope = new ScopedEnvironment({}, this.currentScope);
+
     const name = ctx.identifierAtom()?.ID()?.text?.trim();
+    this.currentSymbolNamePath.push(name ?? '?');
     const start = (ctx.start.line ?? 1) - 1;
     const stop = (ctx.stop?.line ?? 1) - 1;
     const range = Range.create(start, 0, stop, 0);
@@ -191,6 +248,7 @@ export class Tads3SymbolListener implements Tads3Listener {
         []
       );
 
+
       const additionalProps = new ExtendedDocumentSymbolProperties();
       additionalProps.objectScope = this.currentObjectSymbol;
       additionalProps.functionScope = this.currentFunctionSymbol;
@@ -198,12 +256,26 @@ export class Tads3SymbolListener implements Tads3Listener {
       this.assignmentStatements.push(symbol);
       this.currentAssignment = symbol;
 
+        // Add this symbol to the current environment
+      this.currentScope.envs[name] = symbol;
+
+      const path = this.currentSymbolNamePath.join('.')
+
+      // Add a reference to the environment so it won't go out of scope
+      this.scopedEnvironments.set(path, this.currentScope);
+
       this.addOrChangeExpression(name, start, {
         documentSymbol: symbol,
         expressionType: ExpressionType.LOCAL_ASSIGNMENT,
       });
     }
   }
+
+
+  exitAssignmentStatement(ctx: AssignmentStatementContext) {
+    this.revertScope();
+  }
+
 
   enterNewExpr(ctx: NewExprContext) {
     if (this.currentAssignment) {
@@ -236,6 +308,7 @@ export class Tads3SymbolListener implements Tads3Listener {
   }
 
   enterGrammarDeclaration(ctx: GrammarDeclarationContext) {
+    this.currentScope = new ScopedEnvironment({}, this.currentScope);
     const identifiers = ctx.identifierAtom();
     const firstIdentifierStr =
       identifiers && identifiers.length > 0
@@ -256,10 +329,17 @@ export class Tads3SymbolListener implements Tads3Listener {
     );
     this.symbols.push(symbol);
     this.currentObjectSymbol = symbol;
+
+    // Create a unique reference key to the environment and add it to a global map
+    this.currentSymbolNamePath.push(`${name}(${symbol.detail ?? '' })`);
+    const path = this.currentSymbolNamePath.join('.')
+    this.scopedEnvironments.set(path, this.currentScope);
+
   }
 
   exitGrammarDeclaration(ctx: GrammarDeclarationContext) {
     this.currentObjectSymbol = undefined;
+    this.revertScope();
   }
 
   enterParams(ctx: ParamsContext) {
@@ -278,11 +358,25 @@ export class Tads3SymbolListener implements Tads3Listener {
     }*/
   }
 
+  enterAnonymousObjectExpr(ctx: AnonymousObjectExprContext) {
+
+    console.log(ctx);
+  }
+  exitAnonymousObjectExpr(ctx: AnonymousObjectExprContext) {
+
+  }
+  // TODO: anonymousfunctions
+
   enterObjectDeclaration(ctx: ObjectDeclarationContext) {
+    this.currentScope = new ScopedEnvironment({}, this.currentScope);
+
     // Use the given name, and if it doesn't exist give it the name anonymous. Count name 'object' as anonymous too.
-    const hasName =
-      !!ctx.identifierAtom() && ctx.identifierAtom()!.text !== "object";
-    let name = hasName ? ctx.identifierAtom()!.text : "anonymous";
+    const hasName = !!ctx.identifierAtom() && ctx.identifierAtom()!.text !== "object";
+    let name = hasName 
+                ? ctx.identifierAtom()!.text 
+                : `anonymousObject#${Tads3SymbolListener.anonymousObjectCounter++}`;
+
+    this.currentSymbolNamePath.push(name);
 
     const start = (ctx.start.line ?? 1) - 1;
     const stop = (ctx.stop?.line ?? 1) - 1;
@@ -322,6 +416,14 @@ export class Tads3SymbolListener implements Tads3Listener {
     );
     this.currentObjectSymbol = symbol;
 
+    // Add this symbol to the current environment
+    this.currentScope.envs[name] = symbol;
+
+    // Add a reference to the environment so it won't go out of scope
+    const path = this.currentSymbolNamePath.join('.')
+
+    this.scopedEnvironments.set(path, this.currentScope);
+
     additionalProps.level = level;
 
     if (ctx._isModify) {
@@ -356,26 +458,36 @@ export class Tads3SymbolListener implements Tads3Listener {
       console.error(err);
     }
 
+    console.log(`*${name} found at level: ${level}`)
     if (level > 0) {
       const lastObjectOneLevelBelow = this.lastObjectLevelMap.get(level - 1);
+      //console.log(` - its previous parent object was declared at depth: ${level - 1}`)
       if (lastObjectOneLevelBelow) {
         lastObjectOneLevelBelow.children?.push(symbol);
         additionalProps.parent = lastObjectOneLevelBelow;
+        //console.log(` added in the tree of the parent object instead of globally`)
       } else {
+        //console.log(`*${symbol.name} added globally at level: ${level}`)
         this.symbols.push(symbol);
       }
     } else {
+      //console.log(`*${symbol.name} added globally at level: ${level}`)
       this.symbols.push(symbol);
+
+      // If object before isn't a class the current (+)level should get reset
+      if (!ctx._isClass) {
+        //console.log(`Setting ${symbol.name} at level: ${level}`)
+        this.lastObjectLevelMap.set(level, symbol);
+      }
     }
-    if (!ctx._isClass) {
-      this.lastObjectLevelMap.set(level, symbol);
-    }
+
     this.additionalProperties.set(symbol, additionalProps);
   }
 
   exitObjectDeclaration(ctx: ObjectDeclarationContext) {
     this.currentObjectSymbol = undefined;
     this.callbackToRun = undefined;
+    this.revertScope();
   }
 
   enterPropertySet(ctx: PropertySetContext) {
@@ -405,6 +517,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 
   exitMemberExpr(ctx: MemberExprContext) {
     this.currentCallChain = ctx.text;
+    
   }
 
   enterMemberExpr(ctx: MemberExprContext) {
@@ -447,13 +560,21 @@ export class Tads3SymbolListener implements Tads3Listener {
     this.currentInnerObjectSymbol = undefined;
   }
 
+  exitProperty(ctx: PropertyContext) {
+    this.revertScope();
+  }
+
   enterProperty(ctx: PropertyContext) {
+    this.currentScope = new ScopedEnvironment({}, this.currentScope);
+
     let name: string;
     if (ctx.identifierAtom()?.length > 0) {
       name = ctx.identifierAtom()[0].text ?? "unnamed";
     } else {
       name = "unnamed";
     }
+    this.currentSymbolNamePath.push(name);
+
     let detail = "property";
     //let isDirection = false;
     let isAssignment = false;
@@ -495,6 +616,15 @@ export class Tads3SymbolListener implements Tads3Listener {
       []
     );
     additionalProps.isAssignment = isAssignment;
+
+    // Add this symbol to the current environment
+    this.currentScope.envs[name] = symbol;
+
+    // Add a reference to the environment so it won't go out of scope
+    //const path = this.currentScope.buildNamePath(name); // TODO: build up with array here instead
+    const path = this.currentSymbolNamePath.join('.')
+    this.scopedEnvironments.set(path, this.currentScope);
+
 
     /*
 		// Creates a callback to return to this object whenever a property named destination is found
@@ -566,6 +696,7 @@ export class Tads3SymbolListener implements Tads3Listener {
   // TODO: Naturally repeats, make a set instead of array,
   // then add to symbols afterwards
   enterIntrinsicDeclaration(ctx: IntrinsicDeclarationContext) {
+    this.currentScope = new ScopedEnvironment({}, this.currentScope);
     const name = ctx.identifierAtom()?.ID()?.text?.trim() ?? "unnamed";
     const start = (ctx.start.line ?? 1) - 1;
     const stop = (ctx.stop?.line ?? 1) - 1;
@@ -585,18 +716,26 @@ export class Tads3SymbolListener implements Tads3Listener {
       if (!this.symbols.includes(symbol)) {
         this.symbols.push(symbol);
       }
+
+      // Create a unique reference key to the environment and add it to a global map
+      this.currentSymbolNamePath.push(`${name}(${symbol.detail ?? '' })`);
+      const path = this.currentSymbolNamePath.join('.')
+      this.scopedEnvironments.set(path, this.currentScope);
+
     }
   }
 
   // TODO: Naturally repeats, make a set instead of array,
   // then add to symbols afterwards
   exitIntrinsicDeclaration(ctx: IntrinsicDeclarationContext) {
+    this.revertScope();
     this.currentIntrinsicDeclarationSymbol = undefined;
   }
 
   // TODO: take care of symbolParameters too... 
   // "this.symbolParameters.set(symbol.name, parameters);""
   enterIntrinsicMethodDeclaration(ctx: IntrinsicMethodDeclarationContext) {
+    this.currentScope = new ScopedEnvironment({}, this.currentScope);
     const name = ctx.identifierAtom()?.ID()?.text?.trim();
     const start = (ctx.start.line ?? 1) - 1;
     const stop = (ctx.stop?.line ?? 1) - 1;
@@ -620,12 +759,22 @@ export class Tads3SymbolListener implements Tads3Listener {
       if (!this.currentIntrinsicDeclarationSymbol.children.includes(symbol)) {
         this.currentIntrinsicDeclarationSymbol.children.push(symbol);
       }
+
+      // Create a unique reference key to the environment and add it to a global map
+      this.currentSymbolNamePath.push(`${name}(${symbol.detail ?? '' })`);
+      const path = this.currentSymbolNamePath.join('.')
+      this.scopedEnvironments.set(path, this.currentScope);
+
     }
+  }
 
-
+  exitIntrinsicMethodDeclaration(ctx: IntrinsicMethodDeclarationContext) {
+    this.revertScope();
   }
 
   enterFunctionDeclaration(ctx: FunctionDeclarationContext) {
+    this.currentScope = new ScopedEnvironment({}, this.currentScope);
+
     try {
       let name: string =
         ctx.functionHead()?.identifierAtom()?.ID()?.text.toString() ??
@@ -666,12 +815,17 @@ export class Tads3SymbolListener implements Tads3Listener {
         this.additionalProperties.set(symbol, props);
       }
 
+
+      // Add this symbol to the current environment
+      this.currentScope.envs[name] = symbol;
+
       const params = ctx.functionHead()?.params();
       if(params) {
         const parameters = createParameterSymbols(ctx.functionHead()?.params());
         symbol.detail = parameters.map(x=>x.name).join(',');
         this.symbolParameters.set(symbol.name, parameters);
-  
+        this.currentSymbolNamePath.push(name + '('+symbol.detail+')');
+
         for (const symbol of parameters) {
           const additionalProps = new ExtendedDocumentSymbolProperties();
           additionalProps.objectScope = this.currentObjectSymbol;
@@ -679,14 +833,26 @@ export class Tads3SymbolListener implements Tads3Listener {
           this.additionalProperties.set(symbol, additionalProps);
           this.assignmentStatements.push(symbol);
         }
+      } else {
+          this.currentSymbolNamePath.push(name + '()');
       }
 
+      // Create a unique reference key to the environment and add it to a global map
+      const path = this.currentSymbolNamePath.join('.')
+      this.scopedEnvironments.set(path, this.currentScope);
+
     } catch (err) {
+      this.currentSymbolNamePath.push('Error');
       console.error(err);
     }
   }
 
+  exitFunctionDeclaration(ctx: FunctionDeclarationContext) {
+    this.revertScope();
+  }
+
   enterTemplateDeclaration(ctx: TemplateDeclarationContext) {
+    this.currentScope = new ScopedEnvironment({}, this.currentScope);
     const name = ctx._className?.ID()?.text;
     if (name) {
       let detail;
@@ -707,7 +873,21 @@ export class Tads3SymbolListener implements Tads3Listener {
         range
       );
       this.symbols.push(symbol);
+
+      // Create a unique reference key to the environment and add it to a global map
+      this.currentSymbolNamePath.push(name);
+      const path = this.currentSymbolNamePath.join('.')
+      this.scopedEnvironments.set(path, this.currentScope);
     }
+  }
+
+  exitTemplateDeclaration(ctx: TemplateDeclarationContext) {
+    this.revertScope();
+  }
+
+  private revertScope() {
+    this.currentScope = this.currentScope?.parent ?? globalEnvironment;
+    this.currentSymbolNamePath.pop();
   }
 
   // Helper functions - relocate
