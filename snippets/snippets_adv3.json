@@ -151,11 +151,11 @@
 		"description": "Tads3 AgendaItem implementation snippet"
 	},
 
-	"Tads3 atmosphereList snippet" : { 
+"Tads3 atmosphereList snippet" : { 
 		"prefix": "atmosphereList", 
 		"body": [    
-			"atmosphereList: ShuffledEventList {[",
-			"\t'$1'",
+			"atmosphereList: ${1|ShuffledEventList,ExternalEventList,CyclicEventList,StopEventList,SyncEventList,RandomEventList,EventList|} {[",
+			"\t'$0'",
 			"]}"
 		],
 		"description": "Tads3 atmosphereList snippet"
