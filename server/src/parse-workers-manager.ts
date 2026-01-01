@@ -7,7 +7,7 @@ import { preprocessedFilesCacheMap, connection } from "./server";
 import { clearCompletionCache } from "./modules/completions";
 import { basename } from "path";
 import * as path from "path";
-import { ensureDirSync } from "fs-extra";
+import { ensureDirSync, ensureFileSync } from "fs-extra";
 import { parseTads2Files } from "./parseTads2Files";
 import { symbolManager } from "./modules/symbol-manager";
 import { filterForStandardLibraryFiles } from "./modules/utils";
@@ -348,6 +348,7 @@ function exportLibrarySymbols(
     if (globalStorageCachePath) {
       const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
       try {
+        ensureFileSync(libraryCacheFilePath);
         writeFileSync(libraryCacheFilePath, JSON.stringify(value).toString());
         connection.console.debug(`Cached symbols exported for ${libraryPath} to ${libraryCacheFilePath}`);
       } catch (err) {
@@ -374,6 +375,7 @@ function exportLibraryKeywords(
         try {
           const fileNameStr = `${basename(libraryKeywordPath)}__keywords.json`;
           const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
+          ensureFileSync(libraryCacheFilePath);
           writeFileSync(libraryCacheFilePath, JSON.stringify(keywordRangeMapArray).toString());
           connection.console.debug(`Cached keywords exported for ${libraryKeywordPath} to ${libraryCacheFilePath}`);
         } catch (err) {
@@ -390,6 +392,7 @@ function exportInheritanceMap(inheritanceMap: Map<string, string>) {
     try {
       const fileNameStr = `inheritance__map.json`;
       const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
+      ensureFileSync(libraryCacheFilePath);
       writeFileSync(libraryCacheFilePath, JSON.stringify(inheritanceMapArray).toString());
       connection.console.debug(`Cached inheritancemap to ${libraryCacheFilePath}`);
     } catch (err) {
@@ -408,6 +411,9 @@ function importLibrarySymbols(libraryFilePaths: string[], fileSuffix: string, ca
       try {
         const fileNameStr = `${basename(librarySymbolPath)}${fileSuffix}`;
         const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
+        if (!existsSync(libraryCacheFilePath)) {
+          continue;
+        }
         const data = readFileSync(libraryCacheFilePath).toString();
         callback(librarySymbolPath, data);
         connection.console.debug(`Cached symbols filed used for "${librarySymbolPath}"`);
@@ -431,6 +437,9 @@ function importLibraryKeywords(libraryFilePaths: string[], fileSuffix: string, c
       try {
         const fileNameStr = `${basename(libraryKeywordPath)}${fileSuffix}`;
         const libraryCacheFilePath = path.join(globalStorageCachePath, fileNameStr).toString();
+        if (!existsSync(libraryCacheFilePath)) {
+          continue;
+        }
         const data = readFileSync(libraryCacheFilePath).toString();
         callback(libraryKeywordPath, data);
         connection.console.debug("Cached symbols filed used for" + libraryKeywordPath);
@@ -448,6 +457,10 @@ function importInheritanceMap(callback: any) {
     try {
       const fileNameStr = `inheritance__map.json`;
       const filePath = path.join(globalStorageCachePath, fileNameStr).toString();
+      if (!existsSync(filePath)) {
+        connection.console.debug(`No inheritance map cache exists ${filePath}`);
+        return;
+      }
       const data = readFileSync(filePath).toString();
       callback(data);
       connection.console.debug("Cached symbols filed used for" + filePath);

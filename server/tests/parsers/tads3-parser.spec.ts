@@ -10,9 +10,9 @@ import {
   TemplateExprContext,
 } from "../../src/parser/Tads3Parser";
 import * as assert from "assert";
-import { DocumentSymbol, Range, SymbolKind } from "vscode-languageserver/node";
+import { Range, SymbolKind } from "vscode-languageserver/node";
 import { expect, it } from "@jest/globals";
-import { ScopedEnvironment } from "../../src/parser/ScopedEnvironment";
+import { readFileSync } from "fs";
 
 function parseTextWithTads3SymbolListener(text: string) {
   const input = CharStreams.fromString(text);
@@ -66,6 +66,13 @@ class SimpleErrorListener implements Tads3Listener {
 }
 
 describe("Tads3 parser tests", () => {
+  beforeEach(() => {
+    // Reset this every time so we can verify the correct suffix in each test.
+    // It needs to set unique names even when used asynchronously.
+
+    // TOOD: (make test coverage of several spawn workers too)
+    Tads3SymbolListener.anonymousObjectCounter = 0;
+  });
   describe("Sweeping tests", () => {
     it("parses a game object with simple direction properties with no errors", () => {
       const { listener } = parseTextWithSimpleErrorListener(`theHouse: Room 'the house on the hill'
@@ -140,7 +147,7 @@ describe("Tads3 parser tests", () => {
       const firstObject = listener.symbols[0];
 
       assert.notEqual(firstObject, undefined);
-      assert.equal(firstObject.name, "anonymous");
+      assert.equal(firstObject.name, "anonymousObject#0");
       assert.equal(firstObject.detail, "object");
       assert.equal(firstObject.kind, SymbolKind.Object);
       assert.equal(firstObject.range.start.line, 0);
@@ -155,7 +162,7 @@ describe("Tads3 parser tests", () => {
       assert.equal(listener.symbols.length, 1);
       const firstObject = listener.symbols[0];
 
-      assert.equal(firstObject.name, "anonymous");
+      assert.equal(firstObject.name, "anonymousObject#0");
       assert.equal(firstObject.detail, "object");
       assert.equal(firstObject.kind, SymbolKind.Object);
       assert.equal(firstObject.range.start.line, 0);
@@ -217,7 +224,7 @@ describe("Tads3 parser tests", () => {
       const firstObject = listener.symbols[0];
 
       assert.notEqual(firstObject, undefined);
-      assert.equal(firstObject.name, "anonymous");
+      assert.equal(firstObject.name, "anonymousObject#0");
       assert.equal(firstObject.detail, "Edible,Food");
       assert.equal(firstObject.kind, SymbolKind.Object);
     });
@@ -235,7 +242,7 @@ describe("Tads3 parser tests", () => {
       const firstObject = listener.symbols[0];
 
       expect(firstObject).not.toBeUndefined();
-      expect(firstObject.name).toBe("anonymous");
+      expect(firstObject.name).toBe("anonymousObject#0");
       expect(firstObject.detail).toBe("Edible,Food");
       expect(firstObject.kind).toBe(SymbolKind.Object);
 
@@ -354,7 +361,77 @@ describe("Tads3 parser tests", () => {
     });
   });
 
+  describe("Complete Game parsing integration tests", () => {
+    it("preprocesses a game file with the expected result", async () => {
+      // Arrange
+    });
+  });
+
+
+  /*
+  TODO: test that parsing of this works, note, need to be preprocessed first
+
+  syncCatwalkGapFloor: catwalkFloor
+      'other another (east) (west) (e) (w) section/gap/continuation' 'catwalk'
+      "The catwalk is interrupted by a gap, which looks to be about
+      ten feet, to the east. "
+
+      dobjFor(JumpOver)
+      {
+          verify() { }
+          action() { "The gap is much too wide to jump across. "; }
+      }
+  ;
+  */
+
   describe("ScopedEnvironments", () => {
+    it("Anonymous objects add up and are put within the correct parent objects when level sign is used", () => {
+      const txt = readFileSync("tests/t3testgames/fragments/levels.t").toString();
+
+      // Act
+      const { listener } = parseTextWithTads3SymbolListener(txt);
+      // Verify in total 3 symbols: 2 object + 1 class
+      expect(listener.symbols).toHaveLength(3);
+
+      // Verify hierarchy of object 1
+      expect(listener.symbols[0].name).toBe("wizardsHouse");
+      expect(listener.symbols[0].children).toHaveLength(4);
+      expect(listener.symbols[0].children![0].name).toBe("east");
+      expect(listener.symbols[0].children![1].name).toBe("anonymousObject#0");
+      expect(listener.symbols[0].children![2].name).toBe("anonymousObject#1");
+      expect(listener.symbols[0].children![3].name).toBe("well");
+
+      // Verify hierarchy of object 2
+      expect(listener.symbols[1].name).toBe("Fluid");
+      expect(listener.symbols[1].children).toHaveLength(0);
+
+      // Verify hierarchy of object 3
+      expect(listener.symbols[2].name).toBe("witchesHouse");
+      expect(listener.symbols[2].children).toHaveLength(6);
+      expect(listener.symbols[2].children![0].name).toBe("atmossphereList");
+      expect(listener.symbols[2].children![0].children).toHaveLength(0);
+
+      expect(listener.symbols[2].children![1].name).toBe("west");
+      expect(listener.symbols[2].children![1].children).toHaveLength(2);
+      expect(listener.symbols[2].children![1].children![0].name).toBe("destination");
+      expect(listener.symbols[2].children![1].children![1].name).toBe("travelDesc");
+
+      expect(listener.symbols[2].children![2].name).toBe("anonymousObject#2");
+      expect(listener.symbols[2].children![2].children).toHaveLength(1);
+      expect(listener.symbols[2].children![2].children![0].name).toBe("anonymousObject#3");
+
+      expect(listener.symbols[2].children![3].name).toBe("anonymousObject#4");
+      expect(listener.symbols[2].children![3].children).toHaveLength(3);
+      expect(listener.symbols[2].children![3].children![0].name).toBe("rocks");
+      expect(listener.symbols[2].children![3].children![1].name).toBe("anonymousObject#5");
+      expect(listener.symbols[2].children![3].children![2].name).toBe("lilyPad");
+
+      expect(listener.symbols[2].children![4].name).toBe("anonymousObject#7");
+      expect(listener.symbols[2].children![4].children).toHaveLength(0);
+      expect(listener.symbols[2].children![5].name).toBe("anonymousObject#8");
+      expect(listener.symbols[2].children![5].children).toHaveLength(0);
+    });
+
     it("enterObjectDeclaration", () => {
       const { listener } = parseTextWithTads3SymbolListener(`
                 
@@ -375,8 +452,8 @@ describe("Tads3 parser tests", () => {
         // END
       `);
 
-      // TODO: there seems to be an historical bug concerning anonymous objects here. 
-      // Only the first anonymous object is found in the example above. 
+      // TODO: there seems to be an historical bug concerning anonymous objects here.
+      // Only the first anonymous object is found in the example above.
       // It doesn't matter if it has the same parent or different parents.
       // Or if it is nestled further with (++).
       //
@@ -384,7 +461,6 @@ describe("Tads3 parser tests", () => {
       expect(listener.symbols).toHaveLength(2);
       expect(listener.symbols[0].children).toHaveLength(3); // 2 methods + Decoration
       expect(listener.symbols[1].children).toHaveLength(2); // 1 Anonymous Decoration
-
 
       const paths = [...listener.scopedEnvironments.keys()];
       expect(paths).toStrictEqual([
@@ -403,9 +479,8 @@ describe("Tads3 parser tests", () => {
         "anonymousObject#1.firstAnonymousThing",
 
         "anonymousObject#2",
-        "anonymousObject#2.secondAnonymousDecoration"
+        "anonymousObject#2.secondAnonymousDecoration",
       ]);
-
 
       // Verify the parent scope is correct from object xyzzy
       const xyzzyEnv = listener.scopedEnvironments.get("xyzzy");
@@ -432,8 +507,7 @@ describe("Tads3 parser tests", () => {
       // Verify the parent scope is correct from anonymousObject#0
       const anonymousObject0Env = listener.scopedEnvironments.get("anonymousObject#0");
       expect(anonymousObject0Env).not.toBeUndefined();
-      expect(anonymousObject0Env!.getSymbol('anonymousObject#0').name).toStrictEqual("y");
-
+      expect(anonymousObject0Env!.getSymbol("anonymousObject#0").name).toStrictEqual("anonymousObject#0");
 
       // ETC:
       /*
@@ -448,8 +522,7 @@ describe("Tads3 parser tests", () => {
         */
     });
   });
-  
-  
+
   /*
   TODO: area of improvement, map the control flows
   describe("Control Flows", () => {

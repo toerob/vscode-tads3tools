@@ -45,7 +45,7 @@ expose(function parseFunc(path: string, text: string) {
   try {
     parseTreeWalker.walk<Tads3Listener>(listener, parseTree);
   } catch (err) {
-    console.error(`parseTreeWalker failed ${err}`);
+    console.error(`parseTreeWalker failed for file ${path}:  ${err}`);
   }
 
   return {

@@ -10,6 +10,7 @@ client/coverage
 coverage
 resources/obj/
 server/src/parser/.idea/
+server/tests/t3testgames/fragments/obj/*
 
 .DS_Store
 server/.DS_Store

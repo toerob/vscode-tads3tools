@@ -30,9 +30,11 @@ import {
   ProgramContext,
   PropertyContext,
   PropertySetContext,
+  Tads3Parser,
   TemplateDeclarationContext,
 } from "./Tads3Parser";
 import { T3StringVisitor } from "./Tads3StringVisitor";
+import { TerminalNode } from 'antlr4ts/tree/TerminalNode';
 //import { DocumentUri } from 'vscode-languageserver-textdocument';
 
 export class ExtendedDocumentSymbolProperties {
@@ -91,7 +93,7 @@ export class Tads3SymbolListener implements Tads3Listener {
   public constructor(private documentUri: string = '') { }
   symbols: DocumentSymbol[] = [];
 
-  static anonymousObjectCounter: number = 0;
+  static anonymousObjectCounter: number = 0; // TODO: thread safe? Try with multiple workers, make sure no collisions occurs
 
   symbolParameters: Map<string, DocumentSymbol[]> = new Map();
 
@@ -235,7 +237,7 @@ export class Tads3SymbolListener implements Tads3Listener {
     try {
       detail = this.stringVisitor.visit(ctx as ParseTree);
     } catch (err) {
-      console.error("You shall not pass!");
+      console.error(`Could not visit the parse tree for assignment of ${name}`);
     }
 
     if (name !== undefined) {
@@ -358,15 +360,6 @@ export class Tads3SymbolListener implements Tads3Listener {
     }*/
   }
 
-  enterAnonymousObjectExpr(ctx: AnonymousObjectExprContext) {
-
-    console.log(ctx);
-  }
-  exitAnonymousObjectExpr(ctx: AnonymousObjectExprContext) {
-
-  }
-  // TODO: anonymousfunctions
-
   enterObjectDeclaration(ctx: ObjectDeclarationContext) {
     this.currentScope = new ScopedEnvironment({}, this.currentScope);
 
@@ -457,8 +450,7 @@ export class Tads3SymbolListener implements Tads3Listener {
     } catch (err) {
       console.error(err);
     }
-
-    console.log(`*${name} found at level: ${level}`)
+    //console.log(`*${name} found at level: ${level}`)
     if (level > 0) {
       const lastObjectOneLevelBelow = this.lastObjectLevelMap.get(level - 1);
       //console.log(` - its previous parent object was declared at depth: ${level - 1}`)
@@ -473,12 +465,11 @@ export class Tads3SymbolListener implements Tads3Listener {
     } else {
       //console.log(`*${symbol.name} added globally at level: ${level}`)
       this.symbols.push(symbol);
-
-      // If object before isn't a class the current (+)level should get reset
-      if (!ctx._isClass) {
-        //console.log(`Setting ${symbol.name} at level: ${level}`)
-        this.lastObjectLevelMap.set(level, symbol);
-      }
+    }
+    // If object before isn't a class the current (+)level should get reset
+    if (!ctx._isClass) {
+      //console.log(`Setting ${symbol.name} at level: ${level}`)
+      this.lastObjectLevelMap.set(level, symbol);
     }
 
     this.additionalProperties.set(symbol, additionalProps);
@@ -752,7 +743,7 @@ export class Tads3SymbolListener implements Tads3Listener {
       );
       this.currentIntrinsicDeclarationSymbol.children ??= [];
 
-      const parameters = createParameterSymbols(ctx.params());
+      const parameters = createParameterSymbols(ctx.params(), this.documentUri);
       symbol.detail = parameters.map(x=>x.name).join(',');
       this.symbolParameters.set(name, parameters);
 
@@ -775,10 +766,11 @@ export class Tads3SymbolListener implements Tads3Listener {
   enterFunctionDeclaration(ctx: FunctionDeclarationContext) {
     this.currentScope = new ScopedEnvironment({}, this.currentScope);
 
+    let name: string =
+      ctx.functionHead()?.identifierAtom()?.ID()?.text.toString() ??
+      "anonymous function";
+    ctx.functionHead()?.identifierAtom()?.start
     try {
-      let name: string =
-        ctx.functionHead()?.identifierAtom()?.ID()?.text.toString() ??
-        "anonymous function";
       const range = createRangeFromContext(ctx);
       const props = new ExtendedDocumentSymbolProperties();
       let symbol = undefined;
@@ -821,7 +813,7 @@ export class Tads3SymbolListener implements Tads3Listener {
 
       const params = ctx.functionHead()?.params();
       if(params) {
-        const parameters = createParameterSymbols(ctx.functionHead()?.params());
+        const parameters = createParameterSymbols(ctx.functionHead()?.params(), this.documentUri);
         symbol.detail = parameters.map(x=>x.name).join(',');
         this.symbolParameters.set(symbol.name, parameters);
         this.currentSymbolNamePath.push(name + '('+symbol.detail+')');
@@ -843,7 +835,8 @@ export class Tads3SymbolListener implements Tads3Listener {
 
     } catch (err) {
       this.currentSymbolNamePath.push('Error');
-      console.error(err);
+      const line = ctx.functionHead()?.identifierAtom()?.start?.line;
+      console.error(`Parsing of "${name}" on line ${line} within "${this.documentUri}" failed: ${err}`);
     }
   }
 
@@ -954,17 +947,24 @@ export function createRangeFromContext(ctx: ParserRuleContext, name?: string): R
   return Range.create(start, startCharacter, stop, stopCharacter);
 }
 
-function createParameterSymbols(paramsContext: ParamsContext|undefined) {
+function createParameterSymbols(paramsContext: ParamsContext|undefined, documentUri: string) {
   const x = [];
   let currentParam = paramsContext;
   let counter = 0;
   while(currentParam) {
     if(currentParam.childCount>0) {
-      const text = currentParam.getChild(0).text;
-      const ruleCtx = currentParam.getRuleContext(0, ParserRuleContext);
-      const range = createRangeFromContext(ruleCtx);
-      const s = DocumentSymbol.create(text, counter.toString(), SymbolKind.Variable, range, range);        
-      x.push(s);
+      const child = currentParam.getChild(0) as ParseTree;
+      const text = child.text;
+      const ruleCtx = currentParam.tryGetRuleContext(0, ParserRuleContext);
+      if(ruleCtx) {
+        const range = createRangeFromContext(ruleCtx);
+        const s = DocumentSymbol.create(text, counter.toString(), SymbolKind.Variable, range, range);        
+        x.push(s);
+      } else {
+        // There are a couple of instances where the SPREAD operator is used as a parameter.
+        // For instance in systype.h in adv3 std library. For now, it is just ignored since 
+        // resolving parameters properly is yet to be done
+      }
       counter++;
     }
     currentParam = currentParam._tail;

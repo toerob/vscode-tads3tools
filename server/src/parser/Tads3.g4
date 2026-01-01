@@ -107,21 +107,6 @@ objectDeclaration:
     (curlyObjectBody | semiColonEndedObjectBody)
 ;
 
-/*
-objectDeclaration:
-    (isClass=CLASS? | isModify=MODIFY? | isReplace=REPLACE?)
-    level+=PLUS*
-    (superTypes | isTransient=TRANSIENT?
-     (isAnon=ID?
-        (
-          id=identifierAtom
-          (COLON superTypes)?
-        )?
-     )
-    (curlyObjectBody | semiColonEndedObjectBody)
-  )
-;*/
-
 // TODO: merge objectDeclaration with grammarDeclaration, and maybe intrinsic too
 /*
          *   Parse and skip the colon, if required.  All objects except
