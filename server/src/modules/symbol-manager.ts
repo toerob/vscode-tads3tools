@@ -41,7 +41,7 @@ export class TadsSymbolManager {
   }
 
   findSymbol(name: any, deepSearch = true) {
-     if (name) {
+    if (name) {
       for (const filePath of this.symbols.keys()) {
         const fileLocalSymbols = this.symbols.get(filePath);
         if (fileLocalSymbols) {
@@ -254,8 +254,38 @@ export class TadsSymbolManager {
     return templates;
   }
 
-  getTemplatesFor(symbolName: string) {
-    return [...(this.getTemplates() ?? [])].filter((x) => x.name === symbolName);
+  getTemplatesFor(
+    symbolName: string,
+    addInheritedTemplates = true,
+  ): { templates: DocumentSymbol[]; inherited: DocumentSymbol[] } {
+    // Simple variant witout inheritance
+    if (!addInheritedTemplates) {
+      return {
+        templates: [...(this.getTemplates() ?? [])].filter((x) => symbolName === x.name),
+        inherited: [],
+      };
+    }
+
+    const templates = [...(this.getTemplates() ?? [])];
+    const matchingTemplates = templates.filter((x) => x.name === symbolName);
+
+    // Find the templates that are inherited by the found templates
+    const inheritedTemplates = matchingTemplates.filter((x) => x.detail?.match(/\binherited\b/));
+
+    const matchingInheritedTemplates: any[] = [];
+    // Then add the templates which names are matching the superclasses
+    for (const inheritedTemplate of inheritedTemplates) {
+      const inheritedSuperclassSymbols = this.findHeritage(inheritedTemplate.name);
+      const inheritedTemplateForms = templates.filter(
+        (x) => x.name != symbolName && inheritedSuperclassSymbols.includes(x.name),
+      );
+      inheritedTemplateForms.forEach((x) => matchingInheritedTemplates.push(x));
+    }
+
+    return {
+      templates: matchingTemplates,
+      inherited: matchingInheritedTemplates,
+    };
   }
 
   findClosestSymbolKindByPosition(
@@ -457,7 +487,6 @@ export function addIterativelyDFS2(localSymbols: DocumentSymbol[]): DocumentSymb
   }
   return result;
 }
-
 
 // NOTE: TOO SLOW?
 export function addRecursivelyDFS(localSymbols: DocumentSymbol[], collection: any) {

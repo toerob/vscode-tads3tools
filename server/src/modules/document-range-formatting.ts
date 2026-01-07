@@ -1,10 +1,10 @@
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { TextDocuments, DocumentRangeFormattingParams } from "vscode-languageserver";
 import { TextEdit } from "vscode-languageserver-types";
-import { preprocessedFilesCacheMap } from "../server";
 import { URI } from "vscode-uri";
 import { formatDocument } from "./document-formatting";
 import { Range } from "vscode-languageserver";
+import { serverState } from '../state';
 
 export function onDocumentRangeFormatting(
   handler: DocumentRangeFormattingParams,
@@ -14,7 +14,7 @@ export function onDocumentRangeFormatting(
   const { textDocument, range } = handler;
   const currentDocument = documents.get(textDocument.uri);
   const path = URI.parse(textDocument.uri).fsPath;
-  const preprocessedText = preprocessedFilesCacheMap.get(path) ?? "";
+  const preprocessedText = serverState.preprocessedFilesCacheMap.get(path) ?? "";
 
   // Only whole lines formatting are (as of yet) supported.
   // So first a complete format of the document is done:

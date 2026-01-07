@@ -39,7 +39,7 @@ export function onHover(
     if (symbolName) {
       const symbolSearchResult = symbolManager.findSymbols(symbolName, symbolsAllowingHoveringDocs());
       if (symbolSearchResult && symbolSearchResult.length > 0 && symbolSearchResult[0]?.symbols?.length > 0) {
-        const templates = symbolManager.getTemplatesFor(symbolName);
+        const { templates } = symbolManager.getTemplatesFor(symbolName);
         if (templates && templates.length > 0) {
           const templateSummary = templates.map((x) => " - " + x.detail).join("\n\n");
           if (templateSummary) {

@@ -7,7 +7,7 @@ import { FilePathAndSymbols } from "./types";
 import { getCurrentLine } from "./utils";
 import { getLineOfMethodDeclaration } from "./utils";
 import { extractFunctionNameAndParams } from "./utils";
-import { preprocessedFilesCacheMap } from "../server";
+import { serverState } from '../state';
 
 let activeParameter = 0;
 
@@ -65,7 +65,7 @@ function createSignatures(symbolName: string, sm: TadsSymbolManager): SignatureI
       }
 
       const lineOfMethodDeclaration = symbol.range.start.line - 1;
-      const signatureLine = getLineOfMethodDeclaration(preprocessedFilesCacheMap, fsPath, lineOfMethodDeclaration);
+      const signatureLine = getLineOfMethodDeclaration(serverState.preprocessedFilesCacheMap, fsPath, lineOfMethodDeclaration);
       if (signatureLine) {
         const signature = createSignature(sm, fsPath, symbol, location, signatureLine);
         signatures.push(signature);

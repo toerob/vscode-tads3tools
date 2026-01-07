@@ -8,6 +8,7 @@ import {
   CompletionItemKind,
   SymbolKind,
   InsertTextFormat,
+  DocumentSymbol,
 } from "vscode-languageserver";
 import { flattenTreeToArray, TadsSymbolManager } from "./symbol-manager";
 import { TextDocument } from "vscode-languageserver-textdocument";
@@ -34,6 +35,7 @@ import {
   ID_U,
 } from "./constants";
 import { getCurrentLine } from "./utils";
+import { createTemplateSnippetStrings } from './text-utils';
 
 let cachedKeyWords: Map<string, CompletionItem> | undefined = undefined;
 let shortTermMemoryKeyword: Set<string> = new Set();
@@ -164,32 +166,96 @@ export async function onCompletion(
       item.preselect = true;
       suggestions.set(item.label, item);
 
+      let templateCompletionItems:CompletionItem[] = []
+
       const results = fuzzysort.go(word, [...suggestions.values()], { key: "label" });
 
-      return results.map((x: any) => {
+      results.forEach(x=>{
+        const {templates, inherited } = symbolManager.getTemplatesFor(x.obj.label);
+        for (const template of templates) {
+          // TODO: cache the results
+            if(template.detail) {
+              const inheritedTemplates: any[] = (inherited?.map(x=>x.detail) ?? []);
+              let variations: string[] = createTemplateSnippetStrings(template.detail, inheritedTemplates);
+              for(const variation of variations) {
+                const item = CompletionItem.create(`${x.obj.label} ${variation}`);
+                item.kind = CompletionItemKind.Snippet;
+                item.insertTextFormat = InsertTextFormat.Snippet;
+                item.insertText = `${x.obj.label} ` + variation.trimEnd()  + '${0};';
+                templateCompletionItems.push(item);
+              }
+          }
+        }
+      })
+
+      let completionItems: CompletionItem[] = [];
+      /*
+      const completionItems = results.map((x: any) => {
         const item = x.obj;
-        const inheritsThingTemplate = symbolManager.findHeritage(item.label)?.includes("Thing");
+        const heritage = symbolManager.findHeritage(item.label);
+        const inheritsThingTemplate = heritage?.includes("Thing");
+        const isARoom = heritage[0].startsWith("Room");
+        const isAThing = heritage[0] === "Thing";
+
+        //const isATravelConnector = heritage[0].startsWith("Travel");
+        const implementsTravelConnector = heritage?.includes("TravelConnector");
+        const implementsTravelDesc = heritage?.includes("TravelWithMessage");
+
+        // TODO: make specific for TravelConnector(s)
+
         applyDocumentation(item);
 
         // Only add snippet if there's nothing after the matched object declaration.
         // We don't want to add a snippet with for instance 'vocabWords' and 'name'
         // if that is already in place
-        
-        if (currentTotalLineStr?.trim()?.length <= currentLineStr?.trim()?.length) {
-          if (inheritsThingTemplate) {
-            item.kind = CompletionItemKind.Snippet;
-            item.insertTextFormat = InsertTextFormat.Snippet;
 
-            const objId = objDeclarationMatcherResult[2] ?? "";
-            if (isUsingAdv3Lite()) {
-              item.inserotText = item.label + " '${2:" + objId + "}' '$4;\n$0";
+        if (currentTotalLineStr?.trim()?.length <= currentLineStr?.trim()?.length) {
+          item.kind = CompletionItemKind.Snippet;
+          item.insertTextFormat = InsertTextFormat.Snippet;
+          const objId = objDeclarationMatcherResult[2] ?? "";
+
+          if (!isARoom && !isAThing && implementsTravelDesc) {
+            item.insertText = item.label + " {";
+            if (implementsTravelDesc) {
+              if (isUsingAdv3Lite()) {
+                // TODO: handle adv3lite also
+              } else {
+                item.insertText += '\n\ttravelDesc = "$1"\n$2';
+              }
+            }
+            item.insertText += "}$0";
+          } else if (inheritsThingTemplate) {
+            //if(implementsTravelConnector) {
+
+            let shouldExpandTemplate = isARoom;
+            if (!isARoom) {
+              const thingIdx = heritage.findIndex((x) => x === "Thing");
+              const travelConnectorIdx = heritage.findIndex((x) => x === "TravelConnector");
+
+              // Only use template for  'name' 'desc' if
+              // has ThingIdx has higher precedence than TravelConnector.
+              // (it will then have a lower number in the inheritance chain)
+              shouldExpandTemplate = thingIdx < travelConnectorIdx;
+            }
+
+            if (shouldExpandTemplate) {
+              if (isUsingAdv3Lite()) {
+                item.insertText = item.label + " '${2:" + objId + "}' '$4;\n$0";
+              } else {
+                item.insertText = item.label + " '${2:" + objId + "}' '${3:" + objId + "}'$4;\n$0";
+              }
             } else {
-              item.insertText = item.label + " '${2:" + objId + "}' '${3:" + objId + "}'$4;\n$0";
+              item.insertText = item.label + " { $0}";
             }
           }
         }
         return item;
       });
+      */
+
+      templateCompletionItems.forEach(x=>completionItems.push(x))
+
+      return completionItems;
     }
 
     // Matches a direction assignment, collect all symbols inheriting TravelConnector
@@ -243,6 +309,17 @@ export async function onCompletion(
           const item = CompletionItem.create(key);
           item.kind = CompletionItemKind.Keyword;
           suggestions.set(key, item);
+
+          // Add all the short-form for the Action(s) as keywords also
+          // TODO: Note, room for improvement: we could accidentally match an
+          // object or class that follows the same convention. Better to
+          // keep track of the actions via the macros
+          if (key.match(/^[A-Z][a-z]+Action$/)) {
+            const item = CompletionItem.create(key.slice(0, -6));
+            item.kind = CompletionItemKind.TypeParameter;
+            applyDocumentation(item);
+            suggestions.set(key, item);
+          }
         }
       }
     }
@@ -344,7 +421,7 @@ export async function onCompletion(
         //const TODO = symbolManager.assignmentDeclarations.get(fsPath)?.get(word);
 
         if (className) {
-          connection.console.log(className);
+          //connection.console.log(className);
           const variableName = memberCallMatch[1];
           return getSuggestedProperty(
             handler.position.line,
@@ -360,7 +437,6 @@ export async function onCompletion(
 
   // Add local keywords that hasn't yet been compiled and because of this isn't part
   // of the collection
-
   for (const word of [...shortTermMemoryKeyword]) {
     cachedKeyWords?.set(word, CompletionItem.create(word));
   }
@@ -370,6 +446,7 @@ export async function onCompletion(
   const mappedResults = results.map((x: any) => x.obj);
   return mappedResults;
 }
+
 
 function applyDocumentation(item: CompletionItem) {
   let documentation = "";
@@ -491,3 +568,5 @@ function getSuggestedProperty(
   const mappedResult = results.map((x: any) => x.obj);
   return mappedResult;
 }
+
+

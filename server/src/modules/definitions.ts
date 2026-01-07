@@ -6,9 +6,9 @@ import { URI } from "vscode-uri";
 import { SymbolKind } from "vscode-languageserver";
 import { getDefineMacrosMap } from "../parser/preprocessor";
 import { connection } from "../server";
-import { preprocessedFilesCacheMap } from "../server";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { extractCurrentLineFromDocument } from "./utils";
+import { serverState } from '../state';
 
 const onWindowsPlatform = process.platform === "win32";
 
@@ -334,7 +334,7 @@ function findMembers(
     ]);
 
     // Sort by compilation order
-    const compiledFilesList = [...preprocessedFilesCacheMap.keys()].reverse();
+    const compiledFilesList = [...serverState.preprocessedFilesCacheMap.keys()].reverse();
     let orderedSuperClasses = [];
     for (const compiledFile of compiledFilesList) {
       const foundEntry = superclasses.find((x) => compareStringReverse(x.filePath, compiledFile));
@@ -565,7 +565,7 @@ function findObjects(sm: TadsSymbolManager, symbolName: string): Location[] {
   return locations;
 }
 
-function findMacros(symbolName: any): Location[] {
+export function findMacros(symbolName: any): Location[] {
   const locations = [];
   const macro = getDefineMacrosMap().get(symbolName);
   if (macro) {

@@ -2,7 +2,6 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 import { DocumentFormattingParams, TextDocuments, Range } from "vscode-languageserver";
 import { TextEdit } from "vscode-languageserver-types";
 import { wholeLineRegExp } from "../parser/preprocessor";
-import { preprocessedFilesCacheMap } from "../server";
 import { CharStreams, CommonTokenStream } from "antlr4ts";
 import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
 import Tads3FormatterSymbolListener from "../parser/Tads3FormatterSymbolListener";
@@ -10,6 +9,7 @@ import { Tads3Lexer } from "../parser/Tads3Lexer";
 import { Tads3Listener } from "../parser/Tads3Listener";
 import { Tads3Parser } from "../parser/Tads3Parser";
 import { URI } from "vscode-uri";
+import { serverState } from '../state';
 
 export function onDocumentFormatting(
   handler: DocumentFormattingParams,
@@ -20,7 +20,7 @@ export function onDocumentFormatting(
   const currentDocument = documents.get(textDocument.uri);
   const rows = currentDocument?.getText().split(wholeLineRegExp) ?? [];
   const path = URI.parse(textDocument.uri).fsPath;
-  const preprocessedText = preprocessedFilesCacheMap.get(path) ?? "";
+  const preprocessedText = serverState.preprocessedFilesCacheMap.get(path) ?? "";
   const formattedDocumentArray = formatDocument(
     preprocessedText,
     currentDocument?.getText() ?? "",

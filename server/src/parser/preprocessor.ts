@@ -67,7 +67,7 @@ export async function preprocessTads2Files(
   }
   processPreprocessedResult(result, preprocessedFilesCacheMap);
   const unprocessedRowsMap = countRowsOfUnprocessedFiles(
-    [...preprocessedFilesCacheMap?.keys()] ?? [],
+    [...preprocessedFilesCacheMap?.keys()],
     connection
   );
   postProcessPreprocessedResultTads(
@@ -95,7 +95,7 @@ export async function preprocessTads3Files(
   }
   processPreprocessedResult(result, preprocessedFilesCacheMap);
   const unprocessedRowsMap = countRowsOfUnprocessedFiles(
-    [...preprocessedFilesCacheMap?.keys()] ?? [],
+    [...preprocessedFilesCacheMap?.keys()],
     connection
   );
   postProcessPreprocessedResultTads(

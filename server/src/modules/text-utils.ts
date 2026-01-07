@@ -184,3 +184,167 @@ export function compareStringReverse(a: string, b: string): boolean {
   }
   return true;
 }
+
+export function createTemplateSnippetStrings(templateString: string, inheritedTemplates: string[] = []): string[] {
+  let sentenceStructures = tokenize(templateString, inheritedTemplates);
+  const snippetStrings: string[] = expandToSnippet(sentenceStructures).map((x) => x.join(""));
+  const distinctSnippetStrings = [...new Set(snippetStrings)];
+  return distinctSnippetStrings;
+}
+
+function tokenize(templateString: string, inheritedTemplates: string[] = []): any[] {
+  const templatePart = templateString?.split("template")[1] ?? "";
+  if (templatePart === undefined || templatePart == "") {
+    return [];
+  }
+  const parts =
+    templatePart
+      ?.trim()
+      .split(/\s+|;/)
+      ?.filter((x) => x !== "") ?? [];
+
+  let words = [];
+  let nextIsVariantPart = false; // Keep state if the next part in the template is a variant of a template part
+
+  for (let idx = 0; idx < parts.length; idx++) {
+    let p = parts[idx];
+    if (p === "") {
+      continue;
+    }
+    let isOptional = p.endsWith("?"); // Find out if optional
+
+    // Almost as an #include, if this inherits superclasse's template, expand them 
+    // here and replace the inherited keyword
+
+    if (p.match(/inherited/)) {
+      if (inheritedTemplates.length > 0) {
+        const expandedInheritance = inheritedTemplates.map((x) => expandToSnippet(tokenize(x), true)).join();
+        p = expandedInheritance;
+        isOptional = true; // inherited works as optional
+      } else {
+        continue; // If we don't find any inheritance to expand, we just skip past the inherited keyword
+      }
+    }
+
+    if (isOptional) {
+      p = p.slice(0, -1); // Remove the question mark if exists
+    }
+
+    let inherited = false;
+    let startSignLength = 1;
+    let startSign = p[0] ?? "";
+
+    // TODO: More special tokens, better handling needed for all the other token signs of variable lengths
+    //
+    const startSignIsSpecialToken = !startSign.match(/[A-Za-z]/); // The inverse: It's not alpha, so it's special
+    if (startSignIsSpecialToken) {
+      if (startSign === "-" && p[1] === ">") {
+        startSignLength = 2;
+        startSign = "->";
+      } else if (startSign === ">" && p[1] === ">") {
+        startSignLength = 2;
+        startSign = ">>";
+      } else if (startSign === "<" && p[1] === "<") {
+        startSignLength = 2;
+        startSign = "<<";
+      }
+    } else {
+      startSignLength = 0;
+      startSign = "";
+      inherited = p === "inherited" ? true : false;
+    }
+
+    let endSign = p.slice(-1);
+    const endSignIsSpecialToken = !endSign.match(/[A-Za-z]/); // The inverse: It's not alpha, so it's special
+
+    let endSignLength = 1;
+    if (endSign === "<" && p[p.length - 2] === "<") {
+      endSign = "<<";
+      endSignLength = 2;
+    } else if (endSign === ">" && p[p.length - 2] === ">") {
+      endSign = ">>";
+      endSignLength = 2;
+    }
+
+    // Sometimes the endsign is not a special token, in that case we don't slice away the end token
+    if (endSignIsSpecialToken) {
+      p = p.slice(startSignLength, -endSignLength); // Remove start sign and end sign, e.g: symmetrical variants such as ' or ". Or start
+    } else {
+      p = p.slice(startSignLength); // Just remove the non symmetrical start sign, such as @ or + or -
+      endSign = "";
+    }
+
+    const variant = {
+      symbolName: p,
+      startSign: startSign,
+      endSign: endSign,
+      isOptional: isOptional,
+      inherited: inherited,
+    };
+
+    // Either we increase the variants for the previous word
+    if (!nextIsVariantPart) {
+      // Add word here except in the case where the token is a single question mark '?'
+      // Then the whole group of the previous variants needs to be marked as optionals
+      // Change them and don't add anything
+      if (parts[idx] === "?") {
+        if (words.length - 1 > 0 && words[words.length - 1] !== undefined) {
+          words[words.length - 1].variants.forEach((x) => (x.isOptional = true));
+        }
+      } else {
+        words.push({
+          variants: [variant],
+        });
+      }
+      // Or we create a new word part here
+    } else {
+      // If the new part is optional, we add an empty alternative too
+      //const variants: [] = isOptional? [variant, variant] ? [variant]
+      words[words.length - 1].variants.push(variant);
+    }
+
+    const nextToken = parts[idx + 1];
+    if (nextToken === undefined) {
+      break;
+    }
+    const nextTokenFirstWord = nextToken[0];
+    if (nextTokenFirstWord === "|") {
+      nextIsVariantPart = true;
+      idx++; // Skip ahead to the next token, since it is a variant token '|'
+    } else {
+      nextIsVariantPart = false;
+    }
+  }
+  return words;
+}
+
+function expandToSnippet(input: any[], skipPlaceHolderIndex = false): string[][] {
+  const result: string[][] = [];
+  function walk(index: number, current: string[], placeholderIndex = 1) {
+    if (index === input.length) {
+      result.push([...current]);
+      return;
+    }
+
+    for (const variant of input[index].variants) {
+      // If Optional - walk first without nextPart
+      if (variant.isOptional) {
+        walk(index + 1, current, placeholderIndex);
+      }
+      if (!skipPlaceHolderIndex) {
+        const empty = variant.symbolName === "" && variant.startSign === "" && variant.endSign === "";
+        const nextPart = empty
+          ? ""
+          : `${variant.startSign}$\{${placeholderIndex}:${variant.symbolName}}${variant.endSign} `;
+        current.push(nextPart);
+      } else {
+        current.push(`${variant.startSign}${variant.symbolName}${variant.endSign} `);
+      }
+      walk(index + 1, current, placeholderIndex + 1);
+      current.pop();
+    }
+  }
+
+  walk(0, []);
+  return result;
+}

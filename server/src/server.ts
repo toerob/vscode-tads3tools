@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable @typescript-eslint/no-empty-function */
-import {  TextDocuments, SymbolKind } from "vscode-languageserver/node";
+import {  TextDocuments, SymbolKind, TextDocumentChangeEvent } from "vscode-languageserver/node";
 
 import {
   CancellationTokenSource,
@@ -8,6 +8,7 @@ import {
   DidChangeConfigurationNotification,
   TextDocumentSyncKind,
   InitializeResult,
+  TextDocumentContentChangeEvent,
 } from "vscode-languageserver-protocol";
 
 import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
@@ -28,7 +29,7 @@ import { onDocumentLinks } from "./modules/links";
 import { onHover } from "./modules/hover";
 import { CaseInsensitiveMap } from "./modules/CaseInsensitiveMap";
 import { onWorkspaceSymbol } from "./modules/workspace-symbols";
-import { markFileToBeCheckedForMacroDefinitions } from "./parser/preprocessor";
+import { markFileToBeCheckedForMacroDefinitions, preprocessTads3Files } from "./parser/preprocessor";
 import { URI } from "vscode-uri";
 import { serverState } from "./state";
 import { onDocumentFormatting } from "./modules/document-formatting";
@@ -38,12 +39,6 @@ import { onSignatureHelp } from "./modules/signature-helper";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require("wink-pos-tagger");
-
-const onWindowsPlatform = process.platform === "win32";
-
-export const preprocessedFilesCacheMap = onWindowsPlatform
-  ? new CaseInsensitiveMap<string, string>()
-  : new Map<string, string>();
 
 export const mapper = new MapObjectManager(symbolManager);
 
@@ -95,8 +90,8 @@ connection.onInitialize((params: InitializeParams) => {
       textDocumentSync: {
         openClose: true,
         willSave: true,
-        save: true,
-        change: TextDocumentSyncKind.Full,
+        save: true,        
+        change: TextDocumentSyncKind.Incremental,
       },
       hoverProvider: true,
       completionProvider: {
@@ -126,7 +121,9 @@ export let abortParsingProcess: CancellationTokenSource | undefined;
 connection.onInitialized(() => {
   if (hasConfigurationCapability) {
     // Register for all configuration changes.
-    connection.client.register(DidChangeConfigurationNotification.type, undefined);
+    
+    // TODO: fix:
+    // connection.client.debug(DidChangeConfigurationNotification.type, undefined);
   }
   if (hasWorkspaceFolderCapability) {
     connection.workspace.onDidChangeWorkspaceFolders((_event: any) => {
@@ -241,16 +238,89 @@ connection.onDidChangeConfiguration((change:any) => {
   documents.all().forEach(validateTextDocument);
 });
 
+
+
+
+interface BlockArea {
+  kind: "method" | "function" | "class" | "object";
+  start: number;
+  end: number;
+}
+
+let snapshot: Record<string, BlockArea[]> = {};
+
+function applyDeltas(fsPath: URI, changes: TextDocumentContentChangeEvent[]) {
+    const blocks = snapshot[fsPath.fsPath];
+    if (!blocks) return;
+
+    for (const c of changes) {
+        /*const lineDelta = c.text.split("\n").length - (c.range.end.line - c.range.start.line + 1);
+
+        for (const block of blocks) {
+            // Om förändringen ligger *innan* blocket → skjut blockets linjer
+            if (c.range.end.line < block.start) {
+                block.start += lineDelta;
+                block.end += lineDelta;
+            }
+            // Om förändringen är *inne i blocket* → bara ändra end tills nästa save korrigerar
+            else if (c.range.start.line >= block.start && c.range.start.line <= block.end) {
+                block.end += lineDelta;
+            }
+        }*/
+    }
+}
+
+
 // Only keep settings for open documents
 documents.onDidClose((e) => {
   documentSettings.delete(e.document.uri);
 });
 
+
+documents.onDidChangeContent(async (params) => {
+  // Save every change the user does
+  // TODO: Preprocess with a debounce of 200ms
+  // NOTE: preprocess is not available for a single file since t3make parses them all.
+
+  //const filepath = params.document.uri;
+
+  /*try {
+    const t3makeCompilerPath: string = (await connection.workspace.getConfiguration("tads3.compiler.path")) ?? "t3make";
+    await preprocessTads3Files(makefileLocation, preprocessedFilesCacheMap, t3makeCompilerPath, connection);
+  } catch (error: any) {
+
+  }*/
+  const text = params.document.getText();
+  serverState.currentDocChanges = params.document.getText();
+});
+
+connection.onNotification("client.cursorMoved", (data) => {
+  // Keep track of the cursor
+  // TODO: needed?
+  serverState.currentCursorLocation = { fsPath: data.uri, line: data.line };
+});
+
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
-documents.onDidChangeContent(async (params: any) => {
+/*documents.onDidChangeContent(async (params: TextDocumentChangeEvent<TextDocument>) => {
   validateTextDocument(params.document);
-});
+
+  if(params?.document) {
+    params.
+    const text = params.document.offsetAt();
+    const text = params.document.getText();
+    console.log(text);
+    // Track all delta changes
+    // Plocka upp delta och uppdatera snapshot
+    // applyDeltas(fsPath, contentChanges);
+
+  // Vill du? Uppdatera en liten "latestDoc" cache
+  //const doc = documents.get(change.textDocument.uri);
+  //if (doc) latestDocCache[fsPath] = doc;
+  }
+});*/
+
+
 
 documents.onWillSave(async (params: any) => {
   const fp = URI.parse(params.document.uri).path;
@@ -265,7 +335,7 @@ connection.onCodeAction(async (handler: any) => onCodeAction(handler, documents,
 connection.onWorkspaceSymbol(async (handler: any) => onWorkspaceSymbol(handler, documents, symbolManager));
 connection.onDocumentSymbol(async (handler: any) => onDocumentSymbol(handler, documents, symbolManager));
 connection.onReferences(async (handler: any) =>
-  onReferences(handler, documents, symbolManager, preprocessedFilesCacheMap),
+  onReferences(handler, documents, symbolManager, serverState.preprocessedFilesCacheMap),
 );
 
 connection.onDefinition(async (handler:any) => onDefinition(handler, documents, symbolManager));
@@ -285,8 +355,8 @@ connection.onSignatureHelp(async (handler: any) => onSignatureHelp(handler, docu
 connection.onRequest("request/extractQuotes", async (params: any) => {
   if (params.fsPath === undefined) {
     let resultArray: string[] = [];
-    for (const key of preprocessedFilesCacheMap.keys()) {
-      const prepText = preprocessedFilesCacheMap.get(key) ?? "";
+    for (const key of serverState.preprocessedFilesCacheMap.keys()) {
+      const prepText = serverState.preprocessedFilesCacheMap.get(key) ?? "";
       const result = tokenizeQuotesWithIndex(prepText);
       const fileResultArray = [...result.values()];
       resultArray = [...resultArray, ...fileResultArray];
@@ -305,7 +375,7 @@ connection.onRequest("request/extractQuotes", async (params: any) => {
   }
 
   const { text, fsPath } = params;
-  const prepText = preprocessedFilesCacheMap.get(fsPath) ?? "";
+  const prepText = serverState.preprocessedFilesCacheMap.get(fsPath) ?? "";
   const result = tokenizeQuotesWithIndex(prepText);
   let resultArray = [...result.values()];
   if (params.types === "single") {
@@ -319,7 +389,7 @@ connection.onRequest("request/extractQuotes", async (params: any) => {
 
 connection.onRequest("request/preprocessed/file", async (params: any) => {
   const { path, range } = params;
-  const text = preprocessedFilesCacheMap.get(path);
+  const text = serverState.preprocessedFilesCacheMap.get(path);
   await connection.sendNotification("response/preprocessed/file", {
     path,
     text,
@@ -329,7 +399,7 @@ connection.onRequest("request/preprocessed/file", async (params: any) => {
 connection.onRequest("request/analyzeText/findNouns", async (params: any) => {
   const { path, position, text } = params;
 
-  const preprocessedText = preprocessedFilesCacheMap.get(path);
+  const preprocessedText = serverState.preprocessedFilesCacheMap.get(path);
   const array = preprocessedText?.split(/\r?\n/) ?? [];
   const line = array[position.line];
 
@@ -382,13 +452,14 @@ function newFunction(handler: any) {
   return onHover(handler, documents, symbolManager);
 }
 
-function analyzeText(text: string) {
+export function analyzeText(text: string) {
   const tagger = posTagger();
   const tagged = tagger.tagSentence(text);
   const nnTagged = tagged.filter((x: any) => x.pos.startsWith("NN"));
   const uniqueValues = new Set(nnTagged.map((x: any) => x.value as string));
   return [...uniqueValues];
 }
+
 const regExp = /^(.*)_(in|out)$/;
 
 function parseDirection(directionName: any): string | undefined {

@@ -236,6 +236,10 @@ async function registerWorkspaceAndWindowHooks(
   ctx.subscriptions.push(
     window.onDidChangeTextEditorSelection((evt: TextEditorSelectionChangeEvent) => {
       extensionState.lastChosenTextEditor = evt.textEditor;
+      client.sendNotification("client.cursorMoved", {
+        uri: evt.textEditor.document.uri.toString(),
+        line: evt.selections[0].active.line 
+      });
     }),
   );
 

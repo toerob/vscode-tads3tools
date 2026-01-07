@@ -3,7 +3,7 @@ import { preprocessTads3Files, preprocessTads2Files } from "./parser/preprocesso
 import { statSync, readFileSync, writeFileSync, existsSync } from "fs";
 import { URI, Utils } from "vscode-uri";
 import { spawn, Pool, Worker, Thread } from "threads";
-import { preprocessedFilesCacheMap, connection } from "./server";
+import { connection } from "./server";
 import { clearCompletionCache } from "./modules/completions";
 import { basename } from "path";
 import * as path from "path";
@@ -11,6 +11,7 @@ import { ensureDirSync, ensureFileSync } from "fs-extra";
 import { parseTads2Files } from "./parseTads2Files";
 import { symbolManager } from "./modules/symbol-manager";
 import { filterForStandardLibraryFiles } from "./modules/utils";
+import { serverState } from './state';
 
 /**
  * Reads and parses the makefile to get additional information
@@ -74,12 +75,12 @@ export async function preprocessAndParseTads2Files(
       (await connection.workspace.getConfiguration("tads2.library.path")) ?? "/usr/local/share/frobtads/tads2/";
     await preprocessTads2Files(
       mainFileLocation,
-      preprocessedFilesCacheMap,
+      serverState.preprocessedFilesCacheMap,
       t2PreprocessorPath,
       [libFolder],
       connection,
     );
-    await connection.sendNotification("response/preprocessed/list", [...preprocessedFilesCacheMap.keys()]);
+    await connection.sendNotification("response/preprocessed/list", [...serverState.preprocessedFilesCacheMap.keys()]);
   } catch (error: any) {
     connection.console.error(error.message);
     await connection.sendNotification("symbolparsing/allfiles/failed", {
@@ -128,7 +129,7 @@ export async function preprocessAndParseTads3Files(
 
   try {
     const t3makeCompilerPath: string = (await connection.workspace.getConfiguration("tads3.compiler.path")) ?? "t3make";
-    await preprocessTads3Files(makefileLocation, preprocessedFilesCacheMap, t3makeCompilerPath, connection);
+    await preprocessTads3Files(makefileLocation, serverState.preprocessedFilesCacheMap, t3makeCompilerPath, connection);
   } catch (error: any) {
     connection.console.error(error.message);
     await connection.sendNotification("symbolparsing/allfiles/failed", {
@@ -137,7 +138,7 @@ export async function preprocessAndParseTads3Files(
     return;
   }
 
-  await connection.sendNotification("response/preprocessed/list", [...preprocessedFilesCacheMap.keys()]);
+  await connection.sendNotification("response/preprocessed/list", [...serverState.preprocessedFilesCacheMap.keys()]);
 
   let allFilePaths = filePaths;
 
@@ -147,7 +148,7 @@ export async function preprocessAndParseTads3Files(
 
   if (filePaths === undefined) {
     initialParsing = true;
-    allFilePaths = [...preprocessedFilesCacheMap.keys()];
+    allFilePaths = [...serverState.preprocessedFilesCacheMap.keys()];
 
     // Sort by size, size ordering, the largest files goes first:
     allFilePaths = allFilePaths.sort((a: string, b: string) => statSync(b).size - statSync(a).size);
@@ -196,7 +197,7 @@ export async function preprocessAndParseTads3Files(
     const startTime = Date.now();
     connection.console.debug(`Spawning worker to parse a single file: ${filePath}`);
     const worker = await spawn(new Worker("./worker"));
-    const text = preprocessedFilesCacheMap.get(filePath) ?? "";
+    const text = serverState.preprocessedFilesCacheMap.get(filePath) ?? "";
     const jobResult = await worker(filePath, text);
     connection.console.debug(`Worker finished with result`);
     const {
@@ -238,7 +239,7 @@ export async function preprocessAndParseTads3Files(
 
     const workerPool = Pool(() => spawn(new Worker("./worker")), poolSize);
 
-    const libraryFilePaths = filterForStandardLibraryFiles([...preprocessedFilesCacheMap.keys()]);
+    const libraryFilePaths = filterForStandardLibraryFiles([...serverState.preprocessedFilesCacheMap.keys()]);
 
     try {
       const startTime = Date.now();
@@ -273,7 +274,7 @@ export async function preprocessAndParseTads3Files(
             // TODO consider report file before processing it:
             // e.g connection.sendNotification('symbolparsing/processing', [filePath, tracker, totalFiles, poolSize]);
 
-            const text = preprocessedFilesCacheMap.get(filePath) ?? "";
+            const text = serverState.preprocessedFilesCacheMap.get(filePath) ?? "";
             const {
               symbols,
               keywords,

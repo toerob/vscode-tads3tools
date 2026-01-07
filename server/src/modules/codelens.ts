@@ -1,8 +1,9 @@
-import { CodeLens, TextDocuments, Range, CodeLensParams, Command } from "vscode-languageserver";
+import { CodeLens, TextDocuments, Range, CodeLensParams, Command, Position, SymbolKind } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { URI } from "vscode-uri";
-import { connection, preprocessedFilesCacheMap } from "../server";
+import { analyzeText, connection } from "../server";
 import { TadsSymbolManager } from "./symbol-manager";
+import { serverState } from "../state";
 
 export async function onCodeLens(
   { textDocument }: CodeLensParams,
@@ -10,7 +11,6 @@ export async function onCodeLens(
   symbolManager: TadsSymbolManager,
 ) {
   const codeLenses: CodeLens[] = [];
-
   const configuration = await connection.workspace.getConfiguration("tads3");
   const enablePreprocessorCodeLens = configuration["enablePreprocessorCodeLens"];
 
@@ -22,10 +22,13 @@ export async function onCodeLens(
     return await codeLenses;
   }
 
-  const preprocessedDocument = preprocessedFilesCacheMap.get(fsPath);
+  connection.console.info("Gathering code lenses");
+
+  const preprocessedDocument = serverState.preprocessedFilesCacheMap.get(fsPath);
   const preprocessedDocumentArray = preprocessedDocument?.trimEnd().split(/\r?\n/);
 
   if (!currentDoc || !preprocessedDocumentArray) {
+    connection.console.info("Leaving code lenses early");
     return [];
   }
 
@@ -37,6 +40,11 @@ export async function onCodeLens(
   // be out of sync, and the codelens will be seen at incorrect
   // positions
 
+  if (currentDocArray.length != serverState.currentDocChanges?.length) {
+    // TODO: sync here (preprocess)
+    // using: serverState.currentDocChanges
+  }
+
   if (currentDocArray.length !== preprocessedDocumentArray.length) {
     connection.console.debug(
       `Document number of rows diverging from preprocessed document, skipping codelens this time around`,
@@ -44,6 +52,7 @@ export async function onCodeLens(
     return [];
   }
 
+  connection.console.info("Code lenses - checking includes");
   for (let row = 0; row < currentDoc.lineCount; row++) {
     const preprocessedLine = preprocessedDocumentArray[row];
     if (preprocessedLine === undefined) {
@@ -68,25 +77,107 @@ export async function onCodeLens(
     }
 
     if (preprocessedLine !== "" && preprocessedLine !== ";") {
-      const range = Range.create(row, 0, row, t.length);
-      if (range) {
-        codeLenses.push({
-          range: range,
-          command:
-            // TODO: find another solution so the preprocessed text
-            // doesn't need to be sent until the player clicks the CodeLens
-            Command.create(`preprocessed to: ${preprocessedLine}`, "tads3.showPreprocessedTextAction", [
-              range,
-              currentDoc.uri,
-              preprocessedDocument,
-            ]),
-        });
+      if (t.trim() !== preprocessedLine.trim()) {
+        const range = Range.create(row, 0, row, t.length);
+        if (range) {
+          codeLenses.push({
+            range: range,
+            command:
+              // TODO: find another solution so the preprocessed text
+              // doesn't need to be sent until the player clicks the CodeLens
+              Command.create(`preprocessed to: ${preprocessedLine}`, "tads3.showPreprocessedTextAction", [
+                range,
+                currentDoc.uri,
+                preprocessedDocument,
+              ]),
+          });
+        }
       }
     }
   }
+
+
+  // TODO: preprocess if there was a change by the user
+  // serverState.currentDocChanges;
+  
+  // TODO: gör code actions istället?
+  const highLevelObjectsInFile = symbolManager.findAllSymbols(currentDoc.uri, [SymbolKind.Object]);
+  for(const object of highLevelObjectsInFile) {
+    object.symbol.range.start
+
+    codeLenses.push({
+        range: {
+          start: { line: object.symbol.range.start.line, character: 0 },
+          end:   { line: object.symbol.range.start.line, character: 0 }
+        },
+        command: {
+          title: `🔍*** TODO: fixa decorations ****`,
+          command: "lsp.generateNounSnippetsForParagraph",
+          arguments: [fsPath, object.symbol.range]
+        }
+      });
+  }
+
+  /*
+
+  // TODO: find descriptions
+
+  //symbolManager.findDescriptions()
+
+  const cursorLine = serverState.currentCursorLocation?.line;
+  connection.console.info(`Code lenses - checking cursor line ${cursorLine}`);
+  if(cursorLine) {
+    
+    const paragraph = findParagraphRange(currentDoc, cursorLine);
+
+    //const startPos = Position.create(paragraph.start, 0);
+    //const endPos = Position.create(paragraph.end, 0);
+    //const obj = symbolManager.findContainingObject(currentDoc.uri, p);
+    //const textWithinQuotes = currentDoc.getText(Range.create(startPos, endPos) )
+    //const tree = analyzeText(textWithinQuotes);
+    codeLenses.push({
+      range: {
+        start: { line: paragraph.start, character: 0 },
+        end:   { line: paragraph.start, character: 0 }
+      },
+      command: {
+        title: `🔍 \${nouns.length} substantiv i stycket — generera snippet`,
+        command: "lsp.generateNounSnippetsForParagraph",
+        arguments: [fsPath, paragraph]
+      }
+    });
+  }
+
+
+  */
   return codeLenses;
 }
 
+function findParagraphRange(doc: TextDocument, cursorLine: number) {
+  const max = doc.lineCount - 1;
+  let start = cursorLine;
+  let end = cursorLine;
+
+  // Gå uppåt tills tom rad eller top-of-file
+  while (start > 0) {
+    //const t = doc.lineAt(start - 1).text.trim();
+    // Hitta raden i dokumentet
+    /*doc.getText(start - 1, 0).
+    const t = doc.lineAt(start - 1).text.trim();
+    if (t === "") break;
+    start--;*/
+  }
+  /*
+
+  // Gå nedåt tills tom rad eller end-of-file
+  while (end < max) {
+    const t = doc.lineAt(end + 1).text.trim();
+    if (t === "") break;
+    end++;
+  }*/
+
+  return { start, end };
+}
 /*import { window } from 'rxjs/operators';
 import * as vscode from 'vscode';
 import { Range } from 'vscode';

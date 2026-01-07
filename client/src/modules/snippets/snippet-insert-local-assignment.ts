@@ -5,6 +5,7 @@ import {
 
 export async function insertLocalAssignment(uri, snippetString, line, startPos, endPos) {
   const snippet = new SnippetString(snippetString);
+  
   const editor = window.activeTextEditor;
   if (editor && editor.document.uri.toString() === uri.toString()) {
     const startPosition = new Position(line, startPos);
