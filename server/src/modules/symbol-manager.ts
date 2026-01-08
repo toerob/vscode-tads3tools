@@ -257,8 +257,17 @@ export class TadsSymbolManager {
   getTemplatesFor(
     symbolName: string,
     addInheritedTemplates = true,
+    getAllRelatedTemplates = false
   ): { templates: DocumentSymbol[]; inherited: DocumentSymbol[] } {
     // Simple variant witout inheritance
+    if(getAllRelatedTemplates) {
+      const superClasses = this.findHeritage(symbolName);
+      return {
+        templates: [...(this.getTemplates() ?? [])].filter((x) => superClasses.includes(x.name)),
+        inherited: [],
+      };
+    }
+
     if (!addInheritedTemplates) {
       return {
         templates: [...(this.getTemplates() ?? [])].filter((x) => symbolName === x.name),
@@ -425,18 +434,28 @@ export class TadsSymbolManager {
     return methodsContainingRange?.length > 0;
   }
 
+  isPositionWithinObject(fsPath: string, pos: Position): boolean {
+    const allClassesAndObjects = this.findAllSymbolsByKind(fsPath, [SymbolKind.Object, SymbolKind.Class]);
+    const containingRange =
+      allClassesAndObjects?.map((x) => x.symbol.range)?.filter((x) => pos.line >= x.start.line && pos.line <= x.end.line) ??
+      [];
+    return containingRange?.length >= 0;
+  }
+
   offsetSymbols(filePath: any, line: any, lineOffset: any) {
     const symbols = this.symbols.get(filePath) ?? []; //?.filter(x=>x.range.start.line>=line) ?? [];
     for (const symbol of symbols) {
       if (symbol.range.start.line >= line) {
         symbol.range.start.line += lineOffset;
         symbol.range.end.line += lineOffset;
+        symbol.selectionRange = symbol.range;
       }
       const childrenSymbols = symbol.children?.filter((x) => x.range.start.line >= line) ?? [];
       for (const symbol of childrenSymbols) {
         symbol.range.start.line += lineOffset;
         symbol.range.end.line += lineOffset;
-      }
+        symbol.selectionRange = symbol.range;
+      }      
     }
   }
 }

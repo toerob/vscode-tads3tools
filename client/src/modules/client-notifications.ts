@@ -3,7 +3,7 @@ import { workspace, window, Uri, ViewColumn, DocumentSymbol, WebviewPanel } from
 import { LanguageClient } from 'vscode-languageclient/node';
 import { connectRoomsWithProperties } from "./visual-editor/map-editor-sync";
 import { findNouns } from "./commands/find-nouns";
-import { preprocessedFilesMap, getPersistedObjectPositions, getVisualEditor } from "../extension";
+import { getPersistedObjectPositions, getVisualEditor } from "../extension";
 import { ExtensionStateStore } from "./state";
 
 export function setupClientNotifications(client: LanguageClient, extensionState: ExtensionStateStore) {
@@ -84,7 +84,7 @@ export function setupClientNotifications(client: LanguageClient, extensionState:
   });
 
   client.onNotification("response/preprocessed/file", ({ path, text }) => {
-    preprocessedFilesMap.set(path, text);
+    extensionState.preprocessedFilesMap.set(path, text);
     client.info(`Server response for ${path}: ` + text);
     workspace
       .openTextDocument({ language: "tads3", content: text })

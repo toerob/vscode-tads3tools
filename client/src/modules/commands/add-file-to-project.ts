@@ -28,11 +28,9 @@ export async function addFileToProject(context: ExtensionContext, extensionState
     userInput = `${userInput}.t`;
   }
 
-  // Find out the current language
+  // Set the current language
   const langCode = extensionState?.makefileDefinitions.get("LANGUAGE") ?? "en_us";
-
   const makefileUri = extensionState.getChosenMakefileUri();
-
   const usingAdv3Lite = extensionState.isUsingAdv3Lite;
   const extensionUri = context.extensionUri;
 

@@ -343,9 +343,6 @@ connection.onCompletion(async (handler:any) => onCompletion(handler, documents, 
 connection.onDocumentLinks(async (handler: any) => onDocumentLinks(handler, documents, symbolManager));
 connection.onCodeLens(async (handler: any) => onCodeLens(handler, documents, symbolManager));
 
-//onHover(handler: ServerRequestHandler<HoverParams, Hover | undefined | null, never, void>): Disposable;
-
-
 connection.onHover(async (handler:any) => onHover(handler, documents, symbolManager));
 connection.onDocumentFormatting(async (handler: any) => onDocumentFormatting(handler, documents));
 connection.onDocumentRangeFormatting(async (handler: any) => onDocumentRangeFormatting(handler, documents));
@@ -399,27 +396,7 @@ connection.onRequest("request/preprocessed/file", async (params: any) => {
 connection.onRequest("request/analyzeText/findNouns", async (params: any) => {
   const { path, position, text } = params;
 
-  const preprocessedText = serverState.preprocessedFilesCacheMap.get(path);
-  const array = preprocessedText?.split(/\r?\n/) ?? [];
-  const line = array[position.line];
-
-  connection.console.debug(`Analyzing: ${line} / ${text}`);
-
-  if (line) {
-    const tree = analyzeText(line);
-
-    // Calculate where to best put the suggestions
-    const symbol = symbolManager.findClosestSymbolKindByPosition(path, [SymbolKind.Object], position);
-    if (symbol) {
-      const level = symbolManager.additionalProperties.get(path)?.get(symbol)?.level + 1;
-      //connection.console.debug(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
-      await connection.sendNotification("response/analyzeText/findNouns", {
-        tree,
-        range: symbol.range,
-        level,
-      });
-    }
-  }
+  await searchTextForNounsAndReportToClient(path, position, text);
 });
 
 connection.onRequest(
@@ -447,6 +424,30 @@ connection.onRequest(
 // for open, change and close text document events
 documents.listen(connection);
 connection.listen();
+
+export async function searchTextForNounsAndReportToClient(path: any, position: any, text: any) {
+  const preprocessedText = serverState.preprocessedFilesCacheMap.get(path);
+  const array = preprocessedText?.split(/\r?\n/) ?? [];
+  const line = array[position.line];
+
+  connection.console.debug(`Analyzing: ${line} / ${text}`);
+
+  if (line) {
+    const tree = analyzeText(text);
+
+    // Calculate where to best put the suggestions
+    const symbol = symbolManager.findClosestSymbolKindByPosition(path, [SymbolKind.Object], position);
+    if (symbol) {
+      const level = symbolManager.additionalProperties.get(path)?.get(symbol)?.level + 1;
+      //connection.console.debug(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
+      await connection.sendNotification("response/analyzeText/findNouns", {
+        tree,
+        range: symbol.range,
+        level,
+      });
+    }
+  }
+}
 
 function newFunction(handler: any) {
   return onHover(handler, documents, symbolManager);

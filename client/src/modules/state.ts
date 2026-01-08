@@ -40,7 +40,9 @@ export class ExtensionStateStore {
   private _selectedObject: DocumentSymbol;
   private _lastChosenTextEditor: TextEditor;
 
-  makefileDefinitions: Map<string, string>;
+  private _makefileDefinitions: Map<string, string>;
+  
+  private _preprocessedFilesMap: any; // Can this go?
 
   public get storageManager(): LocalStorageService {
     return this._storageManager;
@@ -72,6 +74,18 @@ export class ExtensionStateStore {
   }
   public set lastChosenTextDocument(value: TextEditor | undefined) {
     this._lastChosenTextDocument = value;
+  }
+  public get preprocessedFilesMap(): any {
+    return this._preprocessedFilesMap;
+  }
+  public set preprocessedFilesMap(value: any) {
+    this._preprocessedFilesMap = value;
+  }
+public get makefileDefinitions(): Map<string, string> {
+    return this._makefileDefinitions;
+  }
+  public set makefileDefinitions(value: Map<string, string>) {
+    this._makefileDefinitions = value;
   }
 
   constructor() {

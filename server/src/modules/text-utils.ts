@@ -2,7 +2,7 @@ import { TextDocument, Position } from "vscode-languageserver-textdocument";
 
 const tokenizeRegExp = /[a-zA-Z0-9_]+/g;
 
-const quoteMatchRegExp = /(['](.*)[']|[']{3}(.*)[']{3}|["](.*)["]|["]{3}(.*)["]{3})/g;
+const quoteMatchRegExp = /([']{3}(.*)[']{3}|["]{3}(.*)["]{3}|['](.*)[']|["](.*)["])/g;
 
 /**
  * Converts a Position to Character offset.
@@ -186,13 +186,13 @@ export function compareStringReverse(a: string, b: string): boolean {
 }
 
 export function createTemplateSnippetStrings(templateString: string, inheritedTemplates: string[] = []): string[] {
-  let sentenceStructures = tokenize(templateString, inheritedTemplates);
+  let sentenceStructures = tokenizeTemplate(templateString, inheritedTemplates);
   const snippetStrings: string[] = expandToSnippet(sentenceStructures).map((x) => x.join(""));
   const distinctSnippetStrings = [...new Set(snippetStrings)];
   return distinctSnippetStrings;
 }
 
-function tokenize(templateString: string, inheritedTemplates: string[] = []): any[] {
+function tokenizeTemplate(templateString: string, inheritedTemplates: string[] = []): any[] {
   const templatePart = templateString?.split("template")[1] ?? "";
   if (templatePart === undefined || templatePart == "") {
     return [];
@@ -218,7 +218,7 @@ function tokenize(templateString: string, inheritedTemplates: string[] = []): an
 
     if (p.match(/inherited/)) {
       if (inheritedTemplates.length > 0) {
-        const expandedInheritance = inheritedTemplates.map((x) => expandToSnippet(tokenize(x), true)).join();
+        const expandedInheritance = inheritedTemplates.map((x) => expandToSnippet(tokenizeTemplate(x), true)).join();
         p = expandedInheritance;
         isOptional = true; // inherited works as optional
       } else {

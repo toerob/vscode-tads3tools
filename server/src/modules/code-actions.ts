@@ -8,13 +8,13 @@ import { getCurrentLine } from "./utils";
 import { addShortTermMemoryKeyword } from "./completions";
 import { URI } from "vscode-uri";
 import { ID } from "./constants";
+import { withinQuote } from "./text-utils";
 import { serverState } from "../state";
 
 const lastWordRegExp = new RegExp(/\s*(\w+)[^\w]*(\s*[(].*[)]\s*[;]?)?$/); // RegExp for the Last occurring word
 const assignmentRegExp = new RegExp(/\s*(.*)\s*[=]\s*(new\s+)?(.*)\s*/);
 
-const stringQuoteRegExp = /(?:["]|["]{3}|[']|[']{3})(.*)(?:["]|["]{3}|[']|[']{3})/
-
+const stringQuoteRegExp = /(?:["]|["]{3}|[']|[']{3})(.*)(?:["]|["]{3}|[']|[']{3})/;
 
 // TODO: Make run findSymbol less frequent?
 export async function onCodeAction(
@@ -25,10 +25,6 @@ export async function onCodeAction(
   const actions: CodeAction[] = [];
   const fsPath = URI.parse(params.textDocument.uri).fsPath;
   const uri = params.textDocument.uri;
-
-  
-
-
 
   const currentStartRange = { ...params.range.start };
   currentStartRange.line++;
@@ -42,15 +38,14 @@ export async function onCodeAction(
   */
   const currentDoc = documents.get(params.textDocument.uri);
 
-
-
   // TODO: look for check()-function above
-  const selectedText =  currentDoc?.getText(params.range);
-  if(selectedText) {
+  const selectedText = currentDoc?.getText(params.range);
+
+  if (selectedText) {
     const quote = stringQuoteRegExp.exec(selectedText);
-    if (quote && quote.length > 0) {      
+    if (quote && quote.length > 0) {
       const needTripleQuote = /\\'/.test(quote[1]);
-      const quoteType = needTripleQuote? "'''" : "'"
+      const quoteType = needTripleQuote ? "'''" : "'";
       actions.push({
         title: "Convert text to failCheck",
         kind: CodeActionKind.RefactorExtract,
@@ -62,21 +57,41 @@ export async function onCodeAction(
             `failCheck(${quoteType}${quote[1]}${quoteType});$0`,
             params.range.start.line,
             params.range.start.character,
-            params.range.end.character
+            params.range.end.character,
           ],
         },
       });
     }
-
   }
-
 
   const docSinceSave = serverState.currentDocChanges ?? "";
   const lineCountInDocSinceSave = docSinceSave.split(/\r?\n/).length;
 
   const tolerance =
-    currentDoc?.lineCount === lineCountInDocSinceSave || currentDoc?.lineCount === lineCountInDocSinceSave + 1;
-  const isValidPosition = sm.isPositionWithinCodeBlock(fsPath, params.range.start);
+    currentDoc?.lineCount === lineCountInDocSinceSave || 
+    currentDoc?.lineCount === (lineCountInDocSinceSave + 2);
+
+    const isWithinCodeBlock = sm.isPositionWithinCodeBlock(fsPath, params.range.start);
+
+  //---------------------------------------------
+  // Offer text analysis
+  //---------------------------------------------
+  // TODO: correctly distinguish if within a text block
+  if (!isWithinCodeBlock) {
+    const character_position = currentDoc?.offsetAt(params.range.start);
+    if (character_position) {
+      //const withinStringResult = withinQuote(currentDoc, params.range.start)
+      //if (withinStringResult) {
+      actions.push({
+        title: "Analyze text for nouns",
+        kind: CodeActionKind.QuickFix,
+        command: {
+          title: "Add decorations automatically based on text analysis",
+          command: "tads3.analyzeTextAtPosition",
+        },
+      });
+    }
+  }
 
   if (currentDoc === undefined || params.range?.start === undefined) {
     return [];
@@ -90,9 +105,6 @@ export async function onCodeAction(
     return [];
   }
 
-
-
-
   let symbolName = "";
 
   const match = lastWordRegExp.exec(currentLine); // Extract the last word on this line
@@ -105,7 +117,7 @@ export async function onCodeAction(
   const startingWord = currentLine.match(/\w/);
   const startPosition = startingWord?.index;
 
-  if(tolerance && isValidPosition) {
+  if (tolerance && isWithinCodeBlock) {
     identityAritmethicExpression(actions, currentLine, uri, cursorPosition);
     identityLocalAssignmentExpression(actions, currentLine, uri, cursorPosition, startPosition);
   }
@@ -197,26 +209,33 @@ export async function onCodeAction(
   return actions;
 }
 
-function locateMissingNounsInDescriptions(symbolManager: TadsSymbolManager, actions: CodeAction[], currentLine: string, uri: string, fsPath: string, cursorPosition: Position, currentDoc: TextDocument) {
+function locateMissingNounsInDescriptions(
+  symbolManager: TadsSymbolManager,
+  actions: CodeAction[],
+  currentLine: string,
+  uri: string,
+  fsPath: string,
+  cursorPosition: Position,
+  currentDoc: TextDocument,
+) {
   //const highLevelObjectsInFile1 = symbolManager.findAllSymbolsByKind(fsPath, [SymbolKind.Object]);
   const symbol = symbolManager.findContainingObject(
-      fsPath, 
-      //[SymbolKind.Object],
-      cursorPosition
+    fsPath,
+    //[SymbolKind.Object],
+    cursorPosition,
   );
   const nounSearchActions = [];
-  if(symbol) {
-
+  if (symbol) {
     //symbol.
-    if(symbol.detail?.endsWith('Room')) {
+    if (symbol.detail?.endsWith("Room")) {
       const roomDefinition = currentDoc.getText(symbol.range);
-      const pat = new RegExp(/\s+\"[^\"](.+)[^\"]\"\s+/, )
+      const pat = new RegExp(/\s+\"[^\"](.+)[^\"]\"\s+/);
       const res = pat.exec(roomDefinition);
-      
+
       console.log(roomDefinition);
     }
-    const descriptions = symbol.children?.filter(x=>x.name == "desc")
-  //for (const object of highLevelObjectsInFile1) {
+    const descriptions = symbol.children?.filter((x) => x.name == "desc");
+    //for (const object of highLevelObjectsInFile1) {
     nounSearchActions.push({
       title: "TODO...",
       kind: CodeActionKind.RefactorExtract,
@@ -226,9 +245,8 @@ function locateMissingNounsInDescriptions(symbolManager: TadsSymbolManager, acti
         arguments: [uri, symbol.range, cursorPosition.line, 0, currentLine.length],
       },
     });
-  //}
+    //}
   }
-
 }
 
 function createArrayAssignmentAction(
@@ -342,6 +360,6 @@ function identityLocalAssignmentExpression(
         arguments: [uri, newLocal, cursorPosition.line, startPosition, currentLine.length],
       },
     };
-    return action;
+    actions.push(action);
   }
 }

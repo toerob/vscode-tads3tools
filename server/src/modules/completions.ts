@@ -8,7 +8,6 @@ import {
   CompletionItemKind,
   SymbolKind,
   InsertTextFormat,
-  DocumentSymbol,
 } from "vscode-languageserver";
 import { flattenTreeToArray, TadsSymbolManager } from "./symbol-manager";
 import { TextDocument } from "vscode-languageserver-textdocument";
@@ -34,8 +33,7 @@ import {
   NEW_ASSIGNMENT_REGEXP,
   ID_U,
 } from "./constants";
-import { getCurrentLine } from "./utils";
-import { createTemplateSnippetStrings } from './text-utils';
+import { createTemplateSnippetStrings } from "./text-utils";
 
 let cachedKeyWords: Map<string, CompletionItem> | undefined = undefined;
 let shortTermMemoryKeyword: Set<string> = new Set();
@@ -75,14 +73,14 @@ export async function onCompletion(
   if (word === undefined) {
     word = getWordAtPosition(document, Position.create(handler.position.line, handler.position.character - 1));
   }
-  const currentTotalLineStr = getCurrentLine(document, handler.position.line);
+  //const currentTotalLineStr = getCurrentLine(document, handler.position.line);
 
   const currentLineRange = Range.create(handler.position.line, 0, handler.position.line, handler.position.character);
 
   const currentLineStr = document?.getText(currentLineRange) ?? "";
+  const fsPath = URI.parse(handler.textDocument.uri).fsPath;
   try {
     if (currentLineStr.match(`${WS}self.${word}`)) {
-      const fsPath = URI.parse(handler.textDocument.uri).fsPath;
       const symbol = symbolManager.findContainingObject(fsPath, handler.position);
       if (symbol) {
         const item = CompletionItem.create(symbol.name);
@@ -166,29 +164,41 @@ export async function onCompletion(
       item.preselect = true;
       suggestions.set(item.label, item);
 
-      let templateCompletionItems:CompletionItem[] = []
+      let templateCompletionItems: CompletionItem[] = [];
 
       const results = fuzzysort.go(word, [...suggestions.values()], { key: "label" });
-
-      results.forEach(x=>{
-        const {templates, inherited } = symbolManager.getTemplatesFor(x.obj.label);
-        for (const template of templates) {
-          // TODO: cache the results
-            if(template.detail) {
-              const inheritedTemplates: any[] = (inherited?.map(x=>x.detail) ?? []);
-              let variations: string[] = createTemplateSnippetStrings(template.detail, inheritedTemplates);
-              for(const variation of variations) {
-                const item = CompletionItem.create(`${x.obj.label} ${variation}`);
-                item.kind = CompletionItemKind.Snippet;
-                item.insertTextFormat = InsertTextFormat.Snippet;
-                item.insertText = `${x.obj.label} ` + variation.trimEnd()  + '${0};';
-                templateCompletionItems.push(item);
-              }
+      results.forEach((x) => {
+        const fsPath = URI.parse(handler.textDocument.uri).fsPath;
+        
+        // TODO: replace this
+        let isWithinObject = symbolManager.isPositionWithinObject(fsPath, handler.position);
+        if(isWithinObject) {
+          if(/*lastPreviousSign === ';' &&*/
+            currentLineStr.match(/^[a-zA-Z][a-zA-Z0-9_]*\s*[:]\s*R[a-zA-Z][a-zA-Z0-9_]+/)) {
+            isWithinObject = false;
           }
         }
-      })
 
-      let completionItems: CompletionItem[] = [];
+        const { templates, inherited } = symbolManager.getTemplatesFor(x.obj.label, true, true);
+        for (const template of templates) {
+          // TODO: cache the results
+          if (template.detail) {
+            const inheritedTemplates: any[] = inherited?.map((x) => x.detail) ?? [];
+            let variations: string[] = createTemplateSnippetStrings(template.detail, inheritedTemplates);
+            for (const variation of variations) {
+              let snippetString = `${x.obj.label} ${isWithinObject ? "{" : ""} ${variation.trimEnd()}${"${0};"} ${isWithinObject ? "}" : ""}`;
+              const item = CompletionItem.create(snippetString);
+              item.kind = CompletionItemKind.Snippet;
+              item.insertTextFormat = InsertTextFormat.Snippet;
+              item.labelDetails = { description: "template" };
+              item.insertText = snippetString;
+
+              templateCompletionItems.push(item);
+            }
+          }
+        }
+      });
+
       /*
       const completionItems = results.map((x: any) => {
         const item = x.obj;
@@ -252,10 +262,12 @@ export async function onCompletion(
         return item;
       });
       */
-
-      templateCompletionItems.forEach(x=>completionItems.push(x))
+      let completionItems: CompletionItem[] = [];
+      templateCompletionItems.forEach((x) => completionItems.push(x));
 
       return completionItems;
+
+      //templateCompletionItems.forEach((x) => suggestions.set(x.label, x));
     }
 
     // Matches a direction assignment, collect all symbols inheriting TravelConnector
@@ -447,7 +459,6 @@ export async function onCompletion(
   return mappedResults;
 }
 
-
 function applyDocumentation(item: CompletionItem) {
   let documentation = "";
   const symbolSearchResult = symbolManager.findSymbols(item.label, [SymbolKind.Class]);
@@ -568,5 +579,3 @@ function getSuggestedProperty(
   const mappedResult = results.map((x: any) => x.obj);
   return mappedResult;
 }
-
-

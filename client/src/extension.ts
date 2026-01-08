@@ -65,7 +65,8 @@ export function setErrorDiagnostics(diagnostics) {
 
 export const DEBOUNCE_TIME = 200;
 
-export const preprocessedFilesMap: Map<string, string> = new Map();
+
+
 export const persistedObjectPositions = new Map();
 
 export function getPersistedObjectPositions() {
@@ -197,7 +198,7 @@ function registerExtensionCommands(ctx: ExtensionContext, state: ExtensionStateS
     commands.registerCommand("tads3.downloadAndInstallExtension", () => dlInstallExtension(ctx)),
     commands.registerCommand("tads3.openProjectFileQuickPick", () => openProjectFileQuickPick(state, workspace)),
     commands.registerCommand("tads3.openInVisualEditor", () => openInVisualEditor(ctx, client)),
-    commands.registerCommand("tads3.analyzeTextAtPosition", analyzeTextAtPosition),
+    commands.registerCommand("tads3.analyzeTextAtPosition", () => analyzeTextAtPosition()),
     commands.registerCommand("tads3.extractAllQuotes", () => extractAllQuotes(ctx)),
     commands.registerCommand("tads3.installTracker", () => installTracker(ctx)),
     commands.registerCommand("tads3.clearCache", () => clearCache(ctx.globalStorageUri.fsPath)),

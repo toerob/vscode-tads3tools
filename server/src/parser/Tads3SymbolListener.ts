@@ -13,7 +13,6 @@ import { DocumentSymbolWithScope, ExpressionType } from "../modules/types";
 import { ScopedEnvironment } from "./ScopedEnvironment";
 import { Tads3Listener } from "./Tads3Listener";
 import {
-  AnonymousObjectExprContext,
   AssignmentExprContext,
   AssignmentStatementContext,
   CallWithParamsExprContext,
@@ -27,14 +26,11 @@ import {
   NewExprContext,
   ObjectDeclarationContext,
   ParamsContext,
-  ProgramContext,
   PropertyContext,
   PropertySetContext,
-  Tads3Parser,
   TemplateDeclarationContext,
 } from "./Tads3Parser";
 import { T3StringVisitor } from "./Tads3StringVisitor";
-import { TerminalNode } from 'antlr4ts/tree/TerminalNode';
 //import { DocumentUri } from 'vscode-languageserver-textdocument';
 
 export class ExtendedDocumentSymbolProperties {
@@ -480,7 +476,6 @@ export class Tads3SymbolListener implements Tads3Listener {
     this.callbackToRun = undefined;
     this.revertScope();
   }
-
   enterPropertySet(ctx: PropertySetContext) {
     if (ctx._prefix === undefined) {
       const firstParameter = ctx.paramsWithWildcard()?._parameters[0];
