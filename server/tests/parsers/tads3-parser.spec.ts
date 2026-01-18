@@ -395,7 +395,8 @@ describe("Tads3 parser tests", () => {
 
       // Verify hierarchy of object 1
       expect(listener.symbols[0].name).toBe("wizardsHouse");
-      expect(listener.symbols[0].children).toHaveLength(4);
+      expect(listener.symbols[0].children).toHaveLength(4); // TODO: broken, check parser in isolation
+
       expect(listener.symbols[0].children![0].name).toBe("east");
       expect(listener.symbols[0].children![1].name).toBe("anonymousObject#0");
       expect(listener.symbols[0].children![2].name).toBe("anonymousObject#1");

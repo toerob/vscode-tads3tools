@@ -34,9 +34,12 @@ import {
   ID_U,
 } from "./constants";
 import { createTemplateSnippetStrings } from "./text-utils";
+import { ShallowParser } from "./ShallowParser";
 
 let cachedKeyWords: Map<string, CompletionItem> | undefined = undefined;
 let shortTermMemoryKeyword: Set<string> = new Set();
+
+const shallowParser = new ShallowParser();
 
 export function clearCompletionCache() {
   connection.console.debug("Clearing keyword cache");
@@ -166,27 +169,31 @@ export async function onCompletion(
 
       let templateCompletionItems: CompletionItem[] = [];
 
+      const rangeFromStartToCursor = Range.create(0, 0, handler.position.line, handler.position.character);
+      const textTillCursor = document.getText(rangeFromStartToCursor);
+      const result = shallowParser.structurize(textTillCursor);
+      const lineInfo = result.get(handler.position.line + 1);
+      let isWithinObject = (lineInfo?.stateBefore?.objectDepth ?? 0) > 0;
+
       const results = fuzzysort.go(word, [...suggestions.values()], { key: "label" });
       results.forEach((x) => {
-        const fsPath = URI.parse(handler.textDocument.uri).fsPath;
-        
-        // TODO: replace this
-        let isWithinObject = symbolManager.isPositionWithinObject(fsPath, handler.position);
-        if(isWithinObject) {
-          if(/*lastPreviousSign === ';' &&*/
-            currentLineStr.match(/^[a-zA-Z][a-zA-Z0-9_]*\s*[:]\s*R[a-zA-Z][a-zA-Z0-9_]+/)) {
+        if (isWithinObject) {
+          if (
+            /*lastPreviousSign === ';' &&*/
+            currentLineStr.match(/^[a-zA-Z][a-zA-Z0-9_]*\s*[:]\s*R[a-zA-Z][a-zA-Z0-9_]+/)
+          ) {
             isWithinObject = false;
           }
         }
 
-        const { templates, inherited } = symbolManager.getTemplatesFor(x.obj.label, true, true);
+        const { templates, inherited } = symbolManager.getTemplatesFor(x.obj.label, true, false);
         for (const template of templates) {
           // TODO: cache the results
           if (template.detail) {
             const inheritedTemplates: any[] = inherited?.map((x) => x.detail) ?? [];
-            let variations: string[] = createTemplateSnippetStrings(template.detail, inheritedTemplates);
-            for (const variation of variations) {
-              let snippetString = `${x.obj.label} ${isWithinObject ? "{" : ""} ${variation.trimEnd()}${"${0};"} ${isWithinObject ? "}" : ""}`;
+            const { snippets } = createTemplateSnippetStrings(template.detail, inheritedTemplates);
+            for (const snippet of snippets) {
+              let snippetString = `${x.obj.label} ${isWithinObject ? "{" : ""} ${snippet.trimEnd()}${isWithinObject ? "}" : ";$0"}`;
               const item = CompletionItem.create(snippetString);
               item.kind = CompletionItemKind.Snippet;
               item.insertTextFormat = InsertTextFormat.Snippet;
