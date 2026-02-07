@@ -185,12 +185,11 @@ export function compareStringReverse(a: string, b: string): boolean {
   return true;
 }
 
-export function createTemplateSnippetStrings(templateString: string, inheritedTemplates: string[] = []): {snippets: string[], lastPlaceholderIndex: number} {
+export function createTemplateSnippetStrings(templateString: string, inheritedTemplates: string[] = []): string[] {
   let sentenceStructures = tokenizeTemplate(templateString, inheritedTemplates);
-  const {variants, lastPlaceholderIndex } = expandToSnippet(sentenceStructures);
-  const snippetStrings: string[] = variants.map((x) => x.join(""));
+  const snippetStrings: string[] = expandToSnippet(sentenceStructures).map((x) => x.join(""));
   const distinctSnippetStrings = [...new Set(snippetStrings)];
-  return { snippets: distinctSnippetStrings, lastPlaceholderIndex};
+  return distinctSnippetStrings;
 }
 
 function tokenizeTemplate(templateString: string, inheritedTemplates: string[] = []): any[] {
@@ -319,12 +318,12 @@ function tokenizeTemplate(templateString: string, inheritedTemplates: string[] =
   return words;
 }
 
-function expandToSnippet(input: any[], skipPlaceHolderIndex = false): {variants: string[][], lastPlaceholderIndex: number} {
+function expandToSnippet(input: any[], skipPlaceHolderIndex = false): string[][] {
   const result: string[][] = [];
   function walk(index: number, current: string[], placeholderIndex = 1) {
     if (index === input.length) {
       result.push([...current]);
-      return placeholderIndex;
+      return;
     }
 
     for (const variant of input[index].variants) {
@@ -344,9 +343,8 @@ function expandToSnippet(input: any[], skipPlaceHolderIndex = false): {variants:
       walk(index + 1, current, placeholderIndex + 1);
       current.pop();
     }
-    return placeholderIndex;
   }
 
-  const lastPlaceholderIndex = walk(0, []);
-  return {variants:result, lastPlaceholderIndex};
+  walk(0, []);
+  return result;
 }

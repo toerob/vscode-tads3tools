@@ -1,8 +1,11 @@
 import { workspace, window, Range, ViewColumn } from "vscode";
 import { showAndScrollToRange } from '../editor-utils';
+import { extensionState } from '../state';
 
-export async function showPreprocessedText(preprocessDocument, params: [any, any, any]) {
+export async function showPreprocessedText(params: [any, any, any]) {
   const [range, _, preprocessedText] = params;
+
+  let preprocessDocument = extensionState.preprocessDocument;
   if (preprocessDocument && !preprocessDocument.isClosed) {
     await window.showTextDocument(preprocessDocument, {
       viewColumn: ViewColumn.Beside,

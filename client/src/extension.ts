@@ -3,6 +3,7 @@ import { join } from "path";
 import {
   ExtensionContext,
   commands,
+  debug,
   window,
   CancellationTokenSource,
   Uri,
@@ -166,6 +167,22 @@ function getClientOptions() {
       { scheme: "untitled", language: "tads3" },
       { scheme: "file", language: "tads3" },
     ],
+    /*
+    middleware: {
+      provideHover: async (document, position, token, next) => {
+        const disableHoverDuringDebug = workspace.getConfiguration("tads3") .get("disableHoverDuringDebug", true);
+
+        if (disableHoverDuringDebug && debug.activeDebugSession?.type === "tads3") {
+          console.log(`Hover is disabled during debugging sessions, enable 'tads3.disableHoverDuringDebug' setting to change this behavior`);
+          return null;
+        }
+        console.log(`Providing hover for ${document.uri} at line ${position.line}`);
+
+        return next(document, position, token);
+      }
+    },
+    */
+
     synchronize: {
       fileEvents: workspace.createFileSystemWatcher("**/.{t,h,t3m,clientrc}"),
     },
@@ -191,7 +208,7 @@ function registerExtensionCommands(ctx: ExtensionContext, state: ExtensionStateS
     commands.registerCommand("tads3.insertLocalAssignmentSnippet", insertLocalAssignment),
     commands.registerCommand("tads3.setMakefile", () => setMakeFile(ctx, cancelToken, client, diagnosticsCollection)),
     commands.registerCommand("tads3.enablePreprocessorCodeLens", enablePreprocessorCodeLens),
-    commands.registerCommand("tads3.showPreprocessedTextAction", (p) => showPrep(preprocessDocument, p)),
+    commands.registerCommand("tads3.showPreprocessedTextAction", (p) => showPrep(p)),
     commands.registerCommand("tads3.showPreprocessedTextForCurrentFile", () => showCurrentAsPrep(client)),
     commands.registerCommand("tads3.showPreprocessedFileQuickPick", () => showPrepQuickPick(state, client)),
     commands.registerCommand("tads3.restartGameRunnerOnT3ImageChanges", toggleRunnerOnChanges),
@@ -256,7 +273,7 @@ async function registerWorkspaceAndWindowHooks(
   );
 
   if (await validateUserSettings()) {
-    await initiallyParseTadsProject(
+    const status = await initiallyParseTadsProject(
       extensionState.gameFileSystemWatcher,
       client,
       ctx,
@@ -264,6 +281,11 @@ async function registerWorkspaceAndWindowHooks(
       serverProcessCancelTokenSource,
       diagnosticsCollection,
     );
+    if(!status) {
+      client.warn(`Initial parsing of the project failed, check previous messages for details`);
+      return;
+    }
+
     if (workspace.getConfiguration("tads3").get("enableScriptFiles")) {
       // Only register a ReplayScriptTreeDataProvider if it is a tads3 project,
       // Since that will create a folder for Scripts if there is not already one.

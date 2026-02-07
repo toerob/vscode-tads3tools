@@ -248,6 +248,12 @@
           "default": true,
           "description": "Enable script files to be shown as separate pane and interacted with. Setting requires a restart of vscode in order to take effect. "
         },
+        "tads3.disableHoverDuringDebug": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Disable Tads3 language hover while a TADS3 debug session is active, so debugger hover evaluation can take precedence."
+        },
         "tads3.scriptFolderName": {
           "scope": "resource",
           "type": "string",
