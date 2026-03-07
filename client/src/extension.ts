@@ -3,7 +3,6 @@ import { join } from "path";
 import {
   ExtensionContext,
   commands,
-  debug,
   window,
   CancellationTokenSource,
   Uri,
@@ -13,6 +12,7 @@ import {
   TextEditorSelectionChangeEvent,
   version,
   workspace,
+  debug,
 } from "vscode";
 
 import { TransportKind } from "vscode-languageclient/node";
@@ -52,6 +52,7 @@ import {
   openProjectFileQuickPick,
 } from "./modules/editor-utils";
 import { enablePreprocessorCodeLens } from "./modules/code-lens";
+import { activateTads3Debug } from "./activateTads3Debug";
 
 //////////
 // Globals
@@ -65,8 +66,6 @@ export function setErrorDiagnostics(diagnostics) {
 }
 
 export const DEBOUNCE_TIME = 200;
-
-
 
 export const persistedObjectPositions = new Map();
 
@@ -132,6 +131,9 @@ export async function activate(ctx: ExtensionContext) {
     diagnoseAndParseTads3(ctx, textDocument, extensionState, client, cancelToken, diagnosticsCollection);
   });
 
+  // Activate the debug adapter and related features
+  activateTads3Debug(ctx);
+
   client.info(`Tads3 Language Client - activation completed`);
 }
 
@@ -167,21 +169,18 @@ function getClientOptions() {
       { scheme: "untitled", language: "tads3" },
       { scheme: "file", language: "tads3" },
     ],
-    /*
+
     middleware: {
       provideHover: async (document, position, token, next) => {
         const disableHoverDuringDebug = workspace.getConfiguration("tads3") .get("disableHoverDuringDebug", true);
-
         if (disableHoverDuringDebug && debug.activeDebugSession?.type === "tads3") {
           console.log(`Hover is disabled during debugging sessions, enable 'tads3.disableHoverDuringDebug' setting to change this behavior`);
-          return null;
+          return undefined;
         }
         console.log(`Providing hover for ${document.uri} at line ${position.line}`);
-
         return next(document, position, token);
-      }
+      },
     },
-    */
 
     synchronize: {
       fileEvents: workspace.createFileSystemWatcher("**/.{t,h,t3m,clientrc}"),
@@ -256,7 +255,7 @@ async function registerWorkspaceAndWindowHooks(
       extensionState.lastChosenTextEditor = evt.textEditor;
       client.sendNotification("client.cursorMoved", {
         uri: evt.textEditor.document.uri.toString(),
-        line: evt.selections[0].active.line 
+        line: evt.selections[0].active.line,
       });
     }),
   );
@@ -281,7 +280,7 @@ async function registerWorkspaceAndWindowHooks(
       serverProcessCancelTokenSource,
       diagnosticsCollection,
     );
-    if(!status) {
+    if (!status) {
       client.warn(`Initial parsing of the project failed, check previous messages for details`);
       return;
     }

@@ -1,0 +1,12 @@
+IFID: 3eaff0b2-a3d1-41d1-8d1d-7020fcd99bd9
+Name: ...
+Byline: by 
+HtmlByline: by <a href="mailto:yourmail@address.com"></a>
+AuthorEmail:  yourmail@address.com
+Desc: ...
+HtmlDesc: ...
+Version: 1
+ReleaseDate: 2026-02-16
+LicenseType: Freeware
+CopyingRules: Nominal cost only; compilations allowed
+PresentationProfile: Default
