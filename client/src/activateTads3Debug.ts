@@ -11,6 +11,9 @@ import { WorkspaceFolder, DebugConfiguration, ProviderResult, CancellationToken,
 import { Tads3DebugSession } from "./tads3Debug";
 import { FileAccessor } from "./types";
 import { TextEncoder } from "util";
+import which from "which";
+import * as path from "node:path";
+import { accessSync, constants, existsSync, statSync } from "node:fs";
 
 export function activateTads3Debug(context: vscode.ExtensionContext, factory?: vscode.DebugAdapterDescriptorFactory) {
   context.subscriptions.push(
@@ -275,6 +278,94 @@ export class Tads3ConfigurationProvider implements vscode.DebugConfigurationProv
       }
     }
 
+    // Preflight: frobd is required to start a debugging session. Fail fast with a visible message.
+    const frobdSetting = typeof (config as any).frobd === "string" && (config as any).frobd.trim() ? (config as any).frobd.trim() : "frobd";
+    let resolvedFrobdPath: string | undefined;
+
+    const looksLikePath = frobdSetting.startsWith(".") || /[\\/]/.test(frobdSetting);
+    if (looksLikePath) {
+      const candidate = path.isAbsolute(frobdSetting)
+        ? frobdSetting
+        : folder
+          ? path.resolve(folder.uri.fsPath, frobdSetting)
+          : path.resolve(frobdSetting);
+
+      if (!existsSync(candidate)) {
+        await vscode.window.showErrorMessage(
+          `Cannot start TADS3 debugging: required debugger 'frobd' was not found at '${candidate}'. Configure the 'frobd' setting in launch.json or install frobd and make it available in PATH.`,
+        );
+        return undefined;
+      }
+
+      try {
+        accessSync(candidate, constants.X_OK);
+      } catch {
+        await vscode.window.showErrorMessage(
+          `Cannot start TADS3 debugging: '${candidate}' exists but is not executable. Fix file permissions or configure a different 'frobd' path in launch.json.`,
+        );
+        return undefined;
+      }
+
+      resolvedFrobdPath = candidate;
+    } else {
+      try {
+        resolvedFrobdPath = await which(frobdSetting);
+      } catch {
+        await vscode.window.showErrorMessage(
+          `Cannot start TADS3 debugging: required debugger 'frobd' was not found in PATH. Install frobd or set the 'frobd' path in launch.json.`,
+        );
+        return undefined;
+      }
+    }
+
+    // Pass the resolved path to the debug adapter.
+    (config as any).frobd = resolvedFrobdPath;
+
+    return config;
+  }
+
+  async resolveDebugConfigurationWithSubstitutedVariables(
+    folder: WorkspaceFolder | undefined,
+    config: DebugConfiguration,
+    token?: CancellationToken,
+  ): Promise<DebugConfiguration | undefined> {
+    const program = typeof config.program === "string" ? config.program.trim() : "";
+    if (!program) {
+      await vscode.window.showErrorMessage(
+        "Cannot start TADS3 debugging: no game file was provided (missing 'program' in launch configuration).",
+      );
+      return undefined;
+    }
+
+    const candidate = path.isAbsolute(program)
+      ? program
+      : folder
+        ? path.resolve(folder.uri.fsPath, program)
+        : path.resolve(program);
+
+    if (!existsSync(candidate)) {
+      await vscode.window.showErrorMessage(
+        `Cannot start TADS3 debugging: game file not found at '${candidate}'. Build your game first, or update 'program' in launch.json.`,
+      );
+      return undefined;
+    }
+
+    try {
+      const st = statSync(candidate);
+      if (!st.isFile()) {
+        await vscode.window.showErrorMessage(
+          `Cannot start TADS3 debugging: '${candidate}' is not a file. Update 'program' in launch.json to point at a .t3 file.`,
+        );
+        return undefined;
+      }
+    } catch {
+      await vscode.window.showErrorMessage(
+        `Cannot start TADS3 debugging: unable to access '${candidate}'. Check file permissions and update 'program' in launch.json if needed.`,
+      );
+      return undefined;
+    }
+
+    config.program = candidate;
     return config;
   }
 }
