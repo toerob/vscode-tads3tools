@@ -262,11 +262,11 @@ async function registerWorkspaceAndWindowHooks(
 
   ctx.subscriptions.push(
     window.onDidChangeActiveTextEditor((event: any) => {
-      if (event.document !== undefined) {
-        extensionState.lastChosenTextDocument = event.document;
-        if (lastChosenTextDocument) {
-          client.info(`Last chosen editor changed to: ${lastChosenTextDocument.uri}`);
-        }
+      if (event?.document !== undefined) {
+        // Store the editor (not the document) so features that call editor.edit() work.
+        extensionState.lastChosenTextDocument = event;
+        lastChosenTextDocument = event.document;
+        client.info(`Last chosen editor changed to: ${event.document.uri}`);
       }
     }),
   );

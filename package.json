@@ -464,7 +464,7 @@
               "frobd": {
                 "type": "string",
                 "description": "Path to the frobd interpreter.",
-                "default": "/Users/tomasoberg/repos/frobtads_debugger/build/frobd"
+                "default": "frobd"
               },
               "dapMode": {
                 "type": "string",
@@ -495,6 +495,11 @@
                 "type": "boolean",
                 "description": "Enable logging of the Debug Adapter Protocol.",
                 "default": true
+              },
+              "enableGlobalsScope": {
+                "type": "boolean",
+                "description": "Expose the 'Globals' scope in the Variables view (can be very large).",
+                "default": false
               }
             }
           },
@@ -511,7 +516,7 @@
               "frobd": {
                 "type": "string",
                 "description": "Path to the frobd interpreter.",
-                "default": "/Users/tomasoberg/repos/frobtads_debugger/build/frobd"
+                "default": "frobd"
               },
               "dapMode": {
                 "type": "string",
@@ -542,6 +547,11 @@
                 "type": "boolean",
                 "description": "Enable logging of the Debug Adapter Protocol.",
                 "default": true
+              },
+              "enableGlobalsScope": {
+                "type": "boolean",
+                "description": "Expose the 'Globals' scope in the Variables view (can be very large).",
+                "default": false
               }
             }
           }
@@ -552,7 +562,7 @@
             "request": "launch",
             "name": "Debug TADS3 Program",
             "program": "${workspaceFolder}/game.t3",
-            "frobd": "/Users/tomasoberg/repos/frobtads_debugger/build/frobd",
+            "frobd": "frobd",
             "dapMode": "socket",
             "dapSocket": "/tmp/tads-dap.sock",
             "stopOnEntry": true
@@ -567,7 +577,7 @@
               "request": "launch",
               "name": "Debug TADS3 Program",
               "program": "^\"\\${workspaceFolder}/game.t3\"",
-              "frobd": "^\"\\/Users/tomasoberg/repos/frobtads_debugger/build/frobd\"",
+              "frobd": "^\"frobd\"",
               "dapMode": "socket",
               "dapSocket": "/tmp/tads-dap.sock",
               "stopOnEntry": true
@@ -605,9 +615,13 @@
     "antlr4ts_t2": "antlr4ts -visitor server/src/parser/Tads2.g4",
     "antlr4ts_t3": "antlr4ts -visitor server/src/parser/Tads3.g4",
     "build": "vsce package --no-yarn",
-    "compile": "tsc -b ",
+    "compile:tsc": "tsc -b",
+    "build:maprenderer": "esbuild ./webview-src/maprenderer.ts --bundle --sourcemap=inline --platform=browser --format=iife --target=es2020 --outfile=resources/maprenderer/maprenderer.js",
+    "watch:maprenderer": "npm run -S build:maprenderer -- --watch",
+    "compile": "npm run -S compile:tsc && npm run -S build:maprenderer",
     "test-compile": "tsc -p ./",
-    "watch": "tsc -b -w",
+    "watch:tsc": "tsc -b -w",
+    "watch": "node ./scripts/watch.js",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "prefix-server-fspath": "(cd coverage; sed 's/SF:/SF:server\\//g' server-lcov.info > server-lcov2.info  )",
     "prefix-client-fspath": "(cd coverage; sed 's/SF:/SF:client\\//g' client-lcov.info > client-lcov2.info  )",

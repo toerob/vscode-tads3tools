@@ -148,11 +148,20 @@ export function onDidChangePort(payload) {
   }
 }
 export function onDidRemoveRoom(payload, persistedObjectPositions) {
-  //TODO: Not used
-  /*if (payload) {
-		//console.error(`Removing a room with name: ${payload}`);
-		//client.sendRequest('request/findsymbol', ({ name: payload, postAction: 'remove' }));
-	}*/
+  if (!payload) return;
+
+  const rawName = String(payload);
+  const roomName = rawName.includes(" ") ? camelCaseName(rawName) : rawName;
+
+  // Best-effort cleanup; the map data comes from the parser anyway.
+  try {
+    persistedObjectPositions?.delete?.(rawName);
+    persistedObjectPositions?.delete?.(roomName);
+  } catch {
+    // ignore
+  }
+
+  client.sendRequest("request/findsymbol", { name: roomName, postAction: "remove" });
 }
 
 function capitalize(str: string) {
@@ -166,7 +175,7 @@ function camelCaseName(name: string) {
 }
 
 export function onDidAddRoom(payload, persistedObjectPositions) {
-  const editorOfChoice: TextEditor | undefined = extensionState.lastChosenTextDocument;
+  const editorOfChoice: TextEditor | undefined = extensionState.lastChosenTextEditor ?? window.activeTextEditor;
   if (payload && editorOfChoice && payload.name) {
     const camelCasedName = camelCaseName(payload.name);
 
@@ -214,7 +223,7 @@ export function onDidAddRoom(payload, persistedObjectPositions) {
 }
 
 export function getHtmlForWebview(context: ExtensionContext, webview: Webview, extensionUri: Uri): string {
-  const scriptPath = "media";
+  const scriptPath = "resources";
   const litegraphScriptUri =
     webview.asWebviewUri(
       Uri.joinPath(context.extensionUri, "client", "node_modules", "litegraph.js", "build", "litegraph.js"),
@@ -223,7 +232,8 @@ export function getHtmlForWebview(context: ExtensionContext, webview: Webview, e
     webview.asWebviewUri(
       Uri.joinPath(context.extensionUri, "client", "node_modules", "litegraph.js", "css", "litegraph.css"),
     ) ?? "";
-  const mapLogicUri = webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, "maprenderer.js")) ?? "";
+  const mapLogicUri =
+    webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, "maprenderer", "maprenderer.js")) ?? "";
   const html = `
     <!DOCTYPE html>
 		<html>
@@ -231,7 +241,7 @@ export function getHtmlForWebview(context: ExtensionContext, webview: Webview, e
 				<meta charset="UTF-8">
 				<meta 
 					http-equiv="Content-Security-Policy" 
-					content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'unsafe-inline'; img-src ${webview.cspSource} data: https:; " />
+          content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'unsafe-inline' 'unsafe-eval'; img-src ${webview.cspSource} data: https:; " />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<link rel="stylesheet" type="text/css" href="${litegraphCssUri}" >
 				<script type="text/javascript" src="${litegraphScriptUri}" ></script>
@@ -287,7 +297,7 @@ export async function openInVisualEditor(context: ExtensionContext, client: Lang
     enableScripts: true,
     //localResourceRoots: [Uri.joinPath(context.extensionUri, 'media')],
     localResourceRoots: [
-      Uri.joinPath(context.extensionUri, "media"),
+      Uri.joinPath(context.extensionUri, "resources", "maprenderer"),
       Uri.joinPath(context.extensionUri, "client", "node_modules", "litegraph.js/build"),
       Uri.joinPath(context.extensionUri, "client", "node_modules", "litegraph.js/css"),
     ],

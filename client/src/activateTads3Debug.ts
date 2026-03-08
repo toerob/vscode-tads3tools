@@ -143,19 +143,61 @@ export function activateTads3Debug(context: vscode.ExtensionContext, factory?: v
       },
     ),
   );
+
   let panel: vscode.WebviewPanel | undefined;
 
-  panel = showGameWebview(context);
+  const ensureGameViewPanel = (): vscode.WebviewPanel | undefined => {
+    if (panel) {
+      return panel;
+    }
+
+    panel = showGameWebview(context);
+    panel.onDidDispose(
+      () => {
+        panel = undefined;
+      },
+      undefined,
+      context.subscriptions,
+    );
+    return panel;
+  };
+
+  context.subscriptions.push(
+    vscode.debug.onDidStartDebugSession(
+      (session) => {
+        if (session.type !== "tads3") {
+          return;
+        }
+
+        const p = ensureGameViewPanel();
+        // Make it visible when a new debug session starts, but don't steal focus.
+        p?.reveal(p.viewColumn, true);
+      },
+      undefined,
+      context.subscriptions,
+    ),
+  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand("tads3dbg.updateWebview", (data) => {
-      panel?.webview.postMessage({ command: "update", data });
+      // Only show/create the panel during an active TADS3 debug session.
+      const session = vscode.debug.activeDebugSession;
+      if (!session || session.type !== "tads3") {
+        return;
+      }
+
+      ensureGameViewPanel()?.webview.postMessage({ command: "update", data });
     }),
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand("tads3dbg.clearWebview", () => {
-      panel?.webview.postMessage({ command: "clear" });
+      const session = vscode.debug.activeDebugSession;
+      if (!session || session.type !== "tads3") {
+        return;
+      }
+
+      ensureGameViewPanel()?.webview.postMessage({ command: "clear" });
     }),
   );
 
