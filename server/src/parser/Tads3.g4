@@ -127,9 +127,9 @@ grammarDeclaration:
 
 
 templateExpr:
-    (singleString=SSTR SEMICOLON?
+    (singleString=SSTR
     | AT atLocation=expr
-    | doubleString=DSTR SEMICOLON?
+    | doubleString=DSTR
     | ARROW (connection=identifierAtom|expression=expr) //TODO: test expression=expr
     | op=(ARROW|PLUS|MINUS|STAR|DIV|MOD|AMP|NOT|TILDE) (id=identifierAtom|expression=expr)
     | LEFT_BRACKET array RIGHT_BRACKET
@@ -140,7 +140,7 @@ array:
     expr (COMMA array)*;
 
 curlyObjectBody:
-    LEFT_CURLY objectBody RIGHT_CURLY;
+    LEFT_CURLY objectBody SEMICOLON? RIGHT_CURLY;
 
 semiColonEndedObjectBody:
     objectBody
@@ -152,6 +152,7 @@ superTypes:
 
 objectBody:
     (template+=templateExpr*)
+
     (functions+=functionDeclaration
     | properties+=property
     | propertySets+=propertySet

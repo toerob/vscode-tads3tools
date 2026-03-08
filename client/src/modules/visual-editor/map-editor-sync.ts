@@ -2,16 +2,49 @@ import { workspace, window, ViewColumn, Position } from "vscode";
 import { client } from "../../extension";
 
 async function connectRoomViaDirection(room: any, validDirection: any, nextRoom: any) {
-  await workspace.openTextDocument(room.filePath).then((doc) =>
-    window.showTextDocument(doc, ViewColumn.One).then((editor) => {
-      editor.edit((editor) => {
-        const pos = new Position(room.symbol.range.end.line, 0);
-        const text = `\t${validDirection} = ${nextRoom.symbol.name}\n`;
-        editor.insert(pos, text);
-      });
-      return editor;
-    }),
-  );
+  const doc = await workspace.openTextDocument(room.filePath);
+  const editor = await window.showTextDocument(doc, ViewColumn.One);
+
+  const direction = String(validDirection);
+  const nextRoomName = String(nextRoom?.symbol?.name ?? "");
+  if (!direction || !nextRoomName) return;
+
+  const startLine = room?.symbol?.range?.start?.line;
+  const endLine = room?.symbol?.range?.end?.line;
+  if (typeof startLine !== "number" || typeof endLine !== "number") return;
+
+  const safeEndLine = Math.min(endLine, editor.document.lineCount - 1);
+  const directionLineRe = new RegExp(`^\\s*${direction}\\s*=`, "i");
+
+  const existingLines: number[] = [];
+  for (let line = startLine; line <= safeEndLine; line++) {
+    const text = editor.document.lineAt(line).text;
+    if (directionLineRe.test(text)) {
+      existingLines.push(line);
+    }
+  }
+
+  await editor.edit((builder) => {
+    if (existingLines.length > 0) {
+      // Replace the first occurrence, delete any duplicates.
+      const firstLine = existingLines[0];
+      const lineText = editor.document.lineAt(firstLine).text;
+      const indentMatch = lineText.match(/^\s*/);
+      const indent = indentMatch ? indentMatch[0] : "\t";
+      const replacement = `${indent}${direction} = ${nextRoomName}\n`;
+      builder.replace(editor.document.lineAt(firstLine).rangeIncludingLineBreak, replacement);
+
+      // Delete from bottom to top to avoid overlapping edits.
+      for (let i = existingLines.length - 1; i >= 1; i--) {
+        const dupLine = existingLines[i];
+        builder.delete(editor.document.lineAt(dupLine).rangeIncludingLineBreak);
+      }
+    } else {
+      const pos = new Position(safeEndLine, 0);
+      const text = `\t${direction} = ${nextRoomName}\n`;
+      builder.insert(pos, text);
+    }
+  });
 }
 
 export async function connectRoomsWithProperties(

@@ -41,8 +41,13 @@ export class ExtensionStateStore {
   private _lastChosenTextEditor: TextEditor;
 
   private _makefileDefinitions: Map<string, string>;
-  
-  private _preprocessedFilesMap: any; // Can this go?
+
+  /* TODO: CaseInsensitiveMap needed in client also?
+    if(process.platform === "win32") {
+            this._preprocessedFilesMap  = new Map();
+  }*/
+
+  private _preprocessedFilesMap: any = new Map();
 
   public get storageManager(): LocalStorageService {
     return this._storageManager;
@@ -79,9 +84,12 @@ export class ExtensionStateStore {
     return this._preprocessedFilesMap;
   }
   public set preprocessedFilesMap(value: any) {
+    if (this._preprocessedFilesMap === undefined) {
+      this._preprocessedFilesMap = new Map();
+    }
     this._preprocessedFilesMap = value;
   }
-public get makefileDefinitions(): Map<string, string> {
+  public get makefileDefinitions(): Map<string, string> {
     return this._makefileDefinitions;
   }
   public set makefileDefinitions(value: Map<string, string>) {
@@ -230,7 +238,7 @@ public get makefileDefinitions(): Map<string, string> {
   getUsingAdv3LiteStatus() {
     return this.isUsingAdv3Lite;
   }
-  
+
   getChosenMakefileUri(): Uri | undefined {
     return this.chosenMakefileUri;
   }

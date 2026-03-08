@@ -537,9 +537,9 @@ export class Tads3SymbolListener implements Tads3Listener {
   }
 
   visitErrorNode(ctx: ErrorNode) {
-    /*console.debug(
-      `Problem parsing token "${ctx.toStringTree()}" on line ${ctx.payload.line} in (${this.currentUri})`
-    );*/
+    console.debug(
+      `Problem parsing token "${ctx?.toStringTree()}" on line ${ctx?.payload?.line} in file (${this.currentUri})`
+    );
   }
 
   exitCurlyObjectBody(ctx: CurlyObjectBodyContext) {

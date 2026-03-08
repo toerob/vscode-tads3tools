@@ -347,7 +347,7 @@ describe("text-utils test suite", () => {
       expect(b).toStrictEqual(['->${1:destination} "${2:travelDesc}" ']);
     });
 
-    // TODO: for now, we just display the inherited keyword when it's used
+    // TODO: for now, we just skip past the inherited keyword when it's used
     test("Enterable templates with omitted inherited when no superclass is found", () => {
       const a = createTemplateSnippetStrings(`Enterable template inherited ->connector;`);
       expect(a).toStrictEqual(["->${1:connector} "]);
@@ -376,9 +376,11 @@ describe("text-utils test suite", () => {
       ]);
     });
 
+    // TODO: expand testing of inherited
     test("SensoryEmanation template", () => {
       const res = createTemplateSnippetStrings(`SensoryEmanation template inherited [eventList]?;`);
-      expect(res).toStrictEqual(["${1:inherited} ", "${1:inherited} [${2:eventList}] "]);
+      //expect(res).toStrictEqual(["${1:inherited} ", "${1:inherited} [${2:eventList}] "]);
+      expect(res).toStrictEqual(["", "[${1:eventList}] "]);
     });
 
     test("ActorState templates", () => {

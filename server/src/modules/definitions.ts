@@ -247,7 +247,7 @@ function findMembers(
         if (closestSymbol?.symbol?.detail) {
           // TODO: use the method to find the closest expression instead of this:
           const test = sm.expressionSymbols.get(closestSymbol.filePath)?.get(closestSymbol.symbol.detail) ?? []; // TODO: store the assign
-          console.log(test);
+          //console.log(test);
           instanceTypeName = test[0]?.instanceType;
         } else {
           // Otherwise we check the detail of the symbol

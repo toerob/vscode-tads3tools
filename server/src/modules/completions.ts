@@ -191,7 +191,7 @@ export async function onCompletion(
           // TODO: cache the results
           if (template.detail) {
             const inheritedTemplates: any[] = inherited?.map((x) => x.detail) ?? [];
-            const { snippets } = createTemplateSnippetStrings(template.detail, inheritedTemplates);
+            const snippets  = createTemplateSnippetStrings(template.detail, inheritedTemplates);
             for (const snippet of snippets) {
               let snippetString = `${x.obj.label} ${isWithinObject ? "{" : ""} ${snippet.trimEnd()}${isWithinObject ? "}" : ";$0"}`;
               const item = CompletionItem.create(snippetString);

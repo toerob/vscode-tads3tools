@@ -1,5 +1,5 @@
 import { basename } from "path";
-import { workspace, window, Uri, ViewColumn, DocumentSymbol, WebviewPanel } from "vscode";
+import { workspace, window, Uri, ViewColumn, DocumentSymbol, WebviewPanel, Range } from "vscode";
 import { LanguageClient } from 'vscode-languageclient/node';
 import { connectRoomsWithProperties } from "./visual-editor/map-editor-sync";
 import { findNouns } from "./commands/find-nouns";
@@ -61,25 +61,32 @@ export function setupClientNotifications(client: LanguageClient, extensionState:
   // The postAction is something the client originally defines
   // and is supposed to be brought into action here.
   // It is done this way so request/findsymbol can be reused for different purposes
-  client.onNotification("response/foundsymbol", ({ symbol, filePath, postAction }): void => {
+  client.onNotification("response/foundsymbol", async ({ symbol, filePath, postAction }): Promise<void> => {
     if (symbol && filePath) {
       const selectedObject = symbol as DocumentSymbol; // keep track of the last selected object
       extensionState.selectedObject = selectedObject;
-      workspace.openTextDocument(filePath).then((textDocument) => {
-        window.showTextDocument(textDocument, {
-          preserveFocus: true,
-          selection: selectedObject.range,
-          viewColumn: ViewColumn.One,
-        });
+
+      const textDocument = await workspace.openTextDocument(filePath);
+      const editor = await window.showTextDocument(textDocument, {
+        preserveFocus: true,
+        selection: selectedObject.range,
+        viewColumn: ViewColumn.One,
       });
-      // TODO: there's an issue here, due to all items being triggered with onRemoved whenever the map gets updated,
-      // thus all rooms would be deleted in their textdocument's equivalence whenever that happens.
-      /*.then(()=> {
-                if(postAction === 'remove') {
-                    client.info(`Removing via map is not yet implemented. `);
-                    //editor.edit(editorBuilder => editorBuilder.delete(selectedObject.range));
-                }
-            });*/
+
+      if (postAction === "remove") {
+        const doc = editor.document;
+        const start = selectedObject.range.start;
+        const endLine = Math.min(selectedObject.range.end.line, doc.lineCount - 1);
+        const end = doc.lineAt(endLine).rangeIncludingLineBreak.end;
+        const deleteRange = new Range(start, end);
+
+        await editor.edit((builder) => builder.delete(deleteRange));
+        const saved = await editor.document.save();
+
+        if (saved) {
+          await client.sendNotification("request/mapsymbols");
+        }
+      }
     }
   });
 
