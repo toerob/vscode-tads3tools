@@ -5,9 +5,13 @@
 ### Added
 
 - Handy Completion snippets added for all objects deriving from 'Thing'.
-
+- Added frobd DAP debugger support (frobd binary is required)
+- VS Code theme coloring in the map view
+- Improved code completions: expand templates to snippets during completions
+  
 ### Fixed
 
+- Better error reporting if utf-8 is used in paths
 - code actions - allow simple assignment expressions to be expanded into local assignments.
 - Adding new project files now adds language specific headers. Currently supported language codes are: en_us, sv_se, de_de, cs_cz.
 
