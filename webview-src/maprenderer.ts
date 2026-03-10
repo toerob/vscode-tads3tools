@@ -7,16 +7,13 @@
 import { bindDomEvents, getDomRefs, initializeDom } from "./dom";
 import { createMessenger } from "./messaging";
 
-// litegraph is loaded via <script src=".../litegraph.js"> in the webview HTML.
-// We intentionally use it as globals.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const LiteGraph: any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const LGraph: any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const LGraphCanvas: any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const LGraphGroup: any;
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { Line2 } from "three/examples/jsm/lines/Line2.js";
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
+import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
+import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyObj = any;
@@ -54,340 +51,584 @@ function readTheme(): Theme {
 
 let theme = readTheme();
 
-function applyNodeTheme(node: AnyObj, opts: { isDoor: boolean }) {
-  // In LiteGraph, node.color is used as the default titlebar color.
-  // We keep the titlebar background theme-consistent and use accent colors for title text instead.
-  node.color = theme.widgetBg;
-  node.bgcolor = theme.editorBg;
-  node.boxcolor = opts.isDoor ? theme.warning : theme.link;
-  node.bordercolor = theme.widgetBorder;
+// --- 3D renderer (Three.js) ---
+
+const canvas = document.getElementById("mapCanvas") as HTMLCanvasElement | null;
+if (!canvas) {
+  throw new Error("Expected #mapCanvas to exist");
 }
 
-let isPopulatingMap = true;
+// Help TypeScript: after the runtime check, treat the canvas as non-null everywhere.
+const canvasEl: HTMLCanvasElement = canvas;
 
-let lowestZLevel = 0;
-let highestZLevel = 0;
+const renderer = new THREE.WebGLRenderer({
+  canvas: canvasEl,
+  antialias: true,
+  alpha: false,
+});
 
-const graph = new LGraph();
-const mapCanvas = new LGraphCanvas("#mapCanvas", graph);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
 
-const MAX_TITLE_LENGTH = 17;
-const MAX_LENGTH = 19;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, 2));
 
-let selectedEditor = "0"; // 0: map editor, 1: conversation editor
-let lastMessage: unknown;
-let currentLevel = 0;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100000);
+const controls = new OrbitControls(camera, renderer.domElement);
+// Render on-demand (no animation loop), so disable damping.
+controls.enableDamping = false;
+controls.minDistance = 20;
+controls.maxDistance = 20000;
 
-mapCanvas.connections_width = 2;
-mapCanvas.render_collapsed_slots = false;
-mapCanvas.render_connections_border = false;
-mapCanvas.align_to_grid = true;
+// On-demand rendering hook (assigned after render() is defined).
+let requestRender: () => void = () => {};
+let renderScheduled = false;
 
-mapCanvas.onNodeMoved = function (node: AnyObj) {
-  messenger.postCommand("updatepos", { name: node.properties.name, pos: node.pos });
-};
+// Lighting for nicer-looking transparent cubes.
+const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+scene.add(ambient);
+const keyLight = new THREE.DirectionalLight(0xffffff, 0.9);
+keyLight.position.set(1, 2, 1);
+scene.add(keyLight);
+const fillLight = new THREE.DirectionalLight(0xffffff, 0.35);
+fillLight.position.set(-1, 1, -1);
+scene.add(fillLight);
 
-const config = {
-  collapsed: false,
-  showAll: true,
-  showUnmappedRooms: false,
-};
+// Subtle reference grid so the 3D space is never "empty".
+const grid = new THREE.GridHelper(400, 80);
+(grid.material as THREE.LineBasicMaterial).transparent = true;
+(grid.material as THREE.LineBasicMaterial).opacity = 0.18;
+scene.add(grid);
 
-const levelUp = () => {
-  if (currentLevel < highestZLevel) {
-    currentLevel++;
-    refresh(lastMessage);
-  }
-};
+const roomsGroup = new THREE.Group();
+scene.add(roomsGroup);
 
-const levelDown = () => {
-  if (currentLevel > lowestZLevel) {
-    currentLevel--;
-    refresh(lastMessage);
-  }
-};
+const relationsGroup = new THREE.Group();
+scene.add(relationsGroup);
 
-const toggleCollapse = () => {
-  config.collapsed = !config.collapsed;
-  refresh(lastMessage);
-};
-
-const toggleShowAll = () => {
-  config.showAll = !config.showAll;
-  messenger.postCommand("showall", config.showAll);
-  refresh(lastMessage);
-};
-
-const toggleShowUnmapped = () => {
-  config.showUnmappedRooms = !config.showUnmappedRooms;
-  refresh(lastMessage);
-};
-
-// These are referenced from inline onclick="..." handlers in the HTML.
-(window as AnyObj).levelUp = levelUp;
-(window as AnyObj).levelDown = levelDown;
-(window as AnyObj).toggleCollapse = toggleCollapse;
-(window as AnyObj).toggleShowAll = toggleShowAll;
-(window as AnyObj).toggleShowUnmapped = toggleShowUnmapped;
-
-const portId = {
-  NORTH: 0,
-  NORTHEAST: 1,
-  NORTHWEST: 2,
-  WEST: 3,
-  EAST: 4,
-  SOUTH: 5,
-  SOUTHEAST: 6,
-  SOUTHWEST: 7,
-};
-
-function splitIntoListByNthCharacterFunc(str: string, maxLength: number): string[] {
-  const splittedWord: string[] = [];
-  const totalLength = str.length ?? 0;
-  for (let i = 0; i < totalLength; i += maxLength) {
-    const word = str.substr(i, i + maxLength);
-    splittedWord.push(word);
-  }
-  return splittedWord;
-}
-
-function splitIntoListByNthCharacterFuncOld(str: string, maxLength: number): string[] {
-  const splittedWord: string[] = [];
-  const totalLength = str.length ?? 0;
-  for (let i = 0; i < totalLength; i += maxLength) {
-    const word = str.substr(i, i + maxLength);
-    splittedWord.push(word);
-  }
-  return splittedWord;
-}
-
-function splitIntoListByWhitespacesAndMaxlengthPerRow(str: string, maxLength: number): string[] {
-  const splittedWordsByWS = str.split(" ");
-  const rows: string[] = [];
-  let rowString = "";
-  for (let word = 0; word < splittedWordsByWS.length; word++) {
-    while (rowString.length < maxLength) {
-      rowString += " " + splittedWordsByWS[word];
-      rows.push(rowString);
-      if (word < splittedWordsByWS.length) {
-        word++;
-      }
-    }
-  }
-  return rows;
-}
-
-class NPCNode {
-  title = "NPC";
-  properties: AnyObj;
-
-  constructor() {
-    this.properties = { title: this.title, name: "", desc: "" };
-  }
-}
-
-class RoomNode {
-  static title_mode: number;
-  static title_color: string;
-  static title_text_color: string;
-
-  title = "ROOM";
-
-  north_out: AnyObj = undefined;
-  north_in: AnyObj = undefined;
-
-  south_out: AnyObj = undefined;
-  south_in: AnyObj = undefined;
-
-  east_out: AnyObj = undefined;
-  east_in: AnyObj = undefined;
-
-  west_out: AnyObj = undefined;
-  west_in: AnyObj = undefined;
-
-  northeast_out: AnyObj = undefined;
-  northeast_in: AnyObj = undefined;
-
-  northwest_out: AnyObj = undefined;
-  northwest_in: AnyObj = undefined;
-
-  southeast_out: AnyObj = undefined;
-  southeast_in: AnyObj = undefined;
-
-  southwest_out: AnyObj = undefined;
-  southwest_in: AnyObj = undefined;
-
-  properties: AnyObj;
-  size: AnyObj;
-  flags: AnyObj;
-  resizable: AnyObj;
-  serialize_widgets: AnyObj;
-  removable: AnyObj;
-  title_mode: AnyObj;
-  props: AnyObj;
-
-  // litegraph mixins
-  declare addOutput: AnyObj;
-  declare addInput: AnyObj;
-
-  setupTwinPair(name: string, options: AnyObj, direction: AnyObj): AnyObj[] {
-    const dir_out = this.addOutput(name + "_out", "number", options);
-    const dir_in = this.addInput(name + "_in", "number", options);
-    dir_out.dir = direction;
-    dir_in.dir = direction;
-    dir_out.label = "";
-    dir_in.label = "";
-    return [dir_out, dir_in];
-  }
-
-  constructor() {
-    this.properties = { title: this.title, name: "", desc: "", shortName: "" };
-
-    [this.north_out, this.north_in] = this.setupTwinPair(
-      "n",
-      { pos: [70, -LiteGraph.NODE_TITLE_HEIGHT] },
-      LiteGraph.UP,
-    );
-    [this.south_out, this.south_in] = this.setupTwinPair("s", { pos: [70, 85] }, LiteGraph.DOWN);
-    [this.west_out, this.west_in] = this.setupTwinPair("w", { pos: [0, 45] }, LiteGraph.LEFT);
-    [this.east_out, this.east_in] = this.setupTwinPair("e", { pos: [141, 45] }, LiteGraph.RIGHT);
-    [this.northeast_out, this.northeast_in] = this.setupTwinPair(
-      "ne",
-      { pos: [140, -LiteGraph.NODE_TITLE_HEIGHT] },
-      LiteGraph.RIGHT,
-    );
-    [this.northwest_out, this.northwest_in] = this.setupTwinPair(
-      "nw",
-      { pos: [0, -LiteGraph.NODE_TITLE_HEIGHT] },
-      LiteGraph.LEFT,
-    );
-    [this.southeast_out, this.southeast_in] = this.setupTwinPair("se", { pos: [140, 85] }, LiteGraph.RIGHT);
-    [this.southwest_out, this.southwest_in] = this.setupTwinPair("sw", { pos: [0, 85] }, LiteGraph.LEFT);
-
-    // this.size[0] = 160
-    this.size[1] = 85;
-    this.flags = {
-      horizontal: false,
-      collapsed: config.collapsed,
-    };
-    this.resizable = false;
-    this.serialize_widgets = true;
-
-    this.removable = false;
-    this.title_mode = LiteGraph.TRANSPARENT_TITLE;
-  }
-
-  getTitle = () => {
-    const title =
-      this.title.length > MAX_TITLE_LENGTH ? this.title.substr(0, MAX_TITLE_LENGTH - 3) + "..." : this.title;
-    return title;
-  };
-
-  onDrawForeground = (ctx: AnyObj) => {
-    if (this.flags.collapsed) return;
-
-    ctx.save();
-    ctx.font = `12px ${theme.fontFamily}`;
-    ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = theme.foreground;
-
-    const label: string = this.properties?.shortName || this.properties?.name || this.title;
-    const splittedWord = splitIntoListByNthCharacterFunc(label, MAX_LENGTH);
-
-    let yPos = 20;
-    for (const word of splittedWord) {
-      ctx.fillText(word, 5, (yPos += 20));
-    }
-
-    if (this.properties?.isDoor) {
-      ctx.fillStyle = theme.warning;
-      ctx.font = `10px ${theme.fontFamily}`;
-      ctx.fillText("DOOR", 5, 14);
-    }
-    ctx.restore();
-
-    return false;
-  };
-
-  onConnectionsChange(directionType: AnyObj, slot: AnyObj, connected: boolean, linkInfo: AnyObj, inputInfo: AnyObj) {
-    if (connected && !isPopulatingMap) {
-      const target_node = graph.getNodeById(linkInfo.target_id);
-      const from = this.properties?.name;
-      const to = target_node?.properties?.name;
-      const directionName = inputInfo.name;
-      messenger.postCommand("changeport", { from, to, directionName });
-    }
-  }
-
-  onExecute() {
-    this.size[1] = 85;
-
-    if (this.props.title !== this.title) {
-      this.props.title = this.title;
-    }
-    this.north_out.pos[0] = this.size[0] >> 1;
-    this.north_out.pos[1] = -LiteGraph.NODE_TITLE_HEIGHT;
-
-    this.northeast_out.pos[0] = this.size[0];
-    this.northeast_out.pos[1] = -LiteGraph.NODE_TITLE_HEIGHT;
-
-    this.northwest_out.pos[0] = 0;
-    this.northwest_out.pos[1] = -LiteGraph.NODE_TITLE_HEIGHT;
-
-    this.south_out.pos[0] = this.size[0] >> 1;
-    this.south_out.pos[1] = this.size[1];
-
-    this.southeast_out.pos[0] = this.size[0];
-    this.southeast_out.pos[1] = this.size[1];
-
-    this.southwest_out.pos[0] = 0;
-    this.southwest_out.pos[1] = this.size[1];
-
-    this.east_out.pos[0] = this.size[0];
-    this.east_out.pos[1] = this.size[1] >> 1;
-
-    this.west_out.pos[0] = 0;
-    this.west_out.pos[1] = this.size[1] >> 1;
-  }
-
-  onRemoved() {
-    // `graph.clear()` during refresh removes every node and calls `onRemoved()`.
-    // Only treat removal as user intent when we're not populating the map.
-    if (!isPopulatingMap) {
-      const name = this.properties?.name ?? this.title;
-      if (name) {
-        messenger.postCommand("removeroom", name);
-      }
-    }
-  }
-}
-
-class DoorNode extends RoomNode {
-  static title_text_color: string;
-}
-
-function applyThemeToLiteGraph() {
-  theme = readTheme();
-
-  // Canvas defaults (used when a node type doesn't override it)
-  mapCanvas.node_title_color = theme.foreground;
-
-  RoomNode.title_mode = LiteGraph.NORMAL_TITLE;
-  RoomNode.title_color = theme.widgetBg;
-  RoomNode.title_text_color = theme.link;
-
-  DoorNode.title_mode = LiteGraph.NORMAL_TITLE;
-  DoorNode.title_color = theme.widgetBg;
-  DoorNode.title_text_color = theme.warning;
-}
-
-applyThemeToLiteGraph();
-
-LiteGraph.registerNodeType("basic/room", RoomNode);
-LiteGraph.registerNodeType("basic/door", DoorNode);
-LiteGraph.registerNodeType("basic/npc", NPCNode);
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
 
 let currentStartRoom: string | undefined;
+let selectedEditor = "0";
+let lastMessage: unknown;
+
+// These are referenced from inline onclick="..." handlers in the HTML.
+// In the Three.js renderer we show the full 3D map, so these are no-ops.
+(window as AnyObj).levelUp = () => {};
+(window as AnyObj).levelDown = () => {};
+(window as AnyObj).toggleCollapse = () => {};
+(window as AnyObj).toggleShowAll = () => {};
+(window as AnyObj).toggleShowUnmapped = () => {};
+
+function zoomBy(factor: number) {
+  // Move camera closer/farther from the orbit target.
+  const dir = new THREE.Vector3().subVectors(camera.position, controls.target);
+  const len = dir.length();
+  if (!isFinite(len) || len <= 0.0001) return;
+
+  const nextLen = THREE.MathUtils.clamp(len * factor, controls.minDistance, controls.maxDistance);
+  dir.setLength(nextLen);
+  camera.position.copy(controls.target).add(dir);
+  camera.updateProjectionMatrix();
+  controls.update();
+  requestRender();
+}
+
+(window as AnyObj).zoomIn = () => zoomBy(0.8);
+(window as AnyObj).zoomOut = () => zoomBy(1.25);
+
+function applyThemeToScene() {
+  theme = readTheme();
+  const bg = new THREE.Color(theme.editorBg);
+  renderer.setClearColor(bg, 1);
+  scene.background = bg;
+
+  // Theme the grid to match VS Code.
+  (grid.material as THREE.LineBasicMaterial).color = new THREE.Color(theme.widgetBorder);
+}
+
+function hashStringToHue(str: string): number {
+  // Simple stable hash -> [0, 1)
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  // >>> 0 ensures unsigned
+  return ((h >>> 0) % 360) / 360;
+}
+
+// Keep colors sparse: use a single cube color for all rooms.
+function cubeColor(): THREE.Color {
+  return new THREE.Color(theme.widgetBg);
+}
+
+const lineMaterials = new Set<LineMaterial>();
+
+function registerLineMaterial(material: LineMaterial) {
+  lineMaterials.add(material);
+}
+
+function updateLineMaterialResolutions(width: number, height: number) {
+  for (const mat of lineMaterials) {
+    mat.resolution.set(width, height);
+  }
+}
+
+function isDoor(obj: AnyObj) {
+  const detail: unknown = obj?.detail;
+  if (typeof detail !== "string") return false;
+  return /Door|Passage|Stairway/.test(detail);
+}
+
+function removeOptions(selectElement: HTMLSelectElement) {
+  const L = selectElement.options.length - 1;
+  for (let i = L; i >= 0; i--) {
+    selectElement.remove(i);
+  }
+}
+
+function clearRoomSelector() {
+  try {
+    if (!dom.roomSelector) return;
+    removeOptions(dom.roomSelector);
+  } catch (err) {
+    messenger.postCommand("log", "error during roomSelector clear: " + err);
+  }
+}
+
+function disposeGroup(group: THREE.Group) {
+  const toDispose: THREE.Object3D[] = [];
+  group.traverse((obj: THREE.Object3D) => toDispose.push(obj));
+  for (const obj of toDispose) {
+    const mesh = obj as AnyObj;
+    if (mesh.geometry?.dispose) mesh.geometry.dispose();
+    if (mesh.material) {
+      if (Array.isArray(mesh.material)) {
+        for (const m of mesh.material) m?.dispose?.();
+      } else {
+        // SpriteMaterial/standard materials can hold textures that also need disposing.
+        if (mesh.material.map?.dispose) mesh.material.map.dispose();
+        mesh.material?.dispose?.();
+      }
+    }
+  }
+  group.clear();
+}
+
+function createLabelSprite(text: string, color: string, background: string, border: string) {
+  const dpr = Math.min(window.devicePixelRatio ?? 1, 2);
+  const fontSizePx = 14;
+  const paddingX = 12;
+  const paddingY = 7;
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return undefined;
+
+  ctx.font = `${fontSizePx}px ${theme.fontFamily}`;
+  const metrics = ctx.measureText(text);
+  const textWidth = Math.ceil(metrics.width);
+  const width = Math.min(512, textWidth + paddingX * 2);
+  const height = fontSizePx + paddingY * 2;
+
+  canvas.width = Math.ceil(width * dpr);
+  canvas.height = Math.ceil(height * dpr);
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+
+  // Background pill.
+  ctx.fillStyle = background;
+  ctx.strokeStyle = border;
+  ctx.lineWidth = 3;
+
+  // Rounded rect path.
+  const r = 7;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(width - r, 0);
+  ctx.quadraticCurveTo(width, 0, width, r);
+  ctx.lineTo(width, height - r);
+  ctx.quadraticCurveTo(width, height, width - r, height);
+  ctx.lineTo(r, height);
+  ctx.quadraticCurveTo(0, height, 0, height - r);
+  ctx.lineTo(0, r);
+  ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Text.
+  ctx.font = `${fontSizePx}px ${theme.fontFamily}`;
+  ctx.fillStyle = color;
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, paddingX, Math.floor(height / 2));
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false, depthWrite: false });
+  const sprite = new THREE.Sprite(material);
+  // Ensure labels always draw above dashed paths.
+  sprite.renderOrder = 20;
+  sprite.frustumCulled = false;
+
+  // World-units scaling: fixed height, width follows aspect ratio.
+  const aspect = width / height;
+  const worldHeight = 0.9;
+  sprite.scale.set(worldHeight * aspect, worldHeight, 1);
+  return sprite;
+}
+
+function resizeRendererToCanvas() {
+  // In VS Code webviews it's common for `clientWidth/clientHeight` to temporarily be 0
+  // depending on layout timing. Use the bounding rect as the primary signal.
+  const rect = canvasEl.getBoundingClientRect();
+  const width = Math.max(1, Math.floor(rect.width) || canvasEl.width);
+  const height = Math.max(1, Math.floor(rect.height) || canvasEl.height);
+  const currentSize = new THREE.Vector2();
+  renderer.getSize(currentSize);
+  if (currentSize.x === width && currentSize.y === height) return;
+
+  // Keep CSS-driven layout intact; only update the drawing buffer.
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  updateLineMaterialResolutions(width, height);
+}
+
+function frameCameraToObjects() {
+  roomsGroup.updateWorldMatrix(true, true);
+  const box = new THREE.Box3().setFromObject(roomsGroup);
+  if (!isFinite(box.min.x) || !isFinite(box.max.x)) return;
+
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+
+  const size = new THREE.Vector3();
+  box.getSize(size);
+  const maxDim = Math.max(size.x, size.y, size.z, 1);
+
+  const fov = (camera.fov * Math.PI) / 180;
+  const distance = (maxDim / 2) / Math.tan(fov / 2);
+  const offset = distance * 1.8;
+
+  controls.target.copy(center);
+  // Start from a top-down view (Y is up in our world).
+  camera.position.set(center.x + 0.001, center.y + offset, center.z + 0.001);
+  camera.near = Math.max(0.1, distance / 100);
+  camera.far = Math.max(1000, distance * 20);
+  camera.updateProjectionMatrix();
+  controls.update();
+  requestRender();
+}
+
+function updateCubeOpacityByDistance() {
+  // No-op: rooms are rendered as flat markers (not volumetric cubes).
+}
+
+function createDashedEdges(geometry: THREE.BufferGeometry, color: THREE.Color) {
+  const edgesGeometry = new THREE.EdgesGeometry(geometry);
+  const posAttr = edgesGeometry.getAttribute("position") as THREE.BufferAttribute;
+  const positions = Array.from(posAttr.array as Iterable<number>);
+
+  const lineGeom = new LineSegmentsGeometry();
+  lineGeom.setPositions(positions);
+
+  const mat = new LineMaterial({
+    color,
+    linewidth: 2.5,
+    transparent: true,
+    opacity: 0.9,
+    dashed: true,
+    dashSize: 0.45,
+    gapSize: 0.25,
+    depthTest: false,
+    depthWrite: false,
+  });
+  registerLineMaterial(mat);
+
+  const lines = new LineSegments2(lineGeom, mat);
+  lines.computeLineDistances();
+  lines.renderOrder = 5;
+  lines.frustumCulled = false;
+  return lines;
+}
+
+function createRoomCube(room: AnyObj) {
+  const name: string = room?.name ?? "";
+
+  const color = cubeColor();
+  const markerGroup = new THREE.Group();
+  markerGroup.userData = { name };
+
+  // Flat square marker (top-down view friendly).
+  const geometry = new THREE.PlaneGeometry(1.0, 1.0);
+  const material = new THREE.MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity: 0.0,
+    colorWrite: false,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+
+  const square = new THREE.Mesh(geometry, material);
+  square.rotation.x = -Math.PI / 2;
+  square.userData = { name };
+  markerGroup.add(square);
+
+  // Marker pill styled from theme widget colors.
+
+/*
+    fontFamily: cssVar("--vscode-font-family", "sans-serif"),
+    foreground: cssVar("--vscode-editor-foreground", "#cccccc"),
+    editorBg: cssVar("--vscode-editor-background", "#1e1e1e"),
+    widgetBg: cssVar("--vscode-editorWidget-background", "#252526"),
+    widgetBorder: cssVar("--vscode-editorWidget-border", "#454545"),
+    link: cssVar("--vscode-textLink-foreground", "#3794ff"),
+    warning: cssVar("--vscode-editorWarning-foreground", "#cca700"),
+*/
+  // TODO: ayudark orange Color theme name:
+  // vscode-editorWarning-foreground: #cca700
+
+
+  const label = createLabelSprite(name, theme.foreground, theme.widgetBg, theme.warning);
+  //const label = createLabelSprite(name, theme.foreground, theme.widgetBg, theme.foreground);
+  if (label) {
+    label.position.set(0, 0.9, 0);
+    label.userData = { name };
+    markerGroup.add(label);
+  }
+
+  return markerGroup;
+}
+
+type RelationDir =
+  | "north"
+  | "south"
+  | "west"
+  | "east"
+  | "northwest"
+  | "southeast"
+  | "northeast"
+  | "southwest"
+  | "up"
+  | "down"
+  | "in"
+  | "out";
+
+const relationDirs: RelationDir[] = [
+  "north",
+  "south",
+  "west",
+  "east",
+  "northwest",
+  "southeast",
+  "northeast",
+  "southwest",
+  "up",
+  "down",
+  "in",
+  "out",
+];
+
+function buildRelations(objects: AnyObj[], cubeByName: Map<string, THREE.Object3D>) {
+  disposeGroup(relationsGroup);
+
+  const seen = new Set<string>();
+
+  const relationColor = new THREE.Color(theme.link);
+
+
+  const lineLift = 0.75; // lift above cube centers so segments don't get hidden inside geometry
+  const endpointInset = 1.15; // pull endpoints slightly toward segment interior
+
+  for (const o of objects) {
+    const fromName: string | undefined = o?.name;
+    if (!fromName) continue;
+
+    for (const dir of relationDirs) {
+      const toName: unknown = o?.[dir];
+      if (typeof toName !== "string" || !toName) continue;
+
+      const a = fromName;
+      const b = toName;
+      const key = a < b ? `${a}→${b}` : `${b}→${a}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      const fromCube = cubeByName.get(fromName);
+      const toCube = cubeByName.get(toName);
+      if (!fromCube || !toCube) {
+        continue;
+      }
+
+      const start = new THREE.Vector3();
+      const end = new THREE.Vector3();
+      fromCube.getWorldPosition(start);
+      toCube.getWorldPosition(end);
+
+      // Lift the segment a bit and keep it from running through cube centers.
+      const dirVec = new THREE.Vector3().subVectors(end, start);
+      const len = dirVec.length();
+      if (!isFinite(len) || len < 0.0001) continue;
+      const dirN = dirVec.clone().multiplyScalar(1 / len);
+      start.addScaledVector(dirN, endpointInset);
+      end.addScaledVector(dirN, -endpointInset);
+      start.y += lineLift;
+      end.y += lineLift;
+
+      const geom = new LineGeometry();
+      geom.setPositions([start.x, start.y, start.z, end.x, end.y, end.z]);
+
+      //const relationColor = new THREE.Color(blue);
+
+      // Use dashed lines for all connections 
+      const mat = new LineMaterial({
+        color:   relationColor,
+        linewidth: 3.5,
+        transparent: true,
+        opacity: 0.65,
+        dashed: true,
+        dashSize: 1.0,
+        gapSize: 0.55,
+        depthTest: false,
+        depthWrite: false,
+      });
+      registerLineMaterial(mat);
+
+      const line = new Line2(geom, mat);
+      line.renderOrder = 10;
+      line.frustumCulled = false;
+      line.computeLineDistances();
+      relationsGroup.add(line);
+    }
+  }
+}
+
+function buildRoomScene(objects: AnyObj[]) {
+  disposeGroup(roomsGroup);
+
+  // New scene content means old line materials are stale.
+  lineMaterials.clear();
+
+  // Normalize coordinates into a visible spacing, and keep z as actual height.
+  // If the incoming coordinates are already absolute, we still space them lightly.
+  const SPACING = 5;
+
+  // Centering: compute bounds in source coords first.
+  let minX = Infinity;
+  let minY = Infinity;
+  let minZ = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let maxZ = -Infinity;
+
+  for (const o of objects) {
+    const x = Number(o?.x ?? 0);
+    const y = Number(o?.y ?? 0);
+    const z = Number(o?.z ?? 0);
+    if (!isFinite(x) || !isFinite(y) || !isFinite(z)) continue;
+    minX = Math.min(minX, x);
+    minY = Math.min(minY, y);
+    minZ = Math.min(minZ, z);
+    maxX = Math.max(maxX, x);
+    maxY = Math.max(maxY, y);
+    maxZ = Math.max(maxZ, z);
+  }
+
+  const cx = isFinite(minX) && isFinite(maxX) ? (minX + maxX) / 2 : 0;
+  const cy = isFinite(minY) && isFinite(maxY) ? (minY + maxY) / 2 : 0;
+  const cz = isFinite(minZ) && isFinite(maxZ) ? (minZ + maxZ) / 2 : 0;
+
+  const cubeByName = new Map<string, THREE.Object3D>();
+  for (const o of objects) {
+    const name: string | undefined = o?.name;
+    if (!name) continue;
+
+    const cube = createRoomCube(o);
+    const x = Number(o?.x ?? 0);
+    const y = Number(o?.y ?? 0);
+    const z = Number(o?.z ?? 0);
+
+    // Put Y “up” for a typical 3D view (z-level becomes height).
+    cube.position.set((x - cx) * SPACING, (z - cz) * SPACING, (y - cy) * SPACING);
+    cube.scale.setScalar(1.45);
+    roomsGroup.add(cube);
+    cubeByName.set(name, cube);
+  }
+
+  roomsGroup.updateWorldMatrix(true, true);
+  relationsGroup.updateWorldMatrix(true, true);
+  buildRelations(objects, cubeByName);
+  frameCameraToObjects();
+}
+
+function updateRoomSelector(objects: AnyObj[]) {
+  clearRoomSelector();
+  if (!dom.roomSelector) return;
+
+  const sortedNames: string[] = objects
+    .filter((x: AnyObj) => !isDoor(x))
+    .map((x: AnyObj) => x.name)
+    .filter((x: AnyObj) => typeof x === "string")
+    .sort((a: string, b: string) => a.localeCompare(b));
+
+  for (const name of sortedNames) {
+    const optionNode = document.createElement("option");
+    optionNode.value = name ?? "err";
+    optionNode.innerHTML = name ?? "err";
+    if (currentStartRoom === name) {
+      optionNode.selected = true;
+    }
+    dom.roomSelector.appendChild(optionNode);
+  }
+}
+
+function refresh(payload: unknown) {
+  try {
+    applyThemeToScene();
+
+    const p = payload as AnyObj;
+    if (p?.command !== "tads3.addNode") return;
+    const objects: AnyObj[] | undefined = p?.objects;
+    if (!Array.isArray(objects)) return;
+
+    // Keep existing selector UX intact.
+    updateRoomSelector(objects);
+    buildRoomScene(objects);
+
+    requestRender();
+  } catch (error) {
+    console.error(error);
+    messenger.postCommand("log", `Error during addnode:  ${error}`);
+  }
+}
+
+function onCanvasPointerDown(event: PointerEvent) {
+  // Only treat primary button clicks as selection.
+  if (event.button !== 0) return;
+
+  const rect = canvasEl.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  const y = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
+  pointer.set(x, y);
+
+  raycaster.setFromCamera(pointer, camera);
+
+  const hits = raycaster.intersectObjects(roomsGroup.children, true);
+  const hit = hits[0];
+  const name = hit?.object?.userData?.name;
+  if (typeof name === "string" && name) {
+    messenger.postCommand("select", name);
+  }
+}
+
+canvasEl.addEventListener("pointerdown", onCanvasPointerDown);
 
 bindDomEvents(dom, {
   onRefreshClick: () => messenger.postCommand("refresh", undefined),
@@ -406,348 +647,31 @@ bindDomEvents(dom, {
   },
 });
 
-function handleConversationNodes(payload: AnyObj) {
-  if (payload.command === "tads3.addNode" && payload.objects !== undefined) {
-    let nextX = 0;
-    let nextY = 0;
-
-    for (let i = 0; i < payload.objects.length; i++) {
-      const npc = payload.objects[i];
-      createConversationNode(npc);
-      nextX = npc.x + 1;
-      nextY = npc.y + 1;
-      for (let j = 0; j < npc.children.length; j++) {
-        const childNode = npc.children[j];
-        childNode.y = nextY;
-        childNode.x = nextX++;
-        createConversationNode(childNode);
-      }
-    }
-  }
+function render() {
+  resizeRendererToCanvas();
+  controls.update();
+  renderer.render(scene, camera);
 }
 
-function refresh(payload: unknown) {
-  isPopulatingMap = true;
-  try {
-    applyThemeToLiteGraph();
-    graph.clear();
-    if (selectedEditor === "1") {
-      handleConversationNodes(payload);
-    } else {
-      handleRoomNodes(payload);
-    }
-  } catch (error) {
-    console.error(error);
-    messenger.postCommand("log", `Error during addnode:  ${error}`);
-  } finally {
-    isPopulatingMap = false;
-  }
-}
-
-const rooms = new Set<string>();
-
-function setupDirection(currentRoomNode: AnyObj, objectDir: AnyObj, port1: AnyObj, port2: AnyObj) {
-  if (objectDir) {
-    const connectedNode = graph._nodes.find((x: AnyObj) => x.title === objectDir);
-    if (connectedNode) {
-      currentRoomNode.connect(port1, connectedNode, port2);
-    }
-  }
-}
-
-function removeOptions(selectElement: HTMLSelectElement) {
-  const L = selectElement.options.length - 1;
-  for (let i = L; i >= 0; i--) {
-    selectElement.remove(i);
-  }
-}
-
-function clearRoomSelector() {
-  try {
-    if (!dom.roomSelector) return;
-
-    removeOptions(dom.roomSelector);
-    messenger.postCommand("log", `Clearing old values in roomSelector: ${dom.roomSelector.options.length} `);
-  } catch (err) {
-    messenger.postCommand("log", "error during roomSelector clear: " + err);
-  }
-}
-
-function isDoor(obj: AnyObj) {
-  const detail: unknown = obj?.detail;
-  if (typeof detail !== "string") return false;
-  return /Door|Passage|Stairway/.test(detail);
-}
-
-function handleRoomNodes(payload: AnyObj) {
-  if (dom.levelLabelRef) {
-    dom.levelLabelRef.innerText = String(currentLevel);
-  }
-
-  switch (payload.command) {
-    case "tads3.addNode":
-      if (payload.objects !== undefined) {
-        clearRoomSelector();
-
-        const sortedNames: string[] = payload.objects
-          .filter((x: AnyObj) => !isDoor(x))
-          .map((x: AnyObj) => x.name)
-          .sort((a: string, b: string) => a.localeCompare(b));
-
-        for (const name of sortedNames) {
-          try {
-            if (!dom.roomSelector) break;
-
-            const optionNode = document.createElement("option");
-            optionNode.value = name ?? "err";
-            optionNode.innerHTML = name ?? "err";
-            if (currentStartRoom === name) {
-              optionNode.selected = true;
-            }
-            dom.roomSelector.appendChild(optionNode);
-          } catch (err) {
-            messenger.postCommand("log", `Error during addnode:  ${err}`);
-          }
-        }
-
-        const handleLater: AnyObj[] = [];
-        let maximumY = 0;
-        for (let i = 0; i < payload.objects.length; i++) {
-          const currentObject = payload.objects[i];
-          lowestZLevel = Math.min(lowestZLevel, currentObject.z);
-          highestZLevel = Math.max(highestZLevel, currentObject.z);
-
-          if (currentObject.z !== currentLevel) {
-            handleLater.push(currentObject);
-            continue;
-          }
-          if (currentObject.isMapped || currentObject.isNew) {
-            const node = createNodeFromRoomObject(payload.objects[i]);
-            maximumY = node.pos[1] > maximumY ? node.pos[1] : maximumY;
-          } else {
-            handleLater.push(currentObject);
-          }
-        }
-
-        const yInc = 190;
-        maximumY += yInc * 2;
-        let xcount = 0;
-        const COLS = 10;
-
-        const xInc = 150;
-
-        if (config.showUnmappedRooms && handleLater.length > 0) {
-          const group = new LGraphGroup();
-
-          const totalRows = Math.ceil(handleLater.length / COLS);
-          const totalLength = xInc * Math.min(handleLater.length, COLS);
-
-          const yPadding = 80;
-          group.configure({
-            title: "Unmapped rooms",
-            bounding: [0, maximumY - yPadding, totalLength, totalRows * yInc],
-          });
-          graph.add(group);
-
-          let x = 0;
-          for (let i = 0; i < handleLater.length; i++) {
-            if (xcount === COLS) {
-              maximumY += yInc;
-              xcount = 0;
-              x = 0;
-            }
-            const currentObject = handleLater[i];
-            currentObject.hasAbsolutePosition = true;
-            currentObject.x = x;
-            currentObject.y = maximumY;
-
-            createNodeFromRoomObject(currentObject);
-
-            x += xInc;
-            xcount++;
-          }
-        }
-      }
-      break;
-  }
-
-  if (payload.objects) {
-    for (let i = 0; i < payload.objects.length; i++) {
-      const o = payload.objects[i];
-      const currentRoomNode = graph._nodes.find((x: AnyObj) => x.title === o.name);
-      if (currentRoomNode) {
-        setupDirection(currentRoomNode, o.north, "n_out", "s_in");
-        setupDirection(currentRoomNode, o.south, "s_out", "n_in");
-        setupDirection(currentRoomNode, o.west, "w_out", "e_in");
-        setupDirection(currentRoomNode, o.east, "e_out", "w_in");
-        setupDirection(currentRoomNode, o.northwest, "nw_out", "se_in");
-        setupDirection(currentRoomNode, o.southeast, "se_out", "nw_in");
-        setupDirection(currentRoomNode, o.northeast, "ne_out", "sw_in");
-        setupDirection(currentRoomNode, o.southwest, "sw_out", "ne_in");
-      }
-    }
-  }
-}
-
-function createConversationNode(convObject: AnyObj) {
-  const node = LiteGraph.createNode("basic/npc");
-  if (convObject.name !== undefined) {
-    node.properties.varname = convObject.name ?? "unnamed node";
-    node.title = convObject.name ?? "unnamed node";
-  }
-
-  const scaleFactorX = 170;
-  const scaleFactorY = 75;
-  let x = 0;
-  let y = 0;
-  const offsetX = 50;
-  const offsetY = 50;
-
-  if (convObject.x !== undefined) {
-    x = convObject.x * scaleFactorX + offsetX;
-  }
-  if (convObject.y !== undefined) {
-    y = convObject.y * scaleFactorY + offsetY;
-  }
-  node.pos = [x, y];
-
-  node.onMouseDown = () => messenger.postCommand("select", node.title);
-
-  graph.add(node);
-}
-
-function createNodeFromRoomObject(roomObject: AnyObj) {
-  const isDoorNode = isDoor(roomObject);
-  const node = LiteGraph.createNode(isDoorNode ? "basic/door" : "basic/room");
-
-  let x = 0;
-  let y = 0;
-
-  if (roomObject.hasAbsolutePosition) {
-    x = roomObject.x;
-    y = roomObject.y;
-  } else {
-    const scaleFactorX = 175;
-    const scaleFactorY = config.collapsed ? 75 : 175;
-    const offsetX = 50;
-    const offsetY = 50;
-
-    if (roomObject.x !== undefined) {
-      x = roomObject.x * scaleFactorX + offsetX;
-    }
-    if (roomObject.y !== undefined) {
-      y = roomObject.y * scaleFactorY + offsetY;
-    }
-  }
-  node.pos = [x, y];
-
-  if (roomObject.name !== undefined) {
-    node.title = roomObject.name;
-    node.properties.name = roomObject.name;
-  }
-
-  node.properties.title = node.title;
-  node.properties.isDoor = isDoorNode;
-  if (roomObject["shortName"]) {
-    node.properties.shortName = roomObject["shortName"].replace("\\'", "'");
-  }
-
-  applyNodeTheme(node, { isDoor: isDoorNode });
-
-  graph.add(node);
-  applyCallbacksOnRoomNode(node);
-  return node;
-}
-
-function applyCallbacksOnRoomNode(node: AnyObj) {
-  node.onMouseDown = () => {
-    // vscode.postMessage({ command: 'select', payload: node.title });
-  };
-
-  node.onPropertyChanged = function () {
-    node.title = node.properties.name;
-    messenger.postCommand("change", `Property change for object: ${node.properties.name}`);
-  };
-
-  node.clonable = false;
-
-  node.getMenuOptions = () => {
-    return [
-      {
-        content: "locate",
-        has_submenu: false,
-        callback: locateRoom,
-      },
-    ];
-  };
-}
-
-const locateRoom = (_value: AnyObj, event: AnyObj) => {
-  messenger.postCommand("select", event.extra.title);
+requestRender = () => {
+  if (renderScheduled) return;
+  renderScheduled = true;
+  requestAnimationFrame(() => {
+    renderScheduled = false;
+    render();
+  });
 };
 
-const createRoomNode = function (node: AnyObj) {
-  const room = {
-    name: node.title,
-    pos: node.pos,
-    directions: {},
-  };
-  return room;
-};
-
-function doAddRoom(name: string, firstEvent: AnyObj) {
-  const trimmed = (name ?? "").trim();
-  if (!trimmed) return;
-
-  const node = LiteGraph.createNode("basic/room");
-  node.pos = mapCanvas.convertEventToCanvasOffset(firstEvent);
-
-  applyCallbacksOnRoomNode(node);
-  node.properties.name = trimmed;
-  node.title = trimmed;
-  applyNodeTheme(node, { isDoor: false });
-
-  graph.add(node);
-  messenger.postCommand("addroom", createRoomNode(node));
-  messenger.postCommand("select", node.title);
+controls.addEventListener("change", () => requestRender());
+window.addEventListener("resize", () => requestRender());
+if (typeof ResizeObserver !== "undefined") {
+  new ResizeObserver(() => requestRender()).observe(canvasEl);
 }
 
-const createRoomGUI = (_value: AnyObj, _event: AnyObj, _mouseEvent: AnyObj, contextMenu: AnyObj) => {
-  try {
-    const first_event = contextMenu?.getFirstEvent?.() ?? _mouseEvent ?? _event;
-
-    try {
-      mapCanvas.prompt(
-        "Room name:",
-        "",
-        (name: string) => doAddRoom(name, first_event),
-        first_event,
-        false,
-      );
-    } catch (err) {
-      // Fallback: if LiteGraph prompt cannot open (e.g. active_canvas issues),
-      // use a native prompt so adding a room never hard-fails.
-      const name = window.prompt("Room name:", "");
-      if (name != null) {
-        doAddRoom(name, first_event);
-      }
-    }
-  } catch (err) {
-    console.error(err);
-    messenger.postCommand("log", `Error during Add Room: ${err}`);
-  }
-};
-
-mapCanvas.getMenuOptions = () => {
-  return [
-    {
-      content: "Add Room",
-      has_submenu: false,
-      callback: createRoomGUI,
-    },
-  ];
-};
-
-graph.start();
+applyThemeToScene();
+camera.position.set(0, 250, 0.001);
+controls.target.set(0, 0, 0);
+controls.update();
+requestRender();
 
 export {};

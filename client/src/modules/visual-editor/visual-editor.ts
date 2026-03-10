@@ -224,16 +224,10 @@ export function onDidAddRoom(payload, persistedObjectPositions) {
 
 export function getHtmlForWebview(context: ExtensionContext, webview: Webview, extensionUri: Uri): string {
   const scriptPath = "resources";
-  const litegraphScriptUri =
-    webview.asWebviewUri(
-      Uri.joinPath(context.extensionUri, "client", "node_modules", "litegraph.js", "build", "litegraph.js"),
-    ) ?? "";
-  const litegraphCssUri =
-    webview.asWebviewUri(
-      Uri.joinPath(context.extensionUri, "client", "node_modules", "litegraph.js", "css", "litegraph.css"),
-    ) ?? "";
   const mapLogicUri =
     webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, "maprenderer", "maprenderer.js")) ?? "";
+  // Cache-bust during development so rebuilt webview bundles are actually reloaded.
+  const mapLogicUriWithVersion = `${mapLogicUri}?v=${Date.now()}`;
   const html = `
     <!DOCTYPE html>
 		<html>
@@ -243,37 +237,44 @@ export function getHtmlForWebview(context: ExtensionContext, webview: Webview, e
 					http-equiv="Content-Security-Policy" 
           content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'unsafe-inline' 'unsafe-eval'; img-src ${webview.cspSource} data: https:; " />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<link rel="stylesheet" type="text/css" href="${litegraphCssUri}" >
-				<script type="text/javascript" src="${litegraphScriptUri}" ></script>
+        <style>
+          html, body { height: 100%; width: 100%; padding: 0; margin: 0; overflow: hidden; }
+          body { display: flex; flex-direction: column; }
+          #toolbar { position: sticky; top: 0; z-index: 1; padding: 6px 8px; }
+          #mapCanvas { flex: 1 1 auto; width: 100%; height: 100%; display: block; border: 1px solid; }
+        </style>
 			</head>
-			<body style='width:100%; height:100% padding:0px;'>
+      <body style='width:100%; height:100%; padding:0px;'>
 				<div id="content"></div>
-
-				<button id="refreshButton">Update</button>
-				<button id="resetButton">Reset</button>
-				<label id="dialogLabel">Editor</label>
-				<select id="editorSelector">
-					<option value="0">Map editor</option>
-					<!--option value="1">Conversation editor</option-->
-				</select>
-				<label id="dialogLabel">Starting room</label>
-				<select id="roomSelector">
-				</select>
-				<label>Map level:</label>
-				<button id="minusButton" onclick="levelDown()">-</button>
-				<label id="levelLabel"></label>
-				<button id="plusButton" onclick="levelUp()">+</button>
-				<label>Collapse nodes:</label><input type="checkbox" onclick="toggleCollapse()" />
+        <div id="toolbar">
+          <button id="refreshButton">Update</button>
+          <button id="resetButton">Reset</button>
+          <label id="dialogLabel">Editor</label>
+          <select id="editorSelector">
+            <option value="0">Map editor</option>
+            <!--option value="1">Conversation editor</option-->
+          </select>
+          <label id="dialogLabel">Starting room</label>
+          <select id="roomSelector"></select>
+          <label>Map level:</label>
+          <button id="minusButton" onclick="levelDown()">-</button>
+          <label id="levelLabel"></label>
+          <button id="plusButton" onclick="levelUp()">+</button>
+          <label>Zoom:</label>
+          <button id="zoomOutButton" onclick="zoomOut()">-</button>
+          <button id="zoomInButton" onclick="zoomIn()">+</button>
+          <label>Collapse nodes:</label><input type="checkbox" onclick="toggleCollapse()" />
+        </div>
 				<!--label>Show all:</label><input type="checkbox" onclick="toggleShowAll()" checked /-->
 				<!--label>Show unmapped:</label><input type="checkbox" onclick="toggleShowUnmapped()" /-->
 				<div id="inputDialog">
 					<label>Room name: <label><input type="text" id='inputDialog'></input>
 				</div>
-				<div id="editorElement"> </div>
-				<canvas id='mapCanvas' width='1024' height='1024' style='border: 1px solid'></canvas>
+        <div id="editorElement"> </div>
+        <canvas id='mapCanvas' width='1024' height='1024'></canvas>
 				<!--script>
 				</script-->
-				<script src="${mapLogicUri}"></script>
+        <script src="${mapLogicUriWithVersion}"></script>
 			</body>
 		</html>`;
   return html;
@@ -288,6 +289,13 @@ export async function openInVisualEditor(context: ExtensionContext, client: Lang
   let tads3VisualEditorPanel = getVisualEditor();
 
   if (tads3VisualEditorPanel) {
+    // If the panel is already open, reload its HTML so updated webview bundles are picked up.
+    // (Webviews otherwise keep running the previously loaded JS.)
+    tads3VisualEditorPanel.webview.html = getHtmlForWebview(
+      context,
+      tads3VisualEditorPanel.webview,
+      context.extensionUri,
+    );
     tads3VisualEditorPanel.reveal();
     await client.sendNotification("request/mapsymbols");
     return;
@@ -298,8 +306,6 @@ export async function openInVisualEditor(context: ExtensionContext, client: Lang
     //localResourceRoots: [Uri.joinPath(context.extensionUri, 'media')],
     localResourceRoots: [
       Uri.joinPath(context.extensionUri, "resources", "maprenderer"),
-      Uri.joinPath(context.extensionUri, "client", "node_modules", "litegraph.js/build"),
-      Uri.joinPath(context.extensionUri, "client", "node_modules", "litegraph.js/css"),
     ],
   };
 

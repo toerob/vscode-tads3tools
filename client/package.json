@@ -17,6 +17,7 @@
     "coverage": "jest  --reporter=lcov --collect-coverage && cp coverage/lcov.info ../coverage/client-lcov.info"
   },
   "dependencies": {
+    "@types/three": "^0.183.1",
     "@types/unzipper": "^0.10.9",
     "axios": "^1.13.2",
     "fs-extra": "^11.2.0",
@@ -24,40 +25,31 @@
     "minimist": ">=1.2.8",
     "mobx": "^6.12.3",
     "rxjs": "^7.8.1",
+    "three.js": "^0.77.1",
     "unzipper": "^0.11.4",
-    "which": "^4.0.0",
+    "vscode-languageclient": "^10.0.0-next.19",
     "vscode-languageserver-protocol": "3.17.6-next.16",
-    "vscode-languageclient": "^10.0.0-next.19"    
+    "which": "^4.0.0"
   },
   "devDependencies": {
-    "@types/vscode": "^1.89.0",
-    "@vscode/test-electron": "^2.3.9",
-    "minimist": ">=1.2.8",
-
-
-
-
-
-
-
     "@types/chai": "^4.3.11",
-    "@types/mocha": "^10.0.6",
     "@types/glob": "^7.2.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^14.14.37",
     "@types/sinon": "^21.0.0",
-    
+    "@types/vscode": "^1.89.0",
+    "@typescript-eslint/eslint-plugin": "^5.17.0",
     "@typescript-eslint/parser": "^5.17.0",
     "@vscode/debugadapter": "^1.56.0",
+    "@vscode/test-electron": "^2.3.9",
     "await-notify": "^1.0.1",
-
-
-    "@typescript-eslint/eslint-plugin": "^5.17.0",
-    "@types/node": "^14.14.37",
     "base64-js": "^1.5.1",
     "chai": "^4.4.1",
     "esbuild": "^0.25.0",
     "eslint": "^8.12.0",
     "events": "^3.3.0",
     "glob": "^7.2.0",
+    "minimist": ">=1.2.8",
     "mocha": "^10.3.0",
     "path-browserify": "^1.0.1",
     "rimraf": "^3.0.2",
