@@ -24,14 +24,12 @@
     "vscode": "^1.82.0"
   },
   "main": "./client/out/extension",
-
   "activationEvents": [
     "onLanguage",
     "onDebugResolve:tads3",
     "onDebugDynamicConfigurations:tads3",
     "onCommand:extension.tads3-debug.getProgramName"
   ],
-
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": false
@@ -617,6 +615,7 @@
     "build": "vsce package --no-yarn",
     "compile:tsc": "tsc -b",
     "build:maprenderer": "esbuild ./webview-src/maprenderer.ts --bundle --sourcemap=inline --platform=browser --format=iife --target=es2020 --outfile=resources/maprenderer/maprenderer.js",
+    "build:maprenderer2": "NODE_PATH=client/node_modules esbuild ./webview-src/maprenderer.ts --bundle --sourcemap=inline --platform=browser --format=iife --target=es2020 --outfile=resources/maprenderer/maprenderer.js",
     "watch:maprenderer": "npm run -S build:maprenderer -- --watch",
     "compile": "npm run -S compile:tsc && npm run -S build:maprenderer",
     "test-compile": "tsc -p ./",
@@ -661,8 +660,9 @@
     "test:unit": "TS_NODE_PROJECT=test/tsconfig.json mocha --config .mocharc.json"
   },
   "devDependencies": {
-    "@types/three": "^0.180.0",
+    "@types/cytoscape": "^3.21.9",
     "@types/mocha": "^10.0.6",
+    "@types/three": "^0.180.0",
     "antlr4ts-cli": "^0.5.0-alpha.4",
     "coveralls": "^3.1.1",
     "esbuild": "^0.27.2",
@@ -680,6 +680,7 @@
   "dependencies": {
     "@types/unzipper": "^0.10.9",
     "@types/vscode": "^1.89.0",
+    "cytoscape": "^3.33.1",
     "npm": "^11.7.0",
     "unzipper": "^0.11.4",
     "vsce": "^1.97.0",

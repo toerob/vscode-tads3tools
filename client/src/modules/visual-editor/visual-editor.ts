@@ -69,7 +69,7 @@ export function onDidUpdatePosition(payload, persistedObjectPositions) {
 		}
 	}*/
 
-  console.log(payload);
+  //console.log(payload);
 }
 
 export function onDidChange(payload) {
@@ -271,7 +271,7 @@ export function getHtmlForWebview(context: ExtensionContext, webview: Webview, e
 					<label>Room name: <label><input type="text" id='inputDialog'></input>
 				</div>
         <div id="editorElement"> </div>
-        <canvas id='mapCanvas' width='1024' height='1024'></canvas>
+        <div id="mapCanvas"></div>
 				<!--script>
 				</script-->
         <script src="${mapLogicUriWithVersion}"></script>

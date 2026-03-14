@@ -20,6 +20,7 @@
     "@types/three": "^0.183.1",
     "@types/unzipper": "^0.10.9",
     "axios": "^1.13.2",
+    "cytoscape": "^3.33.1",
     "fs-extra": "^11.2.0",
     "litegraph.js": "^0.7.18",
     "minimist": ">=1.2.8",

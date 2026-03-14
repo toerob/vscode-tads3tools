@@ -341,6 +341,7 @@ export default class MapObjectManager {
     mapObj.parent = props?.parent?.name;
     mapObj.shortName = props?.shortName;
     mapObj.arrowConnection = props?.arrowConnection;
+    mapObj.otherSide = props?.otherSide;
     mapObj.kind = symbol.kind;
     mapObj.detail = symbol.detail;
 

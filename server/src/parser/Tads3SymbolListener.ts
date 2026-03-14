@@ -36,6 +36,7 @@ import { T3StringVisitor } from "./Tads3StringVisitor";
 export class ExtendedDocumentSymbolProperties {
   level: number | undefined;
   arrowConnection: string | undefined;
+  otherSide: string | undefined;
   at: string | undefined = undefined;
   objectScope: any | undefined;
   functionScope: any | undefined;
@@ -52,6 +53,7 @@ export class ExtendedDocumentSymbolProperties {
   constructor({
     level = undefined,
     arrowConnection = undefined,
+    otherSide = undefined,
     at = undefined,
     objectScope = undefined,
     functionScope = undefined,
@@ -67,6 +69,7 @@ export class ExtendedDocumentSymbolProperties {
    } = {}) {
     this.level = level
     this.arrowConnection = arrowConnection
+    this.otherSide = otherSide
     this.at = at
     this.objectScope = objectScope
     this.functionScope = functionScope
@@ -653,10 +656,13 @@ export class Tads3SymbolListener implements Tads3Listener {
       (name === "otherSide" || name === "masterObject")
     ) {
       if (this.currentObjectSymbol) {
-        //this.currentObjectSymbol.arrowConnection = detail;
         const prop = this.additionalProperties.get(this.currentObjectSymbol);
-        if (prop?.arrowConnection) {
-          prop.arrowConnection = detail;
+        if (prop) {
+          prop.otherSide = detail;
+          // Also update arrowConnection for backward compatibility
+          if (prop.arrowConnection) {
+            prop.arrowConnection = detail;
+          }
         }
       }
     }

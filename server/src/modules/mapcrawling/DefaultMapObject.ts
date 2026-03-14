@@ -23,6 +23,7 @@ export class DefaultMapObject {
   kind: any;
   detail: string | undefined;
   arrowConnection: string | undefined;
+  otherSide: string | undefined;
   shortName: string | undefined;
 
   hasAbsolutePosition = false;

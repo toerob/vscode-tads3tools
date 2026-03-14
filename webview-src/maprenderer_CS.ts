@@ -4,12 +4,10 @@
 // This runs inside a VS Code webview (browser context).
 // It's compiled to `resources/maprenderer/maprenderer.js` via `npm run build:maprenderer`.
 
-import { Core, ElementDefinition, StylesheetJsonBlock } from "cytoscape";
 import { bindDomEvents, getDomRefs, initializeDom } from "./dom";
 import { createMessenger } from "./messaging";
-import cytoscape from "cytoscape";
 
-//import cytoscape, { Stylesheet, type Core, type ElementDefinition, type StylesheetCSS } from "cytoscape";
+import cytoscape, { type Core, type ElementDefinition, type StylesheetCSS } from "cytoscape";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyObj = any;
@@ -71,18 +69,16 @@ function zoomBy(factor: number) {
   if (!cy) return;
   const current = cy.zoom();
   const next = current * factor;
-  if (container) {
-    cy.zoom({
-      level: next,
-      renderedPosition: { x: container.clientWidth / 2, y: container.clientHeight / 2 },
-    });
-  }
+  cy.zoom({
+    level: next,
+    renderedPosition: { x: container.clientWidth / 2, y: container.clientHeight / 2 },
+  });
 }
 
 (window as AnyObj).zoomIn = () => zoomBy(1.15);
 (window as AnyObj).zoomOut = () => zoomBy(1 / 1.15);
 
-function buildCyStyles(currentTheme: Theme): StylesheetJsonBlock[] {
+function buildCyStyles(currentTheme: Theme): Stylesheet[] {
   return [
     {
       selector: "core",
@@ -102,38 +98,20 @@ function buildCyStyles(currentTheme: Theme): StylesheetJsonBlock[] {
         "text-valign": "center",
         "text-halign": "center",
         "text-wrap": "wrap",
-        "text-max-width": "140",
-        shape: "rectangle",
+        "text-max-width": 140,
         "background-color": currentTheme.widgetBg,
         "border-color": currentTheme.widgetBorder,
         "border-width": 1,
-        width: 16,
-        height: 16,
-        "background-opacity": 0,
-        "border-opacity": 0,
+        width: 32,
+        height: 32,
         "text-background-color": currentTheme.widgetBg,
         "text-background-opacity": 1,
         "text-background-shape": "roundrectangle",
         "text-border-color": currentTheme.widgetBorder,
         "text-border-width": 1,
         "text-border-opacity": 1,
-        "text-margin-y": 0,
-        "text-background-padding": "6",
-      },
-    },
-    {
-      selector: "node[?isDoor]",
-      style: {
-        shape: "diamond",
-        width: 20,
-        height: 20,
-        "background-color": currentTheme.warning,
-        "background-opacity": 0.85,
-        "border-color": currentTheme.warning,
-        "border-width": 1,
-        "border-opacity": 1,
-        "font-size": 10,
-        "text-margin-y": -16,
+        "text-margin-y": -18,
+        "text-background-padding": 6,
       },
     },
     {
@@ -225,13 +203,13 @@ function clearRoomSelector() {
 
 type RelationDir =
   | "north"
-  | "northeast"
-  | "east"
-  | "southeast"
   | "south"
-  | "southwest"
   | "west"
+  | "east"
   | "northwest"
+  | "southeast"
+  | "northeast"
+  | "southwest"
   | "up"
   | "down"
   | "in"
@@ -239,13 +217,13 @@ type RelationDir =
 
 const relationDirs: RelationDir[] = [
   "north",
-  "northeast",
-  "east",
-  "southeast",
   "south",
-  "southwest",
   "west",
+  "east",
   "northwest",
+  "southeast",
+  "northeast",
+  "southwest",
   "up",
   "down",
   "in",
@@ -253,45 +231,58 @@ const relationDirs: RelationDir[] = [
 ];
 
 function computePresetPositions(objects: AnyObj[]) {
-  // Only consider objects that were actually placed by the server's BFS crawl.
-  const mapped = objects.filter((o) => o?.isMapped === true);
-
+  // Use project-provided coordinates if they look non-trivial; otherwise fall back to an automatic layout.
   let minX = Infinity;
   let minY = Infinity;
+  let minZ = Infinity;
   let maxX = -Infinity;
   let maxY = -Infinity;
+  let maxZ = -Infinity;
 
   let anyFinite = false;
-  for (const o of mapped) {
+  for (const o of objects) {
     const x = Number(o?.x ?? NaN);
     const y = Number(o?.y ?? NaN);
-    if (!isFinite(x) || !isFinite(y)) continue;
+    const z = Number(o?.z ?? NaN);
+    if (!isFinite(x) || !isFinite(y) || !isFinite(z)) continue;
     anyFinite = true;
     minX = Math.min(minX, x);
     minY = Math.min(minY, y);
+    minZ = Math.min(minZ, z);
     maxX = Math.max(maxX, x);
     maxY = Math.max(maxY, y);
+    maxZ = Math.max(maxZ, z);
   }
 
   if (!anyFinite) {
     return { ok: false as const, positions: new Map<string, { x: number; y: number }>() };
   }
 
-  // Trust server-assigned grid coordinates unconditionally.
-  const SPACING = 150;
-  const LEVEL_SPACING = 300;
+  const dx = maxX - minX;
+  const dy = maxY - minY;
+  const dz = maxZ - minZ;
+  const looksTrivial = dx === 0 && dy === 0 && dz === 0;
+  if (looksTrivial) {
+    return { ok: false as const, positions: new Map<string, { x: number; y: number }>() };
+  }
+
+  const cx = (minX + maxX) / 2;
+  const cy0 = (minY + maxY) / 2;
+  const cz = (minZ + maxZ) / 2;
+
+  const SPACING = 80;
+  const LEVEL_SPACING = 140;
   const positions = new Map<string, { x: number; y: number }>();
-  for (const o of mapped) {
+  for (const o of objects) {
     const name: unknown = o?.name;
     if (typeof name !== "string" || !name) continue;
     const x = Number(o?.x ?? 0);
     const y = Number(o?.y ?? 0);
     const z = Number(o?.z ?? 0);
-    if (!isFinite(x) || !isFinite(y)) continue;
-    const zVal = isFinite(z) ? z : 0;
+    if (!isFinite(x) || !isFinite(y) || !isFinite(z)) continue;
     positions.set(name, {
-      x: x * SPACING,
-      y: y * SPACING + zVal * LEVEL_SPACING,
+      x: (x - cx) * SPACING,
+      y: (y - cy0) * SPACING + (z - cz) * LEVEL_SPACING,
     });
   }
 
@@ -320,8 +311,6 @@ function buildGraph(objects: AnyObj[]) {
     });
   }
 
-  // Filter out nodes where either the source or target is missing
-  const nodeIds = new Set(elements.map((e) => e.data.id));
   const seen = new Set<string>();
   for (const o of objects) {
     const fromName: unknown = o?.name;
@@ -333,14 +322,6 @@ function buildGraph(objects: AnyObj[]) {
 
       const a = fromName;
       const b = toName;
-
-      if (!nodeIds.has(a) || !nodeIds.has(b)) {
-        console.warn(`Skipping edge from ${a} to ${b} (dir: ${dir}) — missing node`);
-        continue;
-      } else {
-        console.info(`Adding edge from ${a} to ${b} (dir: ${dir})`);
-      }
-
       const key = a < b ? `${a}→${b}` : `${b}→${a}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -352,82 +333,30 @@ function buildGraph(objects: AnyObj[]) {
     }
   }
 
-  // Hide nodes that have no edges
-  const connectedNodeIds = new Set<string>();
-  for (const el of elements) {
-    if (el.group === "edges") {
-      connectedNodeIds.add(el.data.source as string);
-      connectedNodeIds.add(el.data.target as string);
-    }
-  }
-  const visibleElements = elements.filter(
-    (el) => el.group === "edges" || connectedNodeIds.has(el.data.id as string)
-  );
-
   cy.batch(() => {
-    cy?.elements().remove();
-    cy?.add(visibleElements);
+    cy.elements().remove();
+    cy.add(elements);
   });
 
-  cy?.style().update();
+  // Ensure style is applied before layout so edges render correctly immediately.
+  cy.style().update();
 
-  // Identify nodes with and without grid positions.
-  const positionedNodes = cy.nodes().filter((n) => positions.has(n.id()));
-  const unpositionedNodes = cy.nodes().filter((n) => !positions.has(n.id()));
+  const layout = usePreset
+    ? cy.layout({ name: "preset", fit: true, padding: 30, animate: false })
+    : cy.layout({ name: "cose", fit: true, padding: 30, animate: false });
 
-  if (usePreset && positionedNodes.length > 0) {
-    // Nodes already have positions set from the element definitions.
-    // Run preset layout just to finalize.
-    positionedNodes.layout({ name: "preset", fit: false, padding: 30, animate: false }).run();
-  } else if (!usePreset) {
-    // No grid data — fall back to cose for connected nodes.
-    const connectedIds = new Set<string>();
-    for (const el of elements) {
-      if (el.group === "edges") {
-        connectedIds.add(el.data.source as string);
-        connectedIds.add(el.data.target as string);
-      }
-    }
-    const connectedNodes = cy.nodes().filter((n) => connectedIds.has(n.id()));
-    if (connectedNodes.length > 0) {
-      const subgraph = connectedNodes.union(connectedNodes.connectedEdges());
-      subgraph.layout({
-        name: "cose",
-        fit: false,
-        padding: 30,
-        animate: false,
-        randomize: true,
-        nodeRepulsion: () => 8000,
-        idealEdgeLength: () => 120,
-        edgeElasticity: () => 100,
-        gravity: 0.25,
-        numIter: 1000,
-      } as AnyObj).run();
-    }
-  }
+  // Attach listeners before running; otherwise the event can be missed
+  // (and the viewport won't be fit, leaving a blank view).
+  layout.on("layoutstop", () => {
+    cy.fit(undefined, 30);
+    (cy as AnyObj)?.forceRender?.();
+  });
 
-  // Place unpositioned nodes in a grid below the positioned ones.
-  if (unpositionedNodes.length > 0) {
-    const positioned = usePreset ? positionedNodes : cy.nodes().filter((n) => !unpositionedNodes.contains(n));
-    const bb = positioned.length > 0
-      ? positioned.boundingBox({})
-      : { x1: 0, y1: 0, x2: 0, y2: 0 };
-    const startY = (bb as AnyObj).y2 + 150;
-    const startX = (bb as AnyObj).x1;
-    const cols = Math.max(1, Math.ceil(Math.sqrt(unpositionedNodes.length)));
-    const spacing = 90;
-    unpositionedNodes.forEach((node, i) => {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      node.position({ x: startX + col * spacing, y: startY + row * spacing });
-    });
-  }
+  layout.run();
 
-  cy.fit(undefined, 30);
-  (cy as AnyObj)?.forceRender?.();
-
+  // Layouts can finish synchronously for small graphs; always do a fallback fit.
   requestAnimationFrame(() => {
-    cy?.fit(undefined, 30);
+    cy.fit(undefined, 30);
     (cy as AnyObj)?.forceRender?.();
   });
 }
