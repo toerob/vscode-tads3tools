@@ -39,6 +39,35 @@ let lastMakeFileLocation: string | undefined;
 let makefileStructure;
 let usingAdv3Lite = false;
 
+const SLOW_FILE_THRESHOLD_MS = 5000;
+const WORKER_TIMEOUT_MS = 120_000; // 2 minutes — if a file takes longer, skip it
+
+function logParseInfo(parseInfo: any) {
+  if (!parseInfo) return;
+  const { fileName, totalTimeMs, lexTimeMs, parseTimeMs, walkTimeMs, textLength, symbolCount, errorNodeCount, warnings, walkError, parsingMode } = parseInfo;
+  connection.console.log(
+    `[parse] ${fileName}: ${totalTimeMs}ms total (lex: ${lexTimeMs}ms, parse: ${parseTimeMs}ms, walk: ${walkTimeMs}ms) | mode: ${parsingMode} | ${textLength} chars, ${symbolCount} symbols${errorNodeCount > 0 ? `, ${errorNodeCount} error nodes` : ""}`
+  );
+  if (totalTimeMs > SLOW_FILE_THRESHOLD_MS) {
+    connection.console.warn(
+      `[parse] SLOW FILE: ${fileName} took ${totalTimeMs}ms (threshold: ${SLOW_FILE_THRESHOLD_MS}ms)`
+    );
+  }
+  if (errorNodeCount > 0) {
+    connection.console.warn(
+      `[parse] ${fileName} had ${errorNodeCount} ANTLR error nodes — grammar may not fully cover this file`
+    );
+  }
+  if (warnings && warnings.length > 0) {
+    for (const warning of warnings) {
+      connection.console.warn(`[parse] ${warning}`);
+    }
+  }
+  if (walkError) {
+    connection.console.error(`[parse] ${walkError}`);
+  }
+}
+
 export function isUsingAdv3Lite(): boolean {
   return usingAdv3Lite;
 }
@@ -53,7 +82,7 @@ const adv3PathRegExp = RegExp(/[/]?adv3[/]|\\?adv3\\/);
 
 const generalHeaderIncludeRegExp = RegExp(/tads3[/]include[/]|tads3\\include\\/);
 
-const useCachedLibrary = true;
+const useCachedLibrary = false;
 
 /**
  *
@@ -196,6 +225,7 @@ export async function preprocessAndParseTads3Files(
     const filePath = allFilePaths[0];
     const startTime = Date.now();
     connection.console.debug(`Spawning worker to parse a single file: ${filePath}`);
+    await connection.sendNotification("symbolparsing/processing", [filePath, 0, totalFiles, 1]);
     const worker = await spawn(new Worker("./worker"));
     const text = serverState.preprocessedFilesCacheMap.get(filePath) ?? "";
     const jobResult = await worker(filePath, text);
@@ -208,7 +238,10 @@ export async function preprocessAndParseTads3Files(
       assignmentStatements,
       expressionSymbols,
       symbolParameters,
+      parseInfo,
     } = jobResult;
+
+    logParseInfo(parseInfo);
 
     symbolManager.symbols.set(filePath, symbols ?? []);
     symbolManager.keywords.set(filePath, keywords ?? []);
@@ -241,6 +274,25 @@ export async function preprocessAndParseTads3Files(
 
     const libraryFilePaths = filterForStandardLibraryFiles([...serverState.preprocessedFilesCacheMap.keys()]);
 
+    // Track which files are currently being parsed by worker threads
+    const inFlightFiles = new Set<string>();
+    const inFlightStartTimes = new Map<string, number>();
+
+    // Stall detection: periodically log files that have been parsing for a long time
+    const STALL_CHECK_INTERVAL_MS = 15_000;
+    const STALL_WARN_THRESHOLD_MS = 30_000;
+    const stallCheckTimer = setInterval(() => {
+      const now = Date.now();
+      for (const [file, start] of inFlightStartTimes) {
+        const elapsed = now - start;
+        if (elapsed > STALL_WARN_THRESHOLD_MS) {
+          connection.console.warn(
+            `[parse] STALL WARNING: ${file} has been parsing for ${Math.round(elapsed / 1000)}s`
+          );
+        }
+      }
+    }, STALL_CHECK_INTERVAL_MS);
+
     try {
       const startTime = Date.now();
       let cachedFiles = new Set();
@@ -271,36 +323,59 @@ export async function preprocessAndParseTads3Files(
         // Only use cached values herein:
         if (!cachedFiles.has(filePath)) {
           workerPool.queue(async (parseJob) => {
-            // TODO consider report file before processing it:
-            // e.g connection.sendNotification('symbolparsing/processing', [filePath, tracker, totalFiles, poolSize]);
+            const fileBaseName = basename(filePath);
+            inFlightFiles.add(fileBaseName);
+            inFlightStartTimes.set(fileBaseName, Date.now());
+            connection.console.log(`[parse] STARTED: ${fileBaseName} (in-flight: ${[...inFlightFiles].join(", ")})`);
+            await connection.sendNotification("symbolparsing/processing", [filePath, tracker, totalFiles, poolSize, [...inFlightFiles]]);
 
             const text = serverState.preprocessedFilesCacheMap.get(filePath) ?? "";
-            const {
-              symbols,
-              keywords,
-              additionalProperties,
-              inheritanceMap,
-              assignmentStatements,
-              expressionSymbols,
-              symbolParameters,
-            } = await parseJob(filePath, text);
+            const fileStartTime = Date.now();
 
-            symbolManager.symbols.set(filePath, symbols ?? []);
-            symbolManager.keywords.set(filePath, keywords ?? []);
-            symbolManager.assignmentStatements.set(filePath, assignmentStatements ?? []);
-            symbolManager.expressionSymbols.set(filePath, expressionSymbols ?? []);
-            symbolManager.symbolParameters.set(filePath, symbolParameters ?? []);
+            // Race the parse job against a timeout so a stuck file doesn't block forever
+            const timeoutPromise = new Promise<never>((_, reject) => {
+              setTimeout(() => reject(new Error(
+                `TIMEOUT after ${WORKER_TIMEOUT_MS / 1000}s parsing ${fileBaseName} (${text.length} chars)`
+              )), WORKER_TIMEOUT_MS);
+            });
 
-            inheritanceMap.forEach((value: string, key: string) => symbolManager.inheritanceMap.set(key, value));
+            try {
+              const {
+                symbols,
+                keywords,
+                additionalProperties,
+                inheritanceMap,
+                assignmentStatements,
+                expressionSymbols,
+                symbolParameters,
+                parseInfo,
+              } = await Promise.race([parseJob(filePath, text), timeoutPromise]);
 
-            symbolManager.additionalProperties.set(filePath, additionalProperties);
+              logParseInfo(parseInfo);
+
+              symbolManager.symbols.set(filePath, symbols ?? []);
+              symbolManager.keywords.set(filePath, keywords ?? []);
+              symbolManager.assignmentStatements.set(filePath, assignmentStatements ?? []);
+              symbolManager.expressionSymbols.set(filePath, expressionSymbols ?? []);
+              symbolManager.symbolParameters.set(filePath, symbolParameters ?? []);
+
+              inheritanceMap.forEach((value: string, key: string) => symbolManager.inheritanceMap.set(key, value));
+
+              symbolManager.additionalProperties.set(filePath, additionalProperties);
+            } catch (err) {
+              const elapsed = Date.now() - fileStartTime;
+              connection.console.error(`[parse] FAILED: ${fileBaseName} after ${elapsed}ms — ${err}`);
+            }
+
+            inFlightFiles.delete(fileBaseName);
+            inFlightStartTimes.delete(fileBaseName);
             tracker++;
-            await connection.sendNotification("symbolparsing/success", [filePath, tracker, totalFiles, poolSize]);
-            connection.console.debug(`${filePath} parsed successfully`);
+            await connection.sendNotification("symbolparsing/success", [filePath, tracker, totalFiles, poolSize, [...inFlightFiles]]);
+            connection.console.log(`[parse] FINISHED: ${fileBaseName} (${tracker}/${totalFiles}, remaining in-flight: ${inFlightFiles.size > 0 ? [...inFlightFiles].join(", ") : "none"})`);
           });
         } else {
           tracker++;
-          await connection.sendNotification("symbolparsing/success", [filePath, tracker, totalFiles, poolSize]);
+          await connection.sendNotification("symbolparsing/success", [filePath, tracker, totalFiles, poolSize, []]);
           connection.console.debug(`${filePath} cached restored successfully`);
         }
       }
@@ -311,6 +386,8 @@ export async function preprocessAndParseTads3Files(
         await workerPool.terminate();
       } catch (err) {
         connection.console.error(`Error happened during awaiting pool completion/termination: ` + err);
+      } finally {
+        clearInterval(stallCheckTimer);
       }
 
       const elapsedTime = Date.now() - startTime;
@@ -327,6 +404,7 @@ export async function preprocessAndParseTads3Files(
       }
       initialParsing = false;
     } catch (err) {
+      clearInterval(stallCheckTimer);
       await workerPool.terminate();
       connection.console.error(`Error happened during parsing of files: ${err}`);
       await connection.sendNotification("symbolparsing/allfiles/failed", allFilePaths);

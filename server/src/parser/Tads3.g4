@@ -137,7 +137,7 @@ templateExpr:
 ;
 
 array:
-    expr (COMMA array)*;
+    expr (COMMA expr)*;
 
 curlyObjectBody:
     LEFT_CURLY objectBody SEMICOLON? RIGHT_CURLY;
@@ -307,7 +307,6 @@ expr:
  LEFT_BRACKET expr? RIGHT_BRACKET                   #arrayExpr
  | prev=expr DOT next=expr                          #memberExpr
  | expr LEFT_BRACKET expr? RIGHT_BRACKET            #indexExpr
- | expr COMMA expr                                  #commaExpr
  | expr RANGE expr (hasStep=STEP expr)?             #rangeExpr
  | DELEGATED expr                                   #delegatedExpression
  | INHERITED expr                                   #inheritedExpression
@@ -354,6 +353,7 @@ expr:
  |  expr OPTIONAL expr COLON expr                   #ternaryExpr
  | functionDeclaration                  #anonymousFunctionExpr
  //| expr params                          #callExpr // NOt sure about this
+ | expr COMMA expr                                  #commaExpr
 
 ;
 

@@ -103,7 +103,19 @@ export function setupClientNotifications(client: LanguageClient, extensionState:
     extensionState.preprocessedList = fileNames;
   });
 
-  client.onNotification("symbolparsing/success", async ([filePath, tracker, totalFiles, poolSize]) => {
+  client.onNotification("symbolparsing/processing", async ([filePath, tracker, totalFiles, poolSize, inFlightFiles]) => {
+    const filename = basename(Uri.parse(filePath).path);
+    if (extensionState.currentPreprocessAndParseProgress) {
+      const inFlightStr = inFlightFiles?.length > 0
+        ? ` [active: ${inFlightFiles.join(", ")}]`
+        : '';
+      extensionState.currentPreprocessAndParseProgress.report({
+        message: ` [threads: ${poolSize}] parsing ${tracker + 1}/${totalFiles}: ${filename}...${inFlightStr}`,
+      });
+    }
+  });
+
+  client.onNotification("symbolparsing/success", async ([filePath, tracker, totalFiles, poolSize, inFlightFiles]) => {
     if (extensionState.allFilesBeenProcessed && !extensionState.isLongProcessingInAction()) {
       if (getVisualEditor()) {
         client.info(`Refreshing the map view`);
@@ -112,11 +124,13 @@ export function setupClientNotifications(client: LanguageClient, extensionState:
     }
     const filename = basename(Uri.parse(filePath).path);
     if (extensionState.currentPreprocessAndParseProgress) {
+      const inFlightStr = inFlightFiles?.length > 0
+        ? ` [active: ${inFlightFiles.join(", ")}]`
+        : '';
       extensionState.currentPreprocessAndParseProgress.report({
-        message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}`,
+        message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}${inFlightStr}`,
       });
     }
-    //progress.report({ message: ` [threads: ${poolSize}] processed files => ${tracker}/${totalFiles}: ${filename}` });
   });
 
   client.onNotification("symbolparsing/allfiles/success", async ({ elapsedTime }) => {

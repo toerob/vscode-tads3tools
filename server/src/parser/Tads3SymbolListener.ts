@@ -31,6 +31,7 @@ import {
   TemplateDeclarationContext,
 } from "./Tads3Parser";
 import { T3StringVisitor } from "./Tads3StringVisitor";
+import { basename } from "path";
 //import { DocumentUri } from 'vscode-languageserver-textdocument';
 
 export class ExtendedDocumentSymbolProperties {
@@ -115,6 +116,12 @@ export class Tads3SymbolListener implements Tads3Listener {
 
   public assignmentStatements: DocumentSymbol[] = [];
 
+  /** Counts ANTLR error nodes encountered during tree walking */
+  public errorNodeCount = 0;
+
+  /** Collects warning/error messages for the caller (since console.error is invisible in worker threads) */
+  public warnings: string[] = [];
+
   lastObjectLevelMap: Map<number, DocumentSymbol> = new Map();
 
   completionItems: Set<CompletionItem> = new Set();
@@ -173,11 +180,11 @@ export class Tads3SymbolListener implements Tads3Listener {
 
           
         } catch (err) {
-          console.error(`enterIdAtom ${err}`);
+          this.warnings.push(`[${basename(this.currentUri)}] enterIdAtom error: ${err}`);
         }
       }
     } catch (error) {
-      console.error(error);
+      this.warnings.push(`[${basename(this.currentUri)}] enterIdAtom outer error: ${error}`);
     }
   }
 
@@ -236,7 +243,7 @@ export class Tads3SymbolListener implements Tads3Listener {
     try {
       detail = this.stringVisitor.visit(ctx as ParseTree);
     } catch (err) {
-      console.error(`Could not visit the parse tree for assignment of ${name}`);
+      this.warnings.push(`[${basename(this.currentUri)}] Could not visit the parse tree for assignment of ${name}: ${err}`);
     }
 
     if (name !== undefined) {
@@ -447,7 +454,7 @@ export class Tads3SymbolListener implements Tads3Listener {
         }
       }
     } catch (err) {
-      console.error(err);
+      this.warnings.push(`[${basename(this.currentUri)}] enterObjectDeclaration template error: ${err}`);
     }
     //console.log(`*${name} found at level: ${level}`)
     if (level > 0) {
@@ -540,8 +547,12 @@ export class Tads3SymbolListener implements Tads3Listener {
   }
 
   visitErrorNode(ctx: ErrorNode) {
-    console.debug(
-      `Problem parsing token "${ctx?.toStringTree()}" on line ${ctx?.payload?.line} in file (${this.currentUri})`
+    this.errorNodeCount++;
+    const line = ctx?.payload?.line;
+    const fileName = basename(this.currentUri || 'unknown');
+    const tokenText = ctx?.toStringTree()?.substring(0, 80);
+    this.warnings.push(
+      `[${fileName}] ANTLR error node #${this.errorNodeCount}: token "${tokenText}" on line ${line}`
     );
   }
 
@@ -587,7 +598,7 @@ export class Tads3SymbolListener implements Tads3Listener {
     }
     const start = ctx.start.line - 1;
     if (name === undefined || name === "") {
-      console.error(`Couldn't process symbol at row ${start}`);
+      this.warnings.push(`[${basename(this.currentUri)}] Couldn't process symbol at row ${start}, context: "${ctx.text?.substring(0, 60)}"`);
       return;
     }
     const stop = (ctx.stop?.line ?? 1) - 1;
@@ -837,7 +848,7 @@ export class Tads3SymbolListener implements Tads3Listener {
     } catch (err) {
       this.currentSymbolNamePath.push('Error');
       const line = ctx.functionHead()?.identifierAtom()?.start?.line;
-      console.error(`Parsing of "${name}" on line ${line} within "${this.documentUri}" failed: ${err}`);
+      this.warnings.push(`[${basename(this.currentUri)}] Parsing of "${name}" on line ${line} failed: ${err}`);
     }
   }
 
