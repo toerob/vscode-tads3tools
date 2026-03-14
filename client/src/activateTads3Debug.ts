@@ -195,11 +195,6 @@ export function activateTads3Debug(context: vscode.ExtensionContext, factory?: v
 
   context.subscriptions.push(
     vscode.commands.registerCommand("tads3dbg.clearWebview", () => {
-      const session = vscode.debug.activeDebugSession;
-      if (!session || session.type !== "tads3") {
-        return;
-      }
-
       ensureGameViewPanel()?.webview.postMessage({ command: "clear" });
     }),
   );

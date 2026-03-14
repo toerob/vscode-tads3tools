@@ -252,8 +252,10 @@ export class Tads3DebugSession extends LoggingDebugSession {
       this.sendEvent(e);
     });
 
-    // Stop on end
-    this._runtime.on("end", () => {
+    this._runtime.on("end", async () => {
+      // Clear the game view
+      await vscode.commands.executeCommand("tads3dbg.clearWebview");
+      // Stop on end
       this.sendEvent(new TerminatedEvent());
     });
 
@@ -383,6 +385,10 @@ export class Tads3DebugSession extends LoggingDebugSession {
     debug("  => VS Code will now send existing breakpoints");
     debug("========================================");
     this.sendEvent(new InitializedEvent());
+
+    // Clear the game view 
+    this._runtime.sendEvent("clearOutput");
+
   }
 
   /**

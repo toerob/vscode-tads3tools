@@ -833,13 +833,29 @@ export class Tads3Runtime extends EventEmitter {
    */
   public stop(): void {
     this.sendRequest("disconnect", {});
+    
+    // Kill the frobd process if it's still running
     this._frobdProcess?.kill();
+  
+    // SIGKILL if process is still alive after regular kill attempt
+    if(!this._frobdProcess.killed) {
+      this._frobdProcess.kill("SIGKILL");
+    }
+    if(this._frobdProcess.killed) {
+      debug("Killed frobd process, PID:", this._frobdProcess.pid);
+      this._frobdProcess = undefined;
+    } else {
+      console.error("Failed to kill frobd process, PID:", this._frobdProcess.pid);
+    }
 
     // Clean up socket if using socket mode
     if(this._socket) {
         this._socket.destroy();
         this._socket = undefined;
     }
+
+    // Send event so we know to update UI and clean up state
+    this.sendEvent("end");
   }
 
   /**
