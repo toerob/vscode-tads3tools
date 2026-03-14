@@ -1,4 +1,5 @@
 import { Range, DocumentSymbol, Position, SymbolKind, SymbolInformation, Location } from "vscode-languageserver";
+import { EventEmitter } from "events";
 import { URI } from "vscode-uri";
 import { filterForStandardLibraryFiles } from "./utils";
 import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
@@ -17,6 +18,10 @@ export class TadsSymbolManager {
 
   symbolParameters: Map<string, Map<string, DocumentSymbol[]>> = new Map();
 
+  private _parsingInProgress = false;
+  private _initialParseCompleted = false;
+  private _symbolEvents = new EventEmitter();
+
   constructor() {
     // Windows doesn't recognize case differences in file paths, therefore we need to use case insensitive maps:
     this.onWindowsPlatform = process.platform === "win32";
@@ -27,6 +32,56 @@ export class TadsSymbolManager {
       this.symbols = new Map();
       this.keywords = new Map();
     }
+    this._symbolEvents.setMaxListeners(50);
+  }
+
+  get parsingInProgress() {
+    return this._parsingInProgress;
+  }
+
+  set parsingInProgress(value: boolean) {
+    this._parsingInProgress = value;
+    if (!value) {
+      this._initialParseCompleted = true;
+      this._symbolEvents.emit("parsingDone");
+    }
+  }
+
+  get initialParseCompleted() {
+    return this._initialParseCompleted;
+  }
+
+  notifySymbolsReady(fsPath: string) {
+    this._symbolEvents.emit(`symbols:${fsPath}`);
+  }
+
+  /**
+   * Wait for symbols to become available for a specific file path.
+   * Returns immediately if symbols already exist. Times out after the given ms.
+   */
+  waitForSymbols(fsPath: string, timeoutMs = 30_000): Promise<void> {
+    if (this.symbols.has(fsPath)) {
+      return Promise.resolve();
+    }
+    return new Promise<void>((resolve) => {
+      const onSymbols = () => {
+        clearTimeout(timer);
+        this._symbolEvents.removeListener("parsingDone", onDone);
+        resolve();
+      };
+      const onDone = () => {
+        clearTimeout(timer);
+        this._symbolEvents.removeListener(`symbols:${fsPath}`, onSymbols);
+        resolve();
+      };
+      const timer = setTimeout(() => {
+        this._symbolEvents.removeListener(`symbols:${fsPath}`, onSymbols);
+        this._symbolEvents.removeListener("parsingDone", onDone);
+        resolve();
+      }, timeoutMs);
+      this._symbolEvents.once(`symbols:${fsPath}`, onSymbols);
+      this._symbolEvents.once("parsingDone", onDone);
+    });
   }
 
   getAdditionalProperties(symbol: DocumentSymbol): ExtendedDocumentSymbolProperties | undefined {

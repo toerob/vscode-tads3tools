@@ -220,6 +220,8 @@ export async function preprocessAndParseTads3Files(
   const totalFiles = allFilePaths?.length;
   let tracker = 0;
 
+  symbolManager.parsingInProgress = true;
+
   // Spawn a single worker if only one file is to be parsed
   if (allFilePaths.length === 1) {
     const filePath = allFilePaths[0];
@@ -244,6 +246,7 @@ export async function preprocessAndParseTads3Files(
     logParseInfo(parseInfo);
 
     symbolManager.symbols.set(filePath, symbols ?? []);
+    symbolManager.notifySymbolsReady(filePath);
     symbolManager.keywords.set(filePath, keywords ?? []);
     symbolManager.assignmentStatements, expressionSymbols.set(filePath, assignmentStatements, expressionSymbols ?? []);
     symbolManager.expressionSymbols.set(filePath, expressionSymbols);
@@ -255,6 +258,7 @@ export async function preprocessAndParseTads3Files(
     symbolManager.additionalProperties.set(filePath, additionalProperties);
     tracker++;
     const elapsedTime = Date.now() - startTime;
+    symbolManager.parsingInProgress = false;
     await connection.sendNotification("symbolparsing/success", [filePath, tracker, totalFiles, 1]);
     connection.console.debug(`${filePath} parsed successfully in ${elapsedTime} ms`);
     try {
@@ -354,6 +358,7 @@ export async function preprocessAndParseTads3Files(
               logParseInfo(parseInfo);
 
               symbolManager.symbols.set(filePath, symbols ?? []);
+              symbolManager.notifySymbolsReady(filePath);
               symbolManager.keywords.set(filePath, keywords ?? []);
               symbolManager.assignmentStatements.set(filePath, assignmentStatements ?? []);
               symbolManager.expressionSymbols.set(filePath, expressionSymbols ?? []);
@@ -392,6 +397,7 @@ export async function preprocessAndParseTads3Files(
 
       const elapsedTime = Date.now() - startTime;
       connection.console.debug(`All files parsed within ${elapsedTime} ms`);
+      symbolManager.parsingInProgress = false;
       await await connection.sendNotification("symbolparsing/allfiles/success", { allFilePaths, elapsedTime });
 
       if (initialParsing) {
@@ -406,6 +412,7 @@ export async function preprocessAndParseTads3Files(
     } catch (err) {
       clearInterval(stallCheckTimer);
       await workerPool.terminate();
+      symbolManager.parsingInProgress = false;
       connection.console.error(`Error happened during parsing of files: ${err}`);
       await connection.sendNotification("symbolparsing/allfiles/failed", allFilePaths);
     }

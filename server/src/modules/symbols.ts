@@ -24,17 +24,12 @@ export async function onDocumentSymbol(
     }
   }
 
-  /*if (fsPath.endsWith(".t") || fsPath.endsWith(".h")) {
-    while (!symbolManager.symbols.has(fsPath)) {
-      connection.console.debug(`${fsPath} is waiting for symbols`);
-      await asyncSetTimeout(2000);
-    }
-  }*/
+  if ((fsPath.endsWith(".t") || fsPath.endsWith(".h")) && !symbolManager.symbols.has(fsPath) && (symbolManager.parsingInProgress || !symbolManager.initialParseCompleted)) {
+    connection.console.debug(`Waiting for symbols to become available: ${fsPath}`);
+    await symbolManager.waitForSymbols(fsPath);
+  }
 
   const symbols = symbolManager.symbols.get(fsPath) ?? [];
-  /*connection.console.debug(
-    `Fetching ${symbols.length} low level symbols for: ${fsPath}`
-  );*/
   return symbols;
 }
 

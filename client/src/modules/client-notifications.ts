@@ -1,5 +1,5 @@
 import { basename } from "path";
-import { workspace, window, Uri, ViewColumn, DocumentSymbol, WebviewPanel, Range } from "vscode";
+import { commands, workspace, window, Uri, ViewColumn, DocumentSymbol, WebviewPanel, Range } from "vscode";
 import { LanguageClient } from 'vscode-languageclient/node';
 import { connectRoomsWithProperties } from "./visual-editor/map-editor-sync";
 import { findNouns } from "./commands/find-nouns";
@@ -142,6 +142,13 @@ export function setupClientNotifications(client: LanguageClient, extensionState:
     await client.sendNotification("request/mapsymbols");
     extensionState.setLongProcessing(false);
     extensionState.allFilesBeenProcessed = true;
+
+    // Force VS Code to refresh document symbols (outline) for the active editor,
+    // in case the initial request returned empty before parsing completed.
+    const activeEditor = window.activeTextEditor;
+    if (activeEditor) {
+      commands.executeCommand("vscode.executeDocumentSymbolProvider", activeEditor.document.uri);
+    }
   });
 
   client.onNotification("symbolparsing/allfiles/failed", ({ error }) => {
