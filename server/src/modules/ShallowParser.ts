@@ -112,8 +112,8 @@ export class ShallowParser {
 
       // Process each token type
       if (token.type === Tads3Lexer.ID) {
-        // Check if this looks like an object declaration: "name : Type"
-        // Skip whitespace to find the next token
+        // Only treat as object declaration if at start of line (not inside expression/lambda)
+        // Heuristic: token.column == 0 or after whitespace only
         let nextIdx = idx + 1;
         const tokenCount = tokensSize;
         while (nextIdx < tokenCount && tokens.get(nextIdx).type === Tads3Lexer.WS) {
@@ -122,9 +122,18 @@ export class ShallowParser {
 
         if (nextIdx < tokenCount) {
           const next = tokens.get(nextIdx);
+          // Allow leading symbols (e.g. '+', '*', etc.) before ID for object declaration
+          // Heuristic: after trimming leading whitespace and symbols, line starts with token.text
+          const lineText = lines[line - 1].trimStart();
+          //const leadingSymbolMatch = lineText.match(/^([+]?\s*)?(\w+)/);
+          const leadingSymbolMatch = lineText.match(/^(?:class\s+|grammar\s+|((?:[+*#-]+)\s*)?)([a-zA-Z_][a-zA-Z0-9_]*)/);
 
-          if (next.type === Tads3Lexer.COLON && token.text) {
-            // Found "name :" pattern - object declaration
+          // Could start with class, grammar, [+]+ or just object name [a-zA-Z][a-zA-Z0-9_]*
+
+
+          const isLineStart = leadingSymbolMatch && leadingSymbolMatch[2] === token.text;
+          if (next.type === Tads3Lexer.COLON && token.text && isLineStart) {
+            // Found "name :" pattern at start of line - object declaration
             const objectName = token.text;
             currentEntry.events.startsObject = true;
             currentEntry.objectId = objectName;
@@ -185,6 +194,7 @@ export class ShallowParser {
 
           state.objectIds.pop();
           state.objectDepth -= 1;
+            console.log(`Object depth decreases: ${state.objectDepth} at line ${line}`);
 
           const prevLen = state.objectIds.length;
           if (prevLen > 0) {
@@ -197,6 +207,7 @@ export class ShallowParser {
         } else if (currentObjectId && state.braceDepth > 0) {
           currentEntry.owner = state.owner;
         }
+        // Do NOT decrement objectDepth for blocks/methods
       } else if (token.type === Tads3Lexer.SEMICOLON) {
         if (state.braceDepth === 0 && state.objectIds.length > 0) {
           currentEntry.events.endsObject = true;
@@ -204,6 +215,7 @@ export class ShallowParser {
 
           state.objectIds.pop();
           state.objectDepth -= 1;
+            console.log(`Object depth decreases: ${state.objectDepth} at line ${line}`);
 
           const prevLen = state.objectIds.length;
           if (prevLen > 0) {
