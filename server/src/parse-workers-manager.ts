@@ -13,6 +13,22 @@ import { symbolManager } from "./modules/symbol-manager";
 import { filterForStandardLibraryFiles } from "./modules/utils";
 import { serverState } from './state';
 
+let lastMakeFileLocation: string | undefined;
+let makefileStructure;
+let usingAdv3Lite = false;
+let initialParsing = true;
+
+let globalStorageCachePath: string | undefined;
+
+const adv3LitePathRegExp = RegExp(/[/]?adv3[Ll]ite[/]|\\?adv3[Ll]ite\\/);
+const adv3PathRegExp = RegExp(/[/]?adv3[/]|\\?adv3\\/);
+const generalHeaderIncludeRegExp = RegExp(/tads3[/]include[/]|tads3\\include\\/);
+
+
+const SLOW_FILE_THRESHOLD_MS = 5000;
+const WORKER_TIMEOUT_MS = 120_000; // 2 minutes — if a file takes longer, skip it
+
+
 /**
  * Reads and parses the makefile to get additional information
  * such as which library it uses, paths, flags etc..
@@ -34,13 +50,6 @@ function analyzeMakefile(chosenMakefileUri: string) {
   connection.console.debug(`Done analyzing makefile`);
   return makefileArray;
 }
-
-let lastMakeFileLocation: string | undefined;
-let makefileStructure;
-let usingAdv3Lite = false;
-
-const SLOW_FILE_THRESHOLD_MS = 5000;
-const WORKER_TIMEOUT_MS = 120_000; // 2 minutes — if a file takes longer, skip it
 
 function logParseInfo(parseInfo: any) {
   if (!parseInfo) return;
@@ -71,18 +80,6 @@ function logParseInfo(parseInfo: any) {
 export function isUsingAdv3Lite(): boolean {
   return usingAdv3Lite;
 }
-
-let initialParsing = true;
-
-let globalStorageCachePath: string | undefined;
-
-const adv3LitePathRegExp = RegExp(/[/]?adv3[Ll]ite[/]|\\?adv3[Ll]ite\\/);
-
-const adv3PathRegExp = RegExp(/[/]?adv3[/]|\\?adv3\\/);
-
-const generalHeaderIncludeRegExp = RegExp(/tads3[/]include[/]|tads3\\include\\/);
-
-const useCachedLibrary = false; // TODO: make configurable
 
 /**
  *
@@ -131,6 +128,7 @@ export async function preprocessAndParseTads3Files(
   makefileLocation: string,
   filePaths: string[] | undefined,
   token: any,
+  useCachedLibrary: boolean
 ) {
   if (lastMakeFileLocation !== makefileLocation) {
     lastMakeFileLocation = makefileLocation;

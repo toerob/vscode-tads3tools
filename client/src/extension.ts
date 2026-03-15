@@ -260,6 +260,10 @@ async function registerWorkspaceAndWindowHooks(
       if (config.affectsConfiguration("tads2.compiler.path")) {
         validateCompilerPath(workspace.getConfiguration("tads2").get("compiler.path"));
       }
+      // Forward configuration changes to the language server
+      //client.sendNotification('workspace/didChangeConfiguration');
+      const allConfig = workspace.getConfiguration();
+      client.sendNotification('workspace/didChangeConfiguration', { settings: allConfig });
     }),
   );
 

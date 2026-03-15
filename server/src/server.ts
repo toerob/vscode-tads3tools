@@ -1,17 +1,17 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable @typescript-eslint/no-empty-function */
-import {  TextDocuments, SymbolKind, TextDocumentChangeEvent } from "vscode-languageserver/node";
+import { TextDocuments, SymbolKind } from "vscode-languageserver/node";
 
 import {
   CancellationTokenSource,
   InitializeParams,
-  DidChangeConfigurationNotification,
   TextDocumentSyncKind,
   InitializeResult,
   TextDocumentContentChangeEvent,
+  DidChangeConfigurationParams,
 } from "vscode-languageserver-protocol";
 
-import { createConnection, ProposedFeatures } from 'vscode-languageserver/node';
+import { createConnection, ProposedFeatures } from "vscode-languageserver/node";
 
 import { symbolManager, TadsSymbolManager } from "./modules/symbol-manager";
 import { onDocumentSymbol } from "./modules/symbols";
@@ -27,9 +27,8 @@ import { onCompletion } from "./modules/completions";
 import { tokenizeQuotesWithIndex } from "./modules/text-utils";
 import { onDocumentLinks } from "./modules/links";
 import { onHover } from "./modules/hover";
-import { CaseInsensitiveMap } from "./modules/CaseInsensitiveMap";
 import { onWorkspaceSymbol } from "./modules/workspace-symbols";
-import { markFileToBeCheckedForMacroDefinitions, preprocessTads3Files } from "./parser/preprocessor";
+import { markFileToBeCheckedForMacroDefinitions } from "./parser/preprocessor";
 import { URI } from "vscode-uri";
 import { serverState } from "./state";
 import { onDocumentFormatting } from "./modules/document-formatting";
@@ -39,6 +38,39 @@ import { onSignatureHelp } from "./modules/signature-helper";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require("wink-pos-tagger");
+
+// The tads3 global settings
+interface Tads3Settings {
+  maxNumberOfProblems: number;
+  enablePreprocessorCodeLens: boolean;
+  include: string;
+  lib: string;
+  enableLibraryCache: boolean;
+}
+
+// The global settings, used when the `workspace/configuration` request is not supported by the client.
+// Please note that this is not the case when using this server with the client provided in this example
+// but could happen with other clients.
+const defaultSettings: Tads3Settings = {
+  maxNumberOfProblems: 1000,
+  enablePreprocessorCodeLens: false,
+  include: "/usr/local/share/frobtads/tads3/include/",
+  lib: "/usr/local/share/frobtads/tads3/lib/",
+  enableLibraryCache: false,
+};
+
+let globalSettings: Tads3Settings = defaultSettings;
+
+// Cache the settings of all open documents
+const documentSettings: Map<string, Thenable<Tads3Settings>> = new Map();
+
+interface BlockArea {
+  kind: "method" | "function" | "class" | "object";
+  start: number;
+  end: number;
+}
+
+let snapshot: Record<string, BlockArea[]> = {};
 
 export const mapper = new MapObjectManager(symbolManager);
 
@@ -90,7 +122,7 @@ connection.onInitialize((params: InitializeParams) => {
       textDocumentSync: {
         openClose: true,
         willSave: true,
-        save: true,        
+        save: true,
         change: TextDocumentSyncKind.Incremental,
       },
       hoverProvider: true,
@@ -121,9 +153,12 @@ export let abortParsingProcess: CancellationTokenSource | undefined;
 connection.onInitialized(() => {
   if (hasConfigurationCapability) {
     // Register for all configuration changes.
-    
-    // TODO: fix:
-    // connection.client.debug(DidChangeConfigurationNotification.type, undefined);
+    connection.onDidChangeConfiguration((change: DidChangeConfigurationParams) => {
+      documentSettings.clear(); // Reset all cached document settings
+      globalSettings = <Tads3Settings>(change.settings.tads3 || defaultSettings);
+      // Revalidate all open text documents
+      documents.all().forEach(validateTextDocument);
+    });
   }
   if (hasWorkspaceFolderCapability) {
     connection.workspace.onDidChangeWorkspaceFolders((_event: any) => {
@@ -204,57 +239,12 @@ connection.onInitialized(() => {
   });
 });
 
-// The tads3 global settings
-interface Tads3Settings {
-  maxNumberOfProblems: number;
-  enablePreprocessorCodeLens: boolean;
-  include: string;
-  lib: string;
-}
-
-// The global settings, used when the `workspace/configuration` request is not supported by the client.
-// Please note that this is not the case when using this server with the client provided in this example
-// but could happen with other clients.
-const defaultSettings: Tads3Settings = {
-  maxNumberOfProblems: 1000,
-  enablePreprocessorCodeLens: false,
-  include: "/usr/local/share/frobtads/tads3/include/",
-  lib: "/usr/local/share/frobtads/tads3/lib/",
-};
-
-let globalSettings: Tads3Settings = defaultSettings;
-
-// Cache the settings of all open documents
-const documentSettings: Map<string, Thenable<Tads3Settings>> = new Map();
-
-connection.onDidChangeConfiguration((change:any) => {
-  if (hasConfigurationCapability) {
-    documentSettings.clear(); // Reset all cached document settings
-  } else {
-    globalSettings = <Tads3Settings>(change.settings.tads3 || defaultSettings);
-  }
-
-  // Revalidate all open text documents
-  documents.all().forEach(validateTextDocument);
-});
-
-
-
-
-interface BlockArea {
-  kind: "method" | "function" | "class" | "object";
-  start: number;
-  end: number;
-}
-
-let snapshot: Record<string, BlockArea[]> = {};
-
 function applyDeltas(fsPath: URI, changes: TextDocumentContentChangeEvent[]) {
-    const blocks = snapshot[fsPath.fsPath];
-    if (!blocks) return;
+  const blocks = snapshot[fsPath.fsPath];
+  if (!blocks) return;
 
-    for (const c of changes) {
-        /*const lineDelta = c.text.split("\n").length - (c.range.end.line - c.range.start.line + 1);
+  for (const c of changes) {
+    /*const lineDelta = c.text.split("\n").length - (c.range.end.line - c.range.start.line + 1);
 
         for (const block of blocks) {
             // Om förändringen ligger *innan* blocket → skjut blockets linjer
@@ -267,30 +257,18 @@ function applyDeltas(fsPath: URI, changes: TextDocumentContentChangeEvent[]) {
                 block.end += lineDelta;
             }
         }*/
-    }
+  }
 }
-
 
 // Only keep settings for open documents
 documents.onDidClose((e) => {
   documentSettings.delete(e.document.uri);
 });
 
-
 documents.onDidChangeContent(async (params) => {
   // Save every change the user does
   // TODO: Preprocess with a debounce of 200ms
   // NOTE: preprocess is not available for a single file since t3make parses them all.
-
-  //const filepath = params.document.uri;
-
-  /*try {
-    const t3makeCompilerPath: string = (await connection.workspace.getConfiguration("tads3.compiler.path")) ?? "t3make";
-    await preprocessTads3Files(makefileLocation, preprocessedFilesCacheMap, t3makeCompilerPath, connection);
-  } catch (error: any) {
-
-  }*/
-  const text = params.document.getText();
   serverState.currentDocChanges = params.document.getText();
 });
 
@@ -299,28 +277,6 @@ connection.onNotification("client.cursorMoved", (data) => {
   // TODO: needed?
   serverState.currentCursorLocation = { fsPath: data.uri, line: data.line };
 });
-
-// The content of a text document has changed. This event is emitted
-// when the text document first opened or when its content has changed.
-/*documents.onDidChangeContent(async (params: TextDocumentChangeEvent<TextDocument>) => {
-  validateTextDocument(params.document);
-
-  if(params?.document) {
-    params.
-    const text = params.document.offsetAt();
-    const text = params.document.getText();
-    console.log(text);
-    // Track all delta changes
-    // Plocka upp delta och uppdatera snapshot
-    // applyDeltas(fsPath, contentChanges);
-
-  // Vill du? Uppdatera en liten "latestDoc" cache
-  //const doc = documents.get(change.textDocument.uri);
-  //if (doc) latestDocCache[fsPath] = doc;
-  }
-});*/
-
-
 
 documents.onWillSave(async (params: any) => {
   const fp = URI.parse(params.document.uri).path;
@@ -338,12 +294,12 @@ connection.onReferences(async (handler: any) =>
   onReferences(handler, documents, symbolManager, serverState.preprocessedFilesCacheMap),
 );
 
-connection.onDefinition(async (handler:any) => onDefinition(handler, documents, symbolManager));
-connection.onCompletion(async (handler:any) => onCompletion(handler, documents, symbolManager));
+connection.onDefinition(async (handler: any) => onDefinition(handler, documents, symbolManager));
+connection.onCompletion(async (handler: any) => onCompletion(handler, documents, symbolManager));
 connection.onDocumentLinks(async (handler: any) => onDocumentLinks(handler, documents, symbolManager));
 connection.onCodeLens(async (handler: any) => onCodeLens(handler, documents, symbolManager));
 
-connection.onHover(async (handler:any) => onHover(handler, documents, symbolManager));
+connection.onHover(async (handler: any) => onHover(handler, documents, symbolManager));
 connection.onDocumentFormatting(async (handler: any) => onDocumentFormatting(handler, documents));
 connection.onDocumentRangeFormatting(async (handler: any) => onDocumentRangeFormatting(handler, documents));
 connection.onImplementation(async (handler: any) => onImplementation(handler, documents, symbolManager));
@@ -403,7 +359,8 @@ connection.onRequest(
   "request/parseDocuments",
   async ({ globalStoragePath, makefileLocation, filePaths, token }: any) => {
     serverState.tadsVersion = 3;
-    await preprocessAndParseTads3Files(globalStoragePath, makefileLocation, filePaths, token);
+    const useCachedLibrary = globalSettings.enableLibraryCache;
+    await preprocessAndParseTads3Files(globalStoragePath, makefileLocation, filePaths, token, useCachedLibrary);
   },
 );
 
@@ -488,4 +445,3 @@ function parseDirection(directionName: any): string | undefined {
   return undefined;
   //throw new Error(`Not a valid direction`);
 }
-

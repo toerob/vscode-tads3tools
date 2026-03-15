@@ -110,7 +110,7 @@ export async function onCompletion(
 
         // Add all inherited properties for the object by checking its heritage and lookup all symbols
         const heritage = symbolManager.mapHeritage(symbol);
-        connection.console.debug([...heritage].join(","));
+        //connection.console.debug([...heritage].join(","));
         for (const ancestorClass of [...heritage.values()][0] ?? []) {
           const result = symbolManager.findSymbol(ancestorClass);
           if (result.symbol) {
@@ -136,7 +136,7 @@ export async function onCompletion(
         }
 
         const results = fuzzysort.go(word, [...suggestions.values()], { key: "label" });
-        connection.console.debug(results.map((x) => x.obj.label).join(","));
+        //connection.console.debug(results.map((x) => x.obj.label).join(","));
         return results.map((x: any) => x.obj);
       }
     }
@@ -190,8 +190,17 @@ export async function onCompletion(
         for (const template of templates) {
           // TODO: cache the results
           if (template.detail) {
+            // Making sure we never suggest { } when the class is of the following 
+            // types. This is just temporary until the ShallowParser is improved to 
+            // detect if is inside an object properly in all situations.
+
+            const typeIsAlwaysOutside = ["Room", "Actor", "Person", "Thing"]
+              .find((type) => template?.detail?.includes(type)) ? true : false;
+
+            isWithinObject = typeIsAlwaysOutside ? false : isWithinObject;
+
             const inheritedTemplates: any[] = inherited?.map((x) => x.detail) ?? [];
-            const snippets  = createTemplateSnippetStrings(template.detail, inheritedTemplates);
+            const snippets = createTemplateSnippetStrings(template.detail, inheritedTemplates);
             for (const snippet of snippets) {
               let snippetString = `${x.obj.label} ${isWithinObject ? "{" : ""} ${snippet.trimEnd()}${isWithinObject ? "}" : ";$0"}`;
               const item = CompletionItem.create(snippetString);
@@ -517,7 +526,7 @@ function getSuggestedProperty(
     key: "label",
   });
 
-  connection.console.debug(`Suggestions: ${results.map((x) => x.obj.label).join(" ")}`);
+  //connection.console.debug(`Suggestions: ${results.map((x) => x.obj.label).join(" ")}`);
   const mappedResult = results.map((x: any) => x.obj);
   return mappedResult;
 }

@@ -430,6 +430,12 @@
           "default": false,
           "description": "Shows preprocessed rows above as CodeLens when they differ from original source code."
         },
+        "tads3.enableLibraryCache": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "Enables caching of preprocessed library files to improve performance."
+        },
         "tads3.ifArchiveExtensionURL": {
           "scope": "window",
           "type": "string",
@@ -630,7 +636,8 @@
     "compile": "npm run -S compile:tsc && npm run -S build:maprenderer",
     "test-compile": "tsc -p ./",
     "watch:tsc": "tsc -b -w",
-    "watch": "node ./scripts/watch.js",
+    "watch_old": "node ./scripts/watch.js",
+    "watch": "tsc -b -w",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "prefix-server-fspath": "(cd coverage; sed 's/SF:/SF:server\\//g' server-lcov.info > server-lcov2.info  )",
     "prefix-client-fspath": "(cd coverage; sed 's/SF:/SF:client\\//g' client-lcov.info > client-lcov2.info  )",
