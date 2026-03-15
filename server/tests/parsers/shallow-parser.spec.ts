@@ -538,6 +538,24 @@ outer: object {
         expect(remapInEntry![1].owner).toBe("shortCabinet");
       }
 
+      // row 73: "{"
+      expect(entries[73-1][1].rawText.trim()).toBe('{');
+      expect(entries[73-1][1].stateBefore).toEqual({ objectDepth: 2, braceDepth: 0 });
+      expect(entries[73-1][1].stateAfter).toEqual({ objectDepth: 2, braceDepth: 1 });
+      expect(entries[73-1][1].events).toEqual({  startsObject: false, endsObject: false, opensBrace: true });
+
+      // row 74: "isOpenable = true "
+      expect(entries[74-1][1].rawText.trim()).toBe('isOpenable = true');
+      expect(entries[74-1][1].stateBefore).toEqual({ objectDepth: 2, braceDepth: 1 });
+      expect(entries[74-1][1].stateAfter).toEqual({ objectDepth: 2, braceDepth: 1 });
+      expect(entries[74-1][1].events).toEqual({ startsObject: false, endsObject: false, opensBrace: false });
+
+      // row 78: "}"
+      expect(entries[78-1][1].rawText.trim()).toBe('}');
+      expect(entries[78-1][1].stateBefore).toEqual({ objectDepth: 2, braceDepth: 1 });
+      expect(entries[78-1][1].stateAfter).toEqual({ objectDepth: 2, braceDepth: 0 });
+      expect(entries[78-1][1].events).toEqual({ startsObject: false, endsObject: false, opensBrace: false });
+
       // remapOn is declared after remapIn inside shortCabinet, so it has remapIn as owner
       // (since remapIn is still open when remapOn is declared)
       const remapOnEntry = entries.find(([_, data]) => data.objectId === "remapOn" && data.events.startsObject);

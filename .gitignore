@@ -5,6 +5,7 @@ client/server
 *.vsix
 gen
 client/testFixture/obj
+client/testFixture/definitions/obj
 server/coverage
 client/coverage
 coverage
