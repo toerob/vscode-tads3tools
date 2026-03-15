@@ -95,89 +95,9 @@ export async function onCodeLens(
       }
     }
   }
-
-
-  // TODO: preprocess if there was a change by the user
-  // serverState.currentDocChanges;
-  
-  // TODO: gör code actions istället?
-  const highLevelObjectsInFile = symbolManager.findAllSymbols(currentDoc.uri, [SymbolKind.Object]);
-  for(const object of highLevelObjectsInFile) {
-    object.symbol.range.start
-
-    codeLenses.push({
-        range: {
-          start: { line: object.symbol.range.start.line, character: 0 },
-          end:   { line: object.symbol.range.start.line, character: 0 }
-        },
-        command: {
-          title: `🔍*** TODO: fixa decorations ****`,
-          command: "lsp.generateNounSnippetsForParagraph",
-          arguments: [fsPath, object.symbol.range]
-        }
-      });
-  }
-
-  /*
-
-  // TODO: find descriptions
-
-  //symbolManager.findDescriptions()
-
-  const cursorLine = serverState.currentCursorLocation?.line;
-  connection.console.info(`Code lenses - checking cursor line ${cursorLine}`);
-  if(cursorLine) {
-    
-    const paragraph = findParagraphRange(currentDoc, cursorLine);
-
-    //const startPos = Position.create(paragraph.start, 0);
-    //const endPos = Position.create(paragraph.end, 0);
-    //const obj = symbolManager.findContainingObject(currentDoc.uri, p);
-    //const textWithinQuotes = currentDoc.getText(Range.create(startPos, endPos) )
-    //const tree = analyzeText(textWithinQuotes);
-    codeLenses.push({
-      range: {
-        start: { line: paragraph.start, character: 0 },
-        end:   { line: paragraph.start, character: 0 }
-      },
-      command: {
-        title: `🔍 \${nouns.length} substantiv i stycket — generera snippet`,
-        command: "lsp.generateNounSnippetsForParagraph",
-        arguments: [fsPath, paragraph]
-      }
-    });
-  }
-
-
-  */
   return codeLenses;
 }
 
-function findParagraphRange(doc: TextDocument, cursorLine: number) {
-  const max = doc.lineCount - 1;
-  let start = cursorLine;
-  let end = cursorLine;
-
-  // Gå uppåt tills tom rad eller top-of-file
-  while (start > 0) {
-    //const t = doc.lineAt(start - 1).text.trim();
-    // Hitta raden i dokumentet
-    /*doc.getText(start - 1, 0).
-    const t = doc.lineAt(start - 1).text.trim();
-    if (t === "") break;
-    start--;*/
-  }
-  /*
-
-  // Gå nedåt tills tom rad eller end-of-file
-  while (end < max) {
-    const t = doc.lineAt(end + 1).text.trim();
-    if (t === "") break;
-    end++;
-  }*/
-
-  return { start, end };
-}
 /*import { window } from 'rxjs/operators';
 import * as vscode from 'vscode';
 import { Range } from 'vscode';

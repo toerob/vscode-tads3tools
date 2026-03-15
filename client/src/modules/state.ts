@@ -2,6 +2,7 @@ import { autorun, makeAutoObservable, observable } from "mobx";
 import { DocumentSymbol, FileSystemWatcher, Progress, TextDocument, TextEditor, Uri } from "vscode";
 import { client } from "../extension";
 import { LocalStorageService } from "./local-storage-service";
+import { ImageInfoProvider } from "./debugTreeView";
 
 export type ScriptInfo = {
   uri: Uri;
@@ -48,6 +49,14 @@ export class ExtensionStateStore {
   }*/
 
   private _preprocessedFilesMap: any = new Map();
+
+  private _imageInfoProvider: ImageInfoProvider;
+  public get imageInfoProvider(): ImageInfoProvider {
+    return this._imageInfoProvider;
+  }
+  public set imageInfoProvider(value: ImageInfoProvider) {
+    this._imageInfoProvider = value;
+  }
 
   public get storageManager(): LocalStorageService {
     return this._storageManager;

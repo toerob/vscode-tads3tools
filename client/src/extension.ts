@@ -13,12 +13,18 @@ import {
   version,
   workspace,
   debug,
+  WorkspaceFoldersChangeEvent,
+  RelativePattern,
 } from "vscode";
 
 import { TransportKind } from "vscode-languageclient/node";
 import { LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
 
-import { openInVisualEditor, setupVisualEditorResponseHandler } from "./modules/visual-editor/visual-editor";
+import {
+  onDidChange,
+  openInVisualEditor,
+  setupVisualEditorResponseHandler,
+} from "./modules/visual-editor/visual-editor";
 import { Subject, debounceTime } from "rxjs";
 import { LocalStorageService } from "./modules/local-storage-service";
 import { validateCompilerPath, validateUserSettings } from "./modules/validations";
@@ -53,6 +59,7 @@ import {
 } from "./modules/editor-utils";
 import { enablePreprocessorCodeLens } from "./modules/code-lens";
 import { activateTads3Debug } from "./activateTads3Debug";
+import { ImageInfoProvider } from "./modules/debugTreeView";
 
 //////////
 // Globals
@@ -172,9 +179,11 @@ function getClientOptions() {
 
     middleware: {
       provideHover: async (document, position, token, next) => {
-        const disableHoverDuringDebug = workspace.getConfiguration("tads3") .get("disableHoverDuringDebug", true);
+        const disableHoverDuringDebug = workspace.getConfiguration("tads3").get("disableHoverDuringDebug", true);
         if (disableHoverDuringDebug && debug.activeDebugSession?.type === "tads3") {
-          console.log(`Hover is disabled during debugging sessions, enable 'tads3.disableHoverDuringDebug' setting to change this behavior`);
+          console.log(
+            `Hover is disabled during debugging sessions, enable 'tads3.disableHoverDuringDebug' setting to change this behavior`,
+          );
           return undefined;
         }
         console.log(`Providing hover for ${document.uri} at line ${position.line}`);
@@ -196,6 +205,14 @@ export function setupExtensionState(ctx: ExtensionContext) {
 
 function registerVscodeSpecificProviders(ctx: ExtensionContext) {
   ctx.subscriptions.push(languages.registerCompletionItemProvider("tads3", new SnippetCompletionItemProvider(ctx)));
+  
+  extensionState.imageInfoProvider = new ImageInfoProvider();
+  ctx.subscriptions.push(
+    window.createTreeView("tads3DebugInfo", {
+      treeDataProvider: extensionState.imageInfoProvider,
+      showCollapseAll: true,
+    }),
+  );
 }
 
 function registerExtensionCommands(ctx: ExtensionContext, state: ExtensionStateStore) {
@@ -222,6 +239,7 @@ function registerExtensionCommands(ctx: ExtensionContext, state: ExtensionStateS
     commands.registerCommand("tads3.restartReplayScript", (p) => replayScript(p, true)),
     commands.registerCommand("tads3.openReplayScript", (params) => openReplayScript(params)),
     commands.registerCommand("tads3.deleteReplayScript", (p) => deleteReplayScript(p)),
+    commands.registerCommand("tads3.analyzeImage", () => analyzeImage()),
   ];
   tads3Commands.forEach((com) => ctx.subscriptions.push(com));
 }
@@ -326,4 +344,43 @@ async function onDidSaveTextDocument(
     closeAllTerminalsNamed("Tads3 Game runner terminal");
   }
   diagnoseAndCompileSubject.next(textDocument);
+}
+
+export async function analyzeImage() {
+  // Fetch user input for the .t3 file path
+  let filepath = await findImageByPattern(true);
+  if (extensionState.imageInfoProvider) {
+    extensionState.imageInfoProvider.update(filepath);
+  } else {
+    window.showErrorMessage(`ImageInfoProvider not found`);
+  }
+}
+
+export async function findImageByPattern(askIfMoreMatchesFound: boolean): Promise<string | undefined> {
+  const t3Files = await workspace.findFiles(`**/*.t3`);
+  if (t3Files.length === 1) {
+    return t3Files[0].fsPath;
+  }
+
+  if (t3Files.length > 1) {
+    if (!askIfMoreMatchesFound) {
+      return t3Files[0].fsPath;
+    }
+
+    // Let user choose from multiple files
+    const items = t3Files.map((uri) => ({
+      label: workspace.asRelativePath(uri),
+      uri: uri,
+    }));
+
+    const selected = await window.showQuickPick(items, {
+      placeHolder: "Select a TADS3 game file to debug",
+    });
+
+    if (selected) {
+      return selected.uri.fsPath;
+    }
+  }
+
+  return undefined;
 }

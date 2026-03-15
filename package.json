@@ -44,6 +44,10 @@
           "name": "Tads3 Game Scripts",
           "type": "tree",
           "icon": "resources/icons/logo.png"
+        },
+        {
+          "id": "tads3DebugInfo",
+          "name": "TADS3 Image Info"
         }
       ]
     },
@@ -266,6 +270,12 @@
       {
         "command": "tads3.analyzeTextAtPosition",
         "title": "Tads3 command: Analyze the text at the current position and offer code actions",
+        "category": "Editor",
+        "enablement": "true"
+      },
+      {
+        "command": "tads3.analyzeImage",
+        "title": "Tads3 command: Analyze the image file and show info in the image info view",
         "category": "Editor",
         "enablement": "true"
       },

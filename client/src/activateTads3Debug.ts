@@ -75,10 +75,6 @@ export function activateTads3Debug(context: vscode.ExtensionContext, factory?: v
     ),
   );
 
-
-
-
-  
   if (!factory) {
     factory = new InlineDebugAdapterFactory();
   }
@@ -274,7 +270,10 @@ export class Tads3ConfigurationProvider implements vscode.DebugConfigurationProv
     }
 
     // Preflight: frobd is required to start a debugging session. Fail fast with a visible message.
-    const frobdSetting = typeof (config as any).frobd === "string" && (config as any).frobd.trim() ? (config as any).frobd.trim() : "frobd";
+    const frobdSetting =
+      typeof (config as any).frobd === "string" && (config as any).frobd.trim()
+        ? (config as any).frobd.trim()
+        : "frobd";
     let resolvedFrobdPath: string | undefined;
 
     const looksLikePath = frobdSetting.startsWith(".") || /[\\/]/.test(frobdSetting);

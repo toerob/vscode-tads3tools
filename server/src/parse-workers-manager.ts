@@ -82,7 +82,7 @@ const adv3PathRegExp = RegExp(/[/]?adv3[/]|\\?adv3\\/);
 
 const generalHeaderIncludeRegExp = RegExp(/tads3[/]include[/]|tads3\\include\\/);
 
-const useCachedLibrary = false;
+const useCachedLibrary = false; // TODO: make configurable
 
 /**
  *

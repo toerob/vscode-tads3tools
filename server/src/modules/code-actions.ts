@@ -83,7 +83,7 @@ export async function onCodeAction(
       //const withinStringResult = withinQuote(currentDoc, params.range.start)
       //if (withinStringResult) {
       actions.push({
-        title: "Analyze text for nouns",
+        title: "Create decorations from text",
         kind: CodeActionKind.QuickFix,
         command: {
           title: "Add decorations automatically based on text analysis",

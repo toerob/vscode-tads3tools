@@ -45,6 +45,8 @@ import { debug } from "./log";
 import { existsSync } from "node:fs";
 import which from "which";
 
+import { tads3ImageHasDebugSymbols } from './modules/image';
+
 const outputChannelsByName = new Map<string, vscode.OutputChannel>();
 
 function getOutputChannel(name: string): vscode.OutputChannel {
@@ -466,6 +468,13 @@ export class Tads3DebugSession extends LoggingDebugSession {
         });
         return;
       }
+    }
+    if(!tads3ImageHasDebugSymbols(args.program)) {
+      vscode.window.showWarningMessage(
+        `The selected TADS3 image file '${args.program}' does not appear to contain 
+        debug symbols. Debugging experience may be limited. Make sure to compile your 
+        game with debugging enabled. (the -d flag in the Makefile.t3m)`,
+      );
     }
 
     await vscode.commands.executeCommand("tads3dbg.clearWebview");

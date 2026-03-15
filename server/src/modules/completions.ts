@@ -206,75 +206,10 @@ export async function onCompletion(
         }
       });
 
-      /*
-      const completionItems = results.map((x: any) => {
-        const item = x.obj;
-        const heritage = symbolManager.findHeritage(item.label);
-        const inheritsThingTemplate = heritage?.includes("Thing");
-        const isARoom = heritage[0].startsWith("Room");
-        const isAThing = heritage[0] === "Thing";
-
-        //const isATravelConnector = heritage[0].startsWith("Travel");
-        const implementsTravelConnector = heritage?.includes("TravelConnector");
-        const implementsTravelDesc = heritage?.includes("TravelWithMessage");
-
-        // TODO: make specific for TravelConnector(s)
-
-        applyDocumentation(item);
-
-        // Only add snippet if there's nothing after the matched object declaration.
-        // We don't want to add a snippet with for instance 'vocabWords' and 'name'
-        // if that is already in place
-
-        if (currentTotalLineStr?.trim()?.length <= currentLineStr?.trim()?.length) {
-          item.kind = CompletionItemKind.Snippet;
-          item.insertTextFormat = InsertTextFormat.Snippet;
-          const objId = objDeclarationMatcherResult[2] ?? "";
-
-          if (!isARoom && !isAThing && implementsTravelDesc) {
-            item.insertText = item.label + " {";
-            if (implementsTravelDesc) {
-              if (isUsingAdv3Lite()) {
-                // TODO: handle adv3lite also
-              } else {
-                item.insertText += '\n\ttravelDesc = "$1"\n$2';
-              }
-            }
-            item.insertText += "}$0";
-          } else if (inheritsThingTemplate) {
-            //if(implementsTravelConnector) {
-
-            let shouldExpandTemplate = isARoom;
-            if (!isARoom) {
-              const thingIdx = heritage.findIndex((x) => x === "Thing");
-              const travelConnectorIdx = heritage.findIndex((x) => x === "TravelConnector");
-
-              // Only use template for  'name' 'desc' if
-              // has ThingIdx has higher precedence than TravelConnector.
-              // (it will then have a lower number in the inheritance chain)
-              shouldExpandTemplate = thingIdx < travelConnectorIdx;
-            }
-
-            if (shouldExpandTemplate) {
-              if (isUsingAdv3Lite()) {
-                item.insertText = item.label + " '${2:" + objId + "}' '$4;\n$0";
-              } else {
-                item.insertText = item.label + " '${2:" + objId + "}' '${3:" + objId + "}'$4;\n$0";
-              }
-            } else {
-              item.insertText = item.label + " { $0}";
-            }
-          }
-        }
-        return item;
-      });
-      */
       let completionItems: CompletionItem[] = [];
       templateCompletionItems.forEach((x) => completionItems.push(x));
 
       return completionItems;
-
-      //templateCompletionItems.forEach((x) => suggestions.set(x.label, x));
     }
 
     // Matches a direction assignment, collect all symbols inheriting TravelConnector
