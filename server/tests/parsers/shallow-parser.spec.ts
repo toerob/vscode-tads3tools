@@ -550,25 +550,25 @@ outer: object {
       expect(entries[74 - 1][1].stateAfter).toEqual({ objectDepth: 2, braceDepth: 1 });
       expect(entries[74 - 1][1].events).toEqual({ startsObject: false, endsObject: false, opensBrace: false });
 
-      // row 78: "}"
+      // row 78: "}" — closes remapIn's object body
       expect(entries[78 - 1][1].rawText.trim()).toBe("}");
       expect(entries[78 - 1][1].stateBefore).toEqual({ objectDepth: 2, braceDepth: 1 });
-      expect(entries[78 - 1][1].stateAfter).toEqual({ objectDepth: 2, braceDepth: 0 });
-      expect(entries[78 - 1][1].events).toEqual({ startsObject: false, endsObject: false, opensBrace: false });
+      expect(entries[78 - 1][1].stateAfter).toEqual({ objectDepth: 1, braceDepth: 0 });
+      expect(entries[78 - 1][1].events).toEqual({ startsObject: false, endsObject: true, opensBrace: false });
 
-      // remapOn is declared after remapIn inside shortCabinet, so it has remapIn as owner
-      // (since remapIn is still open when remapOn is declared)
+      // remapOn is declared after remapIn closes (on line 80), so its syntactic owner is shortCabinet
       const remapOnEntry = entries.find(([_, data]) => data.objectId === "remapOn" && data.events.startsObject);
       expect(remapOnEntry).toBeDefined();
       if (remapOnEntry) {
-        expect(remapOnEntry![1].owner).toBe("remapIn");
+        expect(remapOnEntry![1].owner).toBe("shortCabinet");
       }
 
-      // powerSwitch is a ++ nested object inside remapIn (SubComponent), owner should be shortCabinet
+      // powerSwitch is a ++ object declared after shortCabinet's ; closes it (line 82),
+      // so it is syntactically at the top level with no owner
       const powerSwitchEntry = entries.find(([_, data]) => data.objectId === "powerSwitch" && data.events.startsObject);
       expect(powerSwitchEntry).toBeDefined();
       if (powerSwitchEntry) {
-        expect(powerSwitchEntry![1].owner).toBe("shortCabinet");
+        expect(powerSwitchEntry![1].owner).toBeUndefined();
       }
 
       // Find gate rooms (all top-level)
@@ -585,15 +585,13 @@ outer: object {
       expect(jetwayEntry).toBeDefined();
       expect(jetwayEntry![1].owner).toBeUndefined();
 
-      // announcementObj comes after jetway but jetway doesn't have a closing semicolon or brace,
-      // so it's still open and announcementObj is considered nested within it
+      // announcementObj is declared after jetway's ; (line 203) so it is top-level with no owner
       const announcementEntry = entries.find(
         ([_, data]) => data.objectId === "announcementObj" && data.events.startsObject,
       );
       expect(announcementEntry).toBeDefined();
       if (announcementEntry) {
-        // announcementObj is declared while jetway is still open
-        expect(announcementEntry![1].owner).toBe("jetway");
+        expect(announcementEntry![1].owner).toBeUndefined();
       }
     });
   });

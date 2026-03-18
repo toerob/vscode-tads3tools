@@ -2,82 +2,75 @@ import { TextDocument } from "vscode-languageserver-textdocument";
 import { DocumentFormattingParams, TextDocuments, Range } from "vscode-languageserver";
 import { TextEdit } from "vscode-languageserver-types";
 import { wholeLineRegExp } from "../parser/preprocessor";
-import { CharStreams, CommonTokenStream } from "antlr4ts";
-import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
-import Tads3FormatterSymbolListener from "../parser/Tads3FormatterSymbolListener";
-import { Tads3Lexer } from "../parser/Tads3Lexer";
-import { Tads3Listener } from "../parser/Tads3Listener";
-import { Tads3Parser } from "../parser/Tads3Parser";
-import { URI } from "vscode-uri";
-import { serverState } from '../state';
+import { ShallowParser } from "./ShallowParser";
 
 export function onDocumentFormatting(
   handler: DocumentFormattingParams,
   documents: TextDocuments<TextDocument>,
 ): TextEdit[] {
-  const edits: TextEdit[] = [];
   const { textDocument } = handler;
   const currentDocument = documents.get(textDocument.uri);
-  const rows = currentDocument?.getText().split(wholeLineRegExp) ?? [];
-  const path = URI.parse(textDocument.uri).fsPath;
-  const preprocessedText = serverState.preprocessedFilesCacheMap.get(path) ?? "";
-  const formattedDocumentArray = formatDocument(
-    preprocessedText,
-    currentDocument?.getText() ?? "",
-    currentDocument?.lineCount ?? 0,
+  if (!currentDocument) return [];
+
+  const text = currentDocument.getText();
+  const rows = text.split(wholeLineRegExp);
+  const formattedLines = formatDocument(text);
+  const lastRow = rows[rows.length - 1];
+  const edit = TextEdit.replace(
+    Range.create(0, 0, rows.length - 1, lastRow.length),
+    formattedLines.join("\n"),
   );
-  const lastRowLength = rows[rows.length - 1].length;
-  const edit = TextEdit.replace(Range.create(0, 0, rows.length, lastRowLength), formattedDocumentArray.join(`\n`));
-  edits.push(edit);
-  return edits;
+  return [edit];
 }
 
-export function formatDocument(preprocessedText: string, orgInput: string, lineCount: number) {
-  const input = CharStreams.fromString(preprocessedText);
-  const lexer = new Tads3Lexer(input);
-  const tokenStream = new CommonTokenStream(lexer);
-  const parser = new Tads3Parser(tokenStream);
-  const parseTree = parser.program();
-  const listener = new Tads3FormatterSymbolListener();
-  const parseTreeWalker = new ParseTreeWalker();
-  parseTreeWalker.walk<Tads3Listener>(listener, parseTree);
-  let indentation = 0;
-  const originalRowsArray = orgInput.split(wholeLineRegExp);
+/**
+ * Format a TADS3 document using the ShallowParser for structural depth tracking.
+ *
+ * Indentation rule: each line is indented to
+ *   min(stateBefore.objectDepth + stateBefore.braceDepth,
+ *       stateAfter.objectDepth  + stateAfter.braceDepth)
+ *
+ * This naturally handles:
+ *  - Object declarations (min of 0 before and 1 after → indent 0)
+ *  - Opening braces (min of current depth before and depth+1 after → current depth)
+ *  - Closing braces / semicolons (min of depth before and lower depth after → lower depth)
+ *  - Lines inside bodies (before == after → that depth)
+ */
+export function formatDocument(orgInput: string): string[] {
+  const lineContexts = new ShallowParser().structurize(orgInput);
+  const originalLines = orgInput.split(wholeLineRegExp);
+  const result: string[] = [];
   let withinComment = false;
-  const formattedDocumentArray = [];
-  for (let row = 0; row < lineCount; row++) {
-    indentation += listener.rowIndentation.get(row) ?? 0;
-    const originalRow = originalRowsArray[row];
 
-    if (originalRow.match(/[/][*]/)) {
-      withinComment = true;
-    }
-    if (withinComment && originalRow.match(/[*][/]/)) {
-      withinComment = false;
-    }
+  for (let i = 0; i < originalLines.length; i++) {
+    const original = originalLines[i];
+    const trimmed = original.trim();
+
+    // Track multi-line /* ... */ comments; preserve their interior unchanged.
+    if (original.includes("/*")) withinComment = true;
+    if (withinComment && original.includes("*/")) withinComment = false;
     if (withinComment) {
-      formattedDocumentArray.push(originalRow);
+      result.push(original);
       continue;
     }
 
-    // Make sure indentation is never less than zero:
-    indentation = indentation >= 0 ? indentation : 0;
-
-    const trimmedOriginalRow = originalRow.trim();
-
-    const withinString = listener.withinString.get(row + 1);
-    if (withinString) {
-      // FIXME: take care of rows with strings better than this,
-      // but for now just ignore formatting spaces between them
-      const formattedRow = "\t".repeat(indentation) + trimmedOriginalRow;
-      formattedDocumentArray.push(formattedRow);
-      //connection.console.debug(`Current indentation: ${indentation}: ${formattedRow}`);
-    } else {
-      const prunedWhiteSpaceOriginalRow = trimmedOriginalRow.replace(/\s{2,}/g, " ");
-      const formattedRow = "\t".repeat(indentation) + prunedWhiteSpaceOriginalRow;
-      formattedDocumentArray.push(formattedRow);
-      //connection.console.debug(`Current indentation: ${indentation}: ${formattedRow}`);
+    // Preserve blank lines without indentation.
+    if (trimmed === "") {
+      result.push("");
+      continue;
     }
+
+    const ctx = lineContexts.get(i + 1); // ShallowParser uses 1-based line numbers
+    const before = ctx?.stateBefore
+      ? ctx.stateBefore.objectDepth + ctx.stateBefore.braceDepth
+      : 0;
+    const after = ctx?.stateAfter
+      ? ctx.stateAfter.objectDepth + ctx.stateAfter.braceDepth
+      : 0;
+    const indent = Math.max(0, Math.min(before, after));
+
+    result.push("\t".repeat(indent) + trimmed);
   }
-  return formattedDocumentArray;
+
+  return result;
 }
