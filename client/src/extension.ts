@@ -52,6 +52,7 @@ import { switchToTads3CustomEditor } from "./modules/custom-editor";
 import { clearCache, clearCacheOnVersionChange } from "./modules/cache";
 import { closeAllTerminalsNamed, toggleRunnerOnChanges } from "./modules/game-monitor";
 import { showPreprocessedText as showPrep } from "./modules/commands/show-preprocessed";
+import { evaluateSelection } from "./modules/commands/evaluate-selection";
 import {
   showCurrentAsPrep,
   showPreprocessedFileQP as showPrepQuickPick,
@@ -240,6 +241,7 @@ function registerExtensionCommands(ctx: ExtensionContext, state: ExtensionStateS
     commands.registerCommand("tads3.openReplayScript", (params) => openReplayScript(params)),
     commands.registerCommand("tads3.deleteReplayScript", (p) => deleteReplayScript(p)),
     commands.registerCommand("tads3.analyzeImage", () => analyzeImage()),
+    commands.registerCommand("tads3.evaluateSelection", () => evaluateSelection(client)),
   ];
   tads3Commands.forEach((com) => ctx.subscriptions.push(com));
 }

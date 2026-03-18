@@ -9,6 +9,7 @@ import { expose } from "threads";
 import { PredictionMode } from "antlr4ts/atn/PredictionMode";
 import { DocumentSymbol } from "vscode-languageserver/node";
 import { basename } from "path";
+import { MapNodeData } from "./modules/mapcrawling/MapNodeData";
 
 class CollectingErrorListener implements ANTLRErrorListener<any> {
   errors: string[] = [];
@@ -98,9 +99,34 @@ expose(function parseFunc(path: string, text: string) {
 
   const totalElapsed = Date.now() - startTime;
 
+  // ── Build name-keyed mapData from the listener's identity-keyed additionalProperties ──
+  const mapData: Map<string, MapNodeData> = new Map();
+  for (const [sym, props] of listener.additionalProperties) {
+    if (props.level !== undefined) {
+      mapData.set(sym.name, {
+        level: props.level,
+        isClass: props.isClass ?? false,
+        parentName: props.parent?.name,
+        shortName: props.shortName,
+        arrowConnection: props.arrowConnection,
+        otherSide: (props as any).otherSide,
+        at: props.at,
+        travelConnectorMap: props.travelConnectorMap ?? new Map(),
+        assignedProperties: new Set(),
+        superClassRoot: props.superClassRoot,
+      });
+    }
+  }
+  for (const [sym, props] of listener.additionalProperties) {
+    if (props.isAssignment && props.parent) {
+      mapData.get(props.parent.name)?.assignedProperties.add(sym.name);
+    }
+  }
+
   return {
     keywords: listener.localKeywords ?? [],
     symbols: listener.symbols ?? symbols,
+    mapData,
     additionalProperties: listener.additionalProperties,
     inheritanceMap: listener.inheritanceMap,
     parseInfo: {

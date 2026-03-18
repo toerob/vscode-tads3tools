@@ -318,4 +318,105 @@ outer: Room
     expect(entries[8 - 1][1].stateAfter).toEqual({ objectDepth: 0, braceDepth: 0 });
     expect(entries[8 - 1][1].events.endsObject).toBe(true);
   });
+
+  it("parses grammar declarations with optional (tag) parameter as object declarations", () => {
+    const code = `
+grammar takeAction(main) : TakeAction
+    'take' singleDobj: Thing
+;
+grammar lookVerb : LookAction
+    'look'
+;
+next: Room
+;
+`;
+    const tokenizer = new ShallowParser();
+    const result = tokenizer.structurize(code);
+    const entries = [...result.entries()];
+
+    // Line 2: grammar takeAction(main) — should start an object, not be a method signature
+    const row2 = 2 - 1;
+    expect(entries[row2][1].events.startsObject).toBe(true);
+    expect(entries[row2][1].objectId).toBe("takeAction");
+    expect(entries[row2][1].stateBefore).toEqual({ objectDepth: 0, braceDepth: 0 });
+    expect(entries[row2][1].stateAfter).toEqual({ objectDepth: 1, braceDepth: 0 });
+
+    // Line 4: ; — closes takeAction grammar object
+    const row4 = 4 - 1;
+    expect(entries[row4][1].events.endsObject).toBe(true);
+    expect(entries[row4][1].stateAfter).toEqual({ objectDepth: 0, braceDepth: 0 });
+
+    // Line 5: grammar lookVerb — no tag, should also start an object
+    const row5 = 5 - 1;
+    expect(entries[row5][1].events.startsObject).toBe(true);
+    expect(entries[row5][1].objectId).toBe("lookVerb");
+    expect(entries[row5][1].stateBefore).toEqual({ objectDepth: 0, braceDepth: 0 });
+    expect(entries[row5][1].stateAfter).toEqual({ objectDepth: 1, braceDepth: 0 });
+
+    // Line 7: ; — closes lookVerb, depth back to 0
+    const row7 = 7 - 1;
+    expect(entries[row7][1].events.endsObject).toBe(true);
+    expect(entries[row7][1].stateAfter).toEqual({ objectDepth: 0, braceDepth: 0 });
+
+    // Line 8: next: Room — following object, should start fresh at objectDepth 0
+    const row8 = 8 - 1;
+    expect(entries[row8][1].events.startsObject).toBe(true);
+    expect(entries[row8][1].stateBefore).toEqual({ objectDepth: 0, braceDepth: 0 });
+  });
+
+  it("does not close the object on a DSTR SEMICOLON (say-statement) in a headless method body", () => {
+    // 'method() "text";' is a headless codeBlock: stats.
+    // The SEMICOLON terminates the statement, NOT the enclosing object.
+    // A bare ';' on the following line is the real object terminator.
+    const code = `myObj: Thing         // row:1
+  myMethod() "text"; // row:2
+;                    // row:3
+nextObj: Room;       // row:4
+`;
+    const result = new ShallowParser().structurize(code);
+    const entries = [...result.entries()];
+
+    // Row 1: declares myObj, objectDepth becomes 1
+    expect(entries[0][1].events.startsObject).toBe(true);
+    expect(entries[0][1].stateAfter).toEqual({ objectDepth: 1, braceDepth: 0 });
+
+    // Row 2: headless method — the ';' must NOT close the object
+    expect(entries[1][1].events.endsObject).toBe(false);
+    expect(entries[1][1].stateAfter).toEqual({ objectDepth: 1, braceDepth: 0 });
+
+    // Row 3: bare ';' — this IS the object terminator
+    expect(entries[2][1].events.endsObject).toBe(true);
+    expect(entries[2][1].stateAfter).toEqual({ objectDepth: 0, braceDepth: 0 });
+
+    // Row 4: nextObj starts fresh
+    expect(entries[3][1].events.startsObject).toBe(true);
+    expect(entries[3][1].stateBefore).toEqual({ objectDepth: 0, braceDepth: 0 });
+  });
+
+  it("correctly indents interior lines of multi-line double-quoted strings", () => {
+    // Interior lines of a DSTR that spans multiple lines must carry the enclosing
+    // block's depth, not collapse to 0.
+    const code = `myObj: Thing   // row:1
+{              // row:2
+  myMethod()   // row:3
+  {            // row:4
+    "line one  // row:5
+     line two  // row:6
+     line three"; // row:7
+  }            // row:8
+}              // row:9
+`;
+    const result = new ShallowParser().structurize(code);
+    const entries = [...result.entries()];
+
+    // Row 5 starts the DSTR (braceDepth=2)
+    expect(entries[4][1].stateBefore).toEqual({ objectDepth: 1, braceDepth: 2 });
+
+    // Row 6 is interior to the DSTR — must carry the same depth, not {0,0}
+    expect(entries[5][1].stateBefore).toEqual({ objectDepth: 1, braceDepth: 2 });
+    expect(entries[5][1].stateAfter).toEqual({ objectDepth: 1, braceDepth: 2 });
+
+    // Row 7 ends the DSTR and the statement
+    expect(entries[6][1].stateAfter).toEqual({ objectDepth: 1, braceDepth: 2 });
+  });
 });

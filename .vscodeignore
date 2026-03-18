@@ -1,3 +1,4 @@
+# ── TypeScript source & build artifacts ──────────────────────────────────────
 **/*.ts
 **/*.g4
 **/*.spec.ts
@@ -5,140 +6,111 @@
 **/tsconfig.json
 **/tsconfig.base.json
 
-# Hidden configuraton files / devtools etc
-vscode-tads3tools.iml
-.azure-pipelines.yml
-.prettierignore
-.eslintignore
-.travis.yml
-.vscode/**
-.gitignore
-.github
-.idea
-.lsp
+# ── Extension source (compiled output is what gets packaged) ─────────────────
+server/src/**
+client/src/**
+webview-src/**
 
-
-screenshots/**
-
-server/src/parser 
-# TODO: these are probably not needed after the parser is built. Why were they saved?
+# Parser folder re-exported as data (keep a few interpreter files for runtime)
+server/src/parser
 !server/src/parser/Tads3.g4
 !server/src/parser/Tads3.tokens
 !server/src/parser/Tads3Lexer.interp
 !server/src/parser/Tads3Lexer.tokens
 
-# These takes a lot of space:
+# Large compiled server bundles not loaded at runtime
 server/bin/**
 server/out/vscode-tads3tools-server*
-#----------------------------
 
-# Documentation
+# ── Dev tooling & repo config ─────────────────────────────────────────────────
+.vscode/**
+.github
+.gitignore
+.idea
+.lsp
+.azure-pipelines.yml
+.travis.yml
+.prettierignore
+.eslintignore
+vscode-tads3tools.iml
+scripts
+feature-request-ShallowParser-rewrite.md
+
+# ── Documentation ─────────────────────────────────────────────────────────────
+screenshots/**
+docs/**
 contributing.md
 CHANGELOG.md
 worklog.md
-docs/**
 
+# ── Tests & coverage ──────────────────────────────────────────────────────────
+server/tests/**
+server/coverage/
+server/out/test/
+server/testFixture/**
 
-# Tests
 client/coverage
 client/jest.config.js
 client/out/test/
-
 client/testFixture
 
-server/testFixture/**
-server/coverage/
-server/out/test/
-server/tests/**
 coverage/
 
-# TODO: Find out why this cannot be removed. 
-# (The VSIX package won't work for some reason.)
-#client/out/e2e-test 
+# ── Package manifests & lock files ────────────────────────────────────────────
+server/package.json
+server/package-lock.json
+client/package.json
+client/package-lock.json
+client/yarn.lock
+**/*.lock
 
-# If there's any files left from compilation during tests, make sure it isn't packaged
+# ── Miscellaneous ─────────────────────────────────────────────────────────────
 resources/obj
 *.t3
 
-# Package.json(s), build scripts etc..
-server/package-lock.json
-server/package.json
-
-client/package-lock.json
-client/package.json
-client/yarn.lock
-
-package.lock.json
-**/*.lock
-
-scripts
-
-# Typescript source files not needed 
-server/src/**
-client/src/**
-
-# The project's node_modules folder
+# ── Root node_modules (server/client each have their own) ─────────────────────
 node_modules
 
-
-#---------------
-# TODO: find out what more can be removed from these two:
-#server/node_modules
-#client/node_modules
-#---------------
-node_modules/typescript/**
-node_modules/esbuild/**
-node_modules/esbuild-linux-64/**
-node_modules/@babel/**
-#node_modules/azure-devops-node-api/**
-node_modules/jsdom/**
-node_modules/caniuse-lite/**
-node_modules/lodash/**
-
-server/node_modules/node
+# ── server/node_modules: devDependencies ─────────────────────────────────────
 server/node_modules/.bin
-server/node_modules/typescript/**
-server/node_modules/npm/**
 server/node_modules/@babel/**
+server/node_modules/@types/**
 server/node_modules/antlr4ts-cli/**
-server/tests/**
+server/node_modules/benchmark/**
+server/node_modules/coveralls/**
+server/node_modules/install/**
+server/node_modules/jasmine-spec-reporter/**
+server/node_modules/jasmine-ts/**
+server/node_modules/jest/**
+server/node_modules/jest-junit/**
+server/node_modules/npm/**
+server/node_modules/pkg/**
+server/node_modules/ts-jest/**
+server/node_modules/ts-node/**
+server/node_modules/typescript/**
 
-##client/node_modules/**
-##server/node_modules/**
-# !node_modules/@types/vscode/**
+# antlr4-c3 is a declared dependency but is not imported anywhere in the codebase
+server/node_modules/antlr4-c3/**
 
-# !client/node_modules/@types/axios/**
-# !client/node_modules/@types/unzipper/**
-# !client/node_modules/fs-extra/**
-# !client/node_modules/rxjs/**
-# !client/node_modules/vscode-jsonrpc/**
-# !client/node_modules/vscode-languageclient/**
-# !client/node_modules/vscode-languageserver-protocol/**
-# !client/node_modules/vscode-languageserver-types/**
-# !client/node_modules/semver/**
+# mobx/dist/index.js requires the dev build when NODE_ENV != 'production',
+# which is the case in VS Code's extension host — keep both builds.
 
-# !server/node_modules/@types/fs-extra/**
-# !server/node_modules/fuzzysort/**
-# !server/node_modules/antlr4ts/**
-# !server/node_modules/fs-extra/**
-# !server/node_modules/vscode-uri/**
-# !server/node_modules/vscode-jsonrpc/**
-# !server/node_modules/vscode-languageserver/**
-# !server/node_modules/vscode-languageserver-textdocument/**
-# !server/node_modules/vscode-languageserver-protocol/**
-# !server/node_modules/vscode-languageserver-types/**
-# !server/node_modules/node/**
-# !server/node_modules/threads/**/*
-# !server/node_modules/callsites/**/*
-# !server/node_modules/debug/**/*
-# !server/node_modules/ms/**/*
-# !server/node_modules/observable-fns/**/*
-# !server/node_modules/is-observable/**/*
-# !server/node_modules/universalify/**/*
-# !server/node_modules/graceful-fs/**/*
-# !server/node_modules/jsonfile/**/*
-# !server/node_modules/wink*/**/*
+# ── client/node_modules: devDependencies ─────────────────────────────────────
+# NOTE: glob, mocha, and @vscode/test-electron are kept because client/out/e2e-test/
+# (which cannot be removed from the VSIX) requires them at load time.
+# NOTE: glob is also required directly by the main extension code.
+client/node_modules/@types/**
+client/node_modules/@typescript-eslint/**
+client/node_modules/chai/**
+client/node_modules/esbuild/**
+client/node_modules/eslint/**
+client/node_modules/rimraf/**
+client/node_modules/sinon/**
+client/node_modules/ts-node/**
+client/node_modules/typescript/**
+client/node_modules/vsce/**
 
-!server/node_modules/threads/dist/**/*
-!server/node_modules/wink-pos-tagger/**
-!server/node_modules/fuzzysort/**
+# Source-only subdirectories inside runtime packages (compiled output is in dist/)
+client/node_modules/rxjs/src/**
+
+# mobx/dist/index.js requires the dev build when NODE_ENV != 'production' — keep both builds.

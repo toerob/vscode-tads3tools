@@ -1,4 +1,5 @@
 import { TextDocument, Position } from "vscode-languageserver-textdocument";
+import { TemplateItemNode } from "../parser/ast/nodes";
 
 const tokenizeRegExp = /[a-zA-Z0-9_]+/g;
 
@@ -185,134 +186,96 @@ export function compareStringReverse(a: string, b: string): boolean {
   return true;
 }
 
-export function createTemplateSnippetStrings(templateString: string, inheritedTemplates: string[] = []): string[] {
-  let sentenceStructures = tokenizeTemplate(templateString, inheritedTemplates);
-  const snippetStrings: string[] = expandToSnippet(sentenceStructures).map((x) => x.join(""));
-  const distinctSnippetStrings = [...new Set(snippetStrings)];
-  return distinctSnippetStrings;
+/**
+ * Build VSCode snippet strings directly from structured TemplateItemNode data.
+ * Replaces the old string-parsing approach — no need to re-parse the detail string.
+ *
+ * @param items           - The template items for the class being completed.
+ * @param inheritedSets   - Resolved TemplateItemNode[] for each `inherited` marker found.
+ */
+export function createSnippetsFromTemplateItems(
+  items: TemplateItemNode[],
+  inheritedSets: TemplateItemNode[][] = [],
+): string[] {
+  const hasInherited = items.some(item => item.tokenKind === 'inherited');
+
+  if (!hasInherited) {
+    const words = buildSnippetWords(items, []);
+    return [...new Set(expandToSnippet(words).map(parts => parts.join('')))];
+  }
+
+  // Option B: two expansions — "no inheritance" and "richest inherited set".
+  // The richest set is the one with the most items (deepest in the class hierarchy).
+  const richestSet = inheritedSets.reduce<TemplateItemNode[] | null>(
+    (best, set) => (best === null || set.length > best.length ? set : best),
+    null,
+  );
+
+  // Expansion 1: inherited → nothing (skip the keyword)
+  const snippets1 = expandToSnippet(buildSnippetWords(items, [])).map(parts => parts.join(''));
+
+  // Expansion 2: inherited → richest set with its original optional flags
+  const snippets2 = richestSet && richestSet.length > 0
+    ? expandToSnippet(buildSnippetWords(items, [richestSet])).map(parts => parts.join(''))
+    : [];
+
+  return [...new Set([...snippets1, ...snippets2])];
 }
 
-function tokenizeTemplate(templateString: string, inheritedTemplates: string[] = []): any[] {
-  const templatePart = templateString?.split("template")[1] ?? "";
-  if (templatePart === undefined || templatePart == "") {
-    return [];
+interface SnippetVariant {
+  symbolName: string;
+  startSign: string;
+  endSign: string;
+  isOptional: boolean;
+}
+
+function itemToVariant(item: TemplateItemNode): SnippetVariant {
+  const isOptional = item.optional;
+  const propName   = item.propName ?? '';
+  switch (item.tokenKind) {
+    case 'sstr': return { symbolName: propName, startSign: "'",         endSign: "'", isOptional };
+    case 'dstr': return { symbolName: propName, startSign: '"',         endSign: '"', isOptional };
+    case 'list': return { symbolName: propName, startSign: '[',         endSign: ']', isOptional };
+    case 'op':   return { symbolName: propName, startSign: item.op ?? '', endSign: '', isOptional };
+    default:     return { symbolName: '',        startSign: '',           endSign: '', isOptional: true };
   }
-  const parts =
-    templatePart
-      ?.trim()
-      .split(/\s+|;/)
-      ?.filter((x) => x !== "") ?? [];
+}
 
-  let words = [];
-  let nextIsVariantPart = false; // Keep state if the next part in the template is a variant of a template part
+function buildSnippetWords(
+  items: TemplateItemNode[],
+  inheritedSets: TemplateItemNode[][],
+): { variants: SnippetVariant[] }[] {
+  const words: { variants: SnippetVariant[] }[] = [];
+  let i = 0;
+  while (i < items.length) {
+    const item = items[i];
 
-  for (let idx = 0; idx < parts.length; idx++) {
-    let p = parts[idx];
-    if (p === "") {
+    if (item.tokenKind === 'inherited') {
+      // Expand with the provided inherited set (one set at a time, original optional flags preserved).
+      // If no set is provided, the keyword is silently skipped (produces the "no inheritance" form).
+      if (inheritedSets.length > 0) {
+        words.push(...buildSnippetWords(inheritedSets[0], []));
+      }
+      i++;
       continue;
     }
-    let isOptional = p.endsWith("?"); // Find out if optional
 
-    // Almost as an #include, if this inherits superclasse's template, expand them 
-    // here and replace the inherited keyword
-
-    if (p.match(/inherited/)) {
-      if (inheritedTemplates.length > 0) {
-        const expandedInheritance = inheritedTemplates.map((x) => expandToSnippet(tokenizeTemplate(x), true)).join();
-        p = expandedInheritance;
-        isOptional = true; // inherited works as optional
-      } else {
-        continue; // If we don't find any inheritance to expand, we just skip past the inherited keyword
+    if (item.isAlternative) {
+      // Collect all consecutive alternatives into a single word slot: A | B | C → one group
+      const variants: SnippetVariant[] = [itemToVariant(item)];
+      i++;
+      while (i < items.length) {
+        variants.push(itemToVariant(items[i]));
+        if (!items[i].isAlternative) break; // this item ends the group
+        i++;
       }
-    }
-
-    if (isOptional) {
-      p = p.slice(0, -1); // Remove the question mark if exists
-    }
-
-    let inherited = false;
-    let startSignLength = 1;
-    let startSign = p[0] ?? "";
-
-    // TODO: More special tokens, better handling needed for all the other token signs of variable lengths
-    //
-    const startSignIsSpecialToken = !startSign.match(/[A-Za-z]/); // The inverse: It's not alpha, so it's special
-    if (startSignIsSpecialToken) {
-      if (startSign === "-" && p[1] === ">") {
-        startSignLength = 2;
-        startSign = "->";
-      } else if (startSign === ">" && p[1] === ">") {
-        startSignLength = 2;
-        startSign = ">>";
-      } else if (startSign === "<" && p[1] === "<") {
-        startSignLength = 2;
-        startSign = "<<";
-      }
+      // TADS3 semantics: `?` on any variant (typically the last) makes the whole group optional
+      if (variants.some(v => v.isOptional)) variants.forEach(v => { v.isOptional = true; });
+      words.push({ variants });
+      i++;
     } else {
-      startSignLength = 0;
-      startSign = "";
-      inherited = p === "inherited" ? true : false;
-    }
-
-    let endSign = p.slice(-1);
-    const endSignIsSpecialToken = !endSign.match(/[A-Za-z]/); // The inverse: It's not alpha, so it's special
-
-    let endSignLength = 1;
-    if (endSign === "<" && p[p.length - 2] === "<") {
-      endSign = "<<";
-      endSignLength = 2;
-    } else if (endSign === ">" && p[p.length - 2] === ">") {
-      endSign = ">>";
-      endSignLength = 2;
-    }
-
-    // Sometimes the endsign is not a special token, in that case we don't slice away the end token
-    if (endSignIsSpecialToken) {
-      p = p.slice(startSignLength, -endSignLength); // Remove start sign and end sign, e.g: symmetrical variants such as ' or ". Or start
-    } else {
-      p = p.slice(startSignLength); // Just remove the non symmetrical start sign, such as @ or + or -
-      endSign = "";
-    }
-
-    const variant = {
-      symbolName: p,
-      startSign: startSign,
-      endSign: endSign,
-      isOptional: isOptional,
-      inherited: inherited,
-    };
-
-    // Either we increase the variants for the previous word
-    if (!nextIsVariantPart) {
-      // Add word here except in the case where the token is a single question mark '?'
-      // Then the whole group of the previous variants needs to be marked as optionals
-      // Change them and don't add anything
-      if (parts[idx] === "?") {
-        if (words.length - 1 > 0 && words[words.length - 1] !== undefined) {
-          words[words.length - 1].variants.forEach((x) => (x.isOptional = true));
-        }
-      } else {
-        words.push({
-          variants: [variant],
-        });
-      }
-      // Or we create a new word part here
-    } else {
-      // If the new part is optional, we add an empty alternative too
-      //const variants: [] = isOptional? [variant, variant] ? [variant]
-      words[words.length - 1].variants.push(variant);
-    }
-
-    const nextToken = parts[idx + 1];
-    if (nextToken === undefined) {
-      break;
-    }
-    const nextTokenFirstWord = nextToken[0];
-    if (nextTokenFirstWord === "|") {
-      nextIsVariantPart = true;
-      idx++; // Skip ahead to the next token, since it is a variant token '|'
-    } else {
-      nextIsVariantPart = false;
+      words.push({ variants: [itemToVariant(item)] });
+      i++;
     }
   }
   return words;
@@ -320,26 +283,41 @@ function tokenizeTemplate(templateString: string, inheritedTemplates: string[] =
 
 function expandToSnippet(input: any[], skipPlaceHolderIndex = false): string[][] {
   const result: string[][] = [];
+
+  function makePart(variant: SnippetVariant, placeholderIndex: number): string {
+    if (!skipPlaceHolderIndex) {
+      const empty = variant.symbolName === "" && variant.startSign === "" && variant.endSign === "";
+      return empty ? "" : `${variant.startSign}$\{${placeholderIndex}:${variant.symbolName}}${variant.endSign} `;
+    }
+    return `${variant.startSign}${variant.symbolName}${variant.endSign} `;
+  }
+
   function walk(index: number, current: string[], placeholderIndex = 1) {
     if (index === input.length) {
       result.push([...current]);
       return;
     }
 
-    for (const variant of input[index].variants) {
-      // If Optional - walk first without nextPart
-      if (variant.isOptional) {
+    const { variants } = input[index];
+    const isGroupOptional = variants.some((v: SnippetVariant) => v.isOptional);
+
+    if (variants.length > 1) {
+      // Alternative group: emit each variant in order.
+      // If the group is optional, inject one "skip" branch after the first variant.
+      for (let vi = 0; vi < variants.length; vi++) {
+        if (vi === 1 && isGroupOptional) {
+          walk(index + 1, current, placeholderIndex); // skip the whole group
+        }
+        current.push(makePart(variants[vi], placeholderIndex));
+        walk(index + 1, current, placeholderIndex + 1);
+        current.pop();
+      }
+    } else {
+      // Single item: if optional emit skip first, then the item.
+      if (isGroupOptional) {
         walk(index + 1, current, placeholderIndex);
       }
-      if (!skipPlaceHolderIndex) {
-        const empty = variant.symbolName === "" && variant.startSign === "" && variant.endSign === "";
-        const nextPart = empty
-          ? ""
-          : `${variant.startSign}$\{${placeholderIndex}:${variant.symbolName}}${variant.endSign} `;
-        current.push(nextPart);
-      } else {
-        current.push(`${variant.startSign}${variant.symbolName}${variant.endSign} `);
-      }
+      current.push(makePart(variants[0], placeholderIndex));
       walk(index + 1, current, placeholderIndex + 1);
       current.pop();
     }

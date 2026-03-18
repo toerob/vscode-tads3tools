@@ -35,6 +35,7 @@ import { onDocumentFormatting } from "./modules/document-formatting";
 import { onDocumentRangeFormatting } from "./modules/document-range-formatting";
 import { onImplementation } from "./modules/implementation";
 import { onSignatureHelp } from "./modules/signature-helper";
+import { evaluateSelection } from "./modules/evaluate-selection";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require("wink-pos-tagger");
@@ -131,7 +132,7 @@ connection.onInitialize((params: InitializeParams) => {
       },
       implementationProvider: true,
       documentFormattingProvider: true,
-      documentRangeFormattingProvider: true,
+      documentRangeFormattingProvider: false, // Has a bug where it can repeat a line after the end marker
       signatureHelpProvider: {
         triggerCharacters: ["(", ","],
       },
@@ -349,6 +350,10 @@ connection.onRequest("request/preprocessed/file", async (params: any) => {
   });
 });
 
+connection.onRequest("request/evaluateSelection", ({ text }: { text: string }) => {
+  return { result: evaluateSelection(text) };
+});
+
 connection.onRequest("request/analyzeText/findNouns", async (params: any) => {
   const { path, position, text } = params;
 
@@ -395,7 +400,7 @@ export async function searchTextForNounsAndReportToClient(path: any, position: a
     // Calculate where to best put the suggestions
     const symbol = symbolManager.findClosestSymbolKindByPosition(path, [SymbolKind.Object], position);
     if (symbol) {
-      const level = symbolManager.additionalProperties.get(path)?.get(symbol)?.level + 1;
+      const level = (symbolManager.mapData.get(symbol.name)?.level ?? 0) + 1;
       //connection.console.debug(`Closest object symbol: ${symbol.name}, therefore range ${symbol.range}`);
       await connection.sendNotification("response/analyzeText/findNouns", {
         tree,

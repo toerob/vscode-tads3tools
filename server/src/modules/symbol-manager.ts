@@ -5,18 +5,26 @@ import { filterForStandardLibraryFiles } from "./utils";
 import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { pathExistsSync } from "fs-extra";
 import { ExtendedDocumentSymbolProperties } from "../parser/Tads3SymbolListener";
-import { DocumentSymbolWithScope, ExpressionType, FilePathAndSymbols } from "./types";
+import { DocumentSymbolWithScope, ExpressionType, FilePathAndSymbols, PropertyValueMap, SimpleValue } from "./types";
+import { TemplateItemNode } from "../parser/ast/nodes";
+import { MapNodeData } from "./mapcrawling/MapNodeData";
+import { getDefineMacrosMap } from '../parser/preprocessor';
+import { get } from 'http';
 
 export class TadsSymbolManager {
   public symbols: Map<string, DocumentSymbol[]>;
   public keywords: Map<string, Map<string, Range[]>>;
   public additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
+  /** Flat map from object name → map-editor metadata. Stable across reparsing (name-keyed, not identity-keyed). */
+  public mapData: Map<string, MapNodeData> = new Map();
   public inheritanceMap: Map<string, string> = new Map();
   public onWindowsPlatform = false;
   public assignmentStatements: Map<string, DocumentSymbol[]> = new Map();
   public expressionSymbols: Map<string, Map<string, DocumentSymbolWithScope[]>> = new Map();
-
-  symbolParameters: Map<string, Map<string, DocumentSymbol[]>> = new Map();
+  /** filePath → objectName → propName → SimpleValue (populated by the v2 worker) */
+  public propertyValues: Map<string, PropertyValueMap> = new Map();
+  /** filePath → className → TemplateItemNode[] (populated by the v2 worker) */
+  public templateItems: Map<string, Map<string, TemplateItemNode[]>> = new Map();
 
   private _parsingInProgress = false;
   private _initialParseCompleted = false;
@@ -91,6 +99,43 @@ export class TadsSymbolManager {
       if (props) {
         return props;
       }
+    }
+    return undefined;
+  }
+
+  /**
+   * Look up the statically-extracted value of a named property on a named object.
+   * Searches across all files; returns undefined when not found or not resolvable.
+   *
+   * @example
+   *   const val = symbolManager.getPropertyValue('kitchen', 'north');
+   *   // { kind: 'ref', name: 'library' }
+   */
+  getPropertyValue(objectName: string, propName: string): SimpleValue | undefined {
+    for (const fileMap of this.propertyValues.values()) {
+      const objMap = fileMap.get(objectName);
+      if (objMap) return objMap.get(propName);
+    }
+    return undefined;
+  }
+
+  /**
+   * Return all statically-known properties for a named object, or undefined
+   * if the object was not found in any parsed file.
+   */
+  getObjectProperties(objectName: string): Map<string, SimpleValue> | undefined {
+    for (const fileMap of this.propertyValues.values()) {
+      const objMap = fileMap.get(objectName);
+      if (objMap) return objMap;
+    }
+    return undefined;
+  }
+
+  /** Return the structured template items for a class, searched across all parsed files. */
+  getTemplateItems(className: string): TemplateItemNode[] | undefined {
+    for (const fileMap of this.templateItems.values()) {
+      const items = fileMap.get(className);
+      if (items) return items;
     }
     return undefined;
   }
@@ -269,6 +314,13 @@ export class TadsSymbolManager {
         }
       }
     }
+
+    for(const macroSymbol of getDefineMacrosMap().keys()) {
+      const value = getDefineMacrosMap().get(macroSymbol);
+      const range = Range.create(value.row, 0, value.endLine, macroSymbol.length);
+      symbolSearchResult.push(SymbolInformation.create(macroSymbol, SymbolKind.Constant, range, value.uri, 'GLOBAL MACRO'));
+    }
+
     return symbolSearchResult;
   }
 
@@ -331,7 +383,17 @@ export class TadsSymbolManager {
     }
 
     const templates = [...(this.getTemplates() ?? [])];
-    const matchingTemplates = templates.filter((x) => x.name === symbolName);
+    let matchingTemplates = templates.filter((x) => x.name === symbolName);
+
+    // If the class has no template of its own, walk up the heritage chain and use
+    // the nearest ancestor's template (e.g. Decoration → Fixture → NonPortable → Thing).
+    if (matchingTemplates.length === 0) {
+      const heritage = this.findHeritage(symbolName);
+      for (const ancestor of heritage.slice(1)) {
+        matchingTemplates = templates.filter((x) => x.name === ancestor);
+        if (matchingTemplates.length > 0) break;
+      }
+    }
 
     // Find the templates that are inherited by the found templates
     const inheritedTemplates = matchingTemplates.filter((x) => x.detail?.match(/\binherited\b/));

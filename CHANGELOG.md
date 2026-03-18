@@ -1,12 +1,22 @@
 # Changelog
 
+## 0.7.0
+
+### Added
+
+- **Experimental Tads3v2 parser** — a new ANTLR4-based parser + pipeline (`workerV2`) built on a typed AST layer. It produces the same `DocumentSymbol` output as the original parser but uses a cleaner visitor-based design that will underpin future language intelligence improvements.
+- **Tads3v2AstEvaluator** — New module for evaluating and traversing ASTs (Abstract Syntax Trees) produced by the Tads3v2 parser. This lays the groundwork for future features such as static code analysis, symbol resolution, type inference, and advanced refactoring directly in the LSP. In the long run, a robust evaluator will enable smarter code completions, deeper diagnostics, and improved semantic understanding of code in the editor.
+- **FROBD DAP debugger support** (frobd binary is required)
+- **Propertyset support in the outline** — `propertyset` blocks now appear as named container nodes in the document outline (e.g. `*DobjOpen`), with their methods listed as children using the expanded names (e.g. `checkDobjOpen`, `actionDobjOpen`).
+- **`tads3.useExperimentalParser` setting** — choose between the original parser (`worker`) and the new Tads3v2 parser (`workerV2`). Defaults to `true` (new parser). Set to `false` to revert to the original. Requires a restart after change.
+- **Parser performance** — pre-filling the ANTLR token buffer before parsing (`tokens.fill()`) yields a ~3× speedup on large library files. Applied to both workers.
+- VS Code theme coloring in the map view
+
 ## 0.6.5
 
 ### Added
 
 - Handy Completion snippets added for all objects deriving from 'Thing'.
-- Added frobd DAP debugger support (frobd binary is required)
-- VS Code theme coloring in the map view
 - Improved code completions: expand templates to snippets during completions
   
 ### Fixed

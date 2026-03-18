@@ -75,6 +75,10 @@ export class ShallowParser {
     // Line number of the most recent method/function signature (ID followed by '(' or '{' at
     // line start with braceDepth 0). Used to classify the following '{' as "method".
     let methodSigLine = -1;
+    // True when a method/function signature was followed by a non-'{' token at braceDepth 0,
+    // meaning the body is a single headless statement (codeBlock: stats).  The very next
+    // SEMICOLON at braceDepth 0 is that statement's terminator — NOT an object-closing ';'.
+    let headlessMethodActive = false;
 
     for (let idx = 0; idx < tokensSize; idx++) {
       const token = tokens.get(idx);
@@ -87,13 +91,20 @@ export class ShallowParser {
           currentEntry.stateAfter = { objectDepth: state.objectDepth, braceDepth: state.braceDepth };
         }
 
-        // Backfill owner and objectId for lines skipped by multi-line tokens
+        // Backfill owner, objectId, and depth state for lines skipped by multi-line tokens
+        // (e.g., interior lines of a multi-line double-quoted string).  Without this,
+        // those lines have stateBefore=undefined / stateAfter={0,0} and collapse to indent 0.
         if (lastProcessedLine > 0 && lastProcessedLine < line - 1) {
           for (let fillLine = lastProcessedLine + 1; fillLine < line; fillLine++) {
             const fillEntry = tokensPerLine.get(fillLine);
             if (fillEntry && lastLineWithObject !== fillLine) {
               if (fillEntry.owner === undefined) fillEntry.owner = state.owner;
               if (fillEntry.objectId === undefined && currentObjectId) fillEntry.objectId = currentObjectId;
+              // Propagate depth so interior lines of multi-line strings get the correct indent.
+              if (!fillEntry.stateBefore) {
+                fillEntry.stateBefore = { objectDepth: state.objectDepth, braceDepth: state.braceDepth };
+              }
+              fillEntry.stateAfter = { objectDepth: state.objectDepth, braceDepth: state.braceDepth };
             }
           }
         }
@@ -116,15 +127,21 @@ export class ShallowParser {
 
         const next = tokens.get(nextIdx);
         const lineText = lines[line - 1].trimStart();
-        // Match optional prefixes: intrinsic class, class, grammar, +/*/# symbols, or bare ID
+        // Match optional prefixes: intrinsic class, class, grammar, +/*/# symbols, or bare ID.
+        // The optional trailing (\([^)]*\)) captures a grammar tag such as the "(main)" in
+        // `grammar takeAction(main) : TakeAction ...` so that the column check for isLineStart
+        // is not thrown off and so we know to look past the parens to find the object-declaring colon.
         const leadingSymbolMatch = lineText.match(
-          /^(?:intrinsic\s+(?:class\s+)?|class\s+|grammar\s+|((?:[+*#-]+)\s*)?)([a-zA-Z_][a-zA-Z0-9_]*)/,
+          /^(?:intrinsic\s+(?:class\s+)?|class\s+|grammar\s+|((?:[+*#-]+)\s*)?)([a-zA-Z_][a-zA-Z0-9_]*)(\([^)]*\))?/,
         );
         // Also verify the token is at the expected column so we don't false-positive on
         // identifiers that share a name with the line-start token but appear later in the line
         // (e.g. `foo = (... .foo : bar)` where `.foo :` looks like an object declaration).
         const leadingIndent = lines[line - 1].length - lineText.length;
-        const prefixLen = leadingSymbolMatch ? leadingSymbolMatch[0].length - leadingSymbolMatch[2].length : 0;
+        // prefixLen must not include the optional (tag) capture — only the part before the identifier.
+        const prefixLen = leadingSymbolMatch
+          ? leadingSymbolMatch[0].length - leadingSymbolMatch[2].length - (leadingSymbolMatch[3]?.length ?? 0)
+          : 0;
         const expectedCol = leadingIndent + prefixLen;
         const isLineStart = !!(
           leadingSymbolMatch &&
@@ -132,8 +149,23 @@ export class ShallowParser {
           token.charPositionInLine === expectedCol
         );
 
-        if (next.type === Tads3Lexer.COLON && token.text && isLineStart) {
-          // ── Object declaration: name : superclass ──
+        // For grammar declarations like `grammar id(tag): ...`, the token after the id is '('
+        // not ':'.  When the regex captured a (tag) suffix, scan past the parenthesised tag in
+        // the token stream to find the colon that actually marks the object declaration.
+        let colonIdx = nextIdx;
+        if (leadingSymbolMatch?.[3] && next.type === Tads3Lexer.LEFT_PAREN) {
+          let depth = 0;
+          for (let j = nextIdx; j < tokensSize; j++) {
+            const t = tokens.get(j).type;
+            if (t === Tads3Lexer.LEFT_PAREN) depth++;
+            else if (t === Tads3Lexer.RIGHT_PAREN && --depth === 0) { colonIdx = j + 1; break; }
+          }
+          while (colonIdx < tokensSize && tokens.get(colonIdx).type === Tads3Lexer.WS) colonIdx++;
+        }
+        const colonCandidate = tokens.get(colonIdx);
+
+        if (token.text && isLineStart && (next.type === Tads3Lexer.COLON || colonCandidate?.type === Tads3Lexer.COLON)) {
+          // ── Object declaration: name : superclass  (or grammar name(tag) : ...) ──
           const objectName = token.text;
           currentEntry.events.startsObject = true;
           currentEntry.objectId = objectName;
@@ -152,8 +184,10 @@ export class ShallowParser {
           // Record stateBefore for the declaration line (before objectDepth increment)
           currentEntry.stateBefore = { objectDepth: state.objectDepth - 1, braceDepth: state.braceDepth };
 
-          // For inline objects (no immediate '{'), set owner so body lines get the right owner
-          let checkIdx = nextIdx + 1;
+          // For inline objects (no immediate '{'), set owner so body lines get the right owner.
+          // Use the token after whichever colon was the declaration colon.
+          const afterColonStart = colonCandidate?.type === Tads3Lexer.COLON ? colonIdx + 1 : nextIdx + 1;
+          let checkIdx = afterColonStart;
           while (checkIdx < tokensSize && tokens.get(checkIdx).type === Tads3Lexer.WS) checkIdx++;
           const tokenAfterColon = tokens.get(checkIdx);
           if (tokenAfterColon && tokenAfterColon.type !== Tads3Lexer.LEFT_CURLY) {
@@ -178,6 +212,17 @@ export class ShallowParser {
         // Double-quoted string used as inline property shorthand (e.g. desc) at top level
         if (state.braceDepth === 0 && state.pendingBraceStack.length > 0) {
           state.pendingBraceStack[state.pendingBraceStack.length - 1].seenPropOrMethod = true;
+        }
+        // If a method signature was seen recently (same or previous line) and no '{' has
+        // appeared since, this DSTR is the body of a headless method (codeBlock: stats).
+        // Flag it so the following SEMICOLON is not mistaken for an object terminator.
+        if (
+          state.braceDepth === 0 &&
+          methodSigLine !== -1 &&
+          (methodSigLine === line || methodSigLine === line - 1)
+        ) {
+          headlessMethodActive = true;
+          methodSigLine = -1;
         }
       } else if (token.type === Tads3Lexer.LEFT_CURLY) {
         currentEntry.events.opensBrace = true;
@@ -208,6 +253,7 @@ export class ShallowParser {
           // '{' immediately follows a method/function signature (same or previous line)
           frameKind = "method";
           methodSigLine = -1;
+          headlessMethodActive = false; // A brace appeared — not a headless body after all
         } else {
           frameKind = "block";
         }
@@ -240,7 +286,10 @@ export class ShallowParser {
           currentEntry.owner = state.owner;
         }
       } else if (token.type === Tads3Lexer.SEMICOLON) {
-        if (state.braceDepth === 0 && state.objectIds.length > 0) {
+        if (headlessMethodActive && state.braceDepth === 0) {
+          // This ';' terminates the single-statement body of a headless method — not the object.
+          headlessMethodActive = false;
+        } else if (state.braceDepth === 0 && state.objectIds.length > 0) {
           currentEntry.events.endsObject = true;
           currentEntry.objectId = currentObjectId;
 

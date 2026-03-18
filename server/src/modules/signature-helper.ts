@@ -67,7 +67,7 @@ function createSignatures(symbolName: string, sm: TadsSymbolManager): SignatureI
       const lineOfMethodDeclaration = symbol.range.start.line - 1;
       const signatureLine = getLineOfMethodDeclaration(serverState.preprocessedFilesCacheMap, fsPath, lineOfMethodDeclaration);
       if (signatureLine) {
-        const signature = createSignature(sm, fsPath, symbol, location, signatureLine);
+        const signature = createSignature(symbol, location, signatureLine);
         signatures.push(signature);
       }
     }
@@ -76,16 +76,13 @@ function createSignatures(symbolName: string, sm: TadsSymbolManager): SignatureI
 }
 
 function createSignature(
-  sm: TadsSymbolManager,
-  fsPath: string,
   symbol: any,
   location: FilePathAndSymbols,
   signatureLine: string,
 ) {
-  // TODO: cannot find intrinsic methods like toString
-  const symbolParameters = sm.symbolParameters.get(fsPath)?.get(symbol.name) ?? [];
-
-  const parameters = symbolParameters.map((x) => ParameterInformation.create(x.name));
+  // Parameter names are stored in symbol.detail as a comma-separated string (e.g. "actor,obj?").
+  // Both the v1 listener and v2 astToSymbols populate detail this way for functions and methods.
+  const parameters = (symbol.detail ?? '').split(',').filter(Boolean).map((name: string) => ParameterInformation.create(name));
   const doc = retrieveDocumentationForKeyword(symbol, location.filePath);
   const signature = SignatureInformation.create(signatureLine, doc, ...parameters);
   return signature;

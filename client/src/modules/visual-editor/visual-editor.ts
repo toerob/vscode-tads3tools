@@ -271,8 +271,9 @@ export function getHtmlForWebview(context: ExtensionContext, webview: Webview, e
 					<label>Room name: <label><input type="text" id='inputDialog'></input>
 				</div>
         <div id="editorElement"> </div>
-        <div id="mapCanvas"></div>
-				<!--script>
+        <!--div id="mapCanvas"></div-->
+        <canvas id='mapCanvas' width='1024' height='1024' style='border: 1px solid'></canvas>
+        <!--script>
 				</script-->
         <script src="${mapLogicUriWithVersion}"></script>
 			</body>

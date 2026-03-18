@@ -4,12 +4,24 @@
 // This runs inside a VS Code webview (browser context).
 // It's compiled to `resources/maprenderer/maprenderer.js` via `npm run build:maprenderer`.
 
-import { Core, ElementDefinition, StylesheetJsonBlock } from "cytoscape";
 import { bindDomEvents, getDomRefs, initializeDom } from "./dom";
 import { createMessenger } from "./messaging";
-import cytoscape from "cytoscape";
 
-//import cytoscape, { Stylesheet, type Core, type ElementDefinition, type StylesheetCSS } from "cytoscape";
+// litegraph is loaded via <script src=".../litegraph.js"> in the webview HTML.
+
+import { LiteGraph, LGraph, LGraphCanvas, LGraphGroup, LGraphNode } from "litegraph.js";
+
+/*
+// We intentionally use it as globals.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const LiteGraph: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const LGraph: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const LGraphCanvas: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const LGraphGroup: any;
+*/
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyObj = any;
@@ -47,442 +59,326 @@ function readTheme(): Theme {
 
 let theme = readTheme();
 
-// --- Graph renderer (Cytoscape.js) ---
-
-const container = document.getElementById("mapCanvas") as HTMLElement | null;
-if (!container) {
-  throw new Error("Expected #mapCanvas to exist");
+function applyNodeTheme(node: AnyObj, opts: { isDoor: boolean }) {
+  // In LiteGraph, node.color is used as the default titlebar color.
+  // We keep the titlebar background theme-consistent and use accent colors for title text instead.
+  node.color = theme.widgetBg;
+  node.bgcolor = theme.editorBg;
+  node.boxcolor = opts.isDoor ? theme.warning : theme.link;
+  node.bordercolor = theme.widgetBorder;
 }
 
-let cy: Core | undefined;
+let isPopulatingMap = true;
 
-let currentStartRoom: string | undefined;
-let selectedEditor = "0";
+let lowestZLevel = 0;
+let highestZLevel = 0;
+
+const graph = new LGraph();
+const mapCanvas = new LGraphCanvas("#mapCanvas", graph);
+
+const MAX_TITLE_LENGTH = 17;
+const MAX_LENGTH = 19;
+
+let selectedEditor = "0"; // 0: map editor, 1: conversation editor
 let lastMessage: unknown;
+let currentLevel = 0;
+
+mapCanvas.connections_width = 2;
+mapCanvas.render_collapsed_slots = false;
+mapCanvas.render_connections_border = false;
+(mapCanvas as AnyObj).align_to_grid = true;
+
+mapCanvas.onNodeMoved = function (node: AnyObj) {
+  messenger.postCommand("updatepos", { name: node.properties.name, pos: node.pos });
+};
+
+const config = {
+  collapsed: false,
+  showAll: true,
+  showUnmappedRooms: false,
+};
+
+const levelUp = () => {
+  if (currentLevel < highestZLevel) {
+    currentLevel++;
+    refresh(lastMessage);
+  }
+};
+
+const levelDown = () => {
+  if (currentLevel > lowestZLevel) {
+    currentLevel--;
+    refresh(lastMessage);
+  }
+};
+
+const toggleCollapse = () => {
+  config.collapsed = !config.collapsed;
+  refresh(lastMessage);
+};
+
+const toggleShowAll = () => {
+  config.showAll = !config.showAll;
+  messenger.postCommand("showall", config.showAll);
+  refresh(lastMessage);
+};
+
+const toggleShowUnmapped = () => {
+  config.showUnmappedRooms = !config.showUnmappedRooms;
+  refresh(lastMessage);
+};
 
 // These are referenced from inline onclick="..." handlers in the HTML.
-(window as AnyObj).levelUp = () => {};
-(window as AnyObj).levelDown = () => {};
-(window as AnyObj).toggleCollapse = () => {};
-(window as AnyObj).toggleShowAll = () => {};
-(window as AnyObj).toggleShowUnmapped = () => {};
+(window as AnyObj).levelUp = levelUp;
+(window as AnyObj).levelDown = levelDown;
+(window as AnyObj).toggleCollapse = toggleCollapse;
+(window as AnyObj).toggleShowAll = toggleShowAll;
+(window as AnyObj).toggleShowUnmapped = toggleShowUnmapped;
 
-function zoomBy(factor: number) {
-  if (!cy) return;
-  const current = cy.zoom();
-  const next = current * factor;
-  if (container) {
-    cy.zoom({
-      level: next,
-      renderedPosition: { x: container.clientWidth / 2, y: container.clientHeight / 2 },
-    });
+const portId = {
+  NORTH: 0,
+  NORTHEAST: 1,
+  NORTHWEST: 2,
+  WEST: 3,
+  EAST: 4,
+  SOUTH: 5,
+  SOUTHEAST: 6,
+  SOUTHWEST: 7,
+};
+
+function splitIntoListByNthCharacterFunc(str: string, maxLength: number): string[] {
+  const splittedWord: string[] = [];
+  const totalLength = str.length ?? 0;
+  for (let i = 0; i < totalLength; i += maxLength) {
+    const word = str.substr(i, i + maxLength);
+    splittedWord.push(word);
+  }
+  return splittedWord;
+}
+
+function splitIntoListByNthCharacterFuncOld(str: string, maxLength: number): string[] {
+  const splittedWord: string[] = [];
+  const totalLength = str.length ?? 0;
+  for (let i = 0; i < totalLength; i += maxLength) {
+    const word = str.substr(i, i + maxLength);
+    splittedWord.push(word);
+  }
+  return splittedWord;
+}
+
+function splitIntoListByWhitespacesAndMaxlengthPerRow(str: string, maxLength: number): string[] {
+  const splittedWordsByWS = str.split(" ");
+  const rows: string[] = [];
+  let rowString = "";
+  for (let word = 0; word < splittedWordsByWS.length; word++) {
+    while (rowString.length < maxLength) {
+      rowString += " " + splittedWordsByWS[word];
+      rows.push(rowString);
+      if (word < splittedWordsByWS.length) {
+        word++;
+      }
+    }
+  }
+  return rows;
+}
+
+class NPCNode extends LGraphNode {
+  constructor() {
+    super();
+    this.title = "NPC";
+    this.properties = { title: this.title, name: "", desc: "" };
   }
 }
 
-(window as AnyObj).zoomIn = () => zoomBy(1.15);
-(window as AnyObj).zoomOut = () => zoomBy(1 / 1.15);
+class RoomNode extends LGraphNode {
+  static title_mode: number;
+  static title_color: string;
+  static title_text_color: string;
 
-function buildCyStyles(currentTheme: Theme): StylesheetJsonBlock[] {
-  return [
-    {
-      selector: "core",
-      style: {
-        "background-color": currentTheme.editorBg,
-        "active-bg-color": currentTheme.editorBg,
-      },
-    },
-    {
-      selector: "node",
-      style: {
-        label: "data(label)",
-        color: currentTheme.foreground,
-        "font-family": currentTheme.fontFamily,
-        "font-size": 12,
-        "text-events": "yes",
-        "text-valign": "center",
-        "text-halign": "center",
-        "text-wrap": "wrap",
-        "text-max-width": "140",
-        shape: "rectangle",
-        "background-color": currentTheme.widgetBg,
-        "border-color": currentTheme.widgetBorder,
-        "border-width": 1,
-        width: 16,
-        height: 16,
-        "background-opacity": 0,
-        "border-opacity": 0,
-        "text-background-color": currentTheme.widgetBg,
-        "text-background-opacity": 1,
-        "text-background-shape": "roundrectangle",
-        "text-border-color": currentTheme.widgetBorder,
-        "text-border-width": 1,
-        "text-border-opacity": 1,
-        "text-margin-y": 0,
-        "text-background-padding": "6",
-      },
-    },
-    {
-      selector: "node[?isDoor]",
-      style: {
-        shape: "diamond",
-        width: 20,
-        height: 20,
-        "background-color": currentTheme.warning,
-        "background-opacity": 0.85,
-        "border-color": currentTheme.warning,
-        "border-width": 1,
-        "border-opacity": 1,
-        "font-size": 10,
-        "text-margin-y": -16,
-      },
-    },
-    {
-      selector: "edge",
-      style: {
-        width: 2,
-        "line-color": currentTheme.link,
-        "line-style": "dashed",
-        "line-dash-pattern": [8, 6],
-        "line-cap": "butt",
-        opacity: 0.65,
-        "curve-style": "straight",
-      },
-    },
-    {
-      selector: ":selected",
-      style: {
-        "border-color": currentTheme.warning,
-        "border-width": 3,
-        "text-border-color": currentTheme.warning,
-        "text-border-width": 2,
-      },
-    },
-  ];
-}
+  north_out: AnyObj = undefined;
+  north_in: AnyObj = undefined;
 
-function ensureCy() {
-  if (cy) return;
+  south_out: AnyObj = undefined;
+  south_in: AnyObj = undefined;
 
-  cy = cytoscape({
-    container,
-    elements: [],
-    style: buildCyStyles(theme),
-    wheelSensitivity: 0.15,
-    minZoom: 0.05,
-    maxZoom: 5,
-    selectionType: "single",
-    autoungrabify: false,
-    autounselectify: false,
-    userPanningEnabled: true,
-    userZoomingEnabled: true,
-  });
+  east_out: AnyObj = undefined;
+  east_in: AnyObj = undefined;
 
-  cy.on("tap", "node", (evt) => {
-    const data = evt.target?.data?.();
-    const name = data?.name;
-    if (typeof name === "string" && name) {
-      messenger.postCommand("select", name);
+  west_out: AnyObj = undefined;
+  west_in: AnyObj = undefined;
+
+  northeast_out: AnyObj = undefined;
+  northeast_in: AnyObj = undefined;
+
+  northwest_out: AnyObj = undefined;
+  northwest_in: AnyObj = undefined;
+
+  southeast_out: AnyObj = undefined;
+  southeast_in: AnyObj = undefined;
+
+  southwest_out: AnyObj = undefined;
+  southwest_in: AnyObj = undefined;
+
+  setupTwinPair(name: string, options: AnyObj, direction: AnyObj): AnyObj[] {
+    const dir_out = this.addOutput(name + "_out", "number", options);
+    const dir_in = this.addInput(name + "_in", "number", options);
+    dir_out.dir = direction;
+    dir_in.dir = direction;
+    dir_out.label = "";
+    dir_in.label = "";
+    return [dir_out, dir_in];
+  }
+
+  constructor() {
+    super();
+    this.title = "ROOM";
+    this.properties = { title: this.title, name: "", desc: "", shortName: "" };
+
+    [this.north_out, this.north_in] = this.setupTwinPair(
+      "n",
+      { pos: [70, -LiteGraph.NODE_TITLE_HEIGHT] },
+      LiteGraph.UP,
+    );
+    [this.south_out, this.south_in] = this.setupTwinPair("s", { pos: [70, 85] }, LiteGraph.DOWN);
+    [this.west_out, this.west_in] = this.setupTwinPair("w", { pos: [0, 45] }, LiteGraph.LEFT);
+    [this.east_out, this.east_in] = this.setupTwinPair("e", { pos: [141, 45] }, LiteGraph.RIGHT);
+    [this.northeast_out, this.northeast_in] = this.setupTwinPair(
+      "ne",
+      { pos: [140, -LiteGraph.NODE_TITLE_HEIGHT] },
+      LiteGraph.RIGHT,
+    );
+    [this.northwest_out, this.northwest_in] = this.setupTwinPair(
+      "nw",
+      { pos: [0, -LiteGraph.NODE_TITLE_HEIGHT] },
+      LiteGraph.LEFT,
+    );
+    [this.southeast_out, this.southeast_in] = this.setupTwinPair("se", { pos: [140, 85] }, LiteGraph.RIGHT);
+    [this.southwest_out, this.southwest_in] = this.setupTwinPair("sw", { pos: [0, 85] }, LiteGraph.LEFT);
+
+    this.size[0] = 160;
+    this.size[1] = 85;
+    this.flags = { horizontal: false, collapsed: config.collapsed } as AnyObj;
+    (this as AnyObj).resizable = false;
+    (this as AnyObj).serialize_widgets = true;
+    (this as AnyObj).removable = false;
+    (this as AnyObj).title_mode = LiteGraph.TRANSPARENT_TITLE;
+  }
+
+  getTitle = () => {
+    const title =
+      this.title.length > MAX_TITLE_LENGTH ? this.title.substr(0, MAX_TITLE_LENGTH - 3) + "..." : this.title;
+    return title;
+  };
+
+  onDrawForeground = (ctx: AnyObj) => {
+    if (this.flags.collapsed) return;
+
+    ctx.save();
+    ctx.font = `12px ${theme.fontFamily}`;
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = theme.foreground;
+
+    const label: string = this.properties?.shortName || this.properties?.name || this.title;
+    const splittedWord = splitIntoListByNthCharacterFunc(label, MAX_LENGTH);
+
+    let yPos = 20;
+    for (const word of splittedWord) {
+      ctx.fillText(word, 5, (yPos += 20));
     }
-  });
 
-  // If the webview is still laying out, Cytoscape can initialize with a 0-sized container.
-  // Force a resize + render on the next frame to avoid "blobs" until first interaction.
-  requestAnimationFrame(() => {
-    resizeGraph();
-    (cy as AnyObj)?.forceRender?.();
-  });
+    if (this.properties?.isDoor) {
+      ctx.fillStyle = theme.warning;
+      ctx.font = `10px ${theme.fontFamily}`;
+      ctx.fillText("DOOR", 5, 14);
+    }
+    ctx.restore();
+
+    return false;
+  };
+
+  onConnectionsChange(directionType: AnyObj, slot: AnyObj, connected: boolean, linkInfo: AnyObj, inputInfo: AnyObj) {
+    if (connected && !isPopulatingMap) {
+      const target_node = graph.getNodeById(linkInfo.target_id);
+      const from = this.properties?.name;
+      const to = target_node?.properties?.name;
+      const directionName = inputInfo.name;
+      messenger.postCommand("changeport", { from, to, directionName });
+    }
+  }
+
+  onExecute() {
+    this.size[1] = 85;
+
+    if (this.properties.title !== this.title) {
+      this.properties.title = this.title;
+    }
+    this.north_out.pos[0] = this.size[0] >> 1;
+    this.north_out.pos[1] = -LiteGraph.NODE_TITLE_HEIGHT;
+
+    this.northeast_out.pos[0] = this.size[0];
+    this.northeast_out.pos[1] = -LiteGraph.NODE_TITLE_HEIGHT;
+
+    this.northwest_out.pos[0] = 0;
+    this.northwest_out.pos[1] = -LiteGraph.NODE_TITLE_HEIGHT;
+
+    this.south_out.pos[0] = this.size[0] >> 1;
+    this.south_out.pos[1] = this.size[1];
+
+    this.southeast_out.pos[0] = this.size[0];
+    this.southeast_out.pos[1] = this.size[1];
+
+    this.southwest_out.pos[0] = 0;
+    this.southwest_out.pos[1] = this.size[1];
+
+    this.east_out.pos[0] = this.size[0];
+    this.east_out.pos[1] = this.size[1] >> 1;
+
+    this.west_out.pos[0] = 0;
+    this.west_out.pos[1] = this.size[1] >> 1;
+  }
+
+  onRemoved() {
+    // `graph.clear()` during refresh removes every node and calls `onRemoved()`.
+    // Only treat removal as user intent when we're not populating the map.
+    if (!isPopulatingMap) {
+      const name = this.properties?.name ?? this.title;
+      if (name) {
+        messenger.postCommand("removeroom", name);
+      }
+    }
+  }
 }
 
-function applyThemeToGraph() {
+class DoorNode extends RoomNode {
+  static title_text_color: string;
+}
+
+function applyThemeToLiteGraph() {
   theme = readTheme();
-  ensureCy();
-  if (!cy) return;
-  cy.style().fromJson(buildCyStyles(theme)).update();
-  (cy as AnyObj)?.forceRender?.();
+
+  // Canvas defaults (used when a node type doesn't override it)
+  mapCanvas.node_title_color = theme.foreground;
+
+  RoomNode.title_mode = LiteGraph.NORMAL_TITLE;
+  RoomNode.title_color = theme.widgetBg;
+  RoomNode.title_text_color = theme.link;
+
+  DoorNode.title_mode = LiteGraph.NORMAL_TITLE;
+  DoorNode.title_color = theme.widgetBg;
+  DoorNode.title_text_color = theme.warning;
 }
 
-function isDoor(obj: AnyObj) {
-  const detail: unknown = obj?.detail;
-  if (typeof detail !== "string") return false;
-  return /Door|Passage|Stairway/.test(detail);
-}
+applyThemeToLiteGraph();
 
-function removeOptions(selectElement: HTMLSelectElement) {
-  const L = selectElement.options.length - 1;
-  for (let i = L; i >= 0; i--) {
-    selectElement.remove(i);
-  }
-}
+LiteGraph.registerNodeType("basic/room", RoomNode);
+LiteGraph.registerNodeType("basic/door", DoorNode);
+LiteGraph.registerNodeType("basic/npc", NPCNode);
 
-function clearRoomSelector() {
-  try {
-    if (!dom.roomSelector) return;
-    removeOptions(dom.roomSelector);
-  } catch (err) {
-    messenger.postCommand("log", "error during roomSelector clear: " + err);
-  }
-}
-
-type RelationDir =
-  | "north"
-  | "northeast"
-  | "east"
-  | "southeast"
-  | "south"
-  | "southwest"
-  | "west"
-  | "northwest"
-  | "up"
-  | "down"
-  | "in"
-  | "out";
-
-const relationDirs: RelationDir[] = [
-  "north",
-  "northeast",
-  "east",
-  "southeast",
-  "south",
-  "southwest",
-  "west",
-  "northwest",
-  "up",
-  "down",
-  "in",
-  "out",
-];
-
-function computePresetPositions(objects: AnyObj[]) {
-  // Only consider objects that were actually placed by the server's BFS crawl.
-  const mapped = objects.filter((o) => o?.isMapped === true);
-
-  let minX = Infinity;
-  let minY = Infinity;
-  let maxX = -Infinity;
-  let maxY = -Infinity;
-
-  let anyFinite = false;
-  for (const o of mapped) {
-    const x = Number(o?.x ?? NaN);
-    const y = Number(o?.y ?? NaN);
-    if (!isFinite(x) || !isFinite(y)) continue;
-    anyFinite = true;
-    minX = Math.min(minX, x);
-    minY = Math.min(minY, y);
-    maxX = Math.max(maxX, x);
-    maxY = Math.max(maxY, y);
-  }
-
-  if (!anyFinite) {
-    return { ok: false as const, positions: new Map<string, { x: number; y: number }>() };
-  }
-
-  // Trust server-assigned grid coordinates unconditionally.
-  const SPACING = 150;
-  const LEVEL_SPACING = 300;
-  const positions = new Map<string, { x: number; y: number }>();
-  for (const o of mapped) {
-    const name: unknown = o?.name;
-    if (typeof name !== "string" || !name) continue;
-    const x = Number(o?.x ?? 0);
-    const y = Number(o?.y ?? 0);
-    const z = Number(o?.z ?? 0);
-    if (!isFinite(x) || !isFinite(y)) continue;
-    const zVal = isFinite(z) ? z : 0;
-    positions.set(name, {
-      x: x * SPACING,
-      y: y * SPACING + zVal * LEVEL_SPACING,
-    });
-  }
-
-  return { ok: true as const, positions };
-}
-
-function buildGraph(objects: AnyObj[]) {
-  ensureCy();
-  if (!cy) return;
-
-  const elements: ElementDefinition[] = [];
-
-  const { ok: usePreset, positions } = computePresetPositions(objects);
-
-  for (const o of objects) {
-    const name: unknown = o?.name;
-    if (typeof name !== "string" || !name) continue;
-
-    const pos = positions.get(name);
-    elements.push({
-      group: "nodes",
-      data: { id: name, name, label: name, isDoor: isDoor(o) },
-      selectable: true,
-      grabbable: true,
-      ...(usePreset && pos ? { position: pos } : {}),
-    });
-  }
-
-  // Filter out nodes where either the source or target is missing
-  const nodeIds = new Set(elements.map((e) => e.data.id));
-  const seen = new Set<string>();
-  for (const o of objects) {
-    const fromName: unknown = o?.name;
-    if (typeof fromName !== "string" || !fromName) continue;
-
-    for (const dir of relationDirs) {
-      const toName: unknown = o?.[dir];
-      if (typeof toName !== "string" || !toName) continue;
-
-      const a = fromName;
-      const b = toName;
-
-      if (!nodeIds.has(a) || !nodeIds.has(b)) {
-        console.warn(`Skipping edge from ${a} to ${b} (dir: ${dir}) — missing node`);
-        continue;
-      } else {
-        console.info(`Adding edge from ${a} to ${b} (dir: ${dir})`);
-      }
-
-      const key = a < b ? `${a}→${b}` : `${b}→${a}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-
-      elements.push({
-        group: "edges",
-        data: { id: `edge:${key}`, source: a, target: b },
-      });
-    }
-  }
-
-  // Hide nodes that have no edges
-  const connectedNodeIds = new Set<string>();
-  for (const el of elements) {
-    if (el.group === "edges") {
-      connectedNodeIds.add(el.data.source as string);
-      connectedNodeIds.add(el.data.target as string);
-    }
-  }
-  const visibleElements = elements.filter(
-    (el) => el.group === "edges" || connectedNodeIds.has(el.data.id as string)
-  );
-
-  cy.batch(() => {
-    cy?.elements().remove();
-    cy?.add(visibleElements);
-  });
-
-  cy?.style().update();
-
-  // Identify nodes with and without grid positions.
-  const positionedNodes = cy.nodes().filter((n) => positions.has(n.id()));
-  const unpositionedNodes = cy.nodes().filter((n) => !positions.has(n.id()));
-
-  if (usePreset && positionedNodes.length > 0) {
-    // Nodes already have positions set from the element definitions.
-    // Run preset layout just to finalize.
-    positionedNodes.layout({ name: "preset", fit: false, padding: 30, animate: false }).run();
-  } else if (!usePreset) {
-    // No grid data — fall back to cose for connected nodes.
-    const connectedIds = new Set<string>();
-    for (const el of elements) {
-      if (el.group === "edges") {
-        connectedIds.add(el.data.source as string);
-        connectedIds.add(el.data.target as string);
-      }
-    }
-    const connectedNodes = cy.nodes().filter((n) => connectedIds.has(n.id()));
-    if (connectedNodes.length > 0) {
-      const subgraph = connectedNodes.union(connectedNodes.connectedEdges());
-      subgraph.layout({
-        name: "cose",
-        fit: false,
-        padding: 30,
-        animate: false,
-        randomize: true,
-        nodeRepulsion: () => 8000,
-        idealEdgeLength: () => 120,
-        edgeElasticity: () => 100,
-        gravity: 0.25,
-        numIter: 1000,
-      } as AnyObj).run();
-    }
-  }
-
-  // Place unpositioned nodes in a grid below the positioned ones.
-  if (unpositionedNodes.length > 0) {
-    const positioned = usePreset ? positionedNodes : cy.nodes().filter((n) => !unpositionedNodes.contains(n));
-    const bb = positioned.length > 0
-      ? positioned.boundingBox({})
-      : { x1: 0, y1: 0, x2: 0, y2: 0 };
-    const startY = (bb as AnyObj).y2 + 150;
-    const startX = (bb as AnyObj).x1;
-    const cols = Math.max(1, Math.ceil(Math.sqrt(unpositionedNodes.length)));
-    const spacing = 90;
-    unpositionedNodes.forEach((node, i) => {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      node.position({ x: startX + col * spacing, y: startY + row * spacing });
-    });
-  }
-
-  cy.fit(undefined, 30);
-  (cy as AnyObj)?.forceRender?.();
-
-  requestAnimationFrame(() => {
-    cy?.fit(undefined, 30);
-    (cy as AnyObj)?.forceRender?.();
-  });
-}
-
-function resizeGraph() {
-  if (!cy) return;
-  cy.resize();
-  (cy as AnyObj)?.forceRender?.();
-}
-
-function updateRoomSelector(objects: AnyObj[]) {
-  clearRoomSelector();
-  if (!dom.roomSelector) return;
-
-  const sortedNames: string[] = objects
-    .filter((x: AnyObj) => !isDoor(x))
-    .map((x: AnyObj) => x.name)
-    .filter((x: AnyObj) => typeof x === "string")
-    .sort((a: string, b: string) => a.localeCompare(b));
-
-  for (const name of sortedNames) {
-    const optionNode = document.createElement("option");
-    optionNode.value = name ?? "err";
-    optionNode.innerHTML = name ?? "err";
-    if (currentStartRoom === name) {
-      optionNode.selected = true;
-    }
-    dom.roomSelector.appendChild(optionNode);
-  }
-}
-
-function refresh(payload: unknown) {
-  try {
-    applyThemeToGraph();
-
-    const p = payload as AnyObj;
-    if (p?.command !== "tads3.addNode") return;
-    const objects: AnyObj[] | undefined = p?.objects;
-    if (!Array.isArray(objects)) return;
-
-    // Keep existing selector UX intact.
-    updateRoomSelector(objects);
-    buildGraph(objects);
-  } catch (error) {
-    console.error(error);
-    messenger.postCommand("log", `Error during addnode:  ${error}`);
-  }
-}
+let currentStartRoom: string | undefined;
 
 bindDomEvents(dom, {
   onRefreshClick: () => messenger.postCommand("refresh", undefined),
-  onResetClick: () => {
-    messenger.postCommand("reset", undefined);
-    cy?.fit(undefined, 30);
-  },
+  onResetClick: () => messenger.postCommand("reset", undefined),
   onRoomChange: (value) => {
     currentStartRoom = value;
     messenger.postCommand("changestartroom", value);
@@ -497,11 +393,366 @@ bindDomEvents(dom, {
   },
 });
 
-ensureCy();
-applyThemeToGraph();
-window.addEventListener("resize", () => resizeGraph());
+function handleConversationNodes(payload: AnyObj) {
+  if (payload.command === "tads3.addNode" && payload.objects !== undefined) {
+    let nextX = 0;
+    let nextY = 0;
+
+    for (let i = 0; i < payload.objects.length; i++) {
+      const npc = payload.objects[i];
+      createConversationNode(npc);
+      nextX = npc.x + 1;
+      nextY = npc.y + 1;
+      for (let j = 0; j < npc.children.length; j++) {
+        const childNode = npc.children[j];
+        childNode.y = nextY;
+        childNode.x = nextX++;
+        createConversationNode(childNode);
+      }
+    }
+  }
+}
+
+function refresh(payload: unknown) {
+  isPopulatingMap = true;
+  try {
+    applyThemeToLiteGraph();
+    graph.clear();
+    if (selectedEditor === "1") {
+      handleConversationNodes(payload);
+    } else {
+      handleRoomNodes(payload);
+    }
+  } catch (error) {
+    console.error(error);
+    messenger.postCommand("log", `Error during addnode:  ${error}`);
+  } finally {
+    isPopulatingMap = false;
+  }
+}
+
+const rooms = new Set<string>();
+
+function setupDirection(currentRoomNode: AnyObj, objectDir: AnyObj, port1: AnyObj, port2: AnyObj) {
+  if (objectDir) {
+    const connectedNode = (graph as AnyObj)._nodes.find((x: AnyObj) => x.title === objectDir);
+    if (connectedNode) {
+      currentRoomNode.connect(port1, connectedNode, port2);
+    }
+  }
+}
+
+function removeOptions(selectElement: HTMLSelectElement) {
+  const L = selectElement.options.length - 1;
+  for (let i = L; i >= 0; i--) {
+    selectElement.remove(i);
+  }
+}
+
+function clearRoomSelector() {
+  try {
+    if (!dom.roomSelector) return;
+
+    removeOptions(dom.roomSelector);
+    messenger.postCommand("log", `Clearing old values in roomSelector: ${dom.roomSelector.options.length} `);
+  } catch (err) {
+    messenger.postCommand("log", "error during roomSelector clear: " + err);
+  }
+}
+
+function isDoor(obj: AnyObj) {
+  const detail: unknown = obj?.detail;
+  if (typeof detail !== "string") return false;
+  return /Door|Passage|Stairway/.test(detail);
+}
+
+function handleRoomNodes(payload: AnyObj) {
+  if (dom.levelLabelRef) {
+    dom.levelLabelRef.innerText = String(currentLevel);
+  }
+
+  switch (payload.command) {
+    case "tads3.addNode":
+      if (payload.objects !== undefined) {
+        clearRoomSelector();
+
+        const sortedNames: string[] = payload.objects
+          .filter((x: AnyObj) => !isDoor(x))
+          .map((x: AnyObj) => x.name)
+          .sort((a: string, b: string) => a.localeCompare(b));
+
+        for (const name of sortedNames) {
+          try {
+            if (!dom.roomSelector) break;
+
+            const optionNode = document.createElement("option");
+            optionNode.value = name ?? "err";
+            optionNode.innerHTML = name ?? "err";
+            if (currentStartRoom === name) {
+              optionNode.selected = true;
+            }
+            dom.roomSelector.appendChild(optionNode);
+          } catch (err) {
+            messenger.postCommand("log", `Error during addnode:  ${err}`);
+          }
+        }
+
+        const handleLater: AnyObj[] = [];
+        let maximumY = 0;
+        for (let i = 0; i < payload.objects.length; i++) {
+          const currentObject = payload.objects[i];
+          lowestZLevel = Math.min(lowestZLevel, currentObject.z);
+          highestZLevel = Math.max(highestZLevel, currentObject.z);
+
+          if (currentObject.z !== currentLevel) {
+            handleLater.push(currentObject);
+            continue;
+          }
+          if (currentObject.isMapped || currentObject.isNew) {
+            const node = createNodeFromRoomObject(payload.objects[i]);
+            maximumY = node.pos[1] > maximumY ? node.pos[1] : maximumY;
+          } else {
+            handleLater.push(currentObject);
+          }
+        }
+
+        const yInc = 190;
+        maximumY += yInc * 2;
+        let xcount = 0;
+        const COLS = 10;
+
+        const xInc = 150;
+
+        if (config.showUnmappedRooms && handleLater.length > 0) {
+          const group = new LGraphGroup();
+
+          const totalRows = Math.ceil(handleLater.length / COLS);
+          const totalLength = xInc * Math.min(handleLater.length, COLS);
+
+          const yPadding = 80;
+          group.configure({
+            title: "Unmapped rooms",
+            bounding: [0, maximumY - yPadding, totalLength, totalRows * yInc],
+            color: theme.widgetBorder,
+            font: theme.fontFamily,
+          } as AnyObj);
+          (graph as AnyObj).add(group);
+
+          let x = 0;
+          for (let i = 0; i < handleLater.length; i++) {
+            if (xcount === COLS) {
+              maximumY += yInc;
+              xcount = 0;
+              x = 0;
+            }
+            const currentObject = handleLater[i];
+            currentObject.hasAbsolutePosition = true;
+            currentObject.x = x;
+            currentObject.y = maximumY;
+
+            createNodeFromRoomObject(currentObject);
+
+            x += xInc;
+            xcount++;
+          }
+        }
+      }
+      break;
+  }
+
+  if (payload.objects) {
+    for (let i = 0; i < payload.objects.length; i++) {
+      const o = payload.objects[i];
+      const currentRoomNode = (graph as AnyObj)._nodes.find((x: AnyObj) => x.title === o.name);
+      if (currentRoomNode) {
+        setupDirection(currentRoomNode, o.north, "n_out", "s_in");
+        setupDirection(currentRoomNode, o.south, "s_out", "n_in");
+        setupDirection(currentRoomNode, o.west, "w_out", "e_in");
+        setupDirection(currentRoomNode, o.east, "e_out", "w_in");
+        setupDirection(currentRoomNode, o.northwest, "nw_out", "se_in");
+        setupDirection(currentRoomNode, o.southeast, "se_out", "nw_in");
+        setupDirection(currentRoomNode, o.northeast, "ne_out", "sw_in");
+        setupDirection(currentRoomNode, o.southwest, "sw_out", "ne_in");
+      }
+    }
+  }
+}
+
+function createConversationNode(convObject: AnyObj) {
+  const node = LiteGraph.createNode("basic/npc");
+  if (convObject.name !== undefined) {
+    node.properties.varname = convObject.name ?? "unnamed node";
+    node.title = convObject.name ?? "unnamed node";
+  }
+
+  const scaleFactorX = 170;
+  const scaleFactorY = 75;
+  let x = 0;
+  let y = 0;
+  const offsetX = 50;
+  const offsetY = 50;
+
+  if (convObject.x !== undefined) {
+    x = convObject.x * scaleFactorX + offsetX;
+  }
+  if (convObject.y !== undefined) {
+    y = convObject.y * scaleFactorY + offsetY;
+  }
+  node.pos = [x, y];
+
+  node.onMouseDown = () => messenger.postCommand("select", node.title);
+
+  graph.add(node);
+}
+
+function createNodeFromRoomObject(roomObject: AnyObj) {
+  const isDoorNode = isDoor(roomObject);
+  const node = LiteGraph.createNode(isDoorNode ? "basic/door" : "basic/room");
+
+  let x = 0;
+  let y = 0;
+
+  if (roomObject.hasAbsolutePosition) {
+    x = roomObject.x;
+    y = roomObject.y;
+  } else {
+    const scaleFactorX = 175;
+    const scaleFactorY = config.collapsed ? 75 : 175;
+    const offsetX = 50;
+    const offsetY = 50;
+
+    if (roomObject.x !== undefined) {
+      x = roomObject.x * scaleFactorX + offsetX;
+    }
+    if (roomObject.y !== undefined) {
+      y = roomObject.y * scaleFactorY + offsetY;
+    }
+  }
+  node.pos = [x, y];
+
+  if (roomObject.name !== undefined) {
+    node.title = roomObject.name;
+    node.properties.name = roomObject.name;
+  }
+
+  node.properties.title = node.title;
+  node.properties.isDoor = isDoorNode;
+  if (roomObject["shortName"]) {
+    node.properties.shortName = roomObject["shortName"].replace("\\'", "'");
+  }
+
+  applyNodeTheme(node, { isDoor: isDoorNode });
+
+  graph.add(node);
+  applyCallbacksOnRoomNode(node);
+  return node;
+}
+
+function applyCallbacksOnRoomNode(node: AnyObj) {
+  node.onMouseDown = () => {
+    messenger.postCommand("select", node.properties.name ?? node.title);
+  };
+
+  node.onPropertyChanged = function () {
+    node.title = node.properties.name;
+    messenger.postCommand("change", `Property change for object: ${node.properties.name}`);
+  };
+
+  node.clonable = false;
+
+  node.getMenuOptions = () => {
+    return [
+      {
+        content: "locate",
+        has_submenu: false,
+        callback: () => messenger.postCommand("select", node.properties.name ?? node.title),
+      },
+    ];
+  };
+}
+
+const createRoomNode = function (node: AnyObj) {
+  const room = {
+    name: node.title,
+    pos: node.pos,
+    directions: {},
+  };
+  return room;
+};
+
+function doAddRoom(name: string, firstEvent: AnyObj) {
+  const trimmed = (name ?? "").trim();
+  if (!trimmed) return;
+
+  const node = LiteGraph.createNode("basic/room");
+  node.pos = mapCanvas.convertEventToCanvasOffset(firstEvent);
+
+  applyCallbacksOnRoomNode(node);
+  node.properties.name = trimmed;
+  node.title = trimmed;
+  applyNodeTheme(node, { isDoor: false });
+
+  graph.add(node);
+  messenger.postCommand("addroom", createRoomNode(node));
+  messenger.postCommand("select", node.title);
+}
+
+const createRoomGUI = (_value: AnyObj, _event: AnyObj, _mouseEvent: AnyObj, contextMenu: AnyObj) => {
+  try {
+    const first_event = contextMenu?.getFirstEvent?.() ?? _mouseEvent ?? _event;
+
+    try {
+      mapCanvas.prompt(
+        "Room name:",
+        "",
+        (name: string) => doAddRoom(name, first_event),
+        first_event,
+      );
+    } catch (err) {
+      // Fallback: if LiteGraph prompt cannot open (e.g. active_canvas issues),
+      // use a native prompt so adding a room never hard-fails.
+      const name = window.prompt("Room name:", "");
+      if (name != null) {
+        doAddRoom(name, first_event);
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    messenger.postCommand("log", `Error during Add Room: ${err}`);
+  }
+};
+
+mapCanvas.getMenuOptions = () => {
+  return [
+    {
+      content: "Add Room",
+      has_submenu: false,
+      callback: createRoomGUI,
+    },
+  ];
+};
+
+graph.start();
+
+// Sync canvas buffer dimensions to its CSS rendered size.
+// The webview HTML sets fixed width/height attributes (1024×1024) on the <canvas>,
+// but CSS stretches it to fill the panel. LiteGraph uses the attribute size for all
+// coordinate math (mouse→canvas, node hit-testing), so a mismatch causes a click
+// offset equal to (cssSize - 1024) and makes nodes appear stretched.
+function resizeMapCanvas() {
+  const canvas = (mapCanvas as AnyObj).canvas as HTMLCanvasElement;
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  if (w > 0 && h > 0 && (canvas.width !== w || canvas.height !== h)) {
+    canvas.width = w;
+    canvas.height = h;
+  }
+}
+
+requestAnimationFrame(resizeMapCanvas);
+window.addEventListener("resize", resizeMapCanvas);
 if (typeof ResizeObserver !== "undefined") {
-  new ResizeObserver(() => resizeGraph()).observe(container);
+  new ResizeObserver(resizeMapCanvas).observe((mapCanvas as AnyObj).canvas);
 }
 
 export {};

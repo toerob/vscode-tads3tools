@@ -199,6 +199,8 @@ export async function preprocessAndParseTads3Files(
   const configuration = await connection.workspace.getConfiguration("tads3");
   const maxNumberOfParseWorkerThreads = configuration["maxNumberOfParseWorkerThreads"];
   const parseOnlyTheWorkspaceFiles = configuration["parseOnlyTheWorkspaceFiles"];
+  const useExperimentalParser = configuration["useExperimentalParser"] !== false;
+  const workerPath = useExperimentalParser ? "./workerV2" : "./worker";
 
   if (parseOnlyTheWorkspaceFiles) {
     allFilePaths = allFilePaths.filter((x) => x.startsWith(baseDir));
@@ -226,18 +228,20 @@ export async function preprocessAndParseTads3Files(
     const startTime = Date.now();
     connection.console.debug(`Spawning worker to parse a single file: ${filePath}`);
     await connection.sendNotification("symbolparsing/processing", [filePath, 0, totalFiles, 1]);
-    const worker = await spawn(new Worker("./worker"));
+    const worker = await spawn(new Worker(workerPath));
     const text = serverState.preprocessedFilesCacheMap.get(filePath) ?? "";
     const jobResult = await worker(filePath, text);
     connection.console.debug(`Worker finished with result`);
     const {
       symbols,
       keywords,
+      propertyValues,
+      templateItems,
+      mapData,
       additionalProperties,
       inheritanceMap,
       assignmentStatements,
       expressionSymbols,
-      symbolParameters,
       parseInfo,
     } = jobResult;
 
@@ -248,9 +252,11 @@ export async function preprocessAndParseTads3Files(
     symbolManager.keywords.set(filePath, keywords ?? []);
     symbolManager.assignmentStatements, expressionSymbols.set(filePath, assignmentStatements, expressionSymbols ?? []);
     symbolManager.expressionSymbols.set(filePath, expressionSymbols);
-    symbolManager.symbolParameters.set(filePath, symbolParameters ?? []);
+    if (propertyValues) symbolManager.propertyValues.set(filePath, propertyValues);
+    if (templateItems) symbolManager.templateItems.set(filePath, templateItems);
 
     inheritanceMap.forEach((value: string, key: string) => symbolManager.inheritanceMap.set(key, value));
+    mapData.forEach((value: any, key: string) => symbolManager.mapData.set(key, value));
 
     clearCompletionCache();
     symbolManager.additionalProperties.set(filePath, additionalProperties);
@@ -272,7 +278,7 @@ export async function preprocessAndParseTads3Files(
     const poolSize = allFilePaths.length >= maxNumberOfParseWorkerThreads ? maxNumberOfParseWorkerThreads : 1;
     connection.console.debug(`Setting worker thread poolsize to: ${poolSize}`); // Default 6 threads
 
-    const workerPool = Pool(() => spawn(new Worker("./worker")), poolSize);
+    const workerPool = Pool(() => spawn(new Worker(workerPath)), poolSize);
 
     const libraryFilePaths = filterForStandardLibraryFiles([...serverState.preprocessedFilesCacheMap.keys()]);
 
@@ -345,11 +351,13 @@ export async function preprocessAndParseTads3Files(
               const {
                 symbols,
                 keywords,
+                propertyValues,
+                templateItems,
+                mapData,
                 additionalProperties,
                 inheritanceMap,
                 assignmentStatements,
                 expressionSymbols,
-                symbolParameters,
                 parseInfo,
               } = await Promise.race([parseJob(filePath, text), timeoutPromise]);
 
@@ -360,9 +368,11 @@ export async function preprocessAndParseTads3Files(
               symbolManager.keywords.set(filePath, keywords ?? []);
               symbolManager.assignmentStatements.set(filePath, assignmentStatements ?? []);
               symbolManager.expressionSymbols.set(filePath, expressionSymbols ?? []);
-              symbolManager.symbolParameters.set(filePath, symbolParameters ?? []);
+              if (propertyValues) symbolManager.propertyValues.set(filePath, propertyValues);
+              if (templateItems) symbolManager.templateItems.set(filePath, templateItems);
 
               inheritanceMap.forEach((value: string, key: string) => symbolManager.inheritanceMap.set(key, value));
+              mapData.forEach((value: any, key: string) => symbolManager.mapData.set(key, value));
 
               symbolManager.additionalProperties.set(filePath, additionalProperties);
             } catch (err) {

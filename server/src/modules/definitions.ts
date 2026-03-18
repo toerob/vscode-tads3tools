@@ -1,14 +1,21 @@
-import { LocationLink, TextDocuments, Position, TextDocumentIdentifier, DocumentSymbol } from "vscode-languageserver";
+import {
+  LocationLink,
+  TextDocuments,
+  Position,
+  DocumentSymbol,
+  DefinitionParams,
+  Location,
+  Range,
+  SymbolKind,
+} from "vscode-languageserver";
 import { TadsSymbolManager, flattenTreeToArray } from "./symbol-manager";
 import { compareStringReverse, getWordAtPosition } from "./text-utils";
-import { DefinitionParams, Location, Range } from "vscode-languageserver";
 import { URI } from "vscode-uri";
-import { SymbolKind } from "vscode-languageserver";
 import { getDefineMacrosMap } from "../parser/preprocessor";
 import { connection } from "../server";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { extractCurrentLineFromDocument } from "./utils";
-import { serverState } from '../state';
+import { serverState } from "../state";
 
 const onWindowsPlatform = process.platform === "win32";
 
@@ -60,9 +67,7 @@ export async function onDefinition(
   // ------------------------------------------------------------
 
   // Before checking for locals we must decide if we are within an object definition's code block range or not.
-  // Otherwise we won't find inner properties of anyonmous objects contained within a code block range.
-
-
+  // Otherwise we won't find inner properties of anonymous objects contained within a code block range.
   const isWithinCodeBlock = sm.isPositionWithinCodeBlock(fsPath, pos);
 
   if (isWithinCodeBlock) {
@@ -127,36 +132,13 @@ function findMembers(
   fsPath: string,
   document: TextDocument,
 ): Location[] {
-  // TODO: there's might be possible to refine everything here now with the new structure DocumentSymbolWithScope
-  let containingObject = undefined;
-
   // NOTE: To be 100% correct this assignment should be parsed and evaluated instead,
   // using a visitor per assignment while the listener traverses the parse tree.
+  let containingObject = undefined;
 
-  // TODO: duplicate code here, this is done in the beginning too.
   const currentLineStr = extractCurrentLineFromDocument(pos.line, document);
 
-  // ************************************************
-  // TODO: this can probably replace the code below, test it:
-  // ************************************************
-  /*
-  const closestAssignment = sm.getClosestAssignmentDeclaration(
-    fsPath,
-    symbolName,
-    pos
-  );
-  if (closestAssignment?.documentSymbol) {
-    console.log("Replace with THIS:");
-    return [
-      Location.create(
-        windowsSafeUri(fsPath),
-        closestAssignment.documentSymbol?.range
-      ),
-    ];
-  }*/
-
   // TODO: look for parameters within a method in addition to local assignments
-  // Look for local assignments (TODO: fix correct scope)
   const locals = sm.assignmentStatements.get(fsPath)?.filter((x) => x.name === symbolName) ?? [];
 
   if (locals.length > 0) {
@@ -165,7 +147,6 @@ function findMembers(
       const containingMethod = containingObject.children?.find((x) => isPositionWithinRange(pos, x.range));
 
       if (containingMethod) {
-        // TODO: find/make a rangeIntersects method
         // TODO: there can be competing local assignments, but for now take only the first found:
         const closeAssignment = locals.find((x) => isRangeWithin(x.range, containingMethod.range));
 
@@ -187,7 +168,7 @@ function findMembers(
     // Since this is a member call, look within the parent too for the symbol
     const parentName = memberCallMatch[1];
 
-    const isInvocatingMethodCall = memberCallMatch.length >= 2 && memberCallMatch[2] ? true : false;
+    const isInvocatingMethodCall = Boolean(memberCallMatch[2]);
     if (isInvocatingMethodCall) {
       connection.console.debug(
         `Can not yet handle evaluating methods ${parentName}${memberCallMatch[2]} in a method call chain. `,
@@ -196,17 +177,11 @@ function findMembers(
     }
 
     const closestAssignment = sm.getClosestAssignmentDeclaration(fsPath, parentName, pos);
-    if (closestAssignment?.documentSymbol) {
-      if (closestAssignment?.instanceType) {
-        // TODO: fetch the property/method hierarcially correct. Make it reusable
-
-        if (closestAssignment?.instanceType) {
-          const { filePath, symbol } = sm.findSymbol(closestAssignment.instanceType);
-          const definitionWithinSuperClass = symbol?.children?.find((x) => x.name === symbolName);
-          if (filePath && definitionWithinSuperClass) {
-            return [Location.create(windowsSafeUri(filePath), definitionWithinSuperClass.range)];
-          }
-        }
+    if (closestAssignment?.instanceType) {
+      const { filePath, symbol } = sm.findSymbol(closestAssignment.instanceType);
+      const definitionWithinSuperClass = symbol?.children?.find((x) => x.name === symbolName);
+      if (filePath && definitionWithinSuperClass) {
+        return [Location.create(windowsSafeUri(filePath), definitionWithinSuperClass.range)];
       }
     }
 
@@ -219,20 +194,19 @@ function findMembers(
     }
 
     if (owner?.symbol?.kind === SymbolKind.Property) {
-      // TODO: in case we have a indirect reference by a property, we need to try to determine its type here
+      // TODO: in case we have an indirect reference by a property, we need to try to determine its type here
       connection.console.log(
         `${symbolName} is a member of ${owner.symbol.name} which is a property, will try to determine its type`,
       );
-      sm.findSymbol(fsPath);
 
-      // TODO: first check for exzpressionsymbols
-      const expressionSymbols = sm.expressionSymbols.get(owner.filePath)?.get(owner.symbol.name) ?? []; // TODO: store the assign
-
+      /*
+      const expressionSymbols = sm.expressionSymbols.get(owner.filePath)?.get(owner.symbol.name) ?? [];
       const latestExpressionSymbols =
         expressionSymbols
           ?.sort((a, b) => (a.documentSymbol?.range?.start?.line ?? 0) - (b.documentSymbol?.range?.start?.line ?? 0))
           .reverse() ?? [];
       const closestExpressionSymbol = latestExpressionSymbols?.[0];
+      */
       // TODO: handle the rest...
 
       // Then look for other symbols, in order to find anonymous objects accesses as well.
@@ -246,8 +220,7 @@ function findMembers(
         let instanceTypeName;
         if (closestSymbol?.symbol?.detail) {
           // TODO: use the method to find the closest expression instead of this:
-          const test = sm.expressionSymbols.get(closestSymbol.filePath)?.get(closestSymbol.symbol.detail) ?? []; // TODO: store the assign
-          //console.log(test);
+          const test = sm.expressionSymbols.get(closestSymbol.filePath)?.get(closestSymbol.symbol.detail) ?? [];
           instanceTypeName = test[0]?.instanceType;
         } else {
           // Otherwise we check the detail of the symbol
@@ -270,9 +243,7 @@ function findMembers(
           }
         }
       }
-      // NOTE: when storing nameless objects the have the same name in the symbols collection
-
-      //sm.findSymbol(owner.symbol.name);
+      // NOTE: when storing nameless objects they share the same name in the symbols collection
     }
 
     const isObjectOrClass =
@@ -281,8 +252,6 @@ function findMembers(
       connection.console.debug(`Can not handle anything else but objects and classes. `);
       return fetchSymbolGlobally(symbolName, sm);
     }
-
-    //symbolManager.assignmentStatements.get(symbolName);
 
     // Add inheritance chain and check in ascending order where the method first occurs after the clicked instance:
     const superClassNames = sm.getInheritanceChainFor(parentName);
@@ -297,8 +266,9 @@ function findMembers(
         containingObject = potentialParent?.symbol;
         fsPath = potentialParent?.filePath;
 
-        connection.console.debug(`Found definition within a member call chain: 
-          [${containingObject.name}].${symbolName}, going there. `);
+        connection.console.debug(
+          `Found definition within a member call chain: [${containingObject.name}].${symbolName}`,
+        );
         break;
       }
     }
@@ -309,21 +279,13 @@ function findMembers(
   // First try to locate the member's parent
   containingObject ??= sm.findContainingObject(fsPath, pos);
 
-  // TODO: If the containing object is not found in this file, check for static references globally so we can cover cases like:   "LitUnlit.appliesTo(self)"
-  // where LitUnlit is an object defined elsewhere and being referenced from within another objects method
-
-  // symbolManager.findSymbol('appliesTo')
-  // symbolManager.findAllSymbols('appliesTo')
-
   if (containingObject?.detail) {
     // First check the containing object for a method definition
     const memberWithinInstance = containingObject?.children?.find((x: DocumentSymbol) => x.name === symbolName);
 
     // If the line of that method definition is not the same as the clicked position: go there!
     if (memberWithinInstance && pos.line !== memberWithinInstance?.range?.start?.line) {
-      // TODO: this might fail if the file isn't saved and recompiled. Rethink how this can be checked
-
-      return [Location.create(onWindowsPlatform ? URI.file(fsPath)?.path : fsPath, memberWithinInstance.range)];
+      return [Location.create(windowsSafeUri(fsPath), memberWithinInstance.range)];
     }
 
     // Otherwise get the superclass symbol name of the containing object from its detail property
@@ -333,58 +295,40 @@ function findMembers(
       SymbolKind.Object,
     ]);
 
-    // Sort by compilation order
+    // Sort by compilation order; handles modification/replacement ordering.
+    // NOTE: ExtendedDocumentSymbolProperties holds info about isModification / isReplacement
     const compiledFilesList = [...serverState.preprocessedFilesCacheMap.keys()].reverse();
-    let orderedSuperClasses = [];
+    const orderedSuperClasses = [];
     for (const compiledFile of compiledFilesList) {
       const foundEntry = superclasses.find((x) => compareStringReverse(x.filePath, compiledFile));
       if (foundEntry) {
-        // TODO: don't add methodWithinInstance into orderedSuperClasses
         orderedSuperClasses.push(foundEntry);
       }
     }
 
-    // If modification/replacement - sort in compilation ordering
-    // NOTE: ExtendedDocumentSymbolProperties holds info about
-    // isModification / isReplacement
     for (const superClassAndUri of orderedSuperClasses) {
-      // Locate the method within the superclass's children
       const memberWithinSuperClass = superClassAndUri?.symbol?.children?.find((x) => x.name === symbolName);
-
-      // Return the location of the superclass method definition
       if (memberWithinSuperClass) {
-        // Skip this symbol if it turns out to be the one we started via
-        if (superClassAndUri.filePath === fsPath) {
-          //connection.console.debug("Same path we are already in");
-          if (memberWithinSuperClass.range.start.line == pos.line) {
-            connection.console.debug("Same position as starting position, skipping");
-            continue;
-          }
+        if (superClassAndUri.filePath === fsPath && memberWithinSuperClass.range.start.line === pos.line) {
+          connection.console.debug("Same position as starting position, skipping");
+          continue;
         }
-
-        const loc = Location.create(
-          onWindowsPlatform ? URI.file(superClassAndUri.filePath)?.path : superClassAndUri.filePath,
-          memberWithinSuperClass.range,
-        );
-        return [loc];
+        return [Location.create(windowsSafeUri(superClassAndUri.filePath), memberWithinSuperClass.range)];
       }
     }
   }
 
-  // Finally, let's handle the other cases so we can click on properties and such, but it needs to be last so it doesn't interfere
-  // with inherited lookups.
+  // Handle non-member-call cases last so they don't interfere with inherited lookups.
   if (memberCallMatch === null) {
-    // If this wasn't a member call at all, look for regular function calls or property access
     const functionSymbols = sm.findAllSymbols(symbolName, [
       SymbolKind.Function,
       SymbolKind.Property,
       SymbolKind.Method,
     ]);
     if (functionSymbols.length > 0) {
-      const symbols = functionSymbols
+      return functionSymbols
         .filter((x) => !isSameFileAndLine(x, fsPath, pos))
         .map((x) => Location.create(windowsSafeUri(x.filePath), x.symbol.range));
-      return symbols;
     }
   }
 
@@ -484,28 +428,20 @@ function findInherited(sm: TadsSymbolManager, fsPath: string, position: Position
         SymbolKind.Object,
       ]);
 
-      // TODO: Get the inheritance chain, and find the next symbol in line for containingObject
-      // TODO: same as in row 352, make reusable
+      // TODO: Get the inheritance chain and find the next symbol in line for containingObject
       // (Here we just cheat and might get several results)
       for (const containingObjectKind of containingObjectKinds) {
         const inheritedMethods =
           containingObjectKind.symbol?.children?.filter((x) => x.name === enclosingMethod.name) ?? [];
         for (const inheritedMethod of inheritedMethods) {
-          if (inheritedMethod) {
-            // Skip the position we're currently at if it's in the same file
-            // and within the current method's scope
-            if (
-              compareStringReverse(containingObjectKind.filePath, fsPath) &&
-              isPositionWithinRange(position, inheritedMethod.range)
-            ) {
-              continue;
-            }
-
-            const fp = onWindowsPlatform
-              ? URI.file(containingObjectKind.filePath)?.path
-              : containingObjectKind.filePath;
-            locations.push(Location.create(fp, inheritedMethod.range));
+          // Skip the position we're currently at if it's in the same file and within scope
+          if (
+            compareStringReverse(containingObjectKind.filePath, fsPath) &&
+            isPositionWithinRange(position, inheritedMethod.range)
+          ) {
+            continue;
           }
+          locations.push(Location.create(windowsSafeUri(containingObjectKind.filePath), inheritedMethod.range));
         }
       }
       if (locations.length > 0) {
@@ -517,18 +453,12 @@ function findInherited(sm: TadsSymbolManager, fsPath: string, position: Position
       enclosingMethod &&
       (containingObject.kind === SymbolKind.Object || containingObject.kind === SymbolKind.Class)
     ) {
-      const foundSuperTypes = [];
       const superTypeSymbolNames = containingObject.detail?.split(",") ?? [];
       for (const superTypeName of superTypeSymbolNames) {
-        if (superTypeName === "object") {
-          continue;
-        }
-
-        foundSuperTypes.push(sm.findSymbol(superTypeName));
+        if (superTypeName === "object") continue;
         const { filePath, symbol } = sm.findSymbol(superTypeName);
         if (filePath && symbol) {
-          const fileUri = onWindowsPlatform ? URI.file(filePath)?.path : filePath;
-          locations.push(Location.create(fileUri, symbol.range));
+          locations.push(Location.create(windowsSafeUri(filePath), symbol.range));
         }
       }
     }
@@ -588,45 +518,7 @@ function expandSentielDobj(currentLine: string, symbolName: any): any {
   const dobjForRegexp = /[id]objFor[(](.*)[)]/;
   const result = dobjForRegexp.exec(currentLine);
   if (result && result[1] === symbolName) {
-    //const fsPath = URI.parse(textDocument.uri).fsPath;
-    //const prepRows = preprocessedFilesCacheMap.get(fsPath)?.split(/\n/) ?? [];
-    //const prepLine = (prepRows[position.line]) ?? '';
     return `sentinelDobj${symbolName}`;
   }
   return symbolName;
 }
-
-// Uncertain of the need, but keep it
-function sameDocumentPosition(
-  onWindowsPlatform: boolean,
-  textDocument: TextDocumentIdentifier,
-  loc: Location,
-  pos: Position,
-) {
-  const sameUri = onWindowsPlatform
-    ? textDocument.uri.toLowerCase() === loc.uri.toLowerCase()
-    : textDocument.uri === loc.uri;
-  return (
-    sameUri &&
-    loc.range.start.line <= pos.line &&
-    loc.range.end.line >= pos.line &&
-    loc.range.start.character <= pos.character &&
-    loc.range.end.character >= pos.character
-  );
-}
-
-/*
-LEFTOVERS:
-// Left TODO: Quotes holds no definition per se. Unless it is an template inline expression  '<<' .* '>>'
-// in which case we can parse that expression here.
-
-const inlineExpression = interpolatedExpressionRegExp.exec(quote.quoteString);
-if(inlineExpression) {
-  const str = inlineExpression[1];
-  const input = CharStreams.fromString(str);
-  const lexer = new Tads3Lexer(input);
-  const tokenStream = new CommonTokenStream(lexer);
-  const parser = new Tads3Parser(tokenStream);
-  const parseTree = parser.expr();
-  console.log(parseTree.ruleContext);
-  */

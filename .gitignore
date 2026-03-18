@@ -11,6 +11,8 @@ client/coverage
 coverage
 resources/obj/
 server/src/parser/.idea/
+server/src/parser/.antlr
+
 server/tests/t3testgames/fragments/obj/*
 
 .DS_Store
@@ -22,6 +24,9 @@ server/src/parser/.idea
 
 server/tests/t3testgames/game1/obj
 server/tests/t3testgames/game1/*.t3
+server/tests/fixtures/ditch-src.t
+server/tests/parsers/tads3v2/smoketests/ditch-src-fixture.spec.ts
+server/tests/parsers/tads3v2/debug-ditch.spec.ts
 
 **/*.t3
 
@@ -31,3 +36,5 @@ dist
 .vscode-test/
 npm-debug.log
 mock-debug.txt
+server/src/parser/.antlr/
+

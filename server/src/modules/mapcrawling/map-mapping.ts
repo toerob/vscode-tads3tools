@@ -1,10 +1,10 @@
 import { DocumentSymbol, SymbolKind } from "vscode-languageserver";
 import { isUsingAdv3Lite } from "../../parse-workers-manager";
-import { ExtendedDocumentSymbolProperties } from "../../parser/Tads3SymbolListener";
 import { TadsSymbolManager } from "../symbol-manager";
 import { serverState } from "../../state";
 import { DefaultMapObject } from "./DefaultMapObject";
 import { crawlRooms } from "./map-crawling";
+import { MapNodeData } from "./MapNodeData";
 
 enum EditorMode {
   MAP = 0,
@@ -175,16 +175,8 @@ export default class MapObjectManager {
 		return sortedMapObjects;*/
   }
 
-  private findAdditionalProps(symbol: DocumentSymbol): ExtendedDocumentSymbolProperties | undefined {
-    if (symbol) {
-      for (const eachFileKey of this.symbolManager.additionalProperties.keys()) {
-        const symbolAdditionalProps = this.symbolManager.additionalProperties.get(eachFileKey)?.get(symbol);
-        if (symbolAdditionalProps) {
-          return symbolAdditionalProps;
-        }
-      }
-    }
-    return undefined;
+  private findMapData(symbol: DocumentSymbol): MapNodeData | undefined {
+    return this.symbolManager.mapData.get(symbol.name);
   }
 
   craftClassInheritanceArrayFromCommaDelimDetail(commaDelimitedClassList: string) {
@@ -245,7 +237,7 @@ export default class MapObjectManager {
   isRoomOrDoorT3(o: DocumentSymbol) {
     //TODO: minor "hack" until all library files are being processed
     // Should be removed once that is working perfectly
-    const a = this.findAdditionalProps(o);
+    const a = this.findMapData(o);
     try {
       if (a?.isClass) {
         return false;
@@ -285,7 +277,7 @@ export default class MapObjectManager {
   isRoomOrDoorT2(o: DocumentSymbol) {
     //TODO: minor "hack" until all library files are being processed
     // Should be removed once that is working perfectly
-    const a = this.findAdditionalProps(o);
+    const a = this.findMapData(o);
     try {
       if (a?.isClass) {
         return false;
@@ -337,18 +329,16 @@ export default class MapObjectManager {
         }
       }
     }
-    const props = this.findAdditionalProps(symbol);
-    mapObj.parent = props?.parent?.name;
+    const props = this.findMapData(symbol);
+    mapObj.parent = props?.parentName;
     mapObj.shortName = props?.shortName;
     mapObj.arrowConnection = props?.arrowConnection;
     mapObj.otherSide = props?.otherSide;
     mapObj.kind = symbol.kind;
     mapObj.detail = symbol.detail;
 
-    const isAssignment = (obj: DocumentSymbol) => {
-      const isAssignment = this.findAdditionalProps(obj)?.isAssignment;
-      return isAssignment;
-    };
+    // A child property is an assignment if its name appears in the parent's assignedProperties set
+    const isAssignment = (child: DocumentSymbol) => props?.assignedProperties.has(child.name) ?? false;
 
     mapObj.north = symbol.children?.find((x:any) => isAssignment(x) && x.name === "north")?.detail;
     mapObj.south = symbol.children?.find((x:any) => isAssignment(x) && x.name === "south")?.detail;

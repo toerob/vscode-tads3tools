@@ -8,6 +8,10 @@ import { bindDomEvents, getDomRefs, initializeDom } from "./dom";
 import { createMessenger } from "./messaging";
 
 // litegraph is loaded via <script src=".../litegraph.js"> in the webview HTML.
+
+import { LiteGraph, LGraph, LGraphCanvas, LGraphGroup, LGraphNode } from "litegraph.js";
+
+/*
 // We intentionally use it as globals.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const LiteGraph: any;
@@ -17,6 +21,7 @@ declare const LGraph: any;
 declare const LGraphCanvas: any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const LGraphGroup: any;
+*/
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyObj = any;
@@ -81,7 +86,7 @@ let currentLevel = 0;
 mapCanvas.connections_width = 2;
 mapCanvas.render_collapsed_slots = false;
 mapCanvas.render_connections_border = false;
-mapCanvas.align_to_grid = true;
+(mapCanvas as AnyObj).align_to_grid = true;
 
 mapCanvas.onNodeMoved = function (node: AnyObj) {
   messenger.postCommand("updatepos", { name: node.properties.name, pos: node.pos });
@@ -177,21 +182,18 @@ function splitIntoListByWhitespacesAndMaxlengthPerRow(str: string, maxLength: nu
   return rows;
 }
 
-class NPCNode {
-  title = "NPC";
-  properties: AnyObj;
-
+class NPCNode extends LGraphNode {
   constructor() {
+    super();
+    this.title = "NPC";
     this.properties = { title: this.title, name: "", desc: "" };
   }
 }
 
-class RoomNode {
+class RoomNode extends LGraphNode {
   static title_mode: number;
   static title_color: string;
   static title_text_color: string;
-
-  title = "ROOM";
 
   north_out: AnyObj = undefined;
   north_in: AnyObj = undefined;
@@ -217,19 +219,6 @@ class RoomNode {
   southwest_out: AnyObj = undefined;
   southwest_in: AnyObj = undefined;
 
-  properties: AnyObj;
-  size: AnyObj;
-  flags: AnyObj;
-  resizable: AnyObj;
-  serialize_widgets: AnyObj;
-  removable: AnyObj;
-  title_mode: AnyObj;
-  props: AnyObj;
-
-  // litegraph mixins
-  declare addOutput: AnyObj;
-  declare addInput: AnyObj;
-
   setupTwinPair(name: string, options: AnyObj, direction: AnyObj): AnyObj[] {
     const dir_out = this.addOutput(name + "_out", "number", options);
     const dir_in = this.addInput(name + "_in", "number", options);
@@ -241,6 +230,8 @@ class RoomNode {
   }
 
   constructor() {
+    super();
+    this.title = "ROOM";
     this.properties = { title: this.title, name: "", desc: "", shortName: "" };
 
     [this.north_out, this.north_in] = this.setupTwinPair(
@@ -264,17 +255,13 @@ class RoomNode {
     [this.southeast_out, this.southeast_in] = this.setupTwinPair("se", { pos: [140, 85] }, LiteGraph.RIGHT);
     [this.southwest_out, this.southwest_in] = this.setupTwinPair("sw", { pos: [0, 85] }, LiteGraph.LEFT);
 
-    // this.size[0] = 160
+    this.size[0] = 160;
     this.size[1] = 85;
-    this.flags = {
-      horizontal: false,
-      collapsed: config.collapsed,
-    };
-    this.resizable = false;
-    this.serialize_widgets = true;
-
-    this.removable = false;
-    this.title_mode = LiteGraph.TRANSPARENT_TITLE;
+    this.flags = { horizontal: false, collapsed: config.collapsed } as AnyObj;
+    (this as AnyObj).resizable = false;
+    (this as AnyObj).serialize_widgets = true;
+    (this as AnyObj).removable = false;
+    (this as AnyObj).title_mode = LiteGraph.TRANSPARENT_TITLE;
   }
 
   getTitle = () => {
@@ -322,8 +309,8 @@ class RoomNode {
   onExecute() {
     this.size[1] = 85;
 
-    if (this.props.title !== this.title) {
-      this.props.title = this.title;
+    if (this.properties.title !== this.title) {
+      this.properties.title = this.title;
     }
     this.north_out.pos[0] = this.size[0] >> 1;
     this.north_out.pos[1] = -LiteGraph.NODE_TITLE_HEIGHT;
@@ -448,7 +435,7 @@ const rooms = new Set<string>();
 
 function setupDirection(currentRoomNode: AnyObj, objectDir: AnyObj, port1: AnyObj, port2: AnyObj) {
   if (objectDir) {
-    const connectedNode = graph._nodes.find((x: AnyObj) => x.title === objectDir);
+    const connectedNode = (graph as AnyObj)._nodes.find((x: AnyObj) => x.title === objectDir);
     if (connectedNode) {
       currentRoomNode.connect(port1, connectedNode, port2);
     }
@@ -546,8 +533,10 @@ function handleRoomNodes(payload: AnyObj) {
           group.configure({
             title: "Unmapped rooms",
             bounding: [0, maximumY - yPadding, totalLength, totalRows * yInc],
-          });
-          graph.add(group);
+            color: theme.widgetBorder,
+            font: theme.fontFamily,
+          } as AnyObj);
+          (graph as AnyObj).add(group);
 
           let x = 0;
           for (let i = 0; i < handleLater.length; i++) {
@@ -574,7 +563,7 @@ function handleRoomNodes(payload: AnyObj) {
   if (payload.objects) {
     for (let i = 0; i < payload.objects.length; i++) {
       const o = payload.objects[i];
-      const currentRoomNode = graph._nodes.find((x: AnyObj) => x.title === o.name);
+      const currentRoomNode = (graph as AnyObj)._nodes.find((x: AnyObj) => x.title === o.name);
       if (currentRoomNode) {
         setupDirection(currentRoomNode, o.north, "n_out", "s_in");
         setupDirection(currentRoomNode, o.south, "s_out", "n_in");
@@ -661,7 +650,7 @@ function createNodeFromRoomObject(roomObject: AnyObj) {
 
 function applyCallbacksOnRoomNode(node: AnyObj) {
   node.onMouseDown = () => {
-    // vscode.postMessage({ command: 'select', payload: node.title });
+    messenger.postCommand("select", node.properties.name ?? node.title);
   };
 
   node.onPropertyChanged = function () {
@@ -676,15 +665,11 @@ function applyCallbacksOnRoomNode(node: AnyObj) {
       {
         content: "locate",
         has_submenu: false,
-        callback: locateRoom,
+        callback: () => messenger.postCommand("select", node.properties.name ?? node.title),
       },
     ];
   };
 }
-
-const locateRoom = (_value: AnyObj, event: AnyObj) => {
-  messenger.postCommand("select", event.extra.title);
-};
 
 const createRoomNode = function (node: AnyObj) {
   const room = {
@@ -722,7 +707,6 @@ const createRoomGUI = (_value: AnyObj, _event: AnyObj, _mouseEvent: AnyObj, cont
         "",
         (name: string) => doAddRoom(name, first_event),
         first_event,
-        false,
       );
     } catch (err) {
       // Fallback: if LiteGraph prompt cannot open (e.g. active_canvas issues),
@@ -749,5 +733,26 @@ mapCanvas.getMenuOptions = () => {
 };
 
 graph.start();
+
+// Sync canvas buffer dimensions to its CSS rendered size.
+// The webview HTML sets fixed width/height attributes (1024×1024) on the <canvas>,
+// but CSS stretches it to fill the panel. LiteGraph uses the attribute size for all
+// coordinate math (mouse→canvas, node hit-testing), so a mismatch causes a click
+// offset equal to (cssSize - 1024) and makes nodes appear stretched.
+function resizeMapCanvas() {
+  const canvas = (mapCanvas as AnyObj).canvas as HTMLCanvasElement;
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  if (w > 0 && h > 0 && (canvas.width !== w || canvas.height !== h)) {
+    canvas.width = w;
+    canvas.height = h;
+  }
+}
+
+requestAnimationFrame(resizeMapCanvas);
+window.addEventListener("resize", resizeMapCanvas);
+if (typeof ResizeObserver !== "undefined") {
+  new ResizeObserver(resizeMapCanvas).observe((mapCanvas as AnyObj).canvas);
+}
 
 export {};

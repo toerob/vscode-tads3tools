@@ -39,7 +39,6 @@ describe("Definition Provider Test Suite", () => {
 
     sm = new TadsSymbolManager();
 
-    sm.symbolParameters.set(absolutePathToTadsFile, new Map([[symbol.name, parameters]]));
     sm.symbols.set(absolutePathToTadsFile, [symbol]);
   });
 

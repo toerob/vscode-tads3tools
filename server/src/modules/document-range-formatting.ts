@@ -3,6 +3,7 @@ import { TextDocuments, DocumentRangeFormattingParams, Range } from "vscode-lang
 import { TextEdit } from "vscode-languageserver-types";
 import { URI } from "vscode-uri";
 import { formatDocument } from "./document-formatting";
+import { serverState } from "../state";
 
 export function onDocumentRangeFormatting(
   handler: DocumentRangeFormattingParams,
@@ -12,8 +13,11 @@ export function onDocumentRangeFormatting(
   const currentDocument = documents.get(textDocument.uri);
   if (!currentDocument) return [];
 
-  // Format the whole document so that range indentation is consistent with context.
-  const formattedLines = formatDocument(currentDocument.getText());
+  const path = URI.parse(textDocument.uri).fsPath;
+  const preprocessedText = serverState.preprocessedFilesCacheMap.get(path);
+
+  // Format the whole document so that range indentation is consistent with surrounding context.
+  const formattedLines = formatDocument(currentDocument.getText(), preprocessedText);
 
   // Slice to the requested range (whole-line boundaries only).
   const rangeLines = formattedLines.slice(range.start.line, range.end.line + 1);

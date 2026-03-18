@@ -9,10 +9,9 @@ import {
   SymbolKind,
   InsertTextFormat,
 } from "vscode-languageserver";
-import { flattenTreeToArray, TadsSymbolManager } from "./symbol-manager";
+import { flattenTreeToArray, TadsSymbolManager, symbolManager } from "./symbol-manager";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { connection } from "../server";
-import { symbolManager } from "./symbol-manager";
 
 import fuzzysort = require("fuzzysort");
 import { getWordAtPosition } from "./text-utils";
@@ -33,7 +32,7 @@ import {
   NEW_ASSIGNMENT_REGEXP,
   ID_U,
 } from "./constants";
-import { createTemplateSnippetStrings } from "./text-utils";
+import { createSnippetsFromTemplateItems } from "./text-utils";
 import { ShallowParser } from "./ShallowParser";
 
 let cachedKeyWords: Map<string, CompletionItem> | undefined = undefined;
@@ -76,8 +75,6 @@ export async function onCompletion(
   if (word === undefined) {
     word = getWordAtPosition(document, Position.create(handler.position.line, handler.position.character - 1));
   }
-  //const currentTotalLineStr = getCurrentLine(document, handler.position.line);
-
   const currentLineRange = Range.create(handler.position.line, 0, handler.position.line, handler.position.character);
 
   const currentLineStr = document?.getText(currentLineRange) ?? "";
@@ -110,7 +107,6 @@ export async function onCompletion(
 
         // Add all inherited properties for the object by checking its heritage and lookup all symbols
         const heritage = symbolManager.mapHeritage(symbol);
-        //connection.console.debug([...heritage].join(","));
         for (const ancestorClass of [...heritage.values()][0] ?? []) {
           const result = symbolManager.findSymbol(ancestorClass);
           if (result.symbol) {
@@ -136,15 +132,11 @@ export async function onCompletion(
         }
 
         const results = fuzzysort.go(word, [...suggestions.values()], { key: "label" });
-        //connection.console.debug(results.map((x) => x.obj.label).join(","));
         return results.map((x: any) => x.obj);
       }
     }
 
     // An object declaration where the word is a class, show all class alternatives:
-    //const objRegexp1 = new RegExp(`${WS}(class)?(${ID})${WS}[:]${WS}${word}`);
-    //const result1 = objRegexp1.exec(currentLineStr);
-
     const objDeclarationMatcher = new RegExp(`${WS}(class)?(${ID_U})${WS}[:]${WS}(${ID}${WS},${WS})*${word}`, "u");
     const objDeclarationMatcherResult = objDeclarationMatcher.exec(currentLineStr);
     if (objDeclarationMatcherResult) {
@@ -174,51 +166,30 @@ export async function onCompletion(
       const result = shallowParser.structurize(textTillCursor);
       const lineInfo = result.get(handler.position.line + 1);
       let isWithinObject = (lineInfo?.stateBefore?.objectDepth ?? 0) > 0;
-
       const results = fuzzysort.go(word, [...suggestions.values()], { key: "label" });
-      results.forEach((x) => {
-        if (isWithinObject) {
-          if (
-            /*lastPreviousSign === ';' &&*/
-            currentLineStr.match(/^[a-zA-Z][a-zA-Z0-9_]*\s*[:]\s*R[a-zA-Z][a-zA-Z0-9_]+/)
-          ) {
-            isWithinObject = false;
-          }
-        }
 
+      results.forEach((x) => {
         const { templates, inherited } = symbolManager.getTemplatesFor(x.obj.label, true, false);
         for (const template of templates) {
-          // TODO: cache the results
-          if (template.detail) {
-            // Making sure we never suggest { } when the class is of the following 
-            // types. This is just temporary until the ShallowParser is improved to 
-            // detect if is inside an object properly in all situations.
-
-            const typeIsAlwaysOutside = ["Room", "Actor", "Person", "Thing"]
-              .find((type) => template?.detail?.includes(type)) ? true : false;
-
-            isWithinObject = typeIsAlwaysOutside ? false : isWithinObject;
-
-            const inheritedTemplates: any[] = inherited?.map((x) => x.detail) ?? [];
-            const snippets = createTemplateSnippetStrings(template.detail, inheritedTemplates);
+          const items = symbolManager.getTemplateItems(template.name);
+          if (items) {
+            const inheritedSets = inherited.map((t) => symbolManager.getTemplateItems(t.name) ?? []);
+            const snippets = createSnippetsFromTemplateItems(items, inheritedSets);
             for (const snippet of snippets) {
-              let snippetString = `${x.obj.label} ${isWithinObject ? "{" : ""} ${snippet.trimEnd()}${isWithinObject ? "}" : ";$0"}`;
-              const item = CompletionItem.create(snippetString);
+              const snippetString = `${x.obj.label} ${isWithinObject ? "{" : ""} ${snippet.trimEnd()}${isWithinObject ? "}" : ";$0"}`;
+              const cleanLabel = snippetString.replace(/\$\{\d+:([^}]+)\}/g, "$1").replace(/\$\d+/g, "");
+              const item = CompletionItem.create(cleanLabel);
               item.kind = CompletionItemKind.Snippet;
               item.insertTextFormat = InsertTextFormat.Snippet;
               item.labelDetails = { description: "template" };
               item.insertText = snippetString;
-
               templateCompletionItems.push(item);
             }
           }
         }
       });
 
-      let completionItems: CompletionItem[] = [];
-      templateCompletionItems.forEach((x) => completionItems.push(x));
-
-      return completionItems;
+      return templateCompletionItems;
     }
 
     // Matches a direction assignment, collect all symbols inheriting TravelConnector
@@ -227,7 +198,6 @@ export async function onCompletion(
 
     const result = DIRECTION_ASSIGNMENT_REGEXP.exec(currentLineStr);
     if (result && result.length > 0) {
-      //word ??= '';
       connection.console.debug(`Matching direction assignment for: "${word}"`);
       for (const key of symbolManager.symbols.keys()) {
         for (const symbol of symbolManager.symbols.get(key) ?? []) {
@@ -296,7 +266,7 @@ export async function onCompletion(
     for (const file of symbolManager.symbols.keys()) {
       const localKeys = symbolManager.symbols.get(file);
       if (localKeys) {
-        const flattened = flattenTreeToArray(localKeys); //.filter(x=>x.kind === SymbolKind.Object)
+        const flattened = flattenTreeToArray(localKeys);
         if (flattened) {
           for (const value of flattened?.values() ?? []) {
             if (usedUpKeys.has(value.name)) {
@@ -304,7 +274,6 @@ export async function onCompletion(
             }
             usedUpKeys.add(value.name);
             const item = CompletionItem.create(value.name);
-            //item.kind = CompletionItemKind.Class;
             applyDocumentation(item);
             suggestions.set(value.name, item);
           }
@@ -320,14 +289,12 @@ export async function onCompletion(
       suggestions.set(item.label, item);
     }
 
-    {
-      const item = CompletionItem.create("object");
-      item.kind = CompletionItemKind.Snippet;
-      item.insertTextFormat = InsertTextFormat.Snippet;
-      item.insertText = "object { $1 }$0";
-      item.preselect = true;
-      suggestions.set(item.label, item);
-    }
+    const objectItem = CompletionItem.create("object");
+    objectItem.kind = CompletionItemKind.Snippet;
+    objectItem.insertTextFormat = InsertTextFormat.Snippet;
+    objectItem.insertText = "object { $1 }$0";
+    objectItem.preselect = true;
+    suggestions.set(objectItem.label, objectItem);
 
     cachedKeyWords = suggestions;
 
@@ -335,65 +302,48 @@ export async function onCompletion(
     connection.console.debug(`Updating cache with keywords, elapsed time = ${elapsedTime} ms`);
   }
 
-  // TODO: Experimenting
-  // if (results.length == 0) {
   // When matching "local x = new " -> return all classes as suggestion
-  // Match any assignment and add classes if keyword new is used
+  const newInstanceMatch = NEW_INSTANCE_REGEXP.exec(currentLineStr);
+  if (newInstanceMatch && newInstanceMatch.length > 0 && newInstanceMatch[1]) {
+    return getSuggestedClassNames(newInstanceMatch[1]);
+  }
 
-  // TODO: check if inside code block for these
-  {
-    const newInstanceMatch = NEW_INSTANCE_REGEXP.exec(currentLineStr);
-    if (newInstanceMatch && newInstanceMatch.length > 0 && newInstanceMatch[1]) {
-      return getSuggestedClassNames(newInstanceMatch[1]);
+  const memberCallMatch = PROPERTY_REGEXP.exec(currentLineStr);
+  if (memberCallMatch && memberCallMatch.length > 1 && memberCallMatch[1]) {
+    const isInline = memberCallMatch[2] && memberCallMatch[2].startsWith("(");
+    if (isInline) {
+      const className = memberCallMatch[1];
+      return getSuggestedProperty(
+        handler.position.line,
+        document!,
+        className,
+        memberCallMatch[1],
+        memberCallMatch[3] ?? "",
+      );
     }
 
-    const memberCallMatch = PROPERTY_REGEXP.exec(currentLineStr);
-    if (memberCallMatch && memberCallMatch.length > 1 && memberCallMatch[1]) {
-      // TODO: handle this the same way as below. Change the listnener if needs be
-      // TODO: find variable assignments instead and figure out the scope
-      const isInline = memberCallMatch[2] && memberCallMatch[2].startsWith("(");
-      if (isInline) {
-        const className = memberCallMatch[1];
+    const word = memberCallMatch[1];
+    const fsPath = URI.parse(handler.textDocument.uri).fsPath;
+    const localAssignments = symbolManager.assignmentStatements.get(fsPath) ?? [];
+    const foundMatches = localAssignments.filter((x) => x.name === word);
+    if (foundMatches.length > 0) {
+      const detail = foundMatches[0]?.detail;
+      let className = detail;
+      if (detail) {
+        const resultOfRegexp = NEW_ASSIGNMENT_REGEXP.exec(detail);
+        if (resultOfRegexp) {
+          className = resultOfRegexp[2].trim();
+        }
+      }
+      if (className) {
+        const variableName = memberCallMatch[1];
         return getSuggestedProperty(
           handler.position.line,
           document!,
+          variableName,
           className,
-          memberCallMatch[1],
           memberCallMatch[3] ?? "",
         );
-      }
-
-      const word = memberCallMatch[1];
-      const fsPath = URI.parse(handler.textDocument.uri).fsPath;
-      const localAssignments = symbolManager.assignmentStatements.get(fsPath) ?? [];
-      const foundMatches = localAssignments.filter((x) => x.name === word);
-      if (foundMatches.length > 0) {
-        // TODO: decide the one match with most closest scope around this
-        const detail = foundMatches[0]?.detail; // TODO: handle undefined... listener should add this detail?
-
-        let className = detail;
-        if (detail) {
-          const resultOfRegexp = NEW_ASSIGNMENT_REGEXP.exec(detail);
-          if (resultOfRegexp) {
-            className = resultOfRegexp[2].trim();
-          }
-        }
-        //connection.console.log(foundMatches[0]?.name);
-
-        // TODO: now details isn't just holding the class name anymore, but also the whole expression
-        //const TODO = symbolManager.assignmentDeclarations.get(fsPath)?.get(word);
-
-        if (className) {
-          //connection.console.log(className);
-          const variableName = memberCallMatch[1];
-          return getSuggestedProperty(
-            handler.position.line,
-            document!,
-            variableName,
-            className,
-            memberCallMatch[3] ?? "",
-          );
-        }
       }
     }
   }
@@ -406,8 +356,7 @@ export async function onCompletion(
   shortTermMemoryKeyword.clear();
 
   const results = fuzzysort.go(word, [...cachedKeyWords.values()], { key: "label" });
-  const mappedResults = results.map((x: any) => x.obj);
-  return mappedResults;
+  return results.map((x: any) => x.obj);
 }
 
 function applyDocumentation(item: CompletionItem) {
@@ -477,9 +426,6 @@ function getSuggestedClassNames(partialClassWord: string) {
     key: "label",
   });
 
-  /*connection.console.debug(
-    `Suggestions: ${results.map((x) => x.obj.label).join(" ")}`
-  );*/
   return results.map((x: any) => x.obj);
 }
 
@@ -526,7 +472,5 @@ function getSuggestedProperty(
     key: "label",
   });
 
-  //connection.console.debug(`Suggestions: ${results.map((x) => x.obj.label).join(" ")}`);
-  const mappedResult = results.map((x: any) => x.obj);
-  return mappedResult;
+  return results.map((x: any) => x.obj);
 }

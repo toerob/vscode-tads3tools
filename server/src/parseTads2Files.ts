@@ -46,11 +46,12 @@ export async function parseTads2Files(filePaths: string[] | undefined = []) {
     const jobResult = await worker(filePath, text);
 
     connection.console.debug(`Worker finished with result`);
-    const { symbols, keywords, additionalProperties, inheritanceMap, parseInfo } = jobResult;
+    const { symbols, keywords, mapData, additionalProperties, inheritanceMap, parseInfo } = jobResult;
     logTads2ParseInfo(parseInfo);
     symbolManager.symbols.set(filePath, symbols ?? []);
     symbolManager.keywords.set(filePath, keywords ?? []);
     inheritanceMap.forEach((value: string, key: string) => symbolManager.inheritanceMap.set(key, value));
+    mapData.forEach((value: any, key: string) => symbolManager.mapData.set(key, value));
     clearCompletionCache();
     symbolManager.additionalProperties.set(filePath, additionalProperties);
     tracker++;
@@ -77,11 +78,12 @@ export async function parseTads2Files(filePaths: string[] | undefined = []) {
       workerPool.queue(async (parseJob) => {
         await connection.sendNotification("symbolparsing/processing", [filePath, tracker, totalFiles, poolSize]);
         const text = serverState.preprocessedFilesCacheMap.get(filePath) ?? "";
-        const { symbols, keywords, additionalProperties, inheritanceMap, parseInfo } = await parseJob(filePath, text);
+        const { symbols, keywords, mapData, additionalProperties, inheritanceMap, parseInfo } = await parseJob(filePath, text);
         logTads2ParseInfo(parseInfo);
         symbolManager.symbols.set(filePath, symbols ?? []);
         symbolManager.keywords.set(filePath, keywords ?? []);
         inheritanceMap.forEach((value: string, key: string) => symbolManager.inheritanceMap.set(key, value));
+        mapData.forEach((value: any, key: string) => symbolManager.mapData.set(key, value));
         clearCompletionCache();
         symbolManager.additionalProperties.set(filePath, additionalProperties);
         tracker++;

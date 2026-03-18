@@ -9,8 +9,10 @@ import {
   tokenizeQuotesWithIndex,
   getWordAtPosition,
   tokenizeWithIndex,
-  createTemplateSnippetStrings,
 } from "../../src/modules/text-utils";
+import { createTemplateSnippetStrings } from "../../src/modules/template-snippets";
+import { createSnippetsFromTemplateItems } from "../../src/modules/text-utils";
+import type { TemplateItemNode } from "../../src/parser/ast/nodes";
 
 describe("text-utils test suite", () => {
   describe("strOffsetAt calculates the index from the line and character positions", () => {
@@ -152,24 +154,24 @@ describe("text-utils test suite", () => {
         `);
       expect(result).toStrictEqual([
         // Without optional first part
-        "@${1:matchObj} ",
         '@${1:matchObj} "${2:topicResponse}" ',
+        "@${1:matchObj} ",
         "@${1:matchObj} [${2:eventList}] ",
-        "[${1:matchObj}] ",
         '[${1:matchObj}] "${2:topicResponse}" ',
+        "[${1:matchObj}] ",
         "[${1:matchObj}] [${2:eventList}] ",
-        "'${1:matchPattern}' ",
         "'${1:matchPattern}' \"${2:topicResponse}\" ",
+        "'${1:matchPattern}' ",
         "'${1:matchPattern}' [${2:eventList}] ",
         // With optional first part
-        "+${1:matchScore} @${2:matchObj} ",
         '+${1:matchScore} @${2:matchObj} "${3:topicResponse}" ',
+        "+${1:matchScore} @${2:matchObj} ",
         "+${1:matchScore} @${2:matchObj} [${3:eventList}] ",
-        "+${1:matchScore} [${2:matchObj}] ",
         '+${1:matchScore} [${2:matchObj}] "${3:topicResponse}" ',
+        "+${1:matchScore} [${2:matchObj}] ",
         "+${1:matchScore} [${2:matchObj}] [${3:eventList}] ",
-        "+${1:matchScore} '${2:matchPattern}' ",
         "+${1:matchScore} '${2:matchPattern}' \"${3:topicResponse}\" ",
+        "+${1:matchScore} '${2:matchPattern}' ",
         "+${1:matchScore} '${2:matchPattern}' [${3:eventList}] ",
       ]);
     });
@@ -203,18 +205,18 @@ describe("text-utils test suite", () => {
               "topicResponse" | [eventList] ?;
         `),
       ).toStrictEqual([
-        "@${1:matchObj} '${2:matchPattern}' ",
         "@${1:matchObj} '${2:matchPattern}' \"${3:topicResponse}\" ",
+        "@${1:matchObj} '${2:matchPattern}' ",
         "@${1:matchObj} '${2:matchPattern}' [${3:eventList}] ",
-        "[${1:matchObj}] '${2:matchPattern}' ",
         "[${1:matchObj}] '${2:matchPattern}' \"${3:topicResponse}\" ",
+        "[${1:matchObj}] '${2:matchPattern}' ",
         "[${1:matchObj}] '${2:matchPattern}' [${3:eventList}] ",
 
-        "+${1:matchScore} @${2:matchObj} '${3:matchPattern}' ",
         "+${1:matchScore} @${2:matchObj} '${3:matchPattern}' \"${4:topicResponse}\" ",
+        "+${1:matchScore} @${2:matchObj} '${3:matchPattern}' ",
         "+${1:matchScore} @${2:matchObj} '${3:matchPattern}' [${4:eventList}] ",
-        "+${1:matchScore} [${2:matchObj}] '${3:matchPattern}' ",
         "+${1:matchScore} [${2:matchObj}] '${3:matchPattern}' \"${4:topicResponse}\" ",
+        "+${1:matchScore} [${2:matchObj}] '${3:matchPattern}' ",
         "+${1:matchScore} [${2:matchObj}] '${3:matchPattern}' [${4:eventList}] ",
       ]));
 
@@ -376,11 +378,43 @@ describe("text-utils test suite", () => {
       ]);
     });
 
-    // TODO: expand testing of inherited
     test("SensoryEmanation template", () => {
       const res = createTemplateSnippetStrings(`SensoryEmanation template inherited [eventList]?;`);
-      //expect(res).toStrictEqual(["${1:inherited} ", "${1:inherited} [${2:eventList}] "]);
       expect(res).toStrictEqual(["", "[${1:eventList}] "]);
+    });
+
+    test("inherited keyword expands to: (1) no-inheritance form, (2) richest inherited set", () => {
+      // Simulate: Passage template ->masterObject inherited
+      // where Thing template is 'vocabWords' 'name' @location? "desc"?
+      const passageItems: TemplateItemNode[] = [
+        { propName: 'masterObject', tokenKind: 'op', op: '->', optional: false, isAlternative: false },
+        { propName: null, tokenKind: 'inherited', optional: false, isAlternative: false },
+      ];
+      const thingItems: TemplateItemNode[] = [
+        { propName: 'vocabWords', tokenKind: 'sstr', optional: false, isAlternative: false },
+        { propName: 'name',       tokenKind: 'sstr', optional: false, isAlternative: false },
+        { propName: 'location',   tokenKind: 'op',   op: '@', optional: true, isAlternative: false },
+        { propName: 'desc',       tokenKind: 'dstr', optional: true, isAlternative: false },
+      ];
+      // VocabObject template (shorter — should NOT be picked as richest)
+      const vocabItems: TemplateItemNode[] = [
+        { propName: 'vocabWords', tokenKind: 'sstr', optional: false, isAlternative: false },
+      ];
+
+      const res = createSnippetsFromTemplateItems(passageItems, [vocabItems, thingItems]);
+
+      // Form 1: no inheritance — just ->masterObject
+      expect(res[0]).toBe('->${1:masterObject} ');
+
+      // Forms 2-5: richest set (Thing) expanded — 'vocabWords' and 'name' are mandatory,
+      // @location? and "desc"? are optional → 4 combinations
+      expect(res).toStrictEqual([
+        '->${1:masterObject} ',
+        "->${1:masterObject} '${2:vocabWords}' '${3:name}' ",
+        "->${1:masterObject} '${2:vocabWords}' '${3:name}' \"${4:desc}\" ",
+        "->${1:masterObject} '${2:vocabWords}' '${3:name}' @${4:location} ",
+        "->${1:masterObject} '${2:vocabWords}' '${3:name}' @${4:location} \"${5:desc}\" ",
+      ]);
     });
 
     test("ActorState templates", () => {
@@ -388,11 +422,11 @@ describe("text-utils test suite", () => {
         `ActorState template @location? "specialDesc" 'stateDesc' | "stateDesc" ? ;`,
       );
       expect(a).toStrictEqual([
-        '"${1:specialDesc}" ',
         "\"${1:specialDesc}\" '${2:stateDesc}' ",
+        '"${1:specialDesc}" ',
         '"${1:specialDesc}" "${2:stateDesc}" ',
-        '@${1:location} "${2:specialDesc}" ',
         "@${1:location} \"${2:specialDesc}\" '${3:stateDesc}' ",
+        '@${1:location} "${2:specialDesc}" ',
         '@${1:location} "${2:specialDesc}" "${3:stateDesc}" ',
       ]);
       const b = createTemplateSnippetStrings(`ActorState template @location;`);
@@ -404,17 +438,17 @@ describe("text-utils test suite", () => {
         `TopicGroup template @location? +scoreBoost? 'convKeys' | [convKeys] ? ;`,
       );
       expect(res).toStrictEqual([
-        "", // TODO: fix
         "'${1:convKeys}' ",
+        "",
         "[${1:convKeys}] ",
-        "+${1:scoreBoost} ",
         "+${1:scoreBoost} '${2:convKeys}' ",
+        "+${1:scoreBoost} ",
         "+${1:scoreBoost} [${2:convKeys}] ",
-        "@${1:location} ",
         "@${1:location} '${2:convKeys}' ",
+        "@${1:location} ",
         "@${1:location} [${2:convKeys}] ",
-        "@${1:location} +${2:scoreBoost} ",
         "@${1:location} +${2:scoreBoost} '${3:convKeys}' ",
+        "@${1:location} +${2:scoreBoost} ",
         "@${1:location} +${2:scoreBoost} [${3:convKeys}] ",
       ]);
     });
@@ -438,17 +472,17 @@ describe("text-utils test suite", () => {
         `QueryTopic template ->location? +matchScore? 'matchPattern' "topicResponse" | [eventList] ?;`,
       );
       expect(b).toStrictEqual([
-        "'${1:matchPattern}' ",
         "'${1:matchPattern}' \"${2:topicResponse}\" ",
+        "'${1:matchPattern}' ",
         "'${1:matchPattern}' [${2:eventList}] ",
-        "+${1:matchScore} '${2:matchPattern}' ",
         "+${1:matchScore} '${2:matchPattern}' \"${3:topicResponse}\" ",
+        "+${1:matchScore} '${2:matchPattern}' ",
         "+${1:matchScore} '${2:matchPattern}' [${3:eventList}] ",
-        "->${1:location} '${2:matchPattern}' ",
         "->${1:location} '${2:matchPattern}' \"${3:topicResponse}\" ",
+        "->${1:location} '${2:matchPattern}' ",
         "->${1:location} '${2:matchPattern}' [${3:eventList}] ",
-        "->${1:location} +${2:matchScore} '${3:matchPattern}' ",
         "->${1:location} +${2:matchScore} '${3:matchPattern}' \"${4:topicResponse}\" ",
+        "->${1:location} +${2:matchScore} '${3:matchPattern}' ",
         "->${1:location} +${2:matchScore} '${3:matchPattern}' [${4:eventList}] ",
       ]);
 
@@ -456,17 +490,17 @@ describe("text-utils test suite", () => {
         `SayTopic template ->location? +matchScore? 'tTag' 'extraVocab' "topicResponse" | [eventList] ?;`,
       );
       expect(c).toStrictEqual([
-        "'${1:tTag}' '${2:extraVocab}' ",
         "'${1:tTag}' '${2:extraVocab}' \"${3:topicResponse}\" ",
+        "'${1:tTag}' '${2:extraVocab}' ",
         "'${1:tTag}' '${2:extraVocab}' [${3:eventList}] ",
-        "+${1:matchScore} '${2:tTag}' '${3:extraVocab}' ",
         "+${1:matchScore} '${2:tTag}' '${3:extraVocab}' \"${4:topicResponse}\" ",
+        "+${1:matchScore} '${2:tTag}' '${3:extraVocab}' ",
         "+${1:matchScore} '${2:tTag}' '${3:extraVocab}' [${4:eventList}] ",
-        "->${1:location} '${2:tTag}' '${3:extraVocab}' ",
         "->${1:location} '${2:tTag}' '${3:extraVocab}' \"${4:topicResponse}\" ",
+        "->${1:location} '${2:tTag}' '${3:extraVocab}' ",
         "->${1:location} '${2:tTag}' '${3:extraVocab}' [${4:eventList}] ",
-        "->${1:location} +${2:matchScore} '${3:tTag}' '${4:extraVocab}' ",
         "->${1:location} +${2:matchScore} '${3:tTag}' '${4:extraVocab}' \"${5:topicResponse}\" ",
+        "->${1:location} +${2:matchScore} '${3:tTag}' '${4:extraVocab}' ",
         "->${1:location} +${2:matchScore} '${3:tTag}' '${4:extraVocab}' [${5:eventList}] ",
       ]);
     });

@@ -4,11 +4,12 @@ import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
 import { Tads3Lexer } from "./parser/Tads3Lexer";
 import { Tads3Listener } from "./parser/Tads3Listener";
 import { Tads3Parser } from "./parser/Tads3Parser";
-import { Tads3SymbolListener } from "./parser/Tads3SymbolListener";
+import { Tads3SymbolListener, ExtendedDocumentSymbolProperties } from "./parser/Tads3SymbolListener";
 import { expose } from "threads";
 import { PredictionMode } from "antlr4ts/atn/PredictionMode";
 import { DocumentSymbol } from "vscode-languageserver/node";
 import { basename } from "path";
+import { MapNodeData } from "./modules/mapcrawling/MapNodeData";
 
 class CollectingErrorListener implements ANTLRErrorListener<any> {
   errors: string[] = [];
@@ -39,6 +40,7 @@ expose(function parseFunc(path: string, text: string) {
   lexer.addErrorListener(lexerErrors);
   const tokenStream = new CommonTokenStream(lexer);
   const lexElapsed = Date.now() - lexStart;
+  tokenStream.fill();
 
   if (lexerErrors.errors.length > 0) {
     warnings.push(`[${fileName}] Lexer errors (${lexerErrors.errors.length}): ${lexerErrors.errors.slice(0, 5).join("; ")}${lexerErrors.errors.length > 5 ? "..." : ""}`);
@@ -65,6 +67,7 @@ expose(function parseFunc(path: string, text: string) {
     warnings.push(`[${fileName}] SLL parsing failed after ${sllElapsed}ms, falling back to LL mode`);
     lexer.reset();
     const tokenStream = new CommonTokenStream(lexer);
+    tokenStream.fill();
     parser = new Tads3Parser(tokenStream);
     parser.interpreter.setPredictionMode(PredictionMode.LL);
     const parserErrors = new CollectingErrorListener();
@@ -95,14 +98,40 @@ expose(function parseFunc(path: string, text: string) {
     warnings.push(...listener.warnings);
   }
 
+  // ── Build name-keyed mapData from the listener's identity-keyed additionalProperties ──
+  const mapData: Map<string, MapNodeData> = new Map();
+  // First pass: create an entry for each object/function symbol
+  for (const [sym, props] of listener.additionalProperties) {
+    if (props.level !== undefined) {
+      mapData.set(sym.name, {
+        level: props.level,
+        isClass: props.isClass ?? false,
+        parentName: props.parent?.name,
+        shortName: props.shortName,
+        arrowConnection: props.arrowConnection,
+        otherSide: props.otherSide,
+        at: props.at,
+        travelConnectorMap: props.travelConnectorMap ?? new Map(),
+        assignedProperties: new Set(),
+        superClassRoot: props.superClassRoot,
+      });
+    }
+  }
+  // Second pass: collect assignment-style property names into their parent's entry
+  for (const [sym, props] of listener.additionalProperties) {
+    if (props.isAssignment && props.parent) {
+      mapData.get(props.parent.name)?.assignedProperties.add(sym.name);
+    }
+  }
+
   return {
     keywords: listener.localKeywords ?? [],
     symbols: listener.symbols ?? symbols,
+    mapData,
     additionalProperties: listener.additionalProperties,
     inheritanceMap: listener.inheritanceMap,
     assignmentStatements: listener.assignmentStatements,
     expressionSymbols: listener.expressionSymbols,
-    symbolParameters: listener.symbolParameters,
     // Diagnostics for the caller
     parseInfo: {
       fileName,

@@ -280,6 +280,12 @@
         "enablement": "true"
       },
       {
+        "command": "tads3.evaluateSelection",
+        "title": "TADS3: Evaluate Selection",
+        "category": "TADS3",
+        "enablement": "editorLangId == tads3"
+      },
+      {
         "command": "extension.tads3-debug.debugEditorContents",
         "title": "Debug File",
         "category": "TADS3 Debug",
@@ -346,6 +352,12 @@
           "minimum": 1,
           "maximum": 20,
           "description": "Set the maximum number of worker threads that takes care of the parsing. An optimal number depends on the hardware. "
+        },
+        "tads3.useExperimentalParser": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Use the experimental Tads3v2 parser (workerV2). Disable to fall back to the original parser. Requires a restart after change."
         },
         "tads3.parseOnlyTheWorkspaceFiles": {
           "scope": "resource",
@@ -628,6 +640,7 @@
     "antlr4ts": "npm run antlr4ts_t2;npm run antlr4ts_t3",
     "antlr4ts_t2": "antlr4ts -visitor server/src/parser/Tads2.g4",
     "antlr4ts_t3": "antlr4ts -visitor server/src/parser/Tads3.g4",
+    "antlr4ts_t3v2": "antlr4ts -visitor server/src/parser/Tads3v2.g4",
     "build": "vsce package --no-yarn",
     "compile:tsc": "tsc -b",
     "build:maprenderer": "esbuild ./webview-src/maprenderer.ts --bundle --sourcemap=inline --platform=browser --format=iife --target=es2020 --outfile=resources/maprenderer/maprenderer.js",
@@ -688,7 +701,7 @@
     "jest-junit": "^16.0.0",
     "jest-mock-extended": "^3.0.7",
     "lcov-result-merger": "^5.0.1",
-    "mocha": "^10.4.0",
+    "mocha": "^7.2.0",
     "prettier": "^3.2.5",
     "three": "^0.180.0",
     "ts-jest": "^29.1.5",
@@ -698,9 +711,10 @@
     "@types/unzipper": "^0.10.9",
     "@types/vscode": "^1.89.0",
     "cytoscape": "^3.33.1",
+    "litegraph.js": "^0.7.18",
     "npm": "^11.7.0",
     "unzipper": "^0.11.4",
-    "vsce": "^1.97.0",
+    "vsce": "^2.15.0",
     "yarn": "^1.22.22"
   },
   "jest": {
