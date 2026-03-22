@@ -6,6 +6,7 @@ import { connection } from "../server";
 import { TadsSymbolManager } from "./symbol-manager";
 import { getWordAtPosition } from "./text-utils";
 import { URI } from "vscode-uri";
+import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 
 const onWindowsPlatform = process.platform === "win32";
 
@@ -37,7 +38,7 @@ export async function onReferences(
   handler: ReferenceParams,
   documents: TextDocuments<TextDocument>,
   symbolManager: TadsSymbolManager,
-  preprocessedFilesCacheMap: Map<string, string>,
+  preprocessedFilesCacheMap: Map<string, string>|CaseInsensitiveMap<string,string>,
 ) {
   const { position, textDocument } = handler;
   const currentDocument = documents.get(textDocument.uri);

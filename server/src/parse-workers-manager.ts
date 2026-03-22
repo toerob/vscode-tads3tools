@@ -12,6 +12,7 @@ import { parseTads2Files } from "./parseTads2Files";
 import { symbolManager } from "./modules/symbol-manager";
 import { filterForStandardLibraryFiles } from "./modules/utils";
 import { serverState } from './state';
+import { CaseInsensitiveMap } from './modules/CaseInsensitiveMap';
 
 let lastMakeFileLocation: string | undefined;
 let makefileStructure;
@@ -429,7 +430,7 @@ export async function preprocessAndParseTads3Files(
 
 function exportLibrarySymbols(
   libraryFilePaths: string[],
-  symbols: Map<string, DocumentSymbol[]>,
+  symbols: Map<string, DocumentSymbol[]>|CaseInsensitiveMap<string, DocumentSymbol[]>,
   usingAdv3Lite: boolean,
 ) {
   const librarySymbols = new Map();
@@ -454,7 +455,7 @@ function exportLibrarySymbols(
 
 function exportLibraryKeywords(
   libraryFilePaths: string[],
-  keywords: Map<string, Map<string, Range[]>>,
+  keywords: Map<string, Map<string, Range[]>> | CaseInsensitiveMap<string, Map<string, Range[]>>,
   usingAdv3Lite: boolean,
 ) {
   const libraryKeywords = new Map();

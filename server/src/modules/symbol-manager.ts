@@ -12,8 +12,8 @@ import { getDefineMacrosMap } from '../parser/preprocessor';
 import { get } from 'http';
 
 export class TadsSymbolManager {
-  public symbols: Map<string, DocumentSymbol[]>;
-  public keywords: Map<string, Map<string, Range[]>>;
+  public symbols: Map<string, DocumentSymbol[]>|CaseInsensitiveMap<string,DocumentSymbol[]>;
+  public keywords: Map<string, Map<string, Range[]>>|CaseInsensitiveMap<string,Map<string, Range[]>>;
   public additionalProperties: Map<string, Map<DocumentSymbol, any>> = new Map();
   /** Flat map from object name → map-editor metadata. Stable across reparsing (name-keyed, not identity-keyed). */
   public mapData: Map<string, MapNodeData> = new Map();

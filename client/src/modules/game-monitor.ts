@@ -3,15 +3,13 @@ import { workspace, RelativePattern, window } from "vscode";
 import { debounceTime } from "rxjs";
 import { client, runGameInTerminalSubject, DEBOUNCE_TIME, findImageByPattern } from "../extension";
 
-export function setupAndMonitorBinaryGamefileChanges(extensionState, imageFormat: string): void {
+export function setupAndMonitorBinaryGamefileChanges(extensionState: any, imageFormat: string): void {
   if (!extensionState.getUsingTads2() && extensionState.imageInfoProvider) {
     findImageByPattern(false).then((filepath) => {
       if (filepath) {
         extensionState.imageInfoProvider.update(filepath);
       } else {
-        window.showErrorMessage(
-          `No .t3 file found in workspace to monitor for changes. Please add a .t3 file or use the "Analyze T3 Image" command to select a file to monitor.`,
-        );
+        client.warn(`No .t3 file found in workspace to monitor for changes. Please add a .t3 file or use the "Analyze T3 Image" command to select a file to monitor.`);
       }
     });
   }

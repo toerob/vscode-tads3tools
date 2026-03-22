@@ -30,10 +30,10 @@ export async function validateCompilerPath(compilerPath: string, showSuccess = t
 
 export async function validateTads2Settings() {
   const preprocessorResult = await validateCompilerPath(
-    workspace.getConfiguration("tads").get("preprocessor.path"),
+    workspace.getConfiguration("tads").get("preprocessor.path") ?? '',
     false,
   );
-  const compilerResult = await validateCompilerPath(workspace.getConfiguration("tads2").get("compiler.path"), false);
+  const compilerResult = await validateCompilerPath(workspace.getConfiguration("tads2").get("compiler.path") ?? '', false);
   return preprocessorResult && compilerResult;
 }
 

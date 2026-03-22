@@ -5,6 +5,7 @@ import { readFile, readFileSync } from "fs";
 import { basename, dirname } from "path";
 import { URI } from "vscode-uri";
 import { CaseInsensitiveSet } from "../modules/CaseInsensitiveSet";
+import { CaseInsensitiveMap } from '../modules/CaseInsensitiveMap';
 
 const defineRegExp = new RegExp(/^\s*[#]\s*define\s+([^\(\s\n]+)[^(\n]*/);
 
@@ -49,7 +50,7 @@ export function runCommand(command: string) {
 
 export async function preprocessTads2Files(
   chosenMainfilePath: string,
-  preprocessedFilesCacheMap: Map<string, string>,
+  preprocessedFilesCacheMap: Map<string, string>|CaseInsensitiveMap<string,string>,
   t2PreprocessorPath = "t3make",
   libFolders: string[] = ["/usr/local/share/frobtads/tads2/"],
   connection: any = undefined
@@ -81,7 +82,7 @@ export async function preprocessTads2Files(
 
 export async function preprocessTads3Files(
   chosenMakefilePath: string,
-  preprocessedFilesCacheMap: Map<string, string>,
+  preprocessedFilesCacheMap: Map<string, string>|CaseInsensitiveMap<string,string>,
   t3makeCompilerPath = "t3make",
   connection: any = undefined
 ) {
@@ -107,7 +108,7 @@ export async function preprocessTads3Files(
 
 function processPreprocessedResult(
   result: any,
-  preprocessedFilesCacheMap: Map<string, string>,
+  preprocessedFilesCacheMap: Map<string, string>|CaseInsensitiveMap<string,string>,
   usingTads2 = false,
   connection: any = undefined
 ) {
@@ -205,7 +206,7 @@ export function storeCurrentBufferAndRows(
   currentFile: string,
   currentBuffer: string,
   currentCounter: number,
-  preprocessedFilesCacheMap: Map<string, string>
+  preprocessedFilesCacheMap: Map<string, string>|CaseInsensitiveMap<string,string>
 ) {
   try {
     const previouslyCountedRows = rowsMap.get(currentFile);
@@ -254,7 +255,7 @@ function countRowsOfUnprocessedFiles(
  */
 function postProcessPreprocessedResultTads(
   unprocessedRowsMap: Map<string, number>,
-  preprocessedFilesCacheMap: Map<string, string>,
+  preprocessedFilesCacheMap: Map<string, string>|CaseInsensitiveMap<string,string>,
   connection: any
 ) {
   const startTime = Date.now();

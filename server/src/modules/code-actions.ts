@@ -122,7 +122,7 @@ export async function onCodeAction(
     identityLocalAssignmentExpression(actions, currentLine, uri, cursorPosition, startPosition);
   }
 
-  locateMissingNounsInDescriptions(symbolManager, actions, currentLine, uri, fsPath, cursorPosition, currentDoc);
+  //locateMissingNounsInDescriptions(symbolManager, actions, currentLine, uri, fsPath, cursorPosition, currentDoc);
 
   if (match && match.length > 0) {
     symbolName = match[1];
@@ -219,34 +219,8 @@ function locateMissingNounsInDescriptions(
   currentDoc: TextDocument,
 ) {
   //const highLevelObjectsInFile1 = symbolManager.findAllSymbolsByKind(fsPath, [SymbolKind.Object]);
-  const symbol = symbolManager.findContainingObject(
-    fsPath,
-    //[SymbolKind.Object],
-    cursorPosition,
-  );
-  const nounSearchActions = [];
-  if (symbol) {
-    //symbol.
-    if (symbol.detail?.endsWith("Room")) {
-      const roomDefinition = currentDoc.getText(symbol.range);
-      const pat = new RegExp(/\s+\"[^\"](.+)[^\"]\"\s+/);
-      const res = pat.exec(roomDefinition);
+  //const symbol = symbolManager.findContainingObject(fsPath,cursorPosition,);
 
-      console.log(roomDefinition);
-    }
-    const descriptions = symbol.children?.filter((x) => x.name == "desc");
-    //for (const object of highLevelObjectsInFile1) {
-    nounSearchActions.push({
-      title: "TODO...",
-      kind: CodeActionKind.RefactorExtract,
-      command: {
-        title: "Insert local assignment snippet",
-        command: "tads3.insertLocalAssignmentSnippet",
-        arguments: [uri, symbol.range, cursorPosition.line, 0, currentLine.length],
-      },
-    });
-    //}
-  }
 }
 
 function createArrayAssignmentAction(

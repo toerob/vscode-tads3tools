@@ -4,6 +4,7 @@ import { join } from "path";
 import { Position, Range, SymbolKind } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { wholeLineRegExp } from "../parser/preprocessor";
+import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 
 export const idWithParametersRegexp = /\s*([a-zA-Z][a-zA-Z0-9]*)\s*[(](.*)?[)]/;
 
@@ -124,7 +125,7 @@ export function getVariableNameAtPosition(text: string, position: Position): str
  * @returns the method signature line
  */
 export function getLineOfMethodDeclaration(
-  preprocessedFilesCacheMap: Map<string, string>,
+  preprocessedFilesCacheMap: Map<string, string>|CaseInsensitiveMap<string,string>,
   filePath: string,
   lineOfDeclaration: number,
 ) {

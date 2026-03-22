@@ -69,7 +69,7 @@ const diagnosticsCollection = languages.createDiagnosticCollection("tads3diagnos
 
 let errorDiagnostics = [];
 
-export function setErrorDiagnostics(diagnostics) {
+export function setErrorDiagnostics(diagnostics:any) {
   errorDiagnostics = diagnostics;
 }
 
@@ -96,7 +96,7 @@ export const runGameInTerminalSubject = new Subject();
 
 let visualEditorPanel: WebviewPanel | undefined = undefined;
 
-export function getVisualEditor(): WebviewPanel {
+export function getVisualEditor(): WebviewPanel | undefined {
   return visualEditorPanel;
 }
 export function setVisualEditor(tads3VisualEditorPanel: WebviewPanel) {
@@ -355,7 +355,7 @@ async function onDidSaveTextDocument(
 export async function analyzeImage() {
   // Fetch user input for the .t3 file path
   let filepath = await findImageByPattern(true);
-  if (extensionState.imageInfoProvider) {
+  if (filepath && extensionState.imageInfoProvider) {
     extensionState.imageInfoProvider.update(filepath);
   } else {
     window.showErrorMessage(`ImageInfoProvider not found`);

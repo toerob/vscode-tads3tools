@@ -1,5 +1,7 @@
 import { readFileSync } from "fs";
 import { preprocessTads2Files, wholeLineRegExp } from "../../src/parser/preprocessor";
+import { CaseInsensitiveMap } from '../../src/modules/CaseInsensitiveMap';
+
 import * as assert from "assert";
 
 describe("Preprocessing suite Tads2", () => {
@@ -13,7 +15,7 @@ describe("Preprocessing suite Tads2", () => {
   });
 
   it.skip("unprocessed file and preprocessed file shall have the same number of rows", async () => {
-    const preprocessedFilesCacheMap: Map<string, string> = new Map();
+    const preprocessedFilesCacheMap: Map<string, string>|CaseInsensitiveMap<string, string> = new Map();
     const mainFilePath = `tests/__textutils__/t2testgames/hello.t`;
     const libAdvPath = `/usr/local/share/frobtads/tads2/adv.t`;
     const libStdPath = `/usr/local/share/frobtads/tads2/std.t`;
@@ -27,7 +29,7 @@ describe("Preprocessing suite Tads2", () => {
 
 function assertSameLineCountBetweenOriginalAndPreprocessed(
   pathToFile: string,
-  preprocessedFilesCacheMap: Map<string, string>,
+  preprocessedFilesCacheMap: Map<string, string>|CaseInsensitiveMap<string, string> 
 ) {
   const fileContentString = readFileSync(pathToFile).toString();
   const fileStrAsArray = fileContentString?.split(wholeLineRegExp) ?? [];

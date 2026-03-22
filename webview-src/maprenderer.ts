@@ -50,10 +50,10 @@ function readTheme(): Theme {
     fontFamily: cssVar("--vscode-font-family", "sans-serif"),
     foreground: cssVar("--vscode-editor-foreground", "#cccccc"),
     editorBg: cssVar("--vscode-editor-background", "#1e1e1e"),
-    widgetBg: cssVar("--vscode-editorWidget-background", "#252526"),
+    widgetBg: cssVar("--vscode-editorWidget-background", "#222228"),
     widgetBorder: cssVar("--vscode-editorWidget-border", "#454545"),
     link: cssVar("--vscode-textLink-foreground", "#3794ff"),
-    warning: cssVar("--vscode-editorWarning-foreground", "#cca700"),
+    warning: cssVar("--vscode-editorWarning-foreground", "#cc9c00"),
   };
 }
 
@@ -87,6 +87,16 @@ mapCanvas.connections_width = 2;
 mapCanvas.render_collapsed_slots = false;
 mapCanvas.render_connections_border = false;
 (mapCanvas as AnyObj).align_to_grid = true;
+
+// Disable the grid
+mapCanvas.clear_background = true;  // still clears the canvas each frame
+(mapCanvas as AnyObj).background_image = null;
+mapCanvas.bgcanvas.style.backgroundColor = theme.editorBg;
+mapCanvas.drawBackCanvas = function() {
+    const ctx = this.bgcanvas.getContext("2d");
+    ctx?.clearRect(0, 0, this.bgcanvas.width, this.bgcanvas.height);
+};
+
 
 mapCanvas.onNodeMoved = function (node: AnyObj) {
   messenger.postCommand("updatepos", { name: node.properties.name, pos: node.pos });
