@@ -1,18 +1,26 @@
-import { Location } from "vscode-languageserver";
+import { AutoClosingPair } from 'vscode';
+import { DocumentSymbol, Location } from "vscode-languageserver";
+
 
 export class ScopedEnvironment {
-  environment = new Map<string, Location>();
 
-  constructor(private enclosingEnvironment: ScopedEnvironment | null = null) {}
+  constructor(public envs:any = {}, public parent: ScopedEnvironment|undefined = undefined) {}
 
-  getSymbol(keyword: string): any {
-    const word = this.environment.get(keyword);
-    if (word) {
-      return word;
+  public getSymbol(keyword: string): any {
+    if (this.envs.hasOwnProperty(keyword)) {
+      return this.envs[keyword];
     }
-    return this.enclosingEnvironment?.getSymbol(keyword) ?? undefined;
+    return this.parent?.getSymbol(keyword) ?? undefined;
   }
-  getEnclosingEnvironment() {
-    return this.enclosingEnvironment;
+
+  buildNamePath(name: string): string {
+    if(this.parent === undefined) {
+      return name;
+    }
+    if(Object.keys(this.parent.envs).length === 0) {
+      return name;
+    }
+    return Object.keys(this.parent.envs)[0] + '.' + this.parent.buildNamePath(name)
   }
+
 }

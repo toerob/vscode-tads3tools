@@ -1,3 +1,4 @@
+import { join } from "path";
 import axios from "axios";
 import { copyFileSync, createReadStream, createWriteStream, existsSync, readdirSync } from "fs";
 import { dirname } from "path";
@@ -30,10 +31,11 @@ export async function downloadAndInstallExtension(context: ExtensionContext) {
     }
     //}
   } catch (err) {
-    const cachedDirs = readdirSync(extensionState.extensionCacheDirectory);
-    if (cachedDirs.length === 0) {
-      window.showErrorMessage(`Failed downloading extension list and no local cache to use: ${err}`);
-      client.error(`Failed downloading extension list and no local cache to use: ${err}`);
+    const dirExists = existsSync(extensionState.extensionCacheDirectory);
+    const cachedDirs = dirExists ? readdirSync(extensionState.extensionCacheDirectory) : [];
+    if (!dirExists || cachedDirs.length === 0) {
+      const msg = `Failed downloading extension list and no local cache to use. Check internet connection: ${err}`;
+      client.error(msg, undefined, true);
       return;
     }
     performLocalExtensionInstallation(extensionState.extensionCacheDirectory, cachedDirs, extensionState);

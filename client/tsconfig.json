@@ -1,7 +1,8 @@
 {
 	"compilerOptions": {
-		"module": "commonjs",
-		"target": "esnext",
+    "moduleResolution": "node16",
+    "module": "node16",
+    "target": "es2020",
 		"lib": ["esnext"],
 		"outDir": "out",
 		"rootDir": "src",
@@ -12,3 +13,4 @@
 	"include": ["src"],
 	"exclude": ["node_modules", ".vscode-test"]
 }
+

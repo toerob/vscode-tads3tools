@@ -3,7 +3,7 @@
   "description": "Language server extension for Tads3",
   "author": "Tomas Öberg",
   "license": "MIT",
-  "version": "0.6.4",
+  "version": "0.7.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/toerob/vscode-tads3tools.git"
@@ -12,7 +12,8 @@
   "icon": "resources/icons/logo.png",
   "categories": [
     "Programming Languages",
-    "Snippets"
+    "Snippets",
+    "Debuggers"
   ],
   "keywords": [
     "tads",
@@ -24,7 +25,10 @@
   },
   "main": "./client/out/extension",
   "activationEvents": [
-    "onLanguage"
+    "onLanguage",
+    "onDebugResolve:tads3",
+    "onDebugDynamicConfigurations:tads3",
+    "onCommand:extension.tads3-debug.getProgramName"
   ],
   "capabilities": {
     "untrustedWorkspaces": {
@@ -38,7 +42,12 @@
         {
           "id": "tads3ScriptTree",
           "name": "Tads3 Game Scripts",
-          "type": "tree"
+          "type": "tree",
+          "icon": "resources/icons/logo.png"
+        },
+        {
+          "id": "tads3DebugInfo",
+          "name": "TADS3 Image Info"
         }
       ]
     },
@@ -59,6 +68,34 @@
         {
           "command": "tads3.deleteReplayScript",
           "when": "viewItem == string"
+        }
+      ],
+      "editor/title/run": [
+        {
+          "command": "extension.tads3-debug.runEditorContents",
+          "when": "resourceLangId == tads3",
+          "group": "navigation@1"
+        },
+        {
+          "command": "extension.tads3-debug.debugEditorContents",
+          "when": "resourceLangId == tads3",
+          "group": "navigation@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "extension.tads3-debug.debugEditorContents",
+          "when": "resourceLangId == tads3"
+        },
+        {
+          "command": "extension.tads3-debug.runEditorContents",
+          "when": "resourceLangId == tads3"
+        }
+      ],
+      "debug/variables/context": [
+        {
+          "command": "extension.tads3-debug.toggleFormatting",
+          "when": "debugType == 'tads3' && debugProtocolVariableMenuContext == 'simple'"
         }
       ]
     },
@@ -235,6 +272,36 @@
         "title": "Tads3 command: Analyze the text at the current position and offer code actions",
         "category": "Editor",
         "enablement": "true"
+      },
+      {
+        "command": "tads3.analyzeImage",
+        "title": "Tads3 command: Analyze the image file and show info in the image info view",
+        "category": "Editor",
+        "enablement": "true"
+      },
+      {
+        "command": "tads3.evaluateSelection",
+        "title": "TADS3: Evaluate Selection",
+        "category": "TADS3",
+        "enablement": "editorLangId == tads3"
+      },
+      {
+        "command": "extension.tads3-debug.debugEditorContents",
+        "title": "Debug File",
+        "category": "TADS3 Debug",
+        "enablement": "!inDebugMode",
+        "icon": "$(debug-alt)"
+      },
+      {
+        "command": "extension.tads3-debug.runEditorContents",
+        "title": "Run File",
+        "category": "TADS3 Debug",
+        "enablement": "!inDebugMode",
+        "icon": "$(play)"
+      },
+      {
+        "command": "extension.tads3-debug.toggleFormatting",
+        "title": "Toggle between decimal and hex formatting"
       }
     ],
     "configuration": {
@@ -246,6 +313,12 @@
           "type": "boolean",
           "default": true,
           "description": "Enable script files to be shown as separate pane and interacted with. Setting requires a restart of vscode in order to take effect. "
+        },
+        "tads3.disableHoverDuringDebug": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Disable Tads3 language hover while a TADS3 debug session is active, so debugger hover evaluation can take precedence."
         },
         "tads3.scriptFolderName": {
           "scope": "resource",
@@ -279,6 +352,12 @@
           "minimum": 1,
           "maximum": 20,
           "description": "Set the maximum number of worker threads that takes care of the parsing. An optimal number depends on the hardware. "
+        },
+        "tads3.useExperimentalParser": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": true,
+          "description": "Use the experimental Tads3v2 parser (workerV2). Disable to fall back to the original parser. Requires a restart after change."
         },
         "tads3.parseOnlyTheWorkspaceFiles": {
           "scope": "resource",
@@ -363,6 +442,12 @@
           "default": false,
           "description": "Shows preprocessed rows above as CodeLens when they differ from original source code."
         },
+        "tads3.enableLibraryCache": {
+          "scope": "resource",
+          "type": "boolean",
+          "default": false,
+          "description": "Enables caching of preprocessed library files to improve performance."
+        },
         "tads3.ifArchiveExtensionURL": {
           "scope": "window",
           "type": "string",
@@ -378,7 +463,158 @@
           "description": "Path the ifarchive directory for tads2 contributions"
         }
       }
-    }
+    },
+    "breakpoints": [
+      {
+        "language": "tads3"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "tads3",
+        "languages": [
+          "tads3"
+        ],
+        "label": "TADS3 Debug",
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Absolute path to the TADS3 game file (.t3).",
+                "default": "${workspaceFolder}/game.t3"
+              },
+              "frobd": {
+                "type": "string",
+                "description": "Path to the frobd interpreter.",
+                "default": "frobd"
+              },
+              "dapMode": {
+                "type": "string",
+                "enum": [
+                  "stdio",
+                  "socket",
+                  "tcp"
+                ],
+                "description": "DAP communication mode: stdio (stdin/stdout), socket (Unix domain socket), or tcp (TCP port).",
+                "default": "socket"
+              },
+              "dapSocket": {
+                "type": "string",
+                "description": "Path to Unix domain socket for DAP communication (when dapMode is 'socket').",
+                "default": "/tmp/tads-dap.sock"
+              },
+              "dapPort": {
+                "type": "number",
+                "description": "TCP port for DAP communication (when dapMode is 'tcp').",
+                "default": 9876
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "description": "Automatically stop after launch.",
+                "default": true
+              },
+              "trace": {
+                "type": "boolean",
+                "description": "Enable logging of the Debug Adapter Protocol.",
+                "default": true
+              },
+              "enableGlobalsScope": {
+                "type": "boolean",
+                "description": "Expose the 'Globals' scope in the Variables view (can be very large).",
+                "default": false
+              }
+            }
+          },
+          "attach": {
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Absolute path to the TADS3 game file (.t3).",
+                "default": "${workspaceFolder}/game.t3"
+              },
+              "frobd": {
+                "type": "string",
+                "description": "Path to the frobd interpreter.",
+                "default": "frobd"
+              },
+              "dapMode": {
+                "type": "string",
+                "enum": [
+                  "stdio",
+                  "socket",
+                  "tcp"
+                ],
+                "description": "DAP communication mode: stdio (stdin/stdout), socket (Unix domain socket), or tcp (TCP port).",
+                "default": "socket"
+              },
+              "dapSocket": {
+                "type": "string",
+                "description": "Path to Unix domain socket for DAP communication (when dapMode is 'socket').",
+                "default": "/tmp/tads-dap.sock"
+              },
+              "dapPort": {
+                "type": "number",
+                "description": "TCP port for DAP communication (when dapMode is 'tcp').",
+                "default": 9876
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "description": "Automatically stop after attach.",
+                "default": true
+              },
+              "trace": {
+                "type": "boolean",
+                "description": "Enable logging of the Debug Adapter Protocol.",
+                "default": true
+              },
+              "enableGlobalsScope": {
+                "type": "boolean",
+                "description": "Expose the 'Globals' scope in the Variables view (can be very large).",
+                "default": false
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "tads3",
+            "request": "launch",
+            "name": "Debug TADS3 Program",
+            "program": "${workspaceFolder}/game.t3",
+            "frobd": "frobd",
+            "dapMode": "socket",
+            "dapSocket": "/tmp/tads-dap.sock",
+            "stopOnEntry": true
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "TADS3 Debug: Launch",
+            "description": "A new configuration for debugging a TADS3 program.",
+            "body": {
+              "type": "tads3",
+              "request": "launch",
+              "name": "Debug TADS3 Program",
+              "program": "^\"\\${workspaceFolder}/game.t3\"",
+              "frobd": "^\"frobd\"",
+              "dapMode": "socket",
+              "dapSocket": "/tmp/tads-dap.sock",
+              "stopOnEntry": true
+            }
+          }
+        ],
+        "variables": {
+          "AskForProgramName": "extension.tads3-debug.getProgramName"
+        }
+      }
+    ]
   },
   "nyc": {
     "all": true,
@@ -404,27 +640,29 @@
     "antlr4ts": "npm run antlr4ts_t2;npm run antlr4ts_t3",
     "antlr4ts_t2": "antlr4ts -visitor server/src/parser/Tads2.g4",
     "antlr4ts_t3": "antlr4ts -visitor server/src/parser/Tads3.g4",
+    "antlr4ts_t3v2": "antlr4ts -visitor server/src/parser/Tads3v2.g4",
     "build": "vsce package --no-yarn",
-    "compile": "tsc -b ",
+    "compile:tsc": "tsc -b",
+    "build:maprenderer": "esbuild ./webview-src/maprenderer.ts --bundle --sourcemap=inline --platform=browser --format=iife --target=es2020 --outfile=resources/maprenderer/maprenderer.js",
+    "build:maprenderer2": "NODE_PATH=client/node_modules esbuild ./webview-src/maprenderer.ts --bundle --sourcemap=inline --platform=browser --format=iife --target=es2020 --outfile=resources/maprenderer/maprenderer.js",
+    "watch:maprenderer": "npm run -S build:maprenderer -- --watch",
+    "compile": "npm run -S compile:tsc && npm run -S build:maprenderer",
     "test-compile": "tsc -p ./",
+    "watch:tsc": "tsc -b -w",
+    "watch_old": "node ./scripts/watch.js",
     "watch": "tsc -b -w",
-
-    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",    
-
+    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
     "prefix-server-fspath": "(cd coverage; sed 's/SF:/SF:server\\//g' server-lcov.info > server-lcov2.info  )",
     "prefix-client-fspath": "(cd coverage; sed 's/SF:/SF:client\\//g' client-lcov.info > client-lcov2.info  )",
     "merge-coverage": "npm run prefix-client-fspath && npm run prefix-server-fspath && lcov-result-merger 'coverage/*2.info' './coverage/lcov.info' ",
-
     "coverage:server": "cd server && npm run coverage",
     "coverage:client": "cd client && npm run coverage",
     "prepare-coverage-folder": "if [ -d coverage ]; then rm -r coverage; fi && mkdir coverage",
-    "coverage":  "npm run prepare-coverage-folder && npm run coverage:client && npm run coverage:server && npm run merge-coverage",
-
+    "coverage": "npm run prepare-coverage-folder && npm run coverage:client && npm run coverage:server && npm run merge-coverage",
     "test:client": "cd client && npm test",
     "test:server": "cd server && npm test",
     "test": "npm run test:client && npm run test:server",
     "coveralls": "npx coveralls < ./coverage/lcov.info",
-
     "e2e-test": "npm run compile && sh ./scripts/e2e.sh",
     "prettier": "npx prettier '**/*.ts' --write",
     "rebuild": "rm package-lock.json;rm client/package-lock.json;rm server/package-lock.json;rm -r node_modules;rm -r client/node_modules;rm -r server/node_modules;npm install",
@@ -433,25 +671,48 @@
     "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
     "deploy": "echo 'Deploy script not added yet'"
   },
+  "dbg.scripts": {
+    "compile": "tsc -p ./",
+    "lint": "eslint src --ext ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --tsconfig=./tsconfig.json --external:vscode --format=cjs --platform=node --outfile=dist/extension.js",
+    "watch": "npm run -S esbuild-base -- --sourcemap --sources-content=false --watch",
+    "esbuild-web": "esbuild ./src/web-extension.ts --bundle --tsconfig=./tsconfig.json --external:vscode --format=cjs --platform=browser --outfile=dist/web-extension.js",
+    "watch-web": "npm run -S esbuild-web -- --sourcemap --sources-content=false --watch",
+    "build": "npm run -S esbuild-base -- --sourcemap --sources-content=false && npm run -S esbuild-web -- --sourcemap --sources-content=false",
+    "clean": "rimraf dist out",
+    "clean-build": "npm run -S clean && npm run -S build",
+    "package": "vsce package",
+    "publish": "vsce publish",
+    "publish-pre-release": "vsce publish --pre-release",
+    "vscode:prepublish": "rimraf dist && npm run -S esbuild-base -- --minify && npm run -S esbuild-web -- --minify",
+    "test": "npm run typecheck && npm run test:unit",
+    "test:unit": "TS_NODE_PROJECT=test/tsconfig.json mocha --config .mocharc.json"
+  },
   "devDependencies": {
+    "@types/cytoscape": "^3.21.9",
     "@types/mocha": "^10.0.6",
+    "@types/three": "^0.180.0",
     "antlr4ts-cli": "^0.5.0-alpha.4",
     "coveralls": "^3.1.1",
-    "esbuild": "^0.20.2",
+    "esbuild": "^0.27.2",
     "eslint": "^9.2.0",
     "jest": "^29.7.0",
     "jest-junit": "^16.0.0",
     "jest-mock-extended": "^3.0.7",
     "lcov-result-merger": "^5.0.1",
-    "mocha": "^10.4.0",
+    "mocha": "^7.2.0",
     "prettier": "^3.2.5",
+    "three": "^0.180.0",
     "ts-jest": "^29.1.5",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "@types/unzipper": "^0.10.9",
     "@types/vscode": "^1.89.0",
-    "npm": "^10.7.0",
+    "cytoscape": "^3.33.1",
+    "litegraph.js": "^0.7.18",
+    "npm": "^11.7.0",
     "unzipper": "^0.11.4",
     "vsce": "^2.15.0",
     "yarn": "^1.22.22"

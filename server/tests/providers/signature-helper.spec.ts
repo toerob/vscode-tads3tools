@@ -5,11 +5,11 @@ setupMockedEnvironment();
 import { Range, DocumentSymbol, SymbolKind, Position } from "vscode-languageserver";
 import { TadsSymbolManager } from "../../src/modules/symbol-manager";
 import { onSignatureHelp } from "../../src/modules/signature-helper";
-import { preprocessedFilesCacheMap } from "../../src/server";
 import { jest, expect } from "@jest/globals";
 
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import { serverState } from '../../src/state';
 
 jest.mock("../../src/modules/documentation", () => {
   return {
@@ -30,7 +30,7 @@ describe("Definition Provider Test Suite", () => {
     fileContent = readFileSync(absolutePathToTadsFile).toString();
 
     textDocuments = setupTextDocuments("/text.txt", fileContent);
-    preprocessedFilesCacheMap.set(absolutePathToTadsFile, fileContent); // onSignatureHelp uses the preprocessed document, so this needs to be prepped as well, no diff in this case
+    serverState.preprocessedFilesCacheMap.set(absolutePathToTadsFile, fileContent); // onSignatureHelp uses the preprocessed document, so this needs to be prepped as well, no diff in this case
 
     // Prepares a 'Thing' class that can be looked up via the symbol manager,
     // this assumes the file has the same position for a defined function called functionHead.
@@ -39,7 +39,6 @@ describe("Definition Provider Test Suite", () => {
 
     sm = new TadsSymbolManager();
 
-    sm.symbolParameters.set(absolutePathToTadsFile, new Map([[symbol.name, parameters]]));
     sm.symbols.set(absolutePathToTadsFile, [symbol]);
   });
 

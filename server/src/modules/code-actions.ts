@@ -1,16 +1,20 @@
 import { TextDocuments } from "vscode-languageserver/node";
-import { SymbolKind, CodeActionKind, CodeAction, CodeActionParams } from "vscode-languageserver";
+import { SymbolKind, CodeActionKind, CodeAction, CodeActionParams, Position } from "vscode-languageserver";
 import { TadsSymbolManager, symbolManager } from "./symbol-manager";
-import { Position, TextDocument } from "vscode-languageserver-textdocument";
+import { TextDocument } from "vscode-languageserver-textdocument";
 import { camelCase } from "./utils";
 import { isSymbolKindOneOf } from "./utils";
 import { getCurrentLine } from "./utils";
 import { addShortTermMemoryKeyword } from "./completions";
 import { URI } from "vscode-uri";
 import { ID } from "./constants";
+import { withinQuote } from "./text-utils";
+import { serverState } from "../state";
 
 const lastWordRegExp = new RegExp(/\s*(\w+)[^\w]*(\s*[(].*[)]\s*[;]?)?$/); // RegExp for the Last occurring word
 const assignmentRegExp = new RegExp(/\s*(.*)\s*[=]\s*(new\s+)?(.*)\s*/);
+
+const stringQuoteRegExp = /(?:["]|["]{3}|[']|[']{3})(.*)(?:["]|["]{3}|[']|[']{3})/;
 
 // TODO: Make run findSymbol less frequent?
 export async function onCodeAction(
@@ -20,6 +24,7 @@ export async function onCodeAction(
 ): Promise<CodeAction[]> {
   const actions: CodeAction[] = [];
   const fsPath = URI.parse(params.textDocument.uri).fsPath;
+  const uri = params.textDocument.uri;
 
   const currentStartRange = { ...params.range.start };
   currentStartRange.line++;
@@ -30,17 +35,64 @@ export async function onCodeAction(
   the parser has no clue if the current rows is within a code block or not.
 
   This will be a coming improvement.
-
-  const isValidPosition = sm.isPositionWithinCodeBlock(
-    fsPath,
-    params.range.start
-  );
-  if (!isValidPosition) {
-    return [];
-  }  
   */
-
   const currentDoc = documents.get(params.textDocument.uri);
+
+  // TODO: look for check()-function above
+  const selectedText = currentDoc?.getText(params.range);
+
+  if (selectedText) {
+    const quote = stringQuoteRegExp.exec(selectedText);
+    if (quote && quote.length > 0) {
+      const needTripleQuote = /\\'/.test(quote[1]);
+      const quoteType = needTripleQuote ? "'''" : "'";
+      actions.push({
+        title: "Convert text to failCheck",
+        kind: CodeActionKind.RefactorExtract,
+        command: {
+          title: "convert to failCheck",
+          command: "tads3.insertLocalAssignmentSnippet", // TODO: rename this globally
+          arguments: [
+            params.textDocument.uri,
+            `failCheck(${quoteType}${quote[1]}${quoteType});$0`,
+            params.range.start.line,
+            params.range.start.character,
+            params.range.end.character,
+          ],
+        },
+      });
+    }
+  }
+
+  const docSinceSave = serverState.currentDocChanges ?? "";
+  const lineCountInDocSinceSave = docSinceSave.split(/\r?\n/).length;
+
+  const tolerance =
+    currentDoc?.lineCount === lineCountInDocSinceSave || 
+    currentDoc?.lineCount === (lineCountInDocSinceSave + 2);
+
+    const isWithinCodeBlock = sm.isPositionWithinCodeBlock(fsPath, params.range.start);
+
+  //---------------------------------------------
+  // Offer text analysis
+  //---------------------------------------------
+  // TODO: correctly distinguish if within a text block
+  if (!isWithinCodeBlock) {
+    const character_position = currentDoc?.offsetAt(params.range.start);
+    if (character_position) {
+      //const withinStringResult = withinQuote(currentDoc, params.range.start)
+      //if (withinStringResult) {
+      actions.push({
+        title: "Create decorations from text",
+        kind: CodeActionKind.QuickFix,
+        command: {
+          title: "Add decorations automatically based on text analysis",
+          command: "tads3.analyzeTextAtPosition",
+        },
+      });
+    }
+  }
+
   if (currentDoc === undefined || params.range?.start === undefined) {
     return [];
   }
@@ -58,121 +110,154 @@ export async function onCodeAction(
   const match = lastWordRegExp.exec(currentLine); // Extract the last word on this line
   if (match === null) {
     if (currentLine.match(/^\s*\[\s*\]\s*;?$/)) {
-      return [createArrayAssignmentAction(currentLine, params.textDocument.uri, cursorPosition)];
+      createArrayAssignmentAction(actions, currentLine, params.textDocument.uri, cursorPosition);
     }
-    return [];
   }
-
-  symbolName = match[1];
-
-  let symbol = undefined;
 
   const startingWord = currentLine.match(/\w/);
   const startPosition = startingWord?.index;
-  if (symbolName === "inherited") {
-    const result = symbolManager.findContainingObject(fsPath, params.range.start);
-    if (result) {
-      symbol = { symbol: result, filePath: fsPath };
-    }
-  } else {
-    symbol = sm.findSymbol(symbolName);
+
+  if (tolerance && isWithinCodeBlock) {
+    identityAritmethicExpression(actions, currentLine, uri, cursorPosition);
+    identityLocalAssignmentExpression(actions, currentLine, uri, cursorPosition, startPosition);
   }
 
-  if (symbol?.symbol === undefined) {
-    const exp = `(${ID})?\\s*[=]?\\s*(${ID})\\s*([+\\-\\*\\/])\\s*(${ID})([;])?`;
-    const aritmethicExpression = new RegExp(exp);
-    const aritmethicExpressionMatch = aritmethicExpression.exec(currentLine);
-    if (aritmethicExpressionMatch) {
-      const variable = aritmethicExpressionMatch[1];
-      const left = aritmethicExpressionMatch[2]?.trim();
-      const op = aritmethicExpressionMatch[3]?.trim();
-      const right = aritmethicExpressionMatch[4]?.trim();
-      const end = aritmethicExpressionMatch[5];
+  locateMissingNounsInDescriptions(symbolManager, actions, currentLine, uri, fsPath, cursorPosition, currentDoc);
 
-      if (left && op && right) {
-        return [
-          createSumAction(currentLine, params.textDocument.uri, cursorPosition, {
-            variable,
-            left,
-            op,
-            right,
-            end,
-          }),
-        ];
+  if (match && match.length > 0) {
+    symbolName = match[1];
+
+    let symbol = undefined;
+
+    if (symbolName === "inherited") {
+      const result = symbolManager.findContainingObject(fsPath, params.range.start);
+      if (result) {
+        symbol = { symbol: result, filePath: fsPath };
       }
+    } else {
+      symbol = sm.findSymbol(symbolName);
     }
 
-    return [];
-  }
+    if (symbol?.symbol !== undefined) {
+      // TODO: check if within text file: disregard
+      // TODO: check if not within code block: disregard
 
-  const symbolKind = symbol.symbol?.kind;
+      const symbolKind = symbol.symbol?.kind;
 
-  if (!(symbolKind && currentLine && startPosition !== undefined && symbolKind)) {
-    return [];
-  }
+      if (!(symbolKind && currentLine && startPosition !== undefined && symbolKind)) {
+        return [];
+      }
 
-  // TODO: refactorize this, for now - it works.
-  const hasNew = isSymbolKindOneOf(symbolKind, [SymbolKind.Object, SymbolKind.Class, SymbolKind.Interface]);
+      // TODO: refactorize this, for now - it works.
+      const hasNew = isSymbolKindOneOf(symbolKind, [SymbolKind.Object, SymbolKind.Class, SymbolKind.Interface]);
 
-  const hasParenthesis = isSymbolKindOneOf(symbolKind, [
-    SymbolKind.Object,
-    SymbolKind.Class,
-    SymbolKind.Interface,
-    SymbolKind.Function,
-    SymbolKind.Method,
-  ]);
+      const hasParenthesis = isSymbolKindOneOf(symbolKind, [
+        SymbolKind.Object,
+        SymbolKind.Class,
+        SymbolKind.Interface,
+        SymbolKind.Function,
+        SymbolKind.Method,
+      ]);
 
-  const isMissingParams = hasParenthesis && currentLine.match(/[(].*[)]\s*[;]?\s*$/) === null;
+      const isMissingParams = hasParenthesis && currentLine.match(/[(].*[)]\s*[;]?\s*$/) === null;
 
-  const isMissingNewKeyword = hasNew && hasParenthesis && currentLine.match(`\\s*new\\s+${symbolName}`) === null;
+      const isMissingNewKeyword = hasNew && hasParenthesis && currentLine.match(`\\s*new\\s+${symbolName}`) === null;
 
-  const isMissingSemicolon = currentLine.match(/;\s*$/) === null;
-  const maybeParenthesis = isMissingParams ? "()" : "";
-  const maybeSemicolon = isMissingSemicolon ? ";" : "";
-  let maybeNewKeyword = isMissingNewKeyword ? "new " : "";
-  let instanceName = currentLine?.trim();
-  let variableName = camelCase(symbolName?.trim());
+      const isMissingSemicolon = currentLine.match(/;\s*$/) === null;
+      const maybeParenthesis = isMissingParams ? "()" : "";
+      const maybeSemicolon = isMissingSemicolon ? ";" : "";
+      let maybeNewKeyword = isMissingNewKeyword ? "new " : "";
+      let instanceName = currentLine?.trim();
+      let variableName = camelCase(symbolName?.trim());
 
-  // Check for already existing variable names, e.g: "xyzzy = new Thing()"
-  // - in that case reuse that name
+      // Check for already existing variable names, e.g: "xyzzy = new Thing()"
+      // - in that case reuse that name
 
-  const variableNameExistsMatcher = assignmentRegExp.exec(instanceName);
-  if (variableNameExistsMatcher != null && variableNameExistsMatcher.length > 2) {
-    variableName = camelCase(variableNameExistsMatcher[1]?.trim()) ?? undefined;
-    if (variableNameExistsMatcher[2]?.trim() === "new") {
-      maybeNewKeyword = "new";
+      const variableNameExistsMatcher = assignmentRegExp.exec(instanceName);
+      if (variableNameExistsMatcher != null && variableNameExistsMatcher.length > 2) {
+        variableName = camelCase(variableNameExistsMatcher[1]?.trim()) ?? undefined;
+        if (variableNameExistsMatcher[2]?.trim() === "new") {
+          maybeNewKeyword = "new";
+        }
+        instanceName = variableNameExistsMatcher[3];
+      }
+      // Cut off the 'get' part for the variable name if this is a typical getter
+      if (variableName.startsWith("get") && variableName.length > 3) {
+        variableName = camelCase(variableName.substring(3));
+      }
+
+      addShortTermMemoryKeyword(variableName);
+
+      actions.push({
+        title: "Complete local assignment statement",
+        kind: CodeActionKind.RefactorExtract,
+        command: {
+          title: "Insert local assignment snippet",
+          command: "tads3.insertLocalAssignmentSnippet",
+          arguments: [
+            params.textDocument.uri,
+            `local \${1:${variableName}} = ${maybeNewKeyword}${instanceName}${maybeParenthesis}${maybeSemicolon}$0`,
+            cursorPosition.line,
+            startPosition,
+            currentLine.length,
+          ],
+        },
+      });
     }
-    instanceName = variableNameExistsMatcher[3];
-  }
-  // Cut off the 'get' part for the variable name if this is a typical getter
-  if (variableName.startsWith("get") && variableName.length > 3) {
-    variableName = camelCase(variableName.substring(3));
   }
 
-  addShortTermMemoryKeyword(variableName);
-
-  actions.push({
-    title: "Complete local assignment statement",
-    kind: CodeActionKind.RefactorExtract,
-    command: {
-      title: "Insert local assignment snippet",
-      command: "tads3.insertLocalAssignmentSnippet",
-      arguments: [
-        params.textDocument.uri,
-        `local \${1:${variableName}} = ${maybeNewKeyword}${instanceName}${maybeParenthesis}${maybeSemicolon}$0`,
-        cursorPosition.line,
-        startPosition,
-        currentLine.length,
-      ],
-    },
-  });
   return actions;
 }
 
-function createArrayAssignmentAction(currentLine: string, uri: string, cursorPosition: Position): CodeAction {
+function locateMissingNounsInDescriptions(
+  symbolManager: TadsSymbolManager,
+  actions: CodeAction[],
+  currentLine: string,
+  uri: string,
+  fsPath: string,
+  cursorPosition: Position,
+  currentDoc: TextDocument,
+) {
+  //const highLevelObjectsInFile1 = symbolManager.findAllSymbolsByKind(fsPath, [SymbolKind.Object]);
+  const symbol = symbolManager.findContainingObject(
+    fsPath,
+    //[SymbolKind.Object],
+    cursorPosition,
+  );
+  const nounSearchActions = [];
+  if (symbol) {
+    //symbol.
+    if (symbol.detail?.endsWith("Room")) {
+      const roomDefinition = currentDoc.getText(symbol.range);
+      const pat = new RegExp(/\s+\"[^\"](.+)[^\"]\"\s+/);
+      const res = pat.exec(roomDefinition);
+
+      console.log(roomDefinition);
+    }
+    const descriptions = symbol.children?.filter((x) => x.name == "desc");
+    //for (const object of highLevelObjectsInFile1) {
+    nounSearchActions.push({
+      title: "TODO...",
+      kind: CodeActionKind.RefactorExtract,
+      command: {
+        title: "Insert local assignment snippet",
+        command: "tads3.insertLocalAssignmentSnippet",
+        arguments: [uri, symbol.range, cursorPosition.line, 0, currentLine.length],
+      },
+    });
+    //}
+  }
+}
+
+function createArrayAssignmentAction(
+  actions: CodeAction[],
+  currentLine: string,
+  uri: string,
+  cursorPosition: Position,
+) {
   const startingWord = currentLine.match(/\[/);
   const startPosition = startingWord?.index;
-  return {
+  const action = {
     title: "Complete local assignment (array) statement",
     kind: CodeActionKind.RefactorExtract,
     command: {
@@ -181,6 +266,38 @@ function createArrayAssignmentAction(currentLine: string, uri: string, cursorPos
       arguments: [uri, `local \${1:x} = [];\$0`, cursorPosition.line, startPosition, currentLine.length],
     },
   };
+  actions.push(action);
+}
+
+function identityAritmethicExpression(
+  actions: CodeAction[],
+  currentLine: string,
+  uri: any,
+  cursorPosition: Position,
+): CodeAction | undefined {
+  const exp = `(${ID})?\\s*[=]?\\s*(${ID})\\s*([+\\-\\*\\/])\\s*(${ID})([;])?`;
+  const aritmethicExpression = new RegExp(exp);
+  const aritmethicExpressionMatch = aritmethicExpression.exec(currentLine);
+  if (!aritmethicExpressionMatch) {
+    return;
+  }
+  const variable = aritmethicExpressionMatch[1];
+  const left = aritmethicExpressionMatch[2]?.trim();
+  const op = aritmethicExpressionMatch[3]?.trim();
+  const right = aritmethicExpressionMatch[4]?.trim();
+  const end = aritmethicExpressionMatch[5];
+  if (!left || !op || !right) {
+    return;
+  }
+
+  const action = createSumAction(currentLine, uri, cursorPosition, {
+    variable,
+    left,
+    op,
+    right,
+    end,
+  });
+  actions.push(action);
 }
 
 function createSumAction(
@@ -215,4 +332,34 @@ function createSumAction(
       arguments: [uri, newText, cursorPosition.line, startPosition, currentLine.length],
     },
   };
+}
+
+function identityLocalAssignmentExpression(
+  actions: CodeAction[],
+  currentLine: string,
+  uri: string,
+  cursorPosition: Position,
+  startPosition: number | undefined,
+): CodeAction | undefined {
+  const simpleExp = new RegExp(`(${ID})?\\s*[=]\\s*([^\\s]+.*)`);
+  const simpleExpMatch = simpleExp.exec(currentLine);
+  if (simpleExpMatch) {
+    const variable = simpleExpMatch[1]?.trim();
+    const expression = simpleExpMatch[2]?.trim();
+    const maybeSemicolon = expression.endsWith(";") ? "" : ";";
+    if (!expression) {
+      return;
+    }
+    const newLocal = `local ${variable} = ${expression}${maybeSemicolon}`;
+    const action = {
+      title: "Complete local assignment statement",
+      kind: CodeActionKind.RefactorExtract,
+      command: {
+        title: "Insert local assignment snippet",
+        command: "tads3.insertLocalAssignmentSnippet",
+        arguments: [uri, newLocal, cursorPosition.line, startPosition, currentLine.length],
+      },
+    };
+    actions.push(action);
+  }
 }

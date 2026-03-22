@@ -8,7 +8,7 @@ import {
   CancellationTokenSource,
   ExtensionContext,
 } from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
+import { LanguageClient } from 'vscode-languageclient/node';
 import { setErrorDiagnostics } from "../extension";
 import { selectMakefileWithDialog } from './select-makefile-dialog';
 import { extensionState } from "./state";

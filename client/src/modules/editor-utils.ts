@@ -1,5 +1,5 @@
-import { window, Range, ViewColumn, TextDocument, workspace } from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
+import { window, Range, ViewColumn, TextDocument } from "vscode";
+import { LanguageClient } from 'vscode-languageclient/node';
 import { ExtensionStateStore } from "./state";
 
 export function showAndScrollToRange(document: TextDocument, range: Range) {

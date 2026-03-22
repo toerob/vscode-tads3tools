@@ -45,7 +45,7 @@ let minZ = 0;
 
 let symbols: any[];
 
-const unlistedProxyRegExp = new RegExp(/static[(]{2}(.*)[)][.]createUnlistedProxy/);
+const unlistedProxyRegExp = /static\(\((\w+)\)\.createUnlistedProxy/;
 const unlistedProxyRegExpAdv3Lite = new RegExp(/UnlistedProxyConnector{\s*direction\s*[=]\s*(.*)\s*}/);
 const travelConnectorRegExp = new RegExp(/TravelConnector.*destination[=](.*)travelDesc.*/);
 
@@ -126,104 +126,141 @@ export function flattenArrayByType(objects: DocumentSymbol[], kind: SymbolKind):
   return objectArray;
 }
 
-function crawlRoomTads3(room: DefaultMapObject, coords: any[], mapObjects: any[]) {
-  if (crawledRooms.includes(room)) {
-    return;
+function crawlRoomTads3(startRoom: DefaultMapObject, startCoords: any[], mapObjects: any[]) {
+  // Pre-build a lookup: door name → parent room name.
+  // This lets us resolve "otherSide" doors without searching the symbol tree.
+  const doorParentMap = new Map<string, string>();
+  for (const obj of mapObjects) {
+    if (obj.parent && obj.detail && /Door|Passage|Stairway/.test(obj.detail)) {
+      doorParentMap.set(obj.name, obj.parent);
+    }
   }
-  crawledRooms.push(room);
-  room.isMapped = true;
 
-  minX = Math.min(minX, coords[0]);
-  minY = Math.min(minY, coords[1]);
-  minZ = Math.min(minY, coords[2]);
+  // Pre-resolve all asExit / UnlistedProxy / TravelConnector references
+  // so the BFS doesn't depend on iteration order.
+  for (const room of mapObjects) {
+    for (const dir of dirArray) {
+      let target = getAdjacentRoomName(room, dir);
+      if (target === undefined) continue;
 
-  room.x = coords[0];
-  room.y = coords[1];
-  room.z = coords[2];
-  //console.log(`Adding room: ${room.name} x,y,z: ${room.x},${room.y},${room.z}`);
-  for (const dir of dirArray) {
-    let nextRoomName = getAdjacentRoomName(room, dir); /*room[dir]*/
-    if (nextRoomName === undefined) {
-      continue;
-    }
-
-    const travelConnectorMatch = travelConnectorRegExp.exec(nextRoomName);
-    if (travelConnectorMatch) {
-      nextRoomName = travelConnectorMatch[1];
-      setAdjacentRoomName(room, dir, nextRoomName);
-      //room[dir] = nextRoomName;
-      //console.log(`Replacing travelConnector match ${match[1]} with: ${nextRoomName}`);
-    }
-    let match = unlistedProxyRegExp.exec(nextRoomName);
-    if (match) {
-      const dir = match[1];
-      //TODO: Make sure this works as before
-      nextRoomName = getAdjacentRoomName(room, dir);
-      setAdjacentRoomName(room, dir, nextRoomName);
-      //nextRoomName = room[match[1]];
-      //room[dir] = nextRoomName;
-
-      //console.log(`Replacing proxy direction match ${match[1]} with: ${nextRoomName}`);
-    } else {
-      match = unlistedProxyRegExpAdv3Lite.exec(nextRoomName);
-      if (match) {
-        const dir = match[1];
-        nextRoomName = getAdjacentRoomName(room, dir);
-
-        if (nextRoomName === undefined) {
-          console.error(`${match[1]} as property wasn't found within ${room.name}`);
-        }
-        setAdjacentRoomName(room, dir, nextRoomName);
-        //console.log(`Replacing proxy direction match ${match[1]} with: ${nextRoomName}`);
+      const tcMatch = travelConnectorRegExp.exec(target);
+      if (tcMatch) {
+        target = tcMatch[1];
+        setAdjacentRoomName(room, dir, target);
+        continue;
       }
-    }
 
-    // TODO: broken.. need to fix. or not use at all. It gets redundant in a way.
-    // Optional paths is either to allow certain
-    // '//' - comment to add specifics when it is to hard to computate
-    //  or evaluate the row using the compiler's built in eval function, but that seems even more wasteful.
+      let proxyMatch = unlistedProxyRegExp.exec(target);
+      if (proxyMatch) {
+        const proxyDir = proxyMatch[1];
+        const resolved = getAdjacentRoomName(room, proxyDir);
+        if (resolved !== undefined) {
+          setAdjacentRoomName(room, dir, resolved);
+        }
+        continue;
+      }
 
-    // Last, check children objects that contains the word door, and see if they have an arrowConnection
-    //if (room[dir] === undefined) {
-    /*room.children.filter(x => x.arrowConnection !== undefined && x.detail.includes('Door')).forEach(door => {
-			let parentNode = symbols.find(x => x.children?.find(x => x.name === door.arrowConnection));
-			if (parentNode) {
-				door = mapObjects.find(x => x.name === parentNode.name);
-				let dirToDoor = dirArray.find(x => room[x] === room.name);
-				if (dirToDoor) {
-					room[dirToDoor] = door.name;
-				}
-			}
-		})*/
-    //}
-
-    let nextRoom = mapObjects.find((x) => x.name === nextRoomName);
-    if (nextRoom === undefined) {
-      continue;
-    }
-
-    if (nextRoom.detail.includes("Door") || nextRoom.detail.includes("Stairway")) {
-      if (nextRoom.arrowConnection) {
-        const parentNode = symbols.find((x) =>
-          x.children?.find((x: DefaultMapObject) => x.name === nextRoom.arrowConnection),
-        );
-        if (parentNode) {
-          nextRoom = mapObjects.find((x) => x.name === parentNode.name);
-          setAdjacentRoomName(room, dir, nextRoom.name);
+      proxyMatch = unlistedProxyRegExpAdv3Lite.exec(target);
+      if (proxyMatch) {
+        const proxyDir = proxyMatch[1];
+        const resolved = getAdjacentRoomName(room, proxyDir);
+        if (resolved !== undefined) {
+          setAdjacentRoomName(room, dir, resolved);
+        } else {
+          console.error(`${proxyMatch[1]} as property wasn't found within ${room.name}`);
         }
       }
     }
+  }
 
-    try {
-      const offsetCoords: any = getDirectionCoords(dir);
-      const nextCoords: any = [...offsetCoords];
+  // A second pass to resolve chained proxies (e.g. east = asExit(north), north = asExit(south)).
+  // Keep resolving until stable or max iterations reached.
+  for (let i = 0; i < 5; i++) {
+    let changed = false;
+    for (const room of mapObjects) {
+      for (const dir of dirArray) {
+        const target = getAdjacentRoomName(room, dir);
+        if (target === undefined) continue;
 
-      nextCoords[0] = room.x + offsetCoords[0];
-      nextCoords[1] = room.y + offsetCoords[1];
-      nextCoords[2] = room.z + offsetCoords[2];
-      crawlRoomTads3(nextRoom, nextCoords, mapObjects);
-    } catch (error) {
-      console.error(`room ${room} and direction: ${dir}, crawling failure: ${error}`);
+        let proxyMatch = unlistedProxyRegExp.exec(target) ?? unlistedProxyRegExpAdv3Lite.exec(target);
+        if (proxyMatch) {
+          const resolved = getAdjacentRoomName(room, proxyMatch[1]);
+          if (resolved !== undefined && resolved !== target) {
+            setAdjacentRoomName(room, dir, resolved);
+            changed = true;
+          }
+        }
+
+        const tcMatch = travelConnectorRegExp.exec(target);
+        if (tcMatch) {
+          setAdjacentRoomName(room, dir, tcMatch[1]);
+          changed = true;
+        }
+      }
+    }
+    if (!changed) break;
+  }
+
+  const visited = new Set<DefaultMapObject>();
+  const queue: { room: DefaultMapObject; coords: any[] }[] = [{ room: startRoom, coords: startCoords }];
+  visited.add(startRoom);
+
+  while (queue.length > 0) {
+    const { room, coords } = queue.shift()!;
+
+    crawledRooms.push(room);
+    room.isMapped = true;
+
+    minX = Math.min(minX, coords[0]);
+    minY = Math.min(minY, coords[1]);
+    minZ = Math.min(minZ, coords[2]);
+
+    room.x = coords[0];
+    room.y = coords[1];
+    room.z = coords[2];
+
+    for (const dir of dirArray) {
+      const nextRoomName = getAdjacentRoomName(room, dir);
+      if (nextRoomName === undefined) {
+        continue;
+      }
+
+      let nextRoom = mapObjects.find((x) => x.name === nextRoomName);
+      if (nextRoom === undefined) {
+        continue;
+      }
+
+      if (nextRoom.detail && /Door|Passage|Stairway/.test(nextRoom.detail)) {
+        // Resolve through the other side of the door to find the destination room.
+        const otherSideName = nextRoom.otherSide ?? nextRoom.arrowConnection;
+        if (otherSideName) {
+          const destRoomName = doorParentMap.get(otherSideName);
+          if (destRoomName) {
+            const destRoom = mapObjects.find((x) => x.name === destRoomName);
+            if (destRoom) {
+              nextRoom = destRoom;
+              setAdjacentRoomName(room, dir, destRoom.name);
+            }
+          }
+        }
+      }
+
+      if (visited.has(nextRoom)) {
+        continue;
+      }
+      visited.add(nextRoom);
+
+      try {
+        const offsetCoords: any = getDirectionCoords(dir);
+        const nextCoords: any = [
+          room.x + offsetCoords[0],
+          room.y + offsetCoords[1],
+          room.z + offsetCoords[2],
+        ];
+        queue.push({ room: nextRoom, coords: nextCoords });
+      } catch (error) {
+        console.error(`room ${room} and direction: ${dir}, crawling failure: ${error}`);
+      }
     }
   }
 }

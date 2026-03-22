@@ -1,4 +1,4 @@
-import { DocumentSymbol, SymbolKind, Range } from "vscode-languageserver";
+import { DocumentSymbol, SymbolKind, Range } from "vscode-languageserver/node";
 
 export function createSymbol(name: string, children: DocumentSymbol[] = []) {
   return DocumentSymbol.create(

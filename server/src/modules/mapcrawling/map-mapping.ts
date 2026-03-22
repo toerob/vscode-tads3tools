@@ -1,10 +1,10 @@
 import { DocumentSymbol, SymbolKind } from "vscode-languageserver";
 import { isUsingAdv3Lite } from "../../parse-workers-manager";
-import { ExtendedDocumentSymbolProperties } from "../../parser/Tads3SymbolListener";
 import { TadsSymbolManager } from "../symbol-manager";
 import { serverState } from "../../state";
 import { DefaultMapObject } from "./DefaultMapObject";
 import { crawlRooms } from "./map-crawling";
+import { MapNodeData } from "./MapNodeData";
 
 enum EditorMode {
   MAP = 0,
@@ -175,16 +175,8 @@ export default class MapObjectManager {
 		return sortedMapObjects;*/
   }
 
-  private findAdditionalProps(symbol: DocumentSymbol): ExtendedDocumentSymbolProperties | undefined {
-    if (symbol) {
-      for (const eachFileKey of this.symbolManager.additionalProperties.keys()) {
-        const symbolAdditionalProps = this.symbolManager.additionalProperties.get(eachFileKey)?.get(symbol);
-        if (symbolAdditionalProps) {
-          return symbolAdditionalProps;
-        }
-      }
-    }
-    return undefined;
+  private findMapData(symbol: DocumentSymbol): MapNodeData | undefined {
+    return this.symbolManager.mapData.get(symbol.name);
   }
 
   craftClassInheritanceArrayFromCommaDelimDetail(commaDelimitedClassList: string) {
@@ -245,7 +237,7 @@ export default class MapObjectManager {
   isRoomOrDoorT3(o: DocumentSymbol) {
     //TODO: minor "hack" until all library files are being processed
     // Should be removed once that is working perfectly
-    const a = this.findAdditionalProps(o);
+    const a = this.findMapData(o);
     try {
       if (a?.isClass) {
         return false;
@@ -285,7 +277,7 @@ export default class MapObjectManager {
   isRoomOrDoorT2(o: DocumentSymbol) {
     //TODO: minor "hack" until all library files are being processed
     // Should be removed once that is working perfectly
-    const a = this.findAdditionalProps(o);
+    const a = this.findMapData(o);
     try {
       if (a?.isClass) {
         return false;
@@ -337,57 +329,56 @@ export default class MapObjectManager {
         }
       }
     }
-    const props = this.findAdditionalProps(symbol);
-    mapObj.parent = props?.parent?.name;
+    const props = this.findMapData(symbol);
+    mapObj.parent = props?.parentName;
     mapObj.shortName = props?.shortName;
     mapObj.arrowConnection = props?.arrowConnection;
+    mapObj.otherSide = props?.otherSide;
     mapObj.kind = symbol.kind;
     mapObj.detail = symbol.detail;
 
-    const isAssignment = (obj: DocumentSymbol) => {
-      const isAssignment = this.findAdditionalProps(obj)?.isAssignment;
-      return isAssignment;
-    };
+    // A child property is an assignment if its name appears in the parent's assignedProperties set
+    const isAssignment = (child: DocumentSymbol) => props?.assignedProperties.has(child.name) ?? false;
 
-    mapObj.north = symbol.children?.find((x) => isAssignment(x) && x.name === "north")?.detail;
-    mapObj.south = symbol.children?.find((x) => isAssignment(x) && x.name === "south")?.detail;
+    mapObj.north = symbol.children?.find((x:any) => isAssignment(x) && x.name === "north")?.detail;
+    mapObj.south = symbol.children?.find((x:any) => isAssignment(x) && x.name === "south")?.detail;
 
     if (serverState.tadsVersion === 3) {
-      mapObj.northeast = symbol.children?.find((x) => isAssignment(x) && x.name === "northeast")?.detail;
-      mapObj.northwest = symbol.children?.find((x) => isAssignment(x) && x.name === "northwest")?.detail;
-      mapObj.southeast = symbol.children?.find((x) => isAssignment(x) && x.name === "southeast")?.detail;
-      mapObj.southwest = symbol.children?.find((x) => isAssignment(x) && x.name === "southwest")?.detail;
+      mapObj.northeast = symbol.children?.find((x:any) => isAssignment(x) && x.name === "northeast")?.detail;
+      mapObj.northwest = symbol.children?.find((x:any) => isAssignment(x) && x.name === "northwest")?.detail;
+      mapObj.southeast = symbol.children?.find((x:any) => isAssignment(x) && x.name === "southeast")?.detail;
+      mapObj.southwest = symbol.children?.find((x:any) => isAssignment(x) && x.name === "southwest")?.detail;
     } else {
-      mapObj.northeast = symbol.children?.find((x) => isAssignment(x) && x.name === "ne")?.detail;
-      mapObj.northwest = symbol.children?.find((x) => isAssignment(x) && x.name === "nw")?.detail;
-      mapObj.southeast = symbol.children?.find((x) => isAssignment(x) && x.name === "se")?.detail;
-      mapObj.southwest = symbol.children?.find((x) => isAssignment(x) && x.name === "sw")?.detail;
+      mapObj.northeast = symbol.children?.find((x:any) => isAssignment(x) && x.name === "ne")?.detail;
+      mapObj.northwest = symbol.children?.find((x:any) => isAssignment(x) && x.name === "nw")?.detail;
+      mapObj.southeast = symbol.children?.find((x:any) => isAssignment(x) && x.name === "se")?.detail;
+      mapObj.southwest = symbol.children?.find((x:any) => isAssignment(x) && x.name === "sw")?.detail;
 
-      mapObj.doordest = symbol.children?.find((x) => isAssignment(x) && x.name === "doordest")?.detail;
+      mapObj.doordest = symbol.children?.find((x:any) => isAssignment(x) && x.name === "doordest")?.detail;
     }
 
-    mapObj.east = symbol.children?.find((x) => isAssignment(x) && x.name === "east")?.detail;
-    mapObj.west = symbol.children?.find((x) => isAssignment(x) && x.name === "west")?.detail;
+    mapObj.east = symbol.children?.find((x:any) => isAssignment(x) && x.name === "east")?.detail;
+    mapObj.west = symbol.children?.find((x:any) => isAssignment(x) && x.name === "west")?.detail;
 
-    mapObj.up = symbol.children?.find((x) => isAssignment(x) && x.name === "up")?.detail;
-    mapObj.down = symbol.children?.find((x) => isAssignment(x) && x.name === "down")?.detail;
+    mapObj.up = symbol.children?.find((x:any) => isAssignment(x) && x.name === "up")?.detail;
+    mapObj.down = symbol.children?.find((x:any) => isAssignment(x) && x.name === "down")?.detail;
 
-    mapObj.in = symbol.children?.find((x) => isAssignment(x) && x.name === "in")?.detail;
-    mapObj.out = symbol.children?.find((x) => isAssignment(x) && x.name === "out")?.detail;
+    mapObj.in = symbol.children?.find((x:any) => isAssignment(x) && x.name === "in")?.detail;
+    mapObj.out = symbol.children?.find((x:any) => isAssignment(x) && x.name === "out")?.detail;
 
     // Sets north to fore if north is not already set, etc...
     mapObj.north = mapObj.north
       ? mapObj.north
-      : symbol.children?.find((x) => isAssignment(x) && x.name === "fore")?.detail;
+      : symbol.children?.find((x:any) => isAssignment(x) && x.name === "fore")?.detail;
     mapObj.south = mapObj.south
       ? mapObj.south
-      : symbol.children?.find((x) => isAssignment(x) && x.name === "aft")?.detail;
+      : symbol.children?.find((x:any) => isAssignment(x) && x.name === "aft")?.detail;
     mapObj.west = mapObj.west
       ? mapObj.west
-      : symbol.children?.find((x) => isAssignment(x) && x.name === "port")?.detail;
+      : symbol.children?.find((x:any) => isAssignment(x) && x.name === "port")?.detail;
     mapObj.east = mapObj.east
       ? mapObj.east
-      : symbol.children?.find((x) => isAssignment(x) && x.name === "starboard")?.detail;
+      : symbol.children?.find((x:any) => isAssignment(x) && x.name === "starboard")?.detail;
 
     // Go through each travelConnector's destination value and assign it:
     const possibleExits = [

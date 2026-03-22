@@ -41,6 +41,7 @@ export function setupMockedEnvironment() {
           onDocumentRangeFormatting: jest.fn(),
           onImplementation: jest.fn(),
           onSignatureHelp: jest.fn(),
+          onNotification: jest.fn(),
         };
       }),
       ProposedFeatures: {

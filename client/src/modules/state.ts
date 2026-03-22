@@ -2,6 +2,7 @@ import { autorun, makeAutoObservable, observable } from "mobx";
 import { DocumentSymbol, FileSystemWatcher, Progress, TextDocument, TextEditor, Uri } from "vscode";
 import { client } from "../extension";
 import { LocalStorageService } from "./local-storage-service";
+import { ImageInfoProvider } from "./debugTreeView";
 
 export type ScriptInfo = {
   uri: Uri;
@@ -16,6 +17,7 @@ export class ExtensionStateStore {
 
   isUsingAdv3Lite = undefined;
   chosenMakefileUri: Uri | undefined;
+  _projectFolderUri: Uri | undefined;
 
   tads2MainFile: Uri | undefined = undefined;
   isUsingTads2: boolean = undefined;
@@ -28,7 +30,7 @@ export class ExtensionStateStore {
   private _currentPreprocessAndParseProgress: Progress<any>;
   private _preprocessedList: string[];
 
-  private _projectRootPath: Uri;
+  private _scriptsFolder: Uri;
   private _extensionCacheDirectory: string;
 
   private _gameFileSystemWatcher: FileSystemWatcher;
@@ -38,6 +40,23 @@ export class ExtensionStateStore {
   private _storageManager: LocalStorageService;
   private _selectedObject: DocumentSymbol;
   private _lastChosenTextEditor: TextEditor;
+
+  private _makefileDefinitions: Map<string, string>;
+
+  /* TODO: CaseInsensitiveMap needed in client also?
+    if(process.platform === "win32") {
+            this._preprocessedFilesMap  = new Map();
+  }*/
+
+  private _preprocessedFilesMap: any = new Map();
+
+  private _imageInfoProvider: ImageInfoProvider;
+  public get imageInfoProvider(): ImageInfoProvider {
+    return this._imageInfoProvider;
+  }
+  public set imageInfoProvider(value: ImageInfoProvider) {
+    this._imageInfoProvider = value;
+  }
 
   public get storageManager(): LocalStorageService {
     return this._storageManager;
@@ -69,6 +88,21 @@ export class ExtensionStateStore {
   }
   public set lastChosenTextDocument(value: TextEditor | undefined) {
     this._lastChosenTextDocument = value;
+  }
+  public get preprocessedFilesMap(): any {
+    return this._preprocessedFilesMap;
+  }
+  public set preprocessedFilesMap(value: any) {
+    if (this._preprocessedFilesMap === undefined) {
+      this._preprocessedFilesMap = new Map();
+    }
+    this._preprocessedFilesMap = value;
+  }
+  public get makefileDefinitions(): Map<string, string> {
+    return this._makefileDefinitions;
+  }
+  public set makefileDefinitions(value: Map<string, string>) {
+    this._makefileDefinitions = value;
   }
 
   constructor() {
@@ -132,11 +166,19 @@ export class ExtensionStateStore {
   }
 
   public get scriptsFolder(): Uri {
-    return this._projectRootPath;
+    return this._scriptsFolder;
   }
   public set scriptsFolder(value: Uri) {
-    this._projectRootPath = value;
+    this._scriptsFolder = value;
   }
+
+  public get projectFolderUri(): Uri {
+    return this._projectFolderUri;
+  }
+  public set projectFolderUri(value: Uri) {
+    this._projectFolderUri = value;
+  }
+
   public get selectedObject(): DocumentSymbol {
     return this._selectedObject;
   }
@@ -205,7 +247,7 @@ export class ExtensionStateStore {
   getUsingAdv3LiteStatus() {
     return this.isUsingAdv3Lite;
   }
-  
+
   getChosenMakefileUri(): Uri | undefined {
     return this.chosenMakefileUri;
   }

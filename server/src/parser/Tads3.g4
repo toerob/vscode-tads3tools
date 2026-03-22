@@ -107,21 +107,6 @@ objectDeclaration:
     (curlyObjectBody | semiColonEndedObjectBody)
 ;
 
-/*
-objectDeclaration:
-    (isClass=CLASS? | isModify=MODIFY? | isReplace=REPLACE?)
-    level+=PLUS*
-    (superTypes | isTransient=TRANSIENT?
-     (isAnon=ID?
-        (
-          id=identifierAtom
-          (COLON superTypes)?
-        )?
-     )
-    (curlyObjectBody | semiColonEndedObjectBody)
-  )
-;*/
-
 // TODO: merge objectDeclaration with grammarDeclaration, and maybe intrinsic too
 /*
          *   Parse and skip the colon, if required.  All objects except
@@ -142,9 +127,9 @@ grammarDeclaration:
 
 
 templateExpr:
-    (singleString=SSTR SEMICOLON?
+    (singleString=SSTR
     | AT atLocation=expr
-    | doubleString=DSTR SEMICOLON?
+    | doubleString=DSTR
     | ARROW (connection=identifierAtom|expression=expr) //TODO: test expression=expr
     | op=(ARROW|PLUS|MINUS|STAR|DIV|MOD|AMP|NOT|TILDE) (id=identifierAtom|expression=expr)
     | LEFT_BRACKET array RIGHT_BRACKET
@@ -152,10 +137,10 @@ templateExpr:
 ;
 
 array:
-    expr (COMMA array)*;
+    expr (COMMA expr)*;
 
 curlyObjectBody:
-    LEFT_CURLY objectBody RIGHT_CURLY;
+    LEFT_CURLY objectBody SEMICOLON? RIGHT_CURLY;
 
 semiColonEndedObjectBody:
     objectBody
@@ -167,6 +152,7 @@ superTypes:
 
 objectBody:
     (template+=templateExpr*)
+
     (functions+=functionDeclaration
     | properties+=property
     | propertySets+=propertySet
@@ -321,7 +307,6 @@ expr:
  LEFT_BRACKET expr? RIGHT_BRACKET                   #arrayExpr
  | prev=expr DOT next=expr                          #memberExpr
  | expr LEFT_BRACKET expr? RIGHT_BRACKET            #indexExpr
- | expr COMMA expr                                  #commaExpr
  | expr RANGE expr (hasStep=STEP expr)?             #rangeExpr
  | DELEGATED expr                                   #delegatedExpression
  | INHERITED expr                                   #inheritedExpression
@@ -368,6 +353,7 @@ expr:
  |  expr OPTIONAL expr COLON expr                   #ternaryExpr
  | functionDeclaration                  #anonymousFunctionExpr
  //| expr params                          #callExpr // NOt sure about this
+ | expr COMMA expr                                  #commaExpr
 
 ;
 

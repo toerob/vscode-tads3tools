@@ -3,7 +3,7 @@ import { DocumentLink, DocumentLinkParams, TextDocuments, Range, TextDocumentIde
 import { TadsSymbolManager } from "./symbol-manager";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { URI, Utils } from "vscode-uri";
-import { connection, preprocessedFilesCacheMap } from "../server";
+import { connection } from "../server";
 import { existsSync } from "fs-extra";
 import { isAbsolute } from "path";
 import { serverState } from "../state";
@@ -26,13 +26,13 @@ export async function onDocumentLinks(
   if (document) {
     const documentArray = document.getText().split(/\n/);
     const documentLineCount = documentArray.length;
-    const fileNameArray = [...preprocessedFilesCacheMap.keys()];
+    const fileNameArray = [...serverState.preprocessedFilesCacheMap.keys()];
     try {
       for (let nr = 0; nr < documentLineCount; nr++) {
         const line = documentArray[nr];
         const match = includeRegexp.exec(line);
         if (match && match.length === 3) {
-          const startOfLink = match[1]?.length + 1 ?? 0;
+          const startOfLink = match[1]?.length + 1;
           const nameOfLink = match[2] ?? "";
           const endOfLink = startOfLink + nameOfLink.length;
           const documentLink = DocumentLink.create(Range.create(nr, startOfLink, nr, endOfLink));

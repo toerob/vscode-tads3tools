@@ -12,9 +12,19 @@ import {
   TextEditorSelectionChangeEvent,
   version,
   workspace,
+  debug,
+  WorkspaceFoldersChangeEvent,
+  RelativePattern,
 } from "vscode";
-import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from "vscode-languageclient/node";
-import { openInVisualEditor, setupVisualEditorResponseHandler } from "./modules/visual-editor/visual-editor";
+
+import { TransportKind } from "vscode-languageclient/node";
+import { LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
+
+import {
+  onDidChange,
+  openInVisualEditor,
+  setupVisualEditorResponseHandler,
+} from "./modules/visual-editor/visual-editor";
 import { Subject, debounceTime } from "rxjs";
 import { LocalStorageService } from "./modules/local-storage-service";
 import { validateCompilerPath, validateUserSettings } from "./modules/validations";
@@ -42,12 +52,15 @@ import { switchToTads3CustomEditor } from "./modules/custom-editor";
 import { clearCache, clearCacheOnVersionChange } from "./modules/cache";
 import { closeAllTerminalsNamed, toggleRunnerOnChanges } from "./modules/game-monitor";
 import { showPreprocessedText as showPrep } from "./modules/commands/show-preprocessed";
+import { evaluateSelection } from "./modules/commands/evaluate-selection";
 import {
   showCurrentAsPrep,
   showPreprocessedFileQP as showPrepQuickPick,
   openProjectFileQuickPick,
 } from "./modules/editor-utils";
 import { enablePreprocessorCodeLens } from "./modules/code-lens";
+import { activateTads3Debug } from "./activateTads3Debug";
+import { ImageInfoProvider } from "./modules/debugTreeView";
 
 //////////
 // Globals
@@ -62,7 +75,6 @@ export function setErrorDiagnostics(diagnostics) {
 
 export const DEBOUNCE_TIME = 200;
 
-export const preprocessedFilesMap: Map<string, string> = new Map();
 export const persistedObjectPositions = new Map();
 
 export function getPersistedObjectPositions() {
@@ -127,6 +139,9 @@ export async function activate(ctx: ExtensionContext) {
     diagnoseAndParseTads3(ctx, textDocument, extensionState, client, cancelToken, diagnosticsCollection);
   });
 
+  // Activate the debug adapter and related features
+  activateTads3Debug(ctx);
+
   client.info(`Tads3 Language Client - activation completed`);
 }
 
@@ -152,6 +167,7 @@ function getServerConfiguration(ctx: ExtensionContext) {
       options: debugOptions,
     },
   };
+
   return serverOptions;
 }
 
@@ -161,6 +177,21 @@ function getClientOptions() {
       { scheme: "untitled", language: "tads3" },
       { scheme: "file", language: "tads3" },
     ],
+
+    middleware: {
+      provideHover: async (document, position, token, next) => {
+        const disableHoverDuringDebug = workspace.getConfiguration("tads3").get("disableHoverDuringDebug", true);
+        if (disableHoverDuringDebug && debug.activeDebugSession?.type === "tads3") {
+          console.log(
+            `Hover is disabled during debugging sessions, enable 'tads3.disableHoverDuringDebug' setting to change this behavior`,
+          );
+          return undefined;
+        }
+        console.log(`Providing hover for ${document.uri} at line ${position.line}`);
+        return next(document, position, token);
+      },
+    },
+
     synchronize: {
       fileEvents: workspace.createFileSystemWatcher("**/.{t,h,t3m,clientrc}"),
     },
@@ -175,25 +206,33 @@ export function setupExtensionState(ctx: ExtensionContext) {
 
 function registerVscodeSpecificProviders(ctx: ExtensionContext) {
   ctx.subscriptions.push(languages.registerCompletionItemProvider("tads3", new SnippetCompletionItemProvider(ctx)));
+  
+  extensionState.imageInfoProvider = new ImageInfoProvider();
+  ctx.subscriptions.push(
+    window.createTreeView("tads3DebugInfo", {
+      treeDataProvider: extensionState.imageInfoProvider,
+      showCollapseAll: true,
+    }),
+  );
 }
 
 function registerExtensionCommands(ctx: ExtensionContext, state: ExtensionStateStore) {
   const tads3Commands = [
     commands.registerCommand("tads3.switchEditor", switchToTads3CustomEditor),
-    commands.registerCommand("tads3.addFileToProject", () => addFileToProject(ctx)),
+    commands.registerCommand("tads3.addFileToProject", () => addFileToProject(ctx, extensionState)),
     commands.registerCommand("tads2.parseTads2Project", () => selectTads2MainFile(state)),
     commands.registerCommand("tads3.createTads3TemplateProject", () => createProject(ctx)),
     commands.registerCommand("tads3.insertLocalAssignmentSnippet", insertLocalAssignment),
     commands.registerCommand("tads3.setMakefile", () => setMakeFile(ctx, cancelToken, client, diagnosticsCollection)),
     commands.registerCommand("tads3.enablePreprocessorCodeLens", enablePreprocessorCodeLens),
-    commands.registerCommand("tads3.showPreprocessedTextAction", (p) => showPrep(preprocessDocument, p)),
+    commands.registerCommand("tads3.showPreprocessedTextAction", (p) => showPrep(p)),
     commands.registerCommand("tads3.showPreprocessedTextForCurrentFile", () => showCurrentAsPrep(client)),
     commands.registerCommand("tads3.showPreprocessedFileQuickPick", () => showPrepQuickPick(state, client)),
     commands.registerCommand("tads3.restartGameRunnerOnT3ImageChanges", toggleRunnerOnChanges),
     commands.registerCommand("tads3.downloadAndInstallExtension", () => dlInstallExtension(ctx)),
     commands.registerCommand("tads3.openProjectFileQuickPick", () => openProjectFileQuickPick(state, workspace)),
     commands.registerCommand("tads3.openInVisualEditor", () => openInVisualEditor(ctx, client)),
-    commands.registerCommand("tads3.analyzeTextAtPosition", analyzeTextAtPosition),
+    commands.registerCommand("tads3.analyzeTextAtPosition", () => analyzeTextAtPosition()),
     commands.registerCommand("tads3.extractAllQuotes", () => extractAllQuotes(ctx)),
     commands.registerCommand("tads3.installTracker", () => installTracker(ctx)),
     commands.registerCommand("tads3.clearCache", () => clearCache(ctx.globalStorageUri.fsPath)),
@@ -201,6 +240,8 @@ function registerExtensionCommands(ctx: ExtensionContext, state: ExtensionStateS
     commands.registerCommand("tads3.restartReplayScript", (p) => replayScript(p, true)),
     commands.registerCommand("tads3.openReplayScript", (params) => openReplayScript(params)),
     commands.registerCommand("tads3.deleteReplayScript", (p) => deleteReplayScript(p)),
+    commands.registerCommand("tads3.analyzeImage", () => analyzeImage()),
+    commands.registerCommand("tads3.evaluateSelection", () => evaluateSelection(client)),
   ];
   tads3Commands.forEach((com) => ctx.subscriptions.push(com));
 }
@@ -221,6 +262,10 @@ async function registerWorkspaceAndWindowHooks(
       if (config.affectsConfiguration("tads2.compiler.path")) {
         validateCompilerPath(workspace.getConfiguration("tads2").get("compiler.path"));
       }
+      // Forward configuration changes to the language server
+      //client.sendNotification('workspace/didChangeConfiguration');
+      const allConfig = workspace.getConfiguration();
+      client.sendNotification('workspace/didChangeConfiguration', { settings: allConfig });
     }),
   );
 
@@ -232,22 +277,26 @@ async function registerWorkspaceAndWindowHooks(
   ctx.subscriptions.push(
     window.onDidChangeTextEditorSelection((evt: TextEditorSelectionChangeEvent) => {
       extensionState.lastChosenTextEditor = evt.textEditor;
+      client.sendNotification("client.cursorMoved", {
+        uri: evt.textEditor.document.uri.toString(),
+        line: evt.selections[0].active.line,
+      });
     }),
   );
 
   ctx.subscriptions.push(
     window.onDidChangeActiveTextEditor((event: any) => {
-      if (event.document !== undefined) {
-        extensionState.lastChosenTextDocument = event.document;
-        if (lastChosenTextDocument) {
-          client.info(`Last chosen editor changed to: ${lastChosenTextDocument.uri}`);
-        }
+      if (event?.document !== undefined) {
+        // Store the editor (not the document) so features that call editor.edit() work.
+        extensionState.lastChosenTextDocument = event;
+        lastChosenTextDocument = event.document;
+        client.info(`Last chosen editor changed to: ${event.document.uri}`);
       }
     }),
   );
 
   if (await validateUserSettings()) {
-    await initiallyParseTadsProject(
+    const status = await initiallyParseTadsProject(
       extensionState.gameFileSystemWatcher,
       client,
       ctx,
@@ -255,6 +304,11 @@ async function registerWorkspaceAndWindowHooks(
       serverProcessCancelTokenSource,
       diagnosticsCollection,
     );
+    if (!status) {
+      client.warn(`Initial parsing of the project failed, check previous messages for details`);
+      return;
+    }
+
     if (workspace.getConfiguration("tads3").get("enableScriptFiles")) {
       // Only register a ReplayScriptTreeDataProvider if it is a tads3 project,
       // Since that will create a folder for Scripts if there is not already one.
@@ -296,4 +350,43 @@ async function onDidSaveTextDocument(
     closeAllTerminalsNamed("Tads3 Game runner terminal");
   }
   diagnoseAndCompileSubject.next(textDocument);
+}
+
+export async function analyzeImage() {
+  // Fetch user input for the .t3 file path
+  let filepath = await findImageByPattern(true);
+  if (extensionState.imageInfoProvider) {
+    extensionState.imageInfoProvider.update(filepath);
+  } else {
+    window.showErrorMessage(`ImageInfoProvider not found`);
+  }
+}
+
+export async function findImageByPattern(askIfMoreMatchesFound: boolean): Promise<string | undefined> {
+  const t3Files = await workspace.findFiles(`**/*.t3`);
+  if (t3Files.length === 1) {
+    return t3Files[0].fsPath;
+  }
+
+  if (t3Files.length > 1) {
+    if (!askIfMoreMatchesFound) {
+      return t3Files[0].fsPath;
+    }
+
+    // Let user choose from multiple files
+    const items = t3Files.map((uri) => ({
+      label: workspace.asRelativePath(uri),
+      uri: uri,
+    }));
+
+    const selected = await window.showQuickPick(items, {
+      placeHolder: "Select a TADS3 game file to debug",
+    });
+
+    if (selected) {
+      return selected.uri.fsPath;
+    }
+  }
+
+  return undefined;
 }

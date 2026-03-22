@@ -16,7 +16,6 @@ import { NilAtomContext } from "./Tads3Parser";
 import { ArrayExprContext } from "./Tads3Parser";
 import { MemberExprContext } from "./Tads3Parser";
 import { IndexExprContext } from "./Tads3Parser";
-import { CommaExprContext } from "./Tads3Parser";
 import { RangeExprContext } from "./Tads3Parser";
 import { DelegatedExpressionContext } from "./Tads3Parser";
 import { InheritedExpressionContext } from "./Tads3Parser";
@@ -52,6 +51,7 @@ import { UnaryExprContext } from "./Tads3Parser";
 import { PostFixExprContext } from "./Tads3Parser";
 import { TernaryExprContext } from "./Tads3Parser";
 import { AnonymousFunctionExprContext } from "./Tads3Parser";
+import { CommaExprContext } from "./Tads3Parser";
 import { ProgramContext } from "./Tads3Parser";
 import { DirectiveContext } from "./Tads3Parser";
 import { PragmaDirectiveContext } from "./Tads3Parser";
@@ -221,14 +221,6 @@ export interface Tads3Visitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitIndexExpr?: (ctx: IndexExprContext) => Result;
-
-	/**
-	 * Visit a parse tree produced by the `commaExpr`
-	 * labeled alternative in `Tads3Parser.expr`.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	visitCommaExpr?: (ctx: CommaExprContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by the `rangeExpr`
@@ -509,6 +501,14 @@ export interface Tads3Visitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitAnonymousFunctionExpr?: (ctx: AnonymousFunctionExprContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by the `commaExpr`
+	 * labeled alternative in `Tads3Parser.expr`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitCommaExpr?: (ctx: CommaExprContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `Tads3Parser.program`.

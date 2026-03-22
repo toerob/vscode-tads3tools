@@ -1,8 +1,9 @@
-import { CodeLens, TextDocuments, Range, CodeLensParams, Command } from "vscode-languageserver";
+import { CodeLens, TextDocuments, Range, CodeLensParams, Command, Position, SymbolKind } from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { URI } from "vscode-uri";
-import { connection, preprocessedFilesCacheMap } from "../server";
+import { analyzeText, connection } from "../server";
 import { TadsSymbolManager } from "./symbol-manager";
+import { serverState } from "../state";
 
 export async function onCodeLens(
   { textDocument }: CodeLensParams,
@@ -10,7 +11,6 @@ export async function onCodeLens(
   symbolManager: TadsSymbolManager,
 ) {
   const codeLenses: CodeLens[] = [];
-
   const configuration = await connection.workspace.getConfiguration("tads3");
   const enablePreprocessorCodeLens = configuration["enablePreprocessorCodeLens"];
 
@@ -22,10 +22,13 @@ export async function onCodeLens(
     return await codeLenses;
   }
 
-  const preprocessedDocument = preprocessedFilesCacheMap.get(fsPath);
+  connection.console.info("Gathering code lenses");
+
+  const preprocessedDocument = serverState.preprocessedFilesCacheMap.get(fsPath);
   const preprocessedDocumentArray = preprocessedDocument?.trimEnd().split(/\r?\n/);
 
   if (!currentDoc || !preprocessedDocumentArray) {
+    connection.console.info("Leaving code lenses early");
     return [];
   }
 
@@ -37,6 +40,11 @@ export async function onCodeLens(
   // be out of sync, and the codelens will be seen at incorrect
   // positions
 
+  if (currentDocArray.length != serverState.currentDocChanges?.length) {
+    // TODO: sync here (preprocess)
+    // using: serverState.currentDocChanges
+  }
+
   if (currentDocArray.length !== preprocessedDocumentArray.length) {
     connection.console.debug(
       `Document number of rows diverging from preprocessed document, skipping codelens this time around`,
@@ -44,6 +52,7 @@ export async function onCodeLens(
     return [];
   }
 
+  connection.console.info("Code lenses - checking includes");
   for (let row = 0; row < currentDoc.lineCount; row++) {
     const preprocessedLine = preprocessedDocumentArray[row];
     if (preprocessedLine === undefined) {
@@ -68,19 +77,21 @@ export async function onCodeLens(
     }
 
     if (preprocessedLine !== "" && preprocessedLine !== ";") {
-      const range = Range.create(row, 0, row, t.length);
-      if (range) {
-        codeLenses.push({
-          range: range,
-          command:
-            // TODO: find another solution so the preprocessed text
-            // doesn't need to be sent until the player clicks the CodeLens
-            Command.create(`preprocessed to: ${preprocessedLine}`, "tads3.showPreprocessedTextAction", [
-              range,
-              currentDoc.uri,
-              preprocessedDocument,
-            ]),
-        });
+      if (t.trim() !== preprocessedLine.trim()) {
+        const range = Range.create(row, 0, row, t.length);
+        if (range) {
+          codeLenses.push({
+            range: range,
+            command:
+              // TODO: find another solution so the preprocessed text
+              // doesn't need to be sent until the player clicks the CodeLens
+              Command.create(`preprocessed to: ${preprocessedLine}`, "tads3.showPreprocessedTextAction", [
+                range,
+                currentDoc.uri,
+                preprocessedDocument,
+              ]),
+          });
+        }
       }
     }
   }

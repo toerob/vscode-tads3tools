@@ -4,15 +4,16 @@ import {
   FileSystemWatcher,
   ProgressLocation,
   TextDocument,
+  Uri,
   window,
   workspace,
 } from "vscode";
 import { ExtensionStateStore } from "./state";
 import { findAndSelectMakefileUri } from "./makefile-utils";
 import { setupAndMonitorBinaryGamefileChanges } from "./game-monitor";
-import { LanguageClient } from "vscode-languageclient/node";
+import { LanguageClient } from 'vscode-languageclient/node';
 import { diagnoseDocument } from "./diagnosing";
-import { basename } from "path";
+import { basename, dirname } from "path";
 import { validateTads2Settings } from "./validations";
 import { DependencyNode } from "../models/DependencyNode";
 
@@ -24,7 +25,9 @@ export async function initiallyParseTadsProject(
   serverProcessCancelTokenSource: any,
   collection,
 ) {
-  if (window.activeTextEditor.document) {
+  window.activeTextEditor;
+
+  if (window?.activeTextEditor?.document) {
     const textDocument = window.activeTextEditor.document;
     client.info(`Trying to locate a default tads3 makefile`);
 
@@ -32,19 +35,31 @@ export async function initiallyParseTadsProject(
       extensionState.setChosenMakefileUri(await findAndSelectMakefileUri());
     }
 
+    if (extensionState.projectFolderUri === undefined) {
+      const makefileUri = extensionState.getChosenMakefileUri();
+      if (makefileUri === undefined) {
+        client.info(`No tads3 makefile could be found`);
+        return false;
+      }
+      const projectDirPath = dirname(makefileUri.fsPath);
+      const projectDirUri = Uri.file(projectDirPath);
+      extensionState.projectFolderUri = projectDirUri;
+    }
+
+
     if (extensionState.getChosenMakefileUri() === undefined) {
       client.info(`No tads3 makefile could be found`);
       if (!(await validateTads2Settings())) {
-        return;
+        return false;
       }
 
       const tads2MainFile = await detectTads2MainFile(client, extensionState);
 
       if (!(await diagnoseDocument(tads2MainFile, client, collection, extensionState))) {
-        return;
+        return false;
       }
       await parseSymbols(2, ctx, tads2MainFile, extensionState, client, serverProcessCancelTokenSource);
-      return;
+      return false;
     }
 
     client.info(`Found a makefile: ${extensionState.getChosenMakefileUri().fsPath}`);
@@ -55,10 +70,11 @@ export async function initiallyParseTadsProject(
       }
     }
     if (!(await diagnoseDocument(textDocument, client, collection, extensionState))) {
-      return;
+      return false;
     }
 
     await parseSymbols(3, ctx, textDocument, extensionState, client, serverProcessCancelTokenSource);
+    return true;
   }
 }
 

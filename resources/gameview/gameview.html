@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="gameview.css" />
+  </head>
+  <body>
+    <div id="container">
+      <div id="themebar">
+        <button class="theme-btn" data-theme="ayu" title="Ayu Dark"><span style="color:#d4d4d4;background:#0A0E14;">A</span><span style="color:#0A0E14;background:#d4d4d4;">A</span></button>
+        <button class="theme-btn" data-theme="vscode" title="VS Code Dark"><span style="color:#d4d4d4;background:#1e1e1e;">A</span><span style="color:#1e1e1e;background:#d4d4d4;">A</span></button>
+        <button class="theme-btn" data-theme="light" title="Ljust tema"><span style="color:#222;background:#fff;">A</span><span style="color:#fff;background:#222;">A</span></button>
+        <button class="theme-btn" data-theme="solarized" title="Solarized"><span style="color:#839496;background:#002b36;">A</span><span style="color:#002b36;background:#839496;">A</span></button>
+        <button class="theme-btn" data-theme="dracula" title="Dracula"><span style="color:#f8f8f2;background:#282a36;">A</span><span style="color:#282a36;background:#f8f8f2;">A</span></button>
+        <span class="theme-sep"></span>
+        <div id="fgcolorbar">
+          <button class="fg-btn" data-fg="#FFB454" title="Gul text" style="background:#FFB454;"></button>
+          <button class="fg-btn" data-fg="#AAD94C" title="Grön text" style="background:#AAD94C;"></button>
+          <button class="fg-btn" data-fg="#59C2FF" title="Blå text" style="background:#59C2FF;"></button>
+        </div>
+        <span class="theme-sep"></span>
+        <button class="theme-btn font" id="font-dec" title="Minska textstorlek">A-</button>
+        <button class="theme-btn font" id="font-inc" title="Öka textstorlek">A+</button>
+      </div>
+      <p id="output">{{output}}</p>
+      <div id="input-row">
+        <span>></span>
+        <input id="input" type="text" autocomplete="off" autofocus />
+      </div>
+      <div id="autocomplete-list"></div>
+    </div>
+    <script src="gameview.js"></script>
+  </body>
+</html>

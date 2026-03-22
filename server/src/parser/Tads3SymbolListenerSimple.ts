@@ -1,6 +1,5 @@
-import { DocumentSymbol, Range, SymbolKind } from "vscode-languageserver";
+import { DocumentSymbol, Range, SymbolKind } from "vscode-languageserver/node";
 import {
-  FunctionDeclarationContext,
   ObjectDeclarationContext,
 } from "./Tads3Parser";
 import { Tads3Listener } from "./Tads3Listener";
@@ -16,6 +15,7 @@ export default class Tads3SymbolListenerSimple implements Tads3Listener {
     const start = (ctx.start?.line ?? 1) - 1;
     const stop = (ctx.stop?.line ?? 1) - 1;
 
+    
     const range = Range.create(start, 0, stop, 0);
     let level = 0;
     if (ctx._level) {
@@ -28,6 +28,7 @@ export default class Tads3SymbolListenerSimple implements Tads3Listener {
       ctx._isClass ? SymbolKind.Class : SymbolKind.Object,
       range,
       range
+      // TODO: alla []?
     );
     this.symbols.push(symbol);
   }

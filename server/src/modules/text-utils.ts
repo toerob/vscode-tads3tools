@@ -1,8 +1,9 @@
 import { TextDocument, Position } from "vscode-languageserver-textdocument";
+import { TemplateItemNode } from "../parser/ast/nodes";
 
 const tokenizeRegExp = /[a-zA-Z0-9_]+/g;
 
-const quoteMatchRegExp = /(['](.*)[']|[']{3}(.*)[']{3}|["](.*)["]|["]{3}(.*)["]{3})/g;
+const quoteMatchRegExp = /([']{3}(.*)[']{3}|["]{3}(.*)["]{3}|['](.*)[']|["](.*)["])/g;
 
 /**
  * Converts a Position to Character offset.
@@ -183,4 +184,145 @@ export function compareStringReverse(a: string, b: string): boolean {
     }
   }
   return true;
+}
+
+/**
+ * Build VSCode snippet strings directly from structured TemplateItemNode data.
+ * Replaces the old string-parsing approach — no need to re-parse the detail string.
+ *
+ * @param items           - The template items for the class being completed.
+ * @param inheritedSets   - Resolved TemplateItemNode[] for each `inherited` marker found.
+ */
+export function createSnippetsFromTemplateItems(
+  items: TemplateItemNode[],
+  inheritedSets: TemplateItemNode[][] = [],
+): string[] {
+  const hasInherited = items.some(item => item.tokenKind === 'inherited');
+
+  if (!hasInherited) {
+    const words = buildSnippetWords(items, []);
+    return [...new Set(expandToSnippet(words).map(parts => parts.join('')))];
+  }
+
+  // Option B: two expansions — "no inheritance" and "richest inherited set".
+  // The richest set is the one with the most items (deepest in the class hierarchy).
+  const richestSet = inheritedSets.reduce<TemplateItemNode[] | null>(
+    (best, set) => (best === null || set.length > best.length ? set : best),
+    null,
+  );
+
+  // Expansion 1: inherited → nothing (skip the keyword)
+  const snippets1 = expandToSnippet(buildSnippetWords(items, [])).map(parts => parts.join(''));
+
+  // Expansion 2: inherited → richest set with its original optional flags
+  const snippets2 = richestSet && richestSet.length > 0
+    ? expandToSnippet(buildSnippetWords(items, [richestSet])).map(parts => parts.join(''))
+    : [];
+
+  return [...new Set([...snippets1, ...snippets2])];
+}
+
+interface SnippetVariant {
+  symbolName: string;
+  startSign: string;
+  endSign: string;
+  isOptional: boolean;
+}
+
+function itemToVariant(item: TemplateItemNode): SnippetVariant {
+  const isOptional = item.optional;
+  const propName   = item.propName ?? '';
+  switch (item.tokenKind) {
+    case 'sstr': return { symbolName: propName, startSign: "'",         endSign: "'", isOptional };
+    case 'dstr': return { symbolName: propName, startSign: '"',         endSign: '"', isOptional };
+    case 'list': return { symbolName: propName, startSign: '[',         endSign: ']', isOptional };
+    case 'op':   return { symbolName: propName, startSign: item.op ?? '', endSign: '', isOptional };
+    default:     return { symbolName: '',        startSign: '',           endSign: '', isOptional: true };
+  }
+}
+
+function buildSnippetWords(
+  items: TemplateItemNode[],
+  inheritedSets: TemplateItemNode[][],
+): { variants: SnippetVariant[] }[] {
+  const words: { variants: SnippetVariant[] }[] = [];
+  let i = 0;
+  while (i < items.length) {
+    const item = items[i];
+
+    if (item.tokenKind === 'inherited') {
+      // Expand with the provided inherited set (one set at a time, original optional flags preserved).
+      // If no set is provided, the keyword is silently skipped (produces the "no inheritance" form).
+      if (inheritedSets.length > 0) {
+        words.push(...buildSnippetWords(inheritedSets[0], []));
+      }
+      i++;
+      continue;
+    }
+
+    if (item.isAlternative) {
+      // Collect all consecutive alternatives into a single word slot: A | B | C → one group
+      const variants: SnippetVariant[] = [itemToVariant(item)];
+      i++;
+      while (i < items.length) {
+        variants.push(itemToVariant(items[i]));
+        if (!items[i].isAlternative) break; // this item ends the group
+        i++;
+      }
+      // TADS3 semantics: `?` on any variant (typically the last) makes the whole group optional
+      if (variants.some(v => v.isOptional)) variants.forEach(v => { v.isOptional = true; });
+      words.push({ variants });
+      i++;
+    } else {
+      words.push({ variants: [itemToVariant(item)] });
+      i++;
+    }
+  }
+  return words;
+}
+
+function expandToSnippet(input: any[], skipPlaceHolderIndex = false): string[][] {
+  const result: string[][] = [];
+
+  function makePart(variant: SnippetVariant, placeholderIndex: number): string {
+    if (!skipPlaceHolderIndex) {
+      const empty = variant.symbolName === "" && variant.startSign === "" && variant.endSign === "";
+      return empty ? "" : `${variant.startSign}$\{${placeholderIndex}:${variant.symbolName}}${variant.endSign} `;
+    }
+    return `${variant.startSign}${variant.symbolName}${variant.endSign} `;
+  }
+
+  function walk(index: number, current: string[], placeholderIndex = 1) {
+    if (index === input.length) {
+      result.push([...current]);
+      return;
+    }
+
+    const { variants } = input[index];
+    const isGroupOptional = variants.some((v: SnippetVariant) => v.isOptional);
+
+    if (variants.length > 1) {
+      // Alternative group: emit each variant in order.
+      // If the group is optional, inject one "skip" branch after the first variant.
+      for (let vi = 0; vi < variants.length; vi++) {
+        if (vi === 1 && isGroupOptional) {
+          walk(index + 1, current, placeholderIndex); // skip the whole group
+        }
+        current.push(makePart(variants[vi], placeholderIndex));
+        walk(index + 1, current, placeholderIndex + 1);
+        current.pop();
+      }
+    } else {
+      // Single item: if optional emit skip first, then the item.
+      if (isGroupOptional) {
+        walk(index + 1, current, placeholderIndex);
+      }
+      current.push(makePart(variants[0], placeholderIndex));
+      walk(index + 1, current, placeholderIndex + 1);
+      current.pop();
+    }
+  }
+
+  walk(0, []);
+  return result;
 }

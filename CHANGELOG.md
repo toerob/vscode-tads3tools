@@ -1,12 +1,39 @@
 # Changelog
 
+## 0.7.0
+
+### Added
+
+- **Experimental Tads3v2 parser** — a new ANTLR4-based parser + pipeline (`workerV2`) built on a typed AST layer. It produces the same `DocumentSymbol` output as the original parser but uses a cleaner visitor-based design that will underpin future language intelligence improvements.
+- **Tads3v2AstEvaluator** — New module for evaluating and traversing ASTs (Abstract Syntax Trees) produced by the Tads3v2 parser. This lays the groundwork for future features such as static code analysis, symbol resolution, type inference, and advanced refactoring directly in the LSP. In the long run, a robust evaluator will enable smarter code completions, deeper diagnostics, and improved semantic understanding of code in the editor.
+- **FROBD DAP debugger support** (frobd binary is required)
+- **Propertyset support in the outline** — `propertyset` blocks now appear as named container nodes in the document outline (e.g. `*DobjOpen`), with their methods listed as children using the expanded names (e.g. `checkDobjOpen`, `actionDobjOpen`).
+- **`tads3.useExperimentalParser` setting** — choose between the original parser (`worker`) and the new Tads3v2 parser (`workerV2`). Defaults to `true` (new parser). Set to `false` to revert to the original. Requires a restart after change.
+- **Parser performance** — pre-filling the ANTLR token buffer before parsing (`tokens.fill()`) yields a ~3× speedup on large library files. Applied to both workers.
+- VS Code theme coloring in the map view
+
+## 0.6.5
+
+### Added
+
+- Handy Completion snippets added for all objects deriving from 'Thing'.
+- Improved code completions: expand templates to snippets during completions
+  
+### Fixed
+
+- Better error reporting if utf-8 is used in paths
+- code actions - allow simple assignment expressions to be expanded into local assignments.
+- Adding new project files now adds language specific headers. Currently supported language codes are: en_us, sv_se, de_de, cs_cz.
+
 ## 0.6.4
 
 ### Added
+
 - code actions - now there's a code action to allow a quickfix for creating local variables.
 - A snippet is created when adding classes via auto completions, this in unison with code actions and function signatures will help increase code writing effiency.
 
 ### Fixed
+
 - The current parameter in the signature helper now works better.
 - A bug concering the signature helper was fixed. (Issue #42)
 - Cached symbols stopped working in 0.6.3, now it is working again.
@@ -16,6 +43,7 @@
 ## 0.6.3
 
 ### Fixed
+
 - Upgrades of dependencies - the client/server now adheres to the language server protocol of version 9.0.1.
 - Macro definitions lookup now goes to the correct row.
 - The extension downloader now caches files correctly, displays the options better and doesn't crash on cancel. Also, the abort button is removed.

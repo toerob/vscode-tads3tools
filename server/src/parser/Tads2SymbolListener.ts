@@ -11,12 +11,8 @@ import {
   MethodContext,
 } from "./Tads2Parser";
 import { ScopedEnvironment } from "./ScopedEnvironment";
-import {
-  CompletionItem,
-  DocumentSymbol,
-  SymbolKind,
-} from "vscode-languageserver";
-import { Range } from "vscode-languageserver";
+
+import { Range, SymbolKind, CompletionItem, DocumentSymbol } from "vscode-languageserver/node";
 import { Tads2Listener } from "./Tads2Listener";
 import { ParseTree } from "antlr4ts/tree/ParseTree";
 import { getAllReturnValues } from "./tree-iteration";
@@ -306,7 +302,7 @@ export class Tads2SymbolListener implements Tads2Listener {
       console.error(`Couldn't process symbol at row ${start}`);
       return;
     }
-    const stop = (ctx.stop?.line ?? 1) - 1 ?? start;
+    const stop = (ctx.stop?.line ?? 1) - 1;
     const startCharacter = ctx.start?.charPositionInLine ?? 0;
     const stopCharacter = ctx.stop?.charPositionInLine ?? 0;
     const range = Range.create(start, startCharacter, stop, stopCharacter); // TODO: stop character here.

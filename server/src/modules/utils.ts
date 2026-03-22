@@ -154,3 +154,7 @@ export function extractFunctionNameAndParams(
   }
   return undefined;
 }
+
+export function isAscii(text: string): boolean {
+  return /^[\x00-\x7F]*$/.test(text);
+}

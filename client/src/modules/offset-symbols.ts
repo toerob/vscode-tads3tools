@@ -1,5 +1,5 @@
 import { TextDocumentChangeEvent } from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
+import { LanguageClient } from 'vscode-languageclient/node';
 
 export async function offsetSymbols(event: TextDocumentChangeEvent, client: LanguageClient) {
   // Take care of offsetting symbols if a change contains line breaks

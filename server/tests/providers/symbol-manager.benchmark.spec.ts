@@ -1,4 +1,4 @@
-import { DocumentSymbol } from "vscode-languageserver";
+import { DocumentSymbol } from "vscode-languageserver/node";
 import {
   addIterativelyDFS,
   addIterativelyDFS2,

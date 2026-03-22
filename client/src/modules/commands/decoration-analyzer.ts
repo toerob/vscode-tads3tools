@@ -5,19 +5,18 @@ export const findQuoteInStringRegExp = new RegExp(/["](.*)["]|['](.*)[']|["]{3}(
 
 export function analyzeTextAtPosition() {
   if (window.activeTextEditor.selection.isEmpty) {
-    // the Position object gives you the line and character where the cursor is
+    window.showInformationMessage(`Select something to analyse`);
+  } else {
     const fsPath = window.activeTextEditor.document.uri.fsPath;
-    const position = window.activeTextEditor.selection.active;
-    const text = window.activeTextEditor.document.lineAt(position.line).text;
-    const quote = findQuoteInStringRegExp.exec(text);
-    if (quote) {
-      const firstQuote = quote[1];
-      window.showInformationMessage(`Analyzing ${firstQuote}`);
-      client.sendRequest("request/analyzeText/findNouns", {
-        path: fsPath,
-        position,
-        firstQuote,
-      });
-    }
+    const selection = window.activeTextEditor.selection;
+    const position = selection.active;
+    const selectedText = window.activeTextEditor.document.getText(selection);
+
+    window.showInformationMessage(`Analyzing ${selectedText}`);
+    client.sendRequest("request/analyzeText/findNouns", {
+      path: fsPath,
+      position: position,
+      text: selectedText,
+    });
   }
 }

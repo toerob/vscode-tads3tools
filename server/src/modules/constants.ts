@@ -54,6 +54,8 @@ export const NEW_ASSIGNMENT_REGEXP = /(.*)\s*[=]\s*new\s*(.*)\s*\(/;
 export const PROPERTY_REGEXP = /([a-zA-Z][a-zA-Z0-9]*)(\s*[(].*[)])?\s*[.]\s*([a-zA-Z][a-zA-Z0-9]*)?$/;
 
 export const ID = "[a-zA-Z0-9_]+";
+export const ID_U = "[\\p{L}0-9_-]+" //  Unicode friendly identifiers, NOTE: needs flag = /u 
+
 //export const ID_V2 = "[a-zA-Z_][a-zA-Z0-9_]*";
 const DIR = "(north|south|east|west|northeast|northwest|southeast|southwest|up|down|in|out)";
 export const WS = "\\s*";
