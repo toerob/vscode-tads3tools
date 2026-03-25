@@ -115,7 +115,28 @@ export function crawlRooms(
     room.y += Math.abs(minY);
     //room.z += Math.abs(minZ);
   });
+
+  resolvePositionConflicts(crawledRooms);
+
   return crawledRooms;
+}
+
+function resolvePositionConflicts(rooms: DefaultMapObject[]): void {
+  const byPos = new Map<string, DefaultMapObject[]>();
+  for (const room of rooms) {
+    const key = `${room.x},${room.y},${room.z}`;
+    if (!byPos.has(key)) byPos.set(key, []);
+    byPos.get(key)!.push(room);
+  }
+  for (const [, group] of byPos) {
+    if (group.length <= 1) continue;
+    group.sort((a, b) => a.name.localeCompare(b.name));
+    group.forEach((room, i) => {
+      const angle = (2 * Math.PI * i) / group.length;
+      room.x += 0.5 * Math.cos(angle);
+      room.y += 0.5 * Math.sin(angle);
+    });
+  }
 }
 
 export function flattenArrayByType(objects: DocumentSymbol[], kind: SymbolKind): DocumentSymbol[] {

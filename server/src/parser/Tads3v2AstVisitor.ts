@@ -814,6 +814,21 @@ export class Tads3v2AstVisitor
   }
 
   private buildObjectBody(ctx: ObjectBodyContext): ObjectBodyNode {
+    // Extract otherSide from template expressions: `->targetName` on the object body.
+    // e.g. `myDoor: Door ->masterDoor;` — the `->masterDoor` is a template expr.
+    if (this.currentObjectId) {
+      const mapEntry = this.mapData.get(this.currentObjectId);
+      if (mapEntry) {
+        for (const tmpl of ctx.templateExpr()) {
+          const op = tmpl.templatePrefixOp()?.text;
+          if (op === '->') {
+            const target = tmpl.primaryExpr()?.text;
+            if (target) mapEntry.otherSide = target;
+          }
+        }
+      }
+    }
+
     const items: AstNode[] = [
       ...ctx.property().map(p => this.visit(p)),
       ...ctx.functionDeclaration().map(f => this.visit(f)),
@@ -838,7 +853,15 @@ export class Tads3v2AstVisitor
     // Grammar guarantees we are in the ASSIGN branch here (only two alternatives: ASSIGN or COLON).
     // Record in the parent's assignedProperties so map-mapping can identify directional exits.
     if (this.currentObjectId) {
-      this.mapData.get(this.currentObjectId)?.assignedProperties.add(name);
+      const mapEntry = this.mapData.get(this.currentObjectId);
+      if (mapEntry) {
+        mapEntry.assignedProperties.add(name);
+        // otherSide / masterObject both identify the paired door object.
+        if (name === 'otherSide' || name === 'masterObject') {
+          const target = ctx.expr()?.text;
+          if (target) mapEntry.otherSide = target;
+        }
+      }
     }
 
     // name = [static] expr

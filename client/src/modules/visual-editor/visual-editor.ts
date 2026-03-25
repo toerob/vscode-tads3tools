@@ -226,22 +226,26 @@ export function getHtmlForWebview(context: ExtensionContext, webview: Webview, e
   const scriptPath = "resources";
   const mapLogicUri =
     webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, "maprenderer", "maprenderer.js")) ?? "";
+  const mapCssUri =
+    webview.asWebviewUri(Uri.joinPath(extensionUri, scriptPath, "maprenderer", "maprenderer.css")) ?? "";
   // Cache-bust during development so rebuilt webview bundles are actually reloaded.
-  const mapLogicUriWithVersion = `${mapLogicUri}?v=${Date.now()}`;
+  const bust = Date.now();
+  const mapLogicUriWithVersion = `${mapLogicUri}?v=${bust}`;
   const html = `
     <!DOCTYPE html>
 		<html>
 			<head>
 				<meta charset="UTF-8">
-				<meta 
-					http-equiv="Content-Security-Policy" 
+				<meta
+					http-equiv="Content-Security-Policy"
           content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src ${webview.cspSource} 'unsafe-inline' 'unsafe-eval'; img-src ${webview.cspSource} data: https:; " />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="${mapCssUri}?v=${bust}">
         <style>
           html, body { height: 100%; width: 100%; padding: 0; margin: 0; overflow: hidden; }
           body { display: flex; flex-direction: column; }
-          #toolbar { position: sticky; top: 0; z-index: 1; padding: 6px 8px; }
-          #mapCanvas { flex: 1 1 auto; width: 100%; height: 100%; display: block; border: 1px solid; }
+          #toolbar { position: sticky; top: 0; z-index: 1; padding: 6px 8px; flex-shrink: 0; }
+          #root { flex: 1 1 auto; width: 100%; min-height: 0; }
         </style>
 			</head>
       <body style='width:100%; height:100%; padding:0px;'>
@@ -260,21 +264,13 @@ export function getHtmlForWebview(context: ExtensionContext, webview: Webview, e
           <button id="minusButton" onclick="levelDown()">-</button>
           <label id="levelLabel"></label>
           <button id="plusButton" onclick="levelUp()">+</button>
-          <label>Zoom:</label>
-          <button id="zoomOutButton" onclick="zoomOut()">-</button>
-          <button id="zoomInButton" onclick="zoomIn()">+</button>
-          <label>Collapse nodes:</label><input type="checkbox" onclick="toggleCollapse()" />
         </div>
 				<!--label>Show all:</label><input type="checkbox" onclick="toggleShowAll()" checked /-->
 				<!--label>Show unmapped:</label><input type="checkbox" onclick="toggleShowUnmapped()" /-->
 				<div id="inputDialog">
 					<label>Room name: <label><input type="text" id='inputDialog'></input>
 				</div>
-        <div id="editorElement"> </div>
-        <!--div id="mapCanvas"></div-->
-        <canvas id='mapCanvas' width='1024' height='1024' style='border: 1px solid'></canvas>
-        <!--script>
-				</script-->
+        <div id="root"></div>
         <script src="${mapLogicUriWithVersion}"></script>
 			</body>
 		</html>`;

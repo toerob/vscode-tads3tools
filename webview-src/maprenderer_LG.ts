@@ -37,23 +37,68 @@ function cssVar(name: string, fallback: string): string {
 
 type Theme = {
   fontFamily: string;
+
+  /*
   foreground: string;
   editorBg: string;
   widgetBg: string;
   widgetBorder: string;
+  */
   link: string;
   warning: string;
+
+
+  canvas: string;
+  nodeBackground: string;
+  nodeText: string;
+  nodeBorder: string;
+  nodeShadow: string;
+  nodeHover: string;
+  nodeSelected: string;
+  nodeFocusBorder: string;
+  nodeDisabled: string;
+  nodeWarning: string;
+  nodeError: string;
+  nodeSuccess: string;
+  path: string;
+  pathHover: string;
+  pathSelected: string;
+  pathLabel: string;
 };
 
 function readTheme(): Theme {
   return {
-    fontFamily: cssVar("--vscode-font-family", "sans-serif"),
+    /*
     foreground: cssVar("--vscode-editor-foreground", "#cccccc"),
     editorBg: cssVar("--vscode-editor-background", "#1e1e1e"),
-    widgetBg: cssVar("--vscode-editorWidget-background", "#252526"),
+    widgetBg: cssVar("--vscode-editorWidget-background", "#222228"),
     widgetBorder: cssVar("--vscode-editorWidget-border", "#454545"),
+    */
+    fontFamily: cssVar("--vscode-font-family", "sans-serif"),
     link: cssVar("--vscode-textLink-foreground", "#3794ff"),
-    warning: cssVar("--vscode-editorWarning-foreground", "#cca700"),
+    warning: cssVar("--vscode-editorWarning-foreground", "#cc9c00"),
+
+    canvas: cssVar("--vscode-editor-background", "#1e1e1e"),
+
+    nodeBackground: cssVar("--vscode-editorWidget-background", "#222228"),
+    nodeText: cssVar("--vscode-foreground", "#cccccc"),
+    nodeBorder: cssVar("--vscode-widget-border", "#454545"),
+    nodeShadow: cssVar("--vscode-widget-shadow", "#000000"),
+
+    nodeHover: cssVar("--vscode-list-hoverBackground", "#2a2a2a"),
+    nodeSelected: cssVar("--vscode-editor-selectionBackground", "#264f78"),
+    nodeFocusBorder: cssVar("--vscode-focusBorder", "#007acc"),
+
+    nodeDisabled: cssVar("--vscode-disabledForeground", "#6c6c6c"),
+    nodeWarning: cssVar("--vscode-list-warningForeground", "#cc9c00"),
+    nodeError: cssVar("--vscode-list-errorForeground", "#f48771"),
+    nodeSuccess: cssVar("--vscode-gitDecoration-addedResourceForeground", "#81b88b"),
+
+    path: cssVar("--vscode-editorIndentGuide-background", "#404040"),
+    pathHover: cssVar("--vscode-editorIndentGuide-activeBackground", "#606060"),
+    pathSelected: cssVar("--vscode-editor-selectionHighlightBackground", "#264f78"),
+
+    pathLabel: cssVar("--vscode-descriptionForeground", "#cccccc"),
   };
 }
 
@@ -62,10 +107,10 @@ let theme = readTheme();
 function applyNodeTheme(node: AnyObj, opts: { isDoor: boolean }) {
   // In LiteGraph, node.color is used as the default titlebar color.
   // We keep the titlebar background theme-consistent and use accent colors for title text instead.
-  node.color = theme.widgetBg;
-  node.bgcolor = theme.editorBg;
-  node.boxcolor = opts.isDoor ? theme.warning : theme.link;
-  node.bordercolor = theme.widgetBorder;
+  node.color = theme.nodeBackground;
+  node.bgcolor = theme.nodeBackground;
+  node.boxcolor = opts.isDoor ? theme.nodeWarning : theme.nodeText;
+  node.bordercolor = theme.nodeBorder;
 }
 
 let isPopulatingMap = true;
@@ -87,6 +132,15 @@ mapCanvas.connections_width = 2;
 mapCanvas.render_collapsed_slots = false;
 mapCanvas.render_connections_border = false;
 (mapCanvas as AnyObj).align_to_grid = true;
+
+// Disable the grid
+mapCanvas.clear_background = true; // still clears the canvas each frame
+(mapCanvas as AnyObj).background_image = null;
+mapCanvas.bgcanvas.style.backgroundColor = theme.canvas;
+mapCanvas.drawBackCanvas = function () {
+  const ctx = this.bgcanvas.getContext("2d");
+  ctx?.clearRect(0, 0, this.bgcanvas.width, this.bgcanvas.height);
+};
 
 mapCanvas.onNodeMoved = function (node: AnyObj) {
   messenger.postCommand("updatepos", { name: node.properties.name, pos: node.pos });
@@ -276,7 +330,8 @@ class RoomNode extends LGraphNode {
     ctx.save();
     ctx.font = `12px ${theme.fontFamily}`;
     ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = theme.foreground;
+    //ctx.fillStyle = theme.nodeText;
+    ctx.fillStyle = theme.nodeBackground;
 
     const label: string = this.properties?.shortName || this.properties?.name || this.title;
     const splittedWord = splitIntoListByNthCharacterFunc(label, MAX_LENGTH);
@@ -357,14 +412,16 @@ function applyThemeToLiteGraph() {
   theme = readTheme();
 
   // Canvas defaults (used when a node type doesn't override it)
-  mapCanvas.node_title_color = theme.foreground;
+  //mapCanvas.node_title_color = theme.foreground;
 
   RoomNode.title_mode = LiteGraph.NORMAL_TITLE;
-  RoomNode.title_color = theme.widgetBg;
+  //RoomNode.title_color = theme.widgetBg;
+  RoomNode.title_color = theme.nodeText;
   RoomNode.title_text_color = theme.link;
 
   DoorNode.title_mode = LiteGraph.NORMAL_TITLE;
-  DoorNode.title_color = theme.widgetBg;
+  //DoorNode.title_color = theme.widgetBg;
+  DoorNode.title_color = theme.link;
   DoorNode.title_text_color = theme.warning;
 }
 
@@ -533,7 +590,10 @@ function handleRoomNodes(payload: AnyObj) {
           group.configure({
             title: "Unmapped rooms",
             bounding: [0, maximumY - yPadding, totalLength, totalRows * yInc],
-            color: theme.widgetBorder,
+            
+            //color: theme.widgetBorder,
+            color: theme.nodeBorder,
+
             font: theme.fontFamily,
           } as AnyObj);
           (graph as AnyObj).add(group);
@@ -702,12 +762,7 @@ const createRoomGUI = (_value: AnyObj, _event: AnyObj, _mouseEvent: AnyObj, cont
     const first_event = contextMenu?.getFirstEvent?.() ?? _mouseEvent ?? _event;
 
     try {
-      mapCanvas.prompt(
-        "Room name:",
-        "",
-        (name: string) => doAddRoom(name, first_event),
-        first_event,
-      );
+      mapCanvas.prompt("Room name:", "", (name: string) => doAddRoom(name, first_event), first_event);
     } catch (err) {
       // Fallback: if LiteGraph prompt cannot open (e.g. active_canvas issues),
       // use a native prompt so adding a room never hard-fails.
