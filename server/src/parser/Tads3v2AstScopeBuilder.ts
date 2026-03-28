@@ -25,6 +25,7 @@ import {
   ObjectBodyNode,
   OperatorOverrideNode,
   PropertyDeclNode,
+  PropertySetNode,
   ProgramNode,
   SourcePosition,
   SourceRange,
@@ -132,6 +133,11 @@ export class Tads3v2AstScopeBuilder {
           const nested = containerName ? `${containerName}.${prop.name}` : prop.name;
           this.visitBodyItems(prop.nestedBody.items, nested);
         }
+
+      } else if (item.kind === 'PropertySet') {
+        // propertyset '*DobjTake' { verify() {} check() {} action() {} }
+        // Methods inside belong to the same container object — not a sub-namespace.
+        this.visitBodyItems((item as PropertySetNode).body.items, containerName);
       }
     }
   }

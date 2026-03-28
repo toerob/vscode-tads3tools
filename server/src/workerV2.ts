@@ -10,6 +10,7 @@ import { Tads3v2AstVisitor } from './parser/Tads3v2AstVisitor';
 import { ProgramNode } from './parser/ast/nodes';
 import { astToSymbols, extractTemplateItems } from './parser/Tads3v2AstToSymbols';
 import { buildPropertyValueMap } from './parser/Tads3v2PropertyValueMap';
+import { Tads3v2AstScopeBuilder } from './parser/Tads3v2AstScopeBuilder';
 
 class CollectingErrorListener implements ANTLRErrorListener<any> {
   errors: string[] = [];
@@ -89,6 +90,10 @@ expose(function parseFunc(path: string, text: string) {
   // ── Template items ────────────────────────────────────────────────────────
   const templateItems = extractTemplateItems(program);
 
+  // ── Scope map (for call hierarchy) ────────────────────────────────────────
+  const scopeBuilder = new Tads3v2AstScopeBuilder();
+  scopeBuilder.build(program);
+
   // ── Keyword map (name → 1-based Range[], matching old worker convention) ──
   const keywords: Map<string, Range[]> = new Map();
   for (const [name, lines] of visitor.keywordLines) {
@@ -105,6 +110,7 @@ expose(function parseFunc(path: string, text: string) {
     mapData:              visitor.mapData,
     additionalProperties: new Map(),
     inheritanceMap:       visitor.inheritanceMap,
+    scopes:               scopeBuilder.scopes,
     assignmentStatements: [],
     expressionSymbols:    new Map(),
     parseInfo: {
