@@ -34,6 +34,7 @@ import {
 } from "./constants";
 import { createSnippetsFromTemplateItems } from "./text-utils";
 import { ShallowParser } from "./ShallowParser";
+import { smartCompletionsEnabled, onCompletionV2 } from "./completions-v2";
 
 let cachedKeyWords: Map<string, CompletionItem> | undefined = undefined;
 let shortTermMemoryKeyword: Set<string> = new Set();
@@ -67,6 +68,15 @@ export async function onCompletion(
 
   if (document.uri.endsWith(".t3m")) {
     return tads3MakefileSuggestions();
+  }
+
+  // ── Smart completions (v2) ─────────────────────────────────────────────────
+  // When enabled, run the context-aware provider first.  It returns null for
+  // cases it doesn't handle (global scope, specific pattern matches) so this
+  // code falls through to the original logic below.
+  if (smartCompletionsEnabled) {
+    const v2 = onCompletionV2(handler, documents, symbolManager);
+    if (v2 !== null) return v2;
   }
 
   // First try to get the word at the position

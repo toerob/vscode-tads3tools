@@ -19,7 +19,9 @@
 
 import {
   AstNode,
+  BlockNode,
   FunctionDeclNode,
+  LocalDeclListNode,
   LocalDeclNode,
   ObjectDeclNode,
   ObjectBodyNode,
@@ -60,11 +62,26 @@ export interface CallRef {
   range: SourceRange;
 }
 
+/**
+ * A local variable declared inside a function body with the line it was
+ * declared on (0-based).  Used by completions to show only locals that have
+ * already been declared at the cursor's position.
+ */
+export interface LocalVar {
+  name: string;
+  /** 0-based line of the `local` declaration. */
+  declarationLine: number;
+}
+
 /** Everything known about one named function or method scope. */
 export interface FunctionScope {
   def: SymbolDef;
   /** All call expressions in this scope (not in nested functions / lambdas). */
   calls: CallRef[];
+  /** All `local` declarations inside this scope (excluding nested functions/lambdas). */
+  locals: LocalVar[];
+  /** Parameter names of this function or method, in declaration order. */
+  params: string[];
 }
 
 const ZERO_POS:  SourcePosition = { line: 0, character: 0 };
@@ -148,6 +165,9 @@ export class Tads3v2AstScopeBuilder {
     const qualifiedName = containerName ? `${containerName}.${node.name}` : node.name;
     const calls: CallRef[] = [];
     this.collectCalls(node.body, calls);
+    const locals: LocalVar[] = [];
+    this.collectLocals(node.body, locals);
+    const params = node.params.map(p => p.name).filter((n): n is string => n !== null);
     const range = this.rangeOf(node);
     this.scopes.set(qualifiedName, {
       def: {
@@ -158,6 +178,8 @@ export class Tads3v2AstScopeBuilder {
         selectionRange: this.nameRange(range, node.name),
       },
       calls,
+      locals,
+      params,
     });
   }
 
@@ -166,10 +188,14 @@ export class Tads3v2AstScopeBuilder {
     const qualifiedName = `${containerName}.${name}`;
     const calls: CallRef[] = [];
     this.collectCalls(node.body, calls);
+    const locals: LocalVar[] = [];
+    this.collectLocals(node.body, locals);
     const range = this.rangeOf(node);
     this.scopes.set(qualifiedName, {
       def: { name, containerName, qualifiedName, range, selectionRange: range },
       calls,
+      locals,
+      params: [],
     });
   }
 
@@ -394,6 +420,63 @@ export class Tads3v2AstScopeBuilder {
     }
   }
 
+  // ── Local variable collection ─────────────────────────────────────────────
+
+  /**
+   * Walk `node` collecting every `local` declaration into `locals`.
+   * Stops descending at nested function / lambda / operator-override boundaries
+   * (locals inside those belong to their own scope and are not visible here).
+   */
+  private collectLocals(node: AstNode, locals: LocalVar[]): void {
+    const r = (n: AstNode) => this.collectLocals(n, locals);
+
+    switch (node.kind) {
+      case 'FunctionDecl':
+      case 'FunctionExpr':
+      case 'Lambda':
+      case 'OperatorOverride':
+        return; // scope boundary — don't descend
+
+      case 'LocalDecl': {
+        const n = node as LocalDeclNode;
+        locals.push({ name: n.name, declarationLine: n.range?.start?.line ?? 0 });
+        if (n.init) r(n.init);
+        return;
+      }
+
+      case 'LocalDeclList': {
+        const n = node as LocalDeclListNode;
+        const line = n.range?.start?.line ?? 0;
+        for (const decl of n.decls) {
+          locals.push({ name: decl.name, declarationLine: line });
+          if (decl.init) r(decl.init);
+        }
+        return;
+      }
+
+      case 'Block': {
+        for (const stmt of (node as BlockNode).body) r(stmt);
+        return;
+      }
+
+      default: {
+        // Generic descent: recurse into any property that looks like an AstNode or AstNode[].
+        for (const val of Object.values(node as Record<string, unknown>)) {
+          if (!val || typeof val !== 'object') continue;
+          if ((val as AstNode).kind) {
+            r(val as AstNode);
+          } else if (Array.isArray(val)) {
+            for (const item of val) {
+              if (item && typeof item === 'object' && (item as AstNode).kind) {
+                r(item as AstNode);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   private rangeOf(node: AstNode): SourceRange {
@@ -427,6 +510,26 @@ export class Tads3v2AstScopeBuilder {
 }
 
 /** Build a reverse index: callee qualifiedName → callers. */
+/**
+ * Return the names of all locals in `scope` that are visible at `cursorLine`.
+ * A local is visible if it was declared on a line at or before the cursor.
+ *
+ * When two locals share the same name, the one declared closest (but still
+ * at or before the cursor) wins — it shadows the earlier declaration.
+ */
+export function localsVisibleAt(scope: FunctionScope, cursorLine: number): string[] {
+  // Map name → latest declarationLine seen so far that is ≤ cursorLine.
+  const visible = new Map<string, number>();
+  for (const lv of scope.locals) {
+    if (lv.declarationLine > cursorLine) continue;
+    const existing = visible.get(lv.name);
+    if (existing === undefined || lv.declarationLine > existing) {
+      visible.set(lv.name, lv.declarationLine);
+    }
+  }
+  return [...visible.keys()];
+}
+
 export function buildIncomingCallIndex(
   scopes: Map<string, FunctionScope>,
 ): Map<string, { callerQualifiedName: string; range: SourceRange }[]> {
