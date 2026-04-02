@@ -61,6 +61,10 @@ import {
 import { enablePreprocessorCodeLens } from "./modules/code-lens";
 import { activateTads3Debug } from "./activateTads3Debug";
 import { ImageInfoProvider } from "./modules/debugTreeView";
+import {
+  disassembleMethod as disasmMethod,
+  disassembleImage as disasmImage,
+} from "./modules/commands/disassemble";
 
 //////////
 // Globals
@@ -242,6 +246,8 @@ function registerExtensionCommands(ctx: ExtensionContext, state: ExtensionStateS
     commands.registerCommand("tads3.deleteReplayScript", (p) => deleteReplayScript(p)),
     commands.registerCommand("tads3.analyzeImage", () => analyzeImage()),
     commands.registerCommand("tads3.evaluateSelection", () => evaluateSelection(client)),
+    commands.registerCommand("tads3.disassembleMethod", () => disasmMethod(findImageByPattern)),
+    commands.registerCommand("tads3.disassembleImage", () => disasmImage(findImageByPattern)),
   ];
   tads3Commands.forEach((com) => ctx.subscriptions.push(com));
 }

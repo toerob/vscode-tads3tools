@@ -312,7 +312,7 @@ export function parseBlockSYMD(buffer: Buffer, offset: number, blockSize: number
 export function parseBlockSRCF(buffer: Buffer, offset: number, blockSize: number) {
   const entries = buffer.readUInt16LE(offset);
   const sizeLineRecord = buffer.readUInt16LE(offset + 2);
-  let pos = offset + 6;
+  let pos = offset + 4; // UINT2 count + UINT2 sizeLineRecord = 4 bytes
   const files = [];
   for (let i = 0; i < entries; i++) {
     const entrySize = buffer.readUInt32LE(pos);
