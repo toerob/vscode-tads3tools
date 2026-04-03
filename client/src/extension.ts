@@ -65,6 +65,8 @@ import {
   disassembleMethod as disasmMethod,
   disassembleImage as disasmImage,
 } from "./modules/commands/disassemble";
+import { showAst as devShowAst, showScopes as devShowScopes } from "./modules/commands/debug-ast";
+import { registerVirtualDocumentProvider } from "./modules/virtual-documents";
 
 //////////
 // Globals
@@ -91,8 +93,6 @@ export function resetPersistedPositions() {
 let lastChosenTextDocument: TextDocument | undefined;
 
 let cancelToken: CancellationTokenSource;
-
-let preprocessDocument: TextDocument;
 
 const diagnoseAndCompileSubject = new Subject<TextDocument>();
 
@@ -128,6 +128,7 @@ export async function activate(ctx: ExtensionContext) {
   setupExtensionState(ctx);
   registerExtensionCommands(ctx, extensionState);
   registerVscodeSpecificProviders(ctx);
+  registerVirtualDocumentProvider(ctx);
 
   await registerWorkspaceAndWindowHooks(ctx, client, cancelToken);
 
@@ -248,6 +249,8 @@ function registerExtensionCommands(ctx: ExtensionContext, state: ExtensionStateS
     commands.registerCommand("tads3.evaluateSelection", () => evaluateSelection(client)),
     commands.registerCommand("tads3.disassembleMethod", () => disasmMethod(findImageByPattern)),
     commands.registerCommand("tads3.disassembleImage", () => disasmImage(findImageByPattern)),
+    commands.registerCommand("tads3.dev.showAst", () => devShowAst(client)),
+    commands.registerCommand("tads3.dev.showScopes", () => devShowScopes(client)),
   ];
   tads3Commands.forEach((com) => ctx.subscriptions.push(com));
 }

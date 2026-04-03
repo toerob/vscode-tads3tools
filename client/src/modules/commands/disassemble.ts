@@ -1,10 +1,11 @@
-import { window, workspace, ViewColumn } from 'vscode';
+import { window } from 'vscode';
 import {
   disassembleNamedMethod,
   disassembleAllMethods,
   getMethodsFromImage,
   MethodSummary,
 } from '../disassembler';
+import { DISASM_IMAGE_URI, DISASM_METHOD_URI, showVirtualDocument } from '../virtual-documents';
 
 async function pickImageFile(findImageByPattern: (ask: boolean) => Promise<string | undefined>): Promise<string | undefined> {
   const path = await findImageByPattern(true);
@@ -19,11 +20,6 @@ function wordAtCursor(): string | undefined {
   if (!editor) return undefined;
   const wordRange = editor.document.getWordRangeAtPosition(editor.selection.active, /[A-Za-z_][A-Za-z0-9_]*/);
   return wordRange ? editor.document.getText(wordRange) : undefined;
-}
-
-async function openAsmDocument(content: string): Promise<void> {
-  const doc = await workspace.openTextDocument({ language: 'plaintext', content });
-  await window.showTextDocument(doc, { viewColumn: ViewColumn.Beside, preview: true, preserveFocus: true });
 }
 
 /**
@@ -67,8 +63,6 @@ export async function disassembleMethod(
   const selected = await window.showQuickPick(items, {
     placeHolder: 'Select method to disassemble',
     matchOnDescription: true,
-    // QuickPick doesn't support a pre-selected item directly, but we can
-    // move the matching entry to the top so it appears first.
     ...(activeItem ? {} : {}),
   });
 
@@ -82,7 +76,7 @@ export async function disassembleMethod(
     return;
   }
 
-  await openAsmDocument(asm);
+  await showVirtualDocument(DISASM_METHOD_URI, asm);
 }
 
 /**
@@ -102,5 +96,5 @@ export async function disassembleImage(
     return;
   }
 
-  await openAsmDocument(asm);
+  await showVirtualDocument(DISASM_IMAGE_URI, asm);
 }

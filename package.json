@@ -280,9 +280,33 @@
         "enablement": "true"
       },
       {
+        "command": "tads3.disassembleMethod",
+        "title": "TADS3: Disassemble Method",
+        "category": "TADS3",
+        "enablement": "true"
+      },
+      {
+        "command": "tads3.disassembleImage",
+        "title": "TADS3: Disassemble Whole Image",
+        "category": "TADS3",
+        "enablement": "true"
+      },
+      {
         "command": "tads3.evaluateSelection",
         "title": "TADS3: Evaluate Selection",
         "category": "TADS3",
+        "enablement": "editorLangId == tads3"
+      },
+      {
+        "command": "tads3.dev.showAst",
+        "title": "TADS3 Dev: Show AST for Current File",
+        "category": "TADS3 Dev",
+        "enablement": "editorLangId == tads3"
+      },
+      {
+        "command": "tads3.dev.showScopes",
+        "title": "TADS3 Dev: Show AST + Scope Builder Output for Current File",
+        "category": "TADS3 Dev",
         "enablement": "editorLangId == tads3"
       },
       {
