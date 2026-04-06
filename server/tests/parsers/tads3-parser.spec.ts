@@ -11,7 +11,7 @@ import {
 } from "../../src/parser/Tads3Parser";
 import * as assert from "assert";
 import { Range, SymbolKind } from "vscode-languageserver/node";
-import { expect, it } from "@jest/globals";
+import { describe, expect, it } from "@jest/globals";
 import { readFileSync } from "fs";
 
 function parseTextWithTads3SymbolListener(text: string) {

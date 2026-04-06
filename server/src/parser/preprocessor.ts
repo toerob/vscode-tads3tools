@@ -78,8 +78,6 @@ export async function preprocessTads2Files(
   );
 }
 
-// TODO: FIND OUT WHY GRAMMAR.T ISN'T COMPLETED IN THE END
-
 export async function preprocessTads3Files(
   chosenMakefilePath: string,
   preprocessedFilesCacheMap: Map<string, string>|CaseInsensitiveMap<string,string>,
