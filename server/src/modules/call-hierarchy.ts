@@ -252,11 +252,11 @@ export async function onOutgoingCalls(
   sm: TadsSymbolManager,
 ): Promise<CallHierarchyOutgoingCall[] | null> {
 
-  console.log(item.data);
+  //console.log(item.data);
   if(!sm.fileScopes.has(item.data?.fsPath!)) {
-    console.log(sm.fileScopes.get(item.data?.fsPath!),      ' does not match: ', item.data?.fsPath);
+    //console.log(sm.fileScopes.get(item.data?.fsPath!),      ' does not match: ', item.data?.fsPath);
   } else {
-    console.log(sm.fileScopes.get(item.data?.fsPath!),      ' matches: ', item.data?.fsPath);
+    //console.log(sm.fileScopes.get(item.data?.fsPath!),      ' matches: ', item.data?.fsPath);
   }
 
   const data = item.data as ItemData | undefined;
