@@ -280,9 +280,33 @@
         "enablement": "true"
       },
       {
+        "command": "tads3.disassembleMethod",
+        "title": "TADS3: Disassemble Method",
+        "category": "TADS3",
+        "enablement": "true"
+      },
+      {
+        "command": "tads3.disassembleImage",
+        "title": "TADS3: Disassemble Whole Image",
+        "category": "TADS3",
+        "enablement": "true"
+      },
+      {
         "command": "tads3.evaluateSelection",
         "title": "TADS3: Evaluate Selection",
         "category": "TADS3",
+        "enablement": "editorLangId == tads3"
+      },
+      {
+        "command": "tads3.dev.showAst",
+        "title": "TADS3 Dev: Show AST for Current File",
+        "category": "TADS3 Dev",
+        "enablement": "editorLangId == tads3"
+      },
+      {
+        "command": "tads3.dev.showScopes",
+        "title": "TADS3 Dev: Show AST + Scope Builder Output for Current File",
+        "category": "TADS3 Dev",
         "enablement": "editorLangId == tads3"
       },
       {
@@ -643,7 +667,7 @@
     "antlr4ts_t3v2": "antlr4ts -visitor server/src/parser/Tads3v2.g4",
     "build": "vsce package --no-yarn",
     "compile:tsc": "tsc -b",
-    "build:maprenderer": "esbuild ./webview-src/maprenderer.ts --bundle --sourcemap=inline --platform=browser --format=iife --target=es2020 --outfile=resources/maprenderer/maprenderer.js",
+    "build:maprenderer": "esbuild ./webview-src/maprenderer.tsx --bundle --sourcemap=inline --platform=browser --format=iife --target=es2020 --jsx=automatic --loader:.ts=tsx --outfile=resources/maprenderer/maprenderer.js",
     "build:maprenderer2": "NODE_PATH=client/node_modules esbuild ./webview-src/maprenderer.ts --bundle --sourcemap=inline --platform=browser --format=iife --target=es2020 --outfile=resources/maprenderer/maprenderer.js",
     "watch:maprenderer": "npm run -S build:maprenderer -- --watch",
     "compile": "npm run -S compile:tsc && npm run -S build:maprenderer",
@@ -692,6 +716,8 @@
   "devDependencies": {
     "@types/cytoscape": "^3.21.9",
     "@types/mocha": "^10.0.6",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "@types/three": "^0.180.0",
     "antlr4ts-cli": "^0.5.0-alpha.4",
     "coveralls": "^3.1.1",
@@ -701,7 +727,7 @@
     "jest-junit": "^16.0.0",
     "jest-mock-extended": "^3.0.7",
     "lcov-result-merger": "^5.0.1",
-    "mocha": "^7.2.0",
+    "mocha": "^11.7.5",
     "prettier": "^3.2.5",
     "three": "^0.180.0",
     "ts-jest": "^29.1.5",
@@ -710,11 +736,14 @@
   "dependencies": {
     "@types/unzipper": "^0.10.9",
     "@types/vscode": "^1.89.0",
+    "@xyflow/react": "^12.10.1",
     "cytoscape": "^3.33.1",
     "litegraph.js": "^0.7.18",
     "npm": "^11.7.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "unzipper": "^0.11.4",
-    "vsce": "^2.15.0",
+    "vsce": "^1.97.0",
     "yarn": "^1.22.22"
   },
   "jest": {

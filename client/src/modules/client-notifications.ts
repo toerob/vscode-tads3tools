@@ -5,6 +5,7 @@ import { connectRoomsWithProperties } from "./visual-editor/map-editor-sync";
 import { findNouns } from "./commands/find-nouns";
 import { getPersistedObjectPositions, getVisualEditor } from "../extension";
 import { ExtensionStateStore } from "./state";
+import { PREPROCESS_URI, showVirtualDocument } from './virtual-documents';
 
 export function setupClientNotifications(client: LanguageClient, extensionState: ExtensionStateStore) {
   client.onNotification("response/extractQuotes", (payload) => {
@@ -93,10 +94,11 @@ export function setupClientNotifications(client: LanguageClient, extensionState:
   client.onNotification("response/preprocessed/file", ({ path, text }) => {
     extensionState.preprocessedFilesMap.set(path, text);
     client.info(`Server response for ${path}: ` + text);
-    workspace
-      .openTextDocument({ language: "tads3", content: text })
-      .then((doc) => window.showTextDocument(doc, ViewColumn.Beside));
-  });
+    
+    showVirtualDocument(PREPROCESS_URI, text, window.activeTextEditor?.selection);
+      
+
+    });
 
   client.onNotification("response/preprocessed/list", (fileNames: string[]) => {
     extensionState.setPreprocessing(false);

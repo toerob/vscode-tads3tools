@@ -8,6 +8,7 @@ import { ExtendedDocumentSymbolProperties } from "../parser/Tads3SymbolListener"
 import { DocumentSymbolWithScope, ExpressionType, FilePathAndSymbols, PropertyValueMap, SimpleValue } from "./types";
 import { TemplateItemNode } from "../parser/ast/nodes";
 import { MapNodeData } from "./mapcrawling/MapNodeData";
+import { FunctionScope } from "../parser/Tads3v2AstScopeBuilder";
 import { getDefineMacrosMap } from '../parser/preprocessor';
 import { get } from 'http';
 
@@ -25,6 +26,8 @@ export class TadsSymbolManager {
   public propertyValues: Map<string, PropertyValueMap> = new Map();
   /** filePath → className → TemplateItemNode[] (populated by the v2 worker) */
   public templateItems: Map<string, Map<string, TemplateItemNode[]>> = new Map();
+  /** filePath → qualifiedName → FunctionScope (populated by the v2 worker, used by call hierarchy) */
+  public fileScopes: Map<string, Map<string, FunctionScope>> = new Map();
 
   private _parsingInProgress = false;
   private _initialParseCompleted = false;

@@ -243,6 +243,7 @@ export async function preprocessAndParseTads3Files(
       inheritanceMap,
       assignmentStatements,
       expressionSymbols,
+      scopes,
       parseInfo,
     } = jobResult;
 
@@ -255,6 +256,7 @@ export async function preprocessAndParseTads3Files(
     symbolManager.expressionSymbols.set(filePath, expressionSymbols);
     if (propertyValues) symbolManager.propertyValues.set(filePath, propertyValues);
     if (templateItems) symbolManager.templateItems.set(filePath, templateItems);
+    if (scopes) symbolManager.fileScopes.set(filePath, scopes);
 
     inheritanceMap.forEach((value: string, key: string) => symbolManager.inheritanceMap.set(key, value));
     mapData.forEach((value: any, key: string) => symbolManager.mapData.set(key, value));
@@ -359,6 +361,7 @@ export async function preprocessAndParseTads3Files(
                 inheritanceMap,
                 assignmentStatements,
                 expressionSymbols,
+                scopes,
                 parseInfo,
               } = await Promise.race([parseJob(filePath, text), timeoutPromise]);
 
@@ -371,6 +374,7 @@ export async function preprocessAndParseTads3Files(
               symbolManager.expressionSymbols.set(filePath, expressionSymbols ?? []);
               if (propertyValues) symbolManager.propertyValues.set(filePath, propertyValues);
               if (templateItems) symbolManager.templateItems.set(filePath, templateItems);
+              if (scopes) symbolManager.fileScopes.set(filePath, scopes);
 
               inheritanceMap.forEach((value: string, key: string) => symbolManager.inheritanceMap.set(key, value));
               mapData.forEach((value: any, key: string) => symbolManager.mapData.set(key, value));

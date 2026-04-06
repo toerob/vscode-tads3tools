@@ -221,7 +221,7 @@ export function assertParses(source: string): void {
   parser.errorHandler = new BailErrorStrategy();
   try {
     parser.program();
-  } catch {
+  } catch(e) {
     // SLL failed — reset position and retry with full LL
     parser.reset();  // internally calls tokens.seek(0)
     parser.interpreter.setPredictionMode(PredictionMode.LL);

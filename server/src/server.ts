@@ -35,7 +35,9 @@ import { onDocumentFormatting } from "./modules/document-formatting";
 import { onDocumentRangeFormatting } from "./modules/document-range-formatting";
 import { onImplementation } from "./modules/implementation";
 import { onSignatureHelp } from "./modules/signature-helper";
+import { onPrepareCallHierarchy, onIncomingCalls, onOutgoingCalls } from "./modules/call-hierarchy";
 import { evaluateSelection } from "./modules/evaluate-selection";
+import { handleDevShowAst, handleDevShowScopes } from "./modules/dev-ast-handler";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const posTagger = require("wink-pos-tagger");
@@ -131,6 +133,7 @@ connection.onInitialize((params: InitializeParams) => {
         resolveProvider: false,
       },
       implementationProvider: true,
+      callHierarchyProvider: true,
       documentFormattingProvider: true,
       documentRangeFormattingProvider: false, // Has a bug where it can repeat a line after the end marker
       signatureHelpProvider: {
@@ -305,6 +308,20 @@ connection.onDocumentFormatting(async (handler: any) => onDocumentFormatting(han
 connection.onDocumentRangeFormatting(async (handler: any) => onDocumentRangeFormatting(handler, documents));
 connection.onImplementation(async (handler: any) => onImplementation(handler, documents, symbolManager));
 connection.onSignatureHelp(async (handler: any) => onSignatureHelp(handler, documents, symbolManager));
+
+connection.languages.callHierarchy.onPrepare(async (handler: any) => onPrepareCallHierarchy(handler, symbolManager));
+connection.languages.callHierarchy.onIncomingCalls(async (handler: any) => onIncomingCalls(handler, symbolManager));
+connection.languages.callHierarchy.onOutgoingCalls(async (handler: any) => onOutgoingCalls(handler, symbolManager));
+
+// ── Developer debug commands ───────────────────────────────────────────────
+
+connection.onRequest("request/dev/showAst",
+  (params: { uri: string }) =>
+    handleDevShowAst(params, documents, serverState.preprocessedFilesCacheMap));
+
+connection.onRequest("request/dev/showScopes",
+  (params: { uri: string }) =>
+    handleDevShowScopes(params, documents, serverState.preprocessedFilesCacheMap));
 
 connection.onRequest("request/extractQuotes", async (params: any) => {
   if (params.fsPath === undefined) {
