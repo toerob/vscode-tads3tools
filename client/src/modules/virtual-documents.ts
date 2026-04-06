@@ -14,6 +14,7 @@
 import {
   EventEmitter,
   ExtensionContext,
+  languages,
   Range,
   TextDocumentContentProvider,
   Uri,
@@ -63,14 +64,20 @@ export const PREPROCESS_URI   = Uri.parse(`${SCHEME}://debug/Preprocessed`);
 /**
  * Update the virtual document at `uri` with `content` and show it beside the
  * current editor.  If `scrollTo` is provided, the editor scrolls to that range.
+ * `language` controls syntax highlighting (defaults to `'tads3'`); pass
+ * `'plaintext'` or any VSCode language id for other document types.
  */
 export async function showVirtualDocument(
   uri: Uri,
   content: string,
   scrollTo?: Range,
+  language = 'tads3',
 ): Promise<void> {
   virtualDocumentProvider.update(uri, content);
-  const doc = await workspace.openTextDocument(uri);
+  let doc = await workspace.openTextDocument(uri);
+  if (doc.languageId !== language) {
+    doc = await languages.setTextDocumentLanguage(doc, language);
+  }
   await window.showTextDocument(doc, {
     viewColumn: ViewColumn.Beside,
     preserveFocus: true,
