@@ -32,14 +32,14 @@ function countMatches(lines: string[], pattern: RegExp): number {
 // There is a known off-by-one at the very last line; we allow a tolerance of 1.
 
 describe("preprocessor output — line count invariant", () => {
-  it("actions.t: preprocessed line count matches original within ±1", () => {
+  it("actions.t: preprocessed line count exactly matches original", () => {
     const { preprocessed, unpreprocessed } = fixture("actions");
-    expect(Math.abs(preprocessed.length - unpreprocessed.length)).toBeLessThanOrEqual(1);
+    expect(preprocessed.length).toBe(unpreprocessed.length);
   });
 
-  it("thing.t: preprocessed line count matches original within ±1", () => {
+  it("thing.t: preprocessed line count exactly matches original", () => {
     const { preprocessed, unpreprocessed } = fixture("thing");
-    expect(Math.abs(preprocessed.length - unpreprocessed.length)).toBeLessThanOrEqual(1);
+    expect(preprocessed.length).toBe(unpreprocessed.length);
   });
 });
 
