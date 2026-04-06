@@ -197,8 +197,8 @@ objectBody:
 
 property:
     id=identifierAtom
-    (ASSIGN STATIC? (expr|dictionaryProperty) SEMICOLON?
-    | COLON objectName=identifierAtom? (COMMA superTypes)*  curlyObjectBody SEMICOLON?)
+    (ASSIGN STATIC? (expr|dictionaryProperty)
+    | COLON objectName=identifierAtom? (COMMA superTypes)*  curlyObjectBody)
 ;
 
 dictionaryProperty:
@@ -477,7 +477,7 @@ primaryExpr
     | ARROW expr
     | STAR ARROW expr
     | DOT identifierAtom              // .prop  — shorthand for self.prop
-    | functionDeclaration
+    | FUNCTION (LEFT_PAREN params? RIGHT_PAREN)? codeBlock  // anonymous function expression — FUNCTION keyword required so SLL can distinguish from identifierAtom
     | primary
     ;
 

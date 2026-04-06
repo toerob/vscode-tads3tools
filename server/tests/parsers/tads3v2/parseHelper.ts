@@ -220,8 +220,10 @@ export function assertParses(source: string): void {
   parser.interpreter.setPredictionMode(PredictionMode.SLL);
   parser.errorHandler = new BailErrorStrategy();
   try {
+    console.log("Attempting SLL parse");
     parser.program();
-  } catch {
+  } catch(e) {
+    console.log("SLL parse failed, retrying with LL", e);
     // SLL failed — reset position and retry with full LL
     parser.reset();  // internally calls tokens.seek(0)
     parser.interpreter.setPredictionMode(PredictionMode.LL);
@@ -291,8 +293,10 @@ export function parseProgramAst(source: string): ProgramNode {
   parser.errorHandler = new BailErrorStrategy();
   let tree;
   try {
+    console.log("Attempting SLL parse");
     tree = parser.program();
   } catch {
+    console.log("SLL parse failed, retrying with LL");
     parser.reset();
     parser.interpreter.setPredictionMode(PredictionMode.LL);
     parser.errorHandler = new DefaultErrorStrategy();

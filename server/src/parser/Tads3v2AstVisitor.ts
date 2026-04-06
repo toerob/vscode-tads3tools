@@ -291,8 +291,8 @@ export class Tads3v2AstVisitor
       return { kind: 'Arrow', target } satisfies ArrowNode;
     }
 
-    // functionDeclaration
-    if (ctx.functionDeclaration()) {
+    // anonymous function expression:  function(params) { ... }
+    if (ctx.FUNCTION()) {
       return { kind: 'FunctionExpr' } satisfies FunctionExprNode;
     }
 
