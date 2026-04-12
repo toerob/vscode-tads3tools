@@ -10,6 +10,7 @@ server/coverage
 client/coverage
 coverage
 resources/obj/
+resources/maprenderer/maprenderer.js
 server/src/parser/.idea/
 server/src/parser/.antlr
 
@@ -37,4 +38,6 @@ dist
 npm-debug.log
 mock-debug.txt
 server/src/parser/.antlr/
+  
+	
 

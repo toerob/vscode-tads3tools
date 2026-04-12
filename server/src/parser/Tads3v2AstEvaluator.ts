@@ -26,6 +26,8 @@ import {
   PropertyDeclNode,
   ProgramNode,
   UnaryOpKind,
+  IntrinsicDeclNode,
+  IntrinsicMethodNode,
 } from './ast/nodes';
 
 // ── Runtime value types ───────────────────────────────────────────────────────
@@ -48,6 +50,14 @@ export interface TadsFunction {
   body: AstNode | null;
   closure: EvalEnv;
 }
+
+export interface TadsIntrinsicMethod {
+  type: 'intrinsicMethod';
+  name: string | null;
+  params: ParamNode[];
+  closure: EvalEnv;
+}
+
 export interface TadsUnknown  { type: 'unknown' }
 
 export type TadsValue =
@@ -58,6 +68,7 @@ export type TadsValue =
   | TadsList
   | TadsObject
   | TadsFunction
+  | TadsIntrinsicMethod
   | TadsUnknown;
 
 // Singleton constants for the two valueless types
@@ -521,6 +532,10 @@ export class Tads3v2AstEvaluator {
         return this.applyFunction(callee, [lambdaArg], env);
       }
 
+      // ── Intrinsic object declaration ───────────────────────────────────────────────────
+      case 'IntrinsicDecl':
+        return this.evalIntrinsicDecl(node, env);
+
       // ── Object declaration ───────────────────────────────────────────────────
       case 'ObjectDecl':
         return this.evalObjectDecl(node, env);
@@ -577,6 +592,9 @@ export class Tads3v2AstEvaluator {
       case 'Param':            return UNKNOWN;
       case 'Unhandled':        return UNKNOWN;
     }
+
+    // Defensive fallback for future AstNode kinds.
+    return UNKNOWN;
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -727,6 +745,32 @@ export class Tads3v2AstEvaluator {
       throw e;
     }
   }
+  private evalIntrinsicDecl(node: IntrinsicDeclNode, env: EvalEnv): TadsValue {
+    // Intrinsic declarations are object-like shells with method signatures.
+    const obj: TadsObject = {
+      type:       'object',
+      name:       node.name,
+      superTypes: node.superTypes,
+      props:      new Map(),
+    };
+
+    for (const method of node.methods) {
+     if (method.kind === 'IntrinsicMethodDecl') {
+        const fn = method as IntrinsicMethodNode;
+        const fnValue: TadsIntrinsicMethod = {
+          type:    'intrinsicMethod' ,
+          name:    fn.name,
+          params:  fn.params,
+          closure: env,
+        };
+        if (fn.name) obj.props.set(fn.name, fnValue);
+      }
+    }
+
+    if (obj.name) env.define(obj.name, obj);
+    return obj;
+  }
+
 
   private evalObjectDecl(node: ObjectDeclNode, env: EvalEnv): TadsValue {
     const obj: TadsObject = {
@@ -766,6 +810,7 @@ export class Tads3v2AstEvaluator {
       case 'list':     return true;
       case 'object':   return true;
       case 'function': return true;
+      case 'intrinsicMethod': return true;
       case 'unknown':  return false; // conservative
     }
   }

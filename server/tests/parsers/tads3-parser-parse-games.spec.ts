@@ -3,7 +3,7 @@ import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
 import { Tads3Lexer } from "../../src/parser/Tads3Lexer";
 import { Tads3SymbolListener } from "../../src/parser/Tads3SymbolListener";
 import { Tads3Parser } from "../../src/parser/Tads3Parser";
-import { it, expect } from "@jest/globals";
+import { it, expect, describe } from "@jest/globals";
 import { readFileSync } from "fs";
 
 function parseTextWithTads3SymbolListener(text: string) {

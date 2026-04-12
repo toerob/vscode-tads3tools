@@ -92,3 +92,34 @@ describe('PropertyDecl → nested object detail carries supertype', () => {
     expect(loc?.detail).toBeUndefined();
   });
 });
+
+// ── Intrinsic declarations ───────────────────────────────────────────────────
+
+describe('IntrinsicDecl → symbols and method detail', () => {
+  it('creates a class symbol with supertype detail and method children', () => {
+    const syms = parseSymbols(`
+      intrinsic class StringBuffer 'stringbuffer/030000': Object {
+        append(str);
+        appendText(str, count?);
+      }
+    `);
+
+    const intrinsic = syms.find(s => s.name === 'StringBuffer');
+    expect(intrinsic).toBeDefined();
+    expect(intrinsic?.detail).toBe('Object');
+
+    const append = intrinsic?.children?.find(c => c.name === 'append');
+    const appendText = intrinsic?.children?.find(c => c.name === 'appendText');
+    expect(append?.detail).toBe('str');
+    expect(appendText?.detail).toBe('str,count?');
+  });
+
+  it('strips quotes for non-class intrinsic names', () => {
+    const syms = parseSymbols(`
+      intrinsic 't3vm/010006' {
+      }
+    `);
+
+    expect(syms[0]?.name).toBe('t3vm/010006');
+  });
+});

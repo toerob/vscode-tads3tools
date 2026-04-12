@@ -6,6 +6,7 @@ module.exports = {
   coverageDirectory: "coverage",
   coverageReporters: ["lcov", "text"],
   testMatch: ["**/*.spec.ts"],
-  modulePathIgnorePatterns: ["src/e2e-test"],
+  modulePathIgnorePatterns: ["src/e2e-test", "<rootDir>/out/"],
+  testPathIgnorePatterns: ["<rootDir>/out/"],
   collectCoverageFrom: ["src/**/*.ts", "src/**/*.js"],
 };

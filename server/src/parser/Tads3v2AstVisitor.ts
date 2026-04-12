@@ -84,6 +84,7 @@ import {
   TemplateDefItemContext,
   TemplateDefTokenContext,
   TemplatePrefixOpContext,
+  IntrinsicDeclarationContext,
 } from './Tads3v2Parser';
 import {
   AssignmentNode,
@@ -160,7 +161,10 @@ import {
   TemplateDeclNode,
   TemplateItemNode,
   TemplateTokenKind,
+  IntrinsicDeclNode,
+  IntrinsicMethodNode,
 } from './ast/nodes';
+import { createContext } from 'vm';
 
 export class Tads3v2AstVisitor
   extends AbstractParseTreeVisitor<AstNode>
@@ -179,6 +183,9 @@ export class Tads3v2AstVisitor
   readonly globalEnvironment: ScopedEnvironment = new ScopedEnvironment();
   private currentScope: ScopedEnvironment = this.globalEnvironment;
   private currentObjectId: string | null = null;
+  /** Tracks the last object id seen at each nesting level (number of leading '+' signs).
+   *  Used to resolve the parent of sequential sibling objects at the same level. */
+  private lastObjectIdAtLevel: Map<number, string | null> = new Map();
 
   protected defaultResult(): AstNode {
     return { kind: 'Unhandled' };
@@ -287,8 +294,8 @@ export class Tads3v2AstVisitor
       return { kind: 'Arrow', target } satisfies ArrowNode;
     }
 
-    // functionDeclaration
-    if (ctx.functionDeclaration()) {
+    // anonymous function expression:  function(params) { ... }
+    if (ctx.FUNCTION()) {
       return { kind: 'FunctionExpr' } satisfies FunctionExprNode;
     }
 
@@ -764,6 +771,63 @@ export class Tads3v2AstVisitor
     return { kind: 'Program', directives } satisfies ProgramNode;
   }
 
+  visitIntrinsicDeclaration(ctx: IntrinsicDeclarationContext): AstNode {
+    const isClass = !!ctx.CLASS();
+    const intrinsicName = ctx._name
+      ? ctx._name.text
+      : this.stripQuotes(ctx.SSTR()?.text ?? ctx.DSTR()?.text ?? '');
+    const superTypes = ctx.superTypes() ? this.collectSuperTypes(ctx.superTypes()!) : [];
+
+    // Scope tracking mirrors object declarations (without mapData/level handling).
+    const outerScope = this.currentScope;
+    const innerScope = new ScopedEnvironment({}, outerScope);
+    this.currentScope = innerScope;
+    
+    const methods = ctx.intrinsicMethodDeclaration().map(m => {
+      const methodName = m.identifierAtom().text;
+      innerScope.envs[methodName] = methodName;
+      const paramsCtx = m.params();
+      const params = paramsCtx ? this.visitParamList(paramsCtx) : [];
+      return {
+        kind: 'IntrinsicMethodDecl',
+        isStatic: !!m.STATIC(),
+        name: methodName,
+        params,
+        range: this.rangeOf(m),
+      } satisfies IntrinsicMethodNode;
+    });
+
+    this.currentScope = outerScope;
+
+    if (intrinsicName) {
+      outerScope.envs[intrinsicName] = intrinsicName;
+      if (isClass) {
+        for (const superType of superTypes) {
+          this.inheritanceMap.set(intrinsicName, superType);
+        }
+      }
+    }
+
+    return {
+      kind: 'IntrinsicDecl',
+      isClass,
+      name: intrinsicName,
+      superTypes,
+      methods,
+      range: this.rangeOf(ctx),
+    } satisfies IntrinsicDeclNode;
+  }
+
+  private stripQuotes(raw: string): string {
+    if (raw.length < 2) return raw;
+    const first = raw[0];
+    const last = raw[raw.length - 1];
+    if ((first === "'" && last === "'") || (first === '"' && last === '"')) {
+      return raw.slice(1, -1);
+    }
+    return raw;
+  }
+
   visitObjectDeclaration(ctx: ObjectDeclarationContext): AstNode {
     const isModify   = !!ctx.MODIFY();
     const isReplace  = !!ctx.REPLACE();
@@ -785,12 +849,21 @@ export class Tads3v2AstVisitor
     this.currentScope = innerScope;
     this.currentObjectId = id;
 
+    // Resolve parent via level-indexed tracking: the parent is the last object seen one level up.
+    // This correctly handles sequential sibling objects (e.g. +thing1 followed by +door1 — both
+    // children of the preceding level-0 object), which a simple save/restore of currentObjectId
+    // cannot handle since each object is visited independently.
+    const parentId = level > 0 ? (this.lastObjectIdAtLevel.get(level - 1) ?? null) : null;
+    if (id) {
+      this.lastObjectIdAtLevel.set(level, id);
+    }
+
     // Create MapNodeData entry before visiting body so visitProperty can populate assignedProperties
     if (id) {
       this.mapData.set(id, {
         level,
         isClass,
-        parentName: outerObjectId ?? undefined,
+        parentName: parentId ?? undefined,
         travelConnectorMap: new Map(),
         assignedProperties: new Set(),
       });
@@ -814,6 +887,21 @@ export class Tads3v2AstVisitor
   }
 
   private buildObjectBody(ctx: ObjectBodyContext): ObjectBodyNode {
+    // Extract otherSide from template expressions: `->targetName` on the object body.
+    // e.g. `myDoor: Door ->masterDoor;` — the `->masterDoor` is a template expr.
+    if (this.currentObjectId) {
+      const mapEntry = this.mapData.get(this.currentObjectId);
+      if (mapEntry) {
+        for (const tmpl of ctx.templateExpr()) {
+          const op = tmpl.templatePrefixOp()?.text;
+          if (op === '->') {
+            const target = tmpl.primaryExpr()?.text;
+            if (target) mapEntry.otherSide = target;
+          }
+        }
+      }
+    }
+
     const items: AstNode[] = [
       ...ctx.property().map(p => this.visit(p)),
       ...ctx.functionDeclaration().map(f => this.visit(f)),
@@ -838,7 +926,15 @@ export class Tads3v2AstVisitor
     // Grammar guarantees we are in the ASSIGN branch here (only two alternatives: ASSIGN or COLON).
     // Record in the parent's assignedProperties so map-mapping can identify directional exits.
     if (this.currentObjectId) {
-      this.mapData.get(this.currentObjectId)?.assignedProperties.add(name);
+      const mapEntry = this.mapData.get(this.currentObjectId);
+      if (mapEntry) {
+        mapEntry.assignedProperties.add(name);
+        // otherSide / masterObject both identify the paired door object.
+        if (name === 'otherSide' || name === 'masterObject') {
+          const target = ctx.expr()?.text;
+          if (target) mapEntry.otherSide = target;
+        }
+      }
     }
 
     // name = [static] expr

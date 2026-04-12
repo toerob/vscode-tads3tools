@@ -57,6 +57,49 @@ describe('globalEnvironment — top-level functions', () => {
   });
 });
 
+describe('globalEnvironment — intrinsic declarations', () => {
+  it('registers intrinsic declarations in global scope', () => {
+    const visitor = parseProgram(`
+      intrinsic class StringBuffer 'stringbuffer/030000': Object {
+        append(str);
+      }
+    `);
+    expect(visitor.globalEnvironment.getSymbol('StringBuffer')).toBeDefined();
+  });
+
+  it('does not leak intrinsic methods into global scope', () => {
+    const visitor = parseProgram(`
+      intrinsic class StringBuffer 'stringbuffer/030000': Object {
+        append(str);
+      }
+    `);
+    expect(visitor.globalEnvironment.getSymbol('append')).toBeUndefined();
+  });
+
+  it('does not leak any intrinsic methods into global scope (multiple methods)', () => {
+    const visitor = parseProgram(`
+      intrinsic class StringBuffer 'stringbuffer/030000': Object {
+        append(str);
+        appendText(str, count?);
+      }
+    `);
+    expect(visitor.globalEnvironment.getSymbol('append')).toBeUndefined();
+    expect(visitor.globalEnvironment.getSymbol('appendText')).toBeUndefined();
+  });
+
+  it('keeps top-level function symbols distinct from intrinsic methods with same name', () => {
+    const visitor = parseProgram(`
+      function append(x) { return x; }
+      intrinsic class StringBuffer 'stringbuffer/030000': Object {
+        append(str);
+      }
+    `);
+    // Global lookup should resolve to the top-level function, not the intrinsic method.
+    expect(visitor.globalEnvironment.getSymbol('append')).toBeDefined();
+    expect(visitor.globalEnvironment.getSymbol('StringBuffer')).toBeDefined();
+  });
+});
+
 // ── mapData / assignedProperties ─────────────────────────────────────────────
 
 describe('mapData — assignedProperties', () => {
@@ -132,5 +175,23 @@ describe('inheritanceMap — non-class objects', () => {
   it('does not add anonymous objects to inheritanceMap', () => {
     const visitor = parseProgram('Thing { }');
     expect(visitor.inheritanceMap.size).toBe(0);
+  });
+});
+
+describe('inheritanceMap — intrinsic classes', () => {
+  it('records intrinsic class inheritance using the same rule as class declarations', () => {
+    const visitor = parseProgram(`
+      intrinsic class StringBuffer 'stringbuffer/030000': Object {
+      }
+    `);
+    expect(visitor.inheritanceMap.get('StringBuffer')).toBe('Object');
+  });
+
+  it('does not add non-class intrinsics to inheritanceMap', () => {
+    const visitor = parseProgram(`
+      intrinsic 't3vm/010006' {
+      }
+    `);
+    expect(visitor.inheritanceMap.has('t3vm/010006')).toBe(false);
   });
 });

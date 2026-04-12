@@ -1,4 +1,4 @@
-import { it, expect, jest } from "@jest/globals";
+import { it, expect, jest, describe } from "@jest/globals";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { preprocessTads3Files } from "../../src/parser/preprocessor";

@@ -36,7 +36,6 @@ export class ExtensionStateStore {
   private _gameFileSystemWatcher: FileSystemWatcher;
   private _lastChosenTextDocument: TextEditor | undefined;
 
-  private _preprocessDocument: TextDocument;
   private _storageManager: LocalStorageService;
   private _selectedObject: DocumentSymbol;
   private _lastChosenTextEditor: TextEditor;
@@ -64,13 +63,6 @@ export class ExtensionStateStore {
   public set storageManager(value: LocalStorageService) {
     this._storageManager = value;
   }
-  public get preprocessDocument(): TextDocument {
-    return this._preprocessDocument;
-  }
-  public set preprocessDocument(value: TextDocument) {
-    this._preprocessDocument = value;
-  }
-
   public get gameFileSystemWatcher(): FileSystemWatcher {
     return this._gameFileSystemWatcher;
   }

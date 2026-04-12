@@ -42,6 +42,14 @@ export function setupMockedEnvironment() {
           onImplementation: jest.fn(),
           onSignatureHelp: jest.fn(),
           onNotification: jest.fn(),
+
+          languages: {
+            callHierarchy: {
+              onPrepare: jest.fn(),
+              onIncomingCalls: jest.fn(),
+              onOutgoingCalls: jest.fn(),
+            },
+          },
         };
       }),
       ProposedFeatures: {

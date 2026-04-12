@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.8.0
+
+### Added
+
+- **Total preprocessor rewrite (optimized)** — the preprocessor pipeline has been rebuilt for better throughput and lower overhead on large projects.
+- **Call hierarchy support** — inspect incoming and outgoing call relationships for methods/functions directly from the editor.
+- **Smarter completions** — completion suggestions now use more contextual information, improving relevance while writing code.
+- **Visual map renderer rewrite with React Flow** — the map view internals were modernized for better visual appearance.
+- **Disassembler features** — new commands for disassembling methods and, when needed, complete game disassembly.
+
+### Fixed
+
+- **Major parsing performance improvement (SLL-first parsing)** — parsing now avoids LL mode for very large library files, reducing full-project parse time from 19s to 3s.
+- **Intrinsic parsing coverage expanded** — parser support now includes intrinsic declarations that were previously missing since 0.7.0 when the parser was remade.
+- **Debug hover member evaluation bug** — evaluating members while debugging now resolves correctly.
+- **Tree parent containment bug** — fixed incorrect containment/parent relationships in tree data structures.
+- **Virtual document UX improvements** — preprocessed and assembly virtual documents now open in a more disposable workflow (easy close, no save prompt).
+
+### Notes
+- **Main focus of this release:** parser/preprocessor architecture and performance, plus major developer-experience features (call hierarchy, smarter completions, disassembly, and map renderer modernization).
+
+
 ## 0.7.0
 
 ### Added

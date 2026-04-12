@@ -37,6 +37,8 @@ export default class MapObjectManager {
     // Hold a temporary map structure of additionalProperties where the symbol name acts as key
     //const additionalProps: Map<string,ExtendedDocumentSymbolProperties> = new Map();
 
+    // If we're showing all rooms or in the NPC editor mode, we need to consider all symbols in the workspace. 
+    // Otherwise, we can limit to the current file's symbols for performance.
     if (this.showAllRooms || this.selectedEditor === EditorMode.NPC) {
       for (const fileNameKey of this.symbolManager.symbols.keys()) {
         const localFileSymbols = this.symbolManager.symbols.get(fileNameKey) ?? [];
@@ -46,10 +48,11 @@ export default class MapObjectManager {
         }
       }
     } else if (fsPath) {
+      // Only map symbols from the current file:
       mappedSymbols = this.symbolManager.symbols.get(fsPath) ?? [];
     }
-    // OR only the one that's in the current file:
 
+    mappedSymbols = mappedSymbols.filter((s) => s.kind === SymbolKind.Object || s.kind === SymbolKind.Class);
     const classInheritanceMap = this.symbolManager.inheritanceMap;
 
     // Here begins the mapping for the NPC-editor

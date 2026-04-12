@@ -99,7 +99,23 @@ export function activateTads3Debug(context: vscode.ExtensionContext, factory?: v
             position,
             /\$?[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*/,
           );
-          return exprRange ? new vscode.EvaluatableExpression(exprRange) : undefined;
+          if (!exprRange) return undefined;
+
+          // Trim the matched chain to the segment the cursor is on.
+          // e.g. hovering "x" in "x.moveInto(y)" returns "x", not "x.moveInto".
+          const fullExpr = document.getText(exprRange);
+          const cursorOffset = document.offsetAt(position) - document.offsetAt(exprRange.start);
+          let segEnd = 0;
+          for (const seg of fullExpr.split('.')) {
+            segEnd += seg.length;
+            if (segEnd > cursorOffset) break;
+            segEnd += 1; // account for the '.'
+          }
+          const trimmedRange = new vscode.Range(
+            exprRange.start,
+            document.positionAt(document.offsetAt(exprRange.start) + segEnd),
+          );
+          return new vscode.EvaluatableExpression(trimmedRange);
         },
       },
     ),
