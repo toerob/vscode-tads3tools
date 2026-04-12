@@ -39,5 +39,7 @@ npm-debug.log
 mock-debug.txt
 server/src/parser/.antlr/
   
+spec
+CLAUDE.md
 	
 

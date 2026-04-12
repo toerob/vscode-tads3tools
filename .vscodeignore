@@ -114,3 +114,6 @@ client/node_modules/vsce/**
 client/node_modules/rxjs/src/**
 
 # mobx/dist/index.js requires the dev build when NODE_ENV != 'production' — keep both builds.
+
+spec
+CLAUDE.md
