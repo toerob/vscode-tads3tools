@@ -57,6 +57,10 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
   - bash: |
+      # Some CI environments inject a legacy npm config key that newer npm warns about.
+      # Remove it so logs stay clean and future npm versions do not fail.
+      unset npm_config_version_git_tag NPM_CONFIG_VERSION_GIT_TAG
+
       # echo ">>> Compile vscode-test"
       yarn --ignore-engines && yarn compile 
       # echo ">>> Compiled vscode-test"

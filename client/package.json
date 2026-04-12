@@ -14,7 +14,7 @@
   },
   "scripts": {
     "test": "jest --verbose",
-    "coverage": "jest  --reporter=lcov --collect-coverage && cp coverage/lcov.info ../coverage/client-lcov.info"
+    "coverage": "jest --reporter=lcov --collect-coverage && mkdir -p ../coverage && cp coverage/lcov.info ../coverage/client-lcov.info"
   },
   "dependencies": {
     "@types/three": "^0.183.1",
