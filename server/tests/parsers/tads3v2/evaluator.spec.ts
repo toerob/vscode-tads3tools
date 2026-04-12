@@ -485,6 +485,32 @@ describe('object declarations', () => {
     if (obj.type !== 'object') return;
     expect(obj.props.get('doIt')?.type).toBe('function');
   });
+
+  it('registers intrinsic declarations as object-like values', () => {
+    const ev = evalProg(`
+      intrinsic class StringBuffer 'stringbuffer/030000': Object {
+        append(str);
+      }
+    `);
+
+    const obj = ev.globalEnvironment.get('StringBuffer');
+    expect(obj.type).toBe('object');
+    if (obj.type !== 'object') return;
+    expect(obj.superTypes).toEqual(['Object']);
+  });
+
+  it('stores intrinsic methods as intrinsicMethod values on intrinsic props', () => {
+    const ev = evalProg(`
+      intrinsic class StringBuffer 'stringbuffer/030000': Object {
+        append(str);
+      }
+    `);
+
+    const obj = ev.globalEnvironment.get('StringBuffer');
+    if (obj.type !== 'object') return;
+    const append = obj.props.get('append');
+    expect(append?.type).toBe('intrinsicMethod');
+  });
 });
 
 // ── Member access ──────────────────────────────────────────────────────────────

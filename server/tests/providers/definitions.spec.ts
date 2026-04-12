@@ -58,4 +58,46 @@ describe("Definition Provider Test Suite", () => {
       });
     });
   });
+
+  describe("Given there is a TextDocument with a string-named intrinsic method call", () => {
+    const intrinsicCallDoc = setupTextDocuments(
+      "/intrinsic-call.txt",
+      "dataType(123);\n",
+    );
+
+    it("resolves dataType to the intrinsic method symbol when intrinsic name comes from quoted string", async () => {
+      const methodRange = Range.create(10, 4, 10, 12);
+      const parentRange = Range.create(8, 0, 12, 1);
+      const methodSymbol = DocumentSymbol.create(
+        "dataType",
+        "val",
+        SymbolKind.Function,
+        methodRange,
+        methodRange,
+        [],
+      );
+      const intrinsicFromStringName = DocumentSymbol.create(
+        "tads-gen/030008",
+        "'tads-gen/030008'",
+        SymbolKind.Interface,
+        parentRange,
+        parentRange,
+        [methodSymbol],
+      );
+
+      const sm = new TadsSymbolManager();
+      sm.symbols.set("/intrinsic-lib.t", [intrinsicFromStringName]);
+
+      const result: any[] = await onDefinition(
+        { textDocument: { uri: "file:///intrinsic-call.txt" }, position: { line: 0, character: 2 } },
+        intrinsicCallDoc,
+        sm,
+      );
+
+      const foundSymbol = result[0] as Location;
+      expect(result.length).toBe(1);
+      expect(foundSymbol.uri).toStrictEqual("/intrinsic-lib.t");
+      expect(foundSymbol.range).toStrictEqual(methodRange);
+    });
+  });
 });

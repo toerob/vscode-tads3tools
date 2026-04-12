@@ -82,6 +82,28 @@ function parseFixture(relPath: string): ProgramNode {
   return visitor.visit(tree) as ProgramNode;
 }
 
+function parseSource(source: string): ProgramNode {
+  const lexer = new Tads3v2Lexer(CharStreams.fromString(source));
+  const tokens = new CommonTokenStream(lexer);
+  tokens.fill();
+  const parser = new Tads3v2Parser(tokens);
+  parser.removeErrorListeners();
+  parser.interpreter.setPredictionMode(PredictionMode.SLL);
+  parser.errorHandler = new BailErrorStrategy();
+  let tree;
+  try {
+    tree = parser.program();
+  } catch {
+    parser.reset();
+    parser.interpreter.setPredictionMode(PredictionMode.LL);
+    parser.errorHandler = new DefaultErrorStrategy();
+    tree = parser.program();
+  }
+  expect(parser.numberOfSyntaxErrors).toBe(0);
+  const visitor = new Tads3v2AstVisitor();
+  return visitor.visit(tree) as ProgramNode;
+}
+
 // ── suite ──────────────────────────────────────────────────────────────────────
 
 describe('Tads3v2AstScopeBuilder — smallgame.t', () => {
@@ -202,5 +224,26 @@ describe('Tads3v2AstScopeBuilder — smallgame.t', () => {
     const scope = builder.scopeAt({ line: 22, character: 8 });
     expect(scope).not.toBeNull();
     expect(scope!.def.qualifiedName).toBe('startRoom.withShadow');
+  });
+});
+
+describe('Tads3v2AstScopeBuilder — intrinsic declarations', () => {
+  it('indexes intrinsic methods under their intrinsic container', () => {
+    const program = parseSource(`
+      intrinsic class StringBuffer 'stringbuffer/030000': Object {
+        append(str);
+        appendText(str, count?);
+      }
+    `);
+
+    const builder = new Tads3v2AstScopeBuilder();
+    builder.build(program);
+
+    expect(builder.scopes.has('StringBuffer.append')).toBe(true);
+    expect(builder.scopes.has('StringBuffer.appendText')).toBe(true);
+
+    const appendText = builder.scopes.get('StringBuffer.appendText') as FunctionScope;
+    expect(appendText.params).toEqual(['str', 'count']);
+    expect(appendText.calls).toEqual([]);
   });
 });

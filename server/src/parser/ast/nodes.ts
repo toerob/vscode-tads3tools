@@ -67,6 +67,8 @@ export type AstNodeKind =
   | 'Assignment'      // target op value  (=  +=  -=  *=  /=  %=  |=  &=  ^=  <<=  >>=  >>>=)
   // ── top-level declarations ─────────────────────────────────────────────────
   | 'Program'         // top-level program
+  | 'IntrinsicDecl'   // intrinsic class / method declaration
+  | 'IntrinsicMethodDecl' // method declaration inside an intrinsic
   | 'ObjectDecl'      // named / anonymous / class / modify / replace object
   | 'ObjectBody'      // collected properties + methods + propertysets inside an object
   | 'PropertyDecl'    // name = expr  OR  name: SuperType { body }
@@ -464,6 +466,39 @@ export interface ProgramNode extends BaseNode {
   directives: AstNode[];
 }
 
+export interface IntrinsicDeclNode extends BaseNode {
+  kind: 'IntrinsicDecl';
+  /** `class` keyword present */
+  isClass: boolean;
+  /** The declared intrinsic's name, e.g. `StringBuffer`  */
+  name: string;
+  /** Superclass / supertype names */
+  superTypes: string[];
+  /** The intrinsic's methods, if any; */
+  methods: IntrinsicMethodNode[];
+}
+
+export interface IntrinsicMethodNode extends BaseNode {
+  kind: 'IntrinsicMethodDecl';
+  isStatic: boolean;
+  /** The method's name, e.g. `append` */
+  name: string;
+  /** The intrinsic method's parameters */
+  params: ParamNode[];
+}
+
+export interface FunctionDeclNode extends BaseNode {
+  kind: 'FunctionDecl';
+  isModify: boolean;
+  isReplace: boolean;
+  isStatic: boolean;
+  isExtern: boolean;
+  /** Function / method name; null for anonymous function expressions */
+  name: string | null;
+  params: ParamNode[];
+  body: AstNode | null;
+}
+
 export interface ObjectDeclNode extends BaseNode {
   kind: 'ObjectDecl';
   /** `modify` prefix — modify an existing object in place */
@@ -622,6 +657,8 @@ export type AstNode =
   | NotInNode
   | AssignmentNode
   | ProgramNode
+  | IntrinsicDeclNode
+  | IntrinsicMethodNode
   | ObjectDeclNode
   | ObjectBodyNode
   | PropertyDeclNode

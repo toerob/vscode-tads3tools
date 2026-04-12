@@ -123,6 +123,7 @@ function formatValue(v: TadsValue): string {
     case 'list':     return `[${v.elements.map(formatValue).join(', ')}]`;
     case 'object':   return `<object ${v.name ?? '(anonymous)'}>`;
     case 'function': return `<function ${v.name ?? '(anonymous)'}>`;
+    case 'intrinsicMethod': return `<intrinsic ${v.name ?? '(anonymous)'}>`;
     case 'unknown':  return '(unknown — contains runtime-only values)';
   }
 }

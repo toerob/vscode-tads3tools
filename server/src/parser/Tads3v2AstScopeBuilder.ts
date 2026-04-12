@@ -21,6 +21,7 @@ import {
   AstNode,
   BlockNode,
   FunctionDeclNode,
+  IntrinsicDeclNode,
   LocalDeclListNode,
   LocalDeclNode,
   ObjectDeclNode,
@@ -101,6 +102,8 @@ export class Tads3v2AstScopeBuilder {
     for (const directive of program.directives) {
       if (directive.kind === 'ObjectDecl') {
         this.visitObjectDecl(directive as ObjectDeclNode);
+      } else if (directive.kind === 'IntrinsicDecl') {
+        this.visitIntrinsicDecl(directive as IntrinsicDeclNode);
       } else if (directive.kind === 'FunctionDecl') {
         this.visitFunctionDecl(directive as FunctionDeclNode, null);
       }
@@ -181,6 +184,26 @@ export class Tads3v2AstScopeBuilder {
       locals,
       params,
     });
+  }
+
+  private visitIntrinsicDecl(node: IntrinsicDeclNode): void {
+    if (!node.name) return;
+    for (const method of node.methods) {
+      const qualifiedName = `${node.name}.${method.name}`;
+      const range = this.rangeOf(method);
+      this.scopes.set(qualifiedName, {
+        def: {
+          name: method.name,
+          containerName: node.name,
+          qualifiedName,
+          range,
+          selectionRange: this.nameRange(range, method.name),
+        },
+        calls: [],
+        locals: [],
+        params: method.params.map(p => p.name).filter((n): n is string => n !== null),
+      });
+    }
   }
 
   private visitOperatorOverride(node: OperatorOverrideNode, containerName: string): void {

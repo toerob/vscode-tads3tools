@@ -84,6 +84,7 @@ import {
   TemplateDefItemContext,
   TemplateDefTokenContext,
   TemplatePrefixOpContext,
+  IntrinsicDeclarationContext,
 } from './Tads3v2Parser';
 import {
   AssignmentNode,
@@ -160,6 +161,8 @@ import {
   TemplateDeclNode,
   TemplateItemNode,
   TemplateTokenKind,
+  IntrinsicDeclNode,
+  IntrinsicMethodNode,
 } from './ast/nodes';
 import { createContext } from 'vm';
 
@@ -766,6 +769,63 @@ export class Tads3v2AstVisitor
   visitProgram(ctx: ProgramContext): AstNode {
     const directives = ctx.directive().map(d => this.visit(d));
     return { kind: 'Program', directives } satisfies ProgramNode;
+  }
+
+  visitIntrinsicDeclaration(ctx: IntrinsicDeclarationContext): AstNode {
+    const isClass = !!ctx.CLASS();
+    const intrinsicName = ctx._name
+      ? ctx._name.text
+      : this.stripQuotes(ctx.SSTR()?.text ?? ctx.DSTR()?.text ?? '');
+    const superTypes = ctx.superTypes() ? this.collectSuperTypes(ctx.superTypes()!) : [];
+
+    // Scope tracking mirrors object declarations (without mapData/level handling).
+    const outerScope = this.currentScope;
+    const innerScope = new ScopedEnvironment({}, outerScope);
+    this.currentScope = innerScope;
+    
+    const methods = ctx.intrinsicMethodDeclaration().map(m => {
+      const methodName = m.identifierAtom().text;
+      innerScope.envs[methodName] = methodName;
+      const paramsCtx = m.params();
+      const params = paramsCtx ? this.visitParamList(paramsCtx) : [];
+      return {
+        kind: 'IntrinsicMethodDecl',
+        isStatic: !!m.STATIC(),
+        name: methodName,
+        params,
+        range: this.rangeOf(m),
+      } satisfies IntrinsicMethodNode;
+    });
+
+    this.currentScope = outerScope;
+
+    if (intrinsicName) {
+      outerScope.envs[intrinsicName] = intrinsicName;
+      if (isClass) {
+        for (const superType of superTypes) {
+          this.inheritanceMap.set(intrinsicName, superType);
+        }
+      }
+    }
+
+    return {
+      kind: 'IntrinsicDecl',
+      isClass,
+      name: intrinsicName,
+      superTypes,
+      methods,
+      range: this.rangeOf(ctx),
+    } satisfies IntrinsicDeclNode;
+  }
+
+  private stripQuotes(raw: string): string {
+    if (raw.length < 2) return raw;
+    const first = raw[0];
+    const last = raw[raw.length - 1];
+    if ((first === "'" && last === "'") || (first === '"' && last === '"')) {
+      return raw.slice(1, -1);
+    }
+    return raw;
   }
 
   visitObjectDeclaration(ctx: ObjectDeclarationContext): AstNode {

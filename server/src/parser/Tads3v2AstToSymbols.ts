@@ -3,6 +3,7 @@ import {
   AstNode,
   FunctionDeclNode,
   IdentifierNode,
+  IntrinsicDeclNode,
   NumberNode,
   ObjectBodyNode,
   ObjectDeclNode,
@@ -143,7 +144,19 @@ export function astToSymbols(program: ProgramNode): DocumentSymbol[] {
         if (k > obj.level) levelMap.delete(k);
       }
 
-    } else if (node.kind === 'FunctionDecl') {
+    } else if (node.kind === 'IntrinsicDecl') {
+      const intr = node as IntrinsicDeclNode;
+      const name = intr.name || `(intrinsic_${++anonCounter})`;
+      const detail = intr.superTypes.length > 0 ? intr.superTypes.join(', ') : undefined;
+      const kind = intr.isClass ? SymbolKind.Class : SymbolKind.Interface;
+      const range = toRange(intr.range);
+      const children = intr.methods.map(m => {
+        const mRange = toRange(m.range);
+        return DocumentSymbol.create(m.name, paramsToDetail(m.params), SymbolKind.Method, mRange, mRange);
+      });
+      symbols.push(DocumentSymbol.create(name, detail, kind, range, range, children));
+    }
+     else if (node.kind === 'FunctionDecl') {
       const fn = node as FunctionDeclNode;
       if (!fn.name) continue;
       const range = toRange(fn.range);
