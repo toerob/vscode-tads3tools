@@ -64,13 +64,16 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
+			"preLaunchTask": "npm: compile",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceRoot}",
-				"--extensionTestsPath=${workspaceRoot}/client/out/test/index",
-				"${workspaceRoot}/client/testFixture"
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--extensionTestsPath=${workspaceFolder}/client/out/e2e-test/index",
+				"${workspaceFolder}/client/testFixture",
+				"--disable-extensions"
 			],
 			"outFiles": [
-				"${workspaceRoot}/client/out/test/**/*.js"
+				"${workspaceFolder}/client/out/e2e-test/**/*.js",
+				"${workspaceFolder}/client/out/**/*.js"
 			]
 		},
 		{
