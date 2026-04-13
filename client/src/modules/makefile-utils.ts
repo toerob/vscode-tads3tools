@@ -72,7 +72,7 @@ export async function setMakeFile(
     );
     return;
   }
-  const newMakefile = await findAndSelectMakefileUri();
+  const newMakefile = await findAndSelectMakefileUri(true);
   if (newMakefile === undefined) {
     client.info(`No makefile, cannot parse document symbols. `);
     return;

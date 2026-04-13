@@ -397,9 +397,10 @@ function buildExportSvg(nodes: Node[], edges: Edge[], theme: ReturnType<typeof r
   }
 
   const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escAttr = (s: string) => esc(s).replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 
   let out = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">\n`;
-  out += `<rect width="100%" height="100%" fill="${theme.canvas}"/>\n`;
+  out += `<rect width="100%" height="100%" fill="${escAttr(theme.canvas)}"/>\n`;
 
   // Edges
   for (const e of edges) {
@@ -411,11 +412,11 @@ function buildExportSvg(nodes: Node[], edges: Edge[], theme: ReturnType<typeof r
       ? e.targetHandle.replace(/-in$/, "") : undefined;
     const [x1, y1] = handleXY(src, e.sourceHandle as string | undefined);
     const [x2, y2] = handleXY(tgt, tgtHandleKey);
-    out += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${theme.edgeColor}" stroke-width="1.5"/>\n`;
+    out += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${escAttr(theme.edgeColor)}" stroke-width="1.5"/>\n`;
     if (e.label) {
       const lx = ((x1 + x2) / 2).toFixed(1);
       const ly = ((y1 + y2) / 2 - 3).toFixed(1);
-      out += `<text x="${lx}" y="${ly}" text-anchor="middle" fill="${theme.edgeLabel}" font-size="10" font-family="${theme.fontFamily}">${esc(String(e.label))}</text>\n`;
+      out += `<text x="${lx}" y="${ly}" text-anchor="middle" fill="${escAttr(theme.edgeLabel)}" font-size="10" font-family="${escAttr(theme.fontFamily)}">${esc(String(e.label))}</text>\n`;
     }
   }
 
@@ -429,8 +430,8 @@ function buildExportSvg(nodes: Node[], edges: Edge[], theme: ReturnType<typeof r
     const stroke = isDoor ? theme.nodeWarning : theme.nodeBorder;
     const fill   = theme.nodeBg;
     const color  = isDoor ? theme.nodeWarning : theme.nodeText;
-    out += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="${fill}" stroke="${stroke}"/>\n`;
-    out += `<text x="${(x + w / 2).toFixed(1)}" y="${(y + h / 2 + 4).toFixed(1)}" text-anchor="middle" fill="${color}" font-size="12" font-family="${theme.fontFamily}">${esc(String(n.data.label))}</text>\n`;
+    out += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="${escAttr(fill)}" stroke="${escAttr(stroke)}"/>\n`;
+    out += `<text x="${(x + w / 2).toFixed(1)}" y="${(y + h / 2 + 4).toFixed(1)}" text-anchor="middle" fill="${escAttr(color)}" font-size="12" font-family="${escAttr(theme.fontFamily)}">${esc(String(n.data.label))}</text>\n`;
   }
 
   out += "</svg>";
@@ -438,19 +439,19 @@ function buildExportSvg(nodes: Node[], edges: Edge[], theme: ReturnType<typeof r
 }
 
 function downloadSvg(svgText: string, filename: string) {
-  const blob = new Blob([svgText], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(blob);
+  const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`;
   const a = document.createElement("a");
   a.download = filename;
   a.href = url;
   a.click();
-  URL.revokeObjectURL(url);
 }
 
 function downloadPng(svgText: string, filename: string) {
-  const blob = new Blob([svgText], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(blob);
+  const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`;
   const img = new Image();
+  img.onerror = (e) => {
+    console.error("Failed to render SVG for PNG export", e);
+  };
   img.onload = () => {
     const canvas = document.createElement("canvas");
     canvas.width  = img.width  * 2; // 2× for retina
@@ -458,7 +459,6 @@ function downloadPng(svgText: string, filename: string) {
     const ctx = canvas.getContext("2d")!;
     ctx.scale(2, 2);
     ctx.drawImage(img, 0, 0);
-    URL.revokeObjectURL(url);
     const a = document.createElement("a");
     a.download = filename;
     a.href = canvas.toDataURL("image/png");

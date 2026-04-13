@@ -91,7 +91,7 @@ export async function diagnoseDocument(
   textDocument: TextDocument,
   client: LanguageClient,
   collection: any,
-  extensionState,
+  extensionState: ExtensionStateStore,
 ) {
   client.info(`Diagnosing`);
   try {

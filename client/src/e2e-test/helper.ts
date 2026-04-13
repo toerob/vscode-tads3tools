@@ -31,7 +31,8 @@ export async function sleep(ms: number) {
 }
 
 export const getDocPath = (p: string) => {
-  return path.resolve(__dirname, "../../testFixture", p);
+  const workspaceRoot = process.env.CODE_TESTS_WORKSPACE || path.resolve(__dirname, "../../testFixture");
+  return path.resolve(workspaceRoot, p);
 };
 export const getDocUri = (p: string) => {
   const path = getDocPath(p);
