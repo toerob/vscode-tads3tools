@@ -21,6 +21,9 @@ pool:
 
 variables:
   COVERALLS_REPO_TOKEN: $(CoverallsToken)
+  FROBTADS_REF: "master"
+  FROBTADS_CACHE_DIR: "$(Pipeline.Workspace)/frobtads-cache"
+  FROBTADS_PREFIX: "$(Pipeline.Workspace)/frobtads-cache/install"
 
 steps:
   - task: NodeTool@0
@@ -34,16 +37,40 @@ steps:
     displayName: "Install dependencies via apt-get"
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
+  - task: Cache@2
+    displayName: "Restore frobtads cache"
+    inputs:
+      key: 'frobtads | "$(Agent.OS)" | "$(FROBTADS_REF)"'
+      restoreKeys: |
+        frobtads | "$(Agent.OS)"
+      path: "$(FROBTADS_CACHE_DIR)"
+      cacheHitVar: FROBTADS_CACHE_HIT
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
   - bash: |
-      git clone https://github.com/realnc/frobtads.git
-      cd frobtads
-      ./configure
-      mkdir build
-      cd build
-      cmake ..
-      cmake --build . --target install 
-      sudo make install
-    displayName: "Fetch, build and install the latest version of frobtads"
+      set -euo pipefail
+      rm -rf "$(Pipeline.Workspace)/frobtads-src"
+      git clone --depth 1 --branch "$(FROBTADS_REF)" https://github.com/realnc/frobtads.git "$(Pipeline.Workspace)/frobtads-src"
+      cd "$(Pipeline.Workspace)/frobtads-src"
+      if [ -x ./configure ]; then
+        ./configure
+      fi
+      cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(FROBTADS_PREFIX)"
+      cmake --build build --target install -j"$(nproc)"
+    displayName: "Fetch, build and install frobtads (cache miss only)"
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'), ne(variables['FROBTADS_CACHE_HIT'], 'true'))
+
+  - bash: |
+      set -euo pipefail
+      if [ ! -d "$(FROBTADS_PREFIX)/share/frobtads" ]; then
+        echo "Expected frobtads libraries in $(FROBTADS_PREFIX)/share/frobtads but they were not found"
+        exit 1
+      fi
+      sudo mkdir -p /usr/local/share
+      sudo rm -rf /usr/local/share/frobtads
+      sudo ln -s "$(FROBTADS_PREFIX)/share/frobtads" /usr/local/share/frobtads
+      ls -la /usr/local/share/frobtads/tads3 | head -n 20
+    displayName: "Expose frobtads libraries at /usr/local/share/frobtads"
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
     
 # TODO: build for tads3 for mac & windows
@@ -76,6 +103,8 @@ steps:
     env:
       COVERALLS_REPO_TOKEN: $(CoverallsToken)
       DISPLAY: ":99.0"
+      PATH: $(FROBTADS_PREFIX)/bin:$(PATH)
+      LD_LIBRARY_PATH: $(FROBTADS_PREFIX)/lib:$(LD_LIBRARY_PATH)
 
   - bash: |
       echo ">>> Publish"
