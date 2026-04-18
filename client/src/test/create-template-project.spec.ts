@@ -28,4 +28,10 @@ describe("create-template-project", () => {
 
     expect(isProjectFolderOpenInWorkspace(projectFolder, workspaceFolders)).toBeFalsy();
   });
+
+  test("isProjectFolderOpenInWorkspace returns false when workspace is undefined", () => {
+    const projectFolder: any = { fsPath: "/workspace/mygame" };
+
+    expect(isProjectFolderOpenInWorkspace(projectFolder, undefined)).toBeFalsy();
+  });
 });

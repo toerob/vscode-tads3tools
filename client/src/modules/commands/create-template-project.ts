@@ -14,7 +14,7 @@ export async function createTemplateProject(context: ExtensionContext) {
 
   if (projectFolder?.length > 0 && projectFolder[0] !== undefined) {
     const firstWorkspaceFolder = projectFolder[0];
-    const openCreatedFolderAfterCreation = !isProjectFolderOpenInWorkspace(firstWorkspaceFolder);
+    const openCreatedFolderAfterCreation = !isProjectFolderOpenInWorkspace(firstWorkspaceFolder, workspace.workspaceFolders);
 
     const makefileUri = Uri.joinPath(firstWorkspaceFolder, "Makefile.t3m");
     const gameFileUri = Uri.joinPath(firstWorkspaceFolder, "gameMain.t");
@@ -70,6 +70,10 @@ export async function createTemplateProject(context: ExtensionContext) {
   }
 }
 
-export function isProjectFolderOpenInWorkspace(projectFolder: Uri, workspaceFolders: readonly WorkspaceFolder[] = workspace.workspaceFolders) {
+export function isProjectFolderOpenInWorkspace(projectFolder: Uri, workspaceFolders: readonly WorkspaceFolder[] | undefined) {
+  if (!workspaceFolders?.length) {
+    return false;
+  }
+
   return workspaceFolders?.some((folder) => folder.uri.fsPath === projectFolder.fsPath) ?? false;
 }
