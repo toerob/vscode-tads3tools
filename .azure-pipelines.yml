@@ -24,6 +24,7 @@ variables:
   FROBTADS_REF: "master"
   FROBTADS_CACHE_DIR: "$(Pipeline.Workspace)/frobtads-cache"
   FROBTADS_PREFIX: "$(Pipeline.Workspace)/frobtads-cache/install"
+  NPM_CACHE_DIR: "$(Pipeline.Workspace)/.npm"
 
 steps:
   - task: NodeTool@0
@@ -46,6 +47,14 @@ steps:
       path: "$(FROBTADS_CACHE_DIR)"
       cacheHitVar: FROBTADS_CACHE_HIT
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
+  - task: Cache@2
+    displayName: "Restore npm cache"
+    inputs:
+      key: 'npm | "$(Agent.OS)" | package-lock.json, client/package-lock.json, server/package-lock.json'
+      restoreKeys: |
+        npm | "$(Agent.OS)"
+      path: "$(NPM_CACHE_DIR)"
 
   - bash: |
       set -euo pipefail
@@ -88,12 +97,17 @@ steps:
       # Remove it so logs stay clean and future npm versions do not fail.
       unset npm_config_version_git_tag NPM_CONFIG_VERSION_GIT_TAG
 
-      # echo ">>> Compile vscode-test"
-      yarn --ignore-engines && yarn compile 
-      # echo ">>> Compiled vscode-test"
+      echo ">>> Install dependencies"
+      npm ci --ignore-scripts
+      npm --prefix client ci
+      npm --prefix server ci
+
+      echo ">>> Compile vscode-test"
+      npm run compile
+      echo ">>> Compiled vscode-test"
 
       echo ">>> Run unit tests test"
-      yarn coverage
+      npm run coverage
       echo ">>> Unit tests finished"
 
       echo ">>> Publish coverage to coveralls"
@@ -105,10 +119,11 @@ steps:
       DISPLAY: ":99.0"
       PATH: $(FROBTADS_PREFIX)/bin:$(PATH)
       LD_LIBRARY_PATH: $(FROBTADS_PREFIX)/lib:$(LD_LIBRARY_PATH)
+      npm_config_cache: $(NPM_CACHE_DIR)
 
   - bash: |
       echo ">>> Publish"
-      yarn deploy
+      npm run deploy
     displayName: Publish
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), eq(variables['Agent.OS'], 'Linux'))
     env:
