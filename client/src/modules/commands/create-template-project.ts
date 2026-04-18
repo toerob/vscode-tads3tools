@@ -75,5 +75,5 @@ export function isProjectFolderOpenInWorkspace(projectFolder: Uri, workspaceFold
     return false;
   }
 
-  return workspaceFolders?.some((folder) => folder.uri.fsPath === projectFolder.fsPath) ?? false;
+  return workspaceFolders.some((folder) => folder.uri.fsPath === projectFolder.fsPath);
 }
