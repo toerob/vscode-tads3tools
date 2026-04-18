@@ -13,12 +13,25 @@ const Uri = {
     };
   }),
 };
+class Position {
+  constructor(
+    public line: number,
+    public character: number,
+  ) {}
+}
+class SnippetString {
+  value: string;
+  constructor(value: string) {
+    this.value = value;
+  }
+}
 const window = {
   showInformationMessage: jest.fn(),
   showWarningMessage: jest.fn(),
   showErrorMessage: jest.fn(),
   showOpenDialog: jest.fn(),
   showQuickPick: jest.fn(),
+  showTextDocument: jest.fn(),
 };
 const workspace = {
   openTextDocument: jest.fn(),
@@ -29,5 +42,8 @@ const workspace = {
   }),
   findFiles: jest.fn(),
 };
+const commands = {
+  executeCommand: jest.fn(),
+};
 
-module.exports = { CancellationError, Uri, window, workspace };
+module.exports = { CancellationError, Uri, Position, SnippetString, window, workspace, commands };

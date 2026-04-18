@@ -26,10 +26,11 @@
   },
   "main": "./client/out/extension",
   "activationEvents": [
-    "onLanguage",
+    "onLanguage:tads3",
     "onDebugResolve:tads3",
     "onDebugDynamicConfigurations:tads3",
-    "onCommand:extension.tads3-debug.getProgramName"
+    "onCommand:extension.tads3-debug.getProgramName",
+    "onCommand:tads3.createTads3TemplateProject"
   ],
   "capabilities": {
     "untrustedWorkspaces": {
@@ -167,28 +168,28 @@
         "command": "tads3.restartReplayScript",
         "title": "1. Restart & run script",
         "category": "Interpreter",
-        "enablement": "true",
+        "enablement": "tads3.isTadsProject",
         "shortTitle": "Restart & run"
       },
       {
         "command": "tads3.replayScript",
         "title": "2. Run script",
         "category": "Interpreter",
-        "enablement": "true",
+        "enablement": "tads3.isTadsProject",
         "shortTitle": "Run"
       },
       {
         "command": "tads3.openReplayScript",
         "title": "3. Open script in editor",
         "category": "Interpreter",
-        "enablement": "true",
+        "enablement": "tads3.isTadsProject",
         "shortTitle": "Open script"
       },
       {
         "command": "tads3.deleteReplayScript",
         "title": "4. Delete script",
         "category": "Interpreter",
-        "enablement": "true",
+        "enablement": "tads3.isTadsProject",
         "shortTitle": "Delete script"
       },
       {
@@ -205,42 +206,48 @@
       {
         "command": "tads3.addFileToProject",
         "title": "Tads3 command: Adds a new file to the project",
-        "category": "Edits"
+        "category": "Edits",
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.extractAllQuotes",
         "title": "Tads3 command: extract unique strings from source code",
-        "category": "Editor"
+        "category": "Editor",
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.clearCache",
-        "title": "Tads3 command: Clear cache for standard libraries adv3/adv3Lite. "
+        "title": "Tads3 command: Clear cache for standard libraries adv3/adv3Lite. ",
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.downloadAndInstallExtension",
-        "title": "Tads3 command: Download and install extension(s)"
+        "title": "Tads3 command: Download and install extension(s)",
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.installTracker",
         "title": "Tads3 command: Install a tracker game file in the project so the game will remember player position between sessions",
         "category": "Editor",
-        "enablement": "true"
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.openInVisualEditor",
         "title": "Tads3 command: Open current tads3 source code *.{t,h} in Tads3 Visual Editor ",
         "category": "Editor",
-        "enablement": "true"
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.setMakefile",
         "title": "Tads3 command: Set which makefile (.t3m) to use for this project (in case there are several)",
-        "category": "Compilation"
+        "category": "Compilation",
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.restartGameRunnerOnT3ImageChanges",
         "title": "Tads3 command: Toggles on/off if the game should restarted as soon as the t3 image game file changes",
-        "category": "Running"
+        "category": "Running",
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.showPreprocessedTextAction",
@@ -251,64 +258,68 @@
       {
         "command": "tads3.showPreprocessedTextForCurrentFile",
         "title": "Tads3 command: Show preprocessed text for the current file",
-        "category": "Preprocessing"
+        "category": "Preprocessing",
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.showPreprocessedFileQuickPick",
         "title": "Tads3 command: Choose a preprocessed file to show in a separate window",
-        "category": "Preprocessing"
+        "category": "Preprocessing",
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.openProjectFileQuickPick",
         "title": "Tads3 command: Open any project file in a separate window",
-        "category": "Preprocessing"
+        "category": "Preprocessing",
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.enablePreprocessorCodeLens",
         "title": "Tads3 command: Toggle CodeLens for preprocessed text of the current file",
-        "category": "Preprocessing"
+        "category": "Preprocessing",
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.analyzeTextAtPosition",
         "title": "Tads3 command: Analyze the text at the current position and offer code actions",
         "category": "Editor",
-        "enablement": "true"
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.analyzeImage",
         "title": "Tads3 command: Analyze the image file and show info in the image info view",
         "category": "Editor",
-        "enablement": "true"
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.disassembleMethod",
         "title": "TADS3: Disassemble Method",
         "category": "TADS3",
-        "enablement": "true"
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.disassembleImage",
         "title": "TADS3: Disassemble Whole Image",
         "category": "TADS3",
-        "enablement": "true"
+        "enablement": "tads3.isTadsProject"
       },
       {
         "command": "tads3.evaluateSelection",
         "title": "TADS3: Evaluate Selection",
         "category": "TADS3",
-        "enablement": "editorLangId == tads3"
+        "enablement": "tads3.isTadsProject && editorLangId == tads3"
       },
       {
         "command": "tads3.dev.showAst",
         "title": "TADS3 Dev: Show AST for Current File",
         "category": "TADS3 Dev",
-        "enablement": "editorLangId == tads3"
+        "enablement": "tads3.isTadsProject && editorLangId == tads3"
       },
       {
         "command": "tads3.dev.showScopes",
         "title": "TADS3 Dev: Show AST + Scope Builder Output for Current File",
         "category": "TADS3 Dev",
-        "enablement": "editorLangId == tads3"
+        "enablement": "tads3.isTadsProject && editorLangId == tads3"
       },
       {
         "command": "extension.tads3-debug.debugEditorContents",

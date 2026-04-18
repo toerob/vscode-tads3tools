@@ -1,8 +1,15 @@
 import { existsSync, readFileSync } from "fs";
-import { workspace, ExtensionContext, window, Uri, Position, SnippetString } from "vscode";
+import { workspace, ExtensionContext, window, Uri, Position, SnippetString, commands, WorkspaceFolder } from "vscode";
 import { writeFileSync } from "fs";
 import { ensureDirSync } from "fs-extra";
 import { extensionState } from "../state";
+
+const PENDING_TEMPLATE_PROJECT_FILE_OPEN_KEY = "tads3.pendingTemplateProjectFileOpen";
+
+type PendingTemplateProjectFileOpen = {
+  gameFileUri: string;
+  snippet: string;
+};
 
 export async function createTemplateProject(context: ExtensionContext) {
   const projectFolder: Uri[] = await window.showOpenDialog({
@@ -14,6 +21,7 @@ export async function createTemplateProject(context: ExtensionContext) {
 
   if (projectFolder?.length > 0 && projectFolder[0] !== undefined) {
     const firstWorkspaceFolder = projectFolder[0];
+    const openCreatedFolderAfterCreation = !isProjectFolderOpenInWorkspace(firstWorkspaceFolder, workspace.workspaceFolders);
 
     const makefileUri = Uri.joinPath(firstWorkspaceFolder, "Makefile.t3m");
     const gameFileUri = Uri.joinPath(firstWorkspaceFolder, "gameMain.t");
@@ -53,13 +61,53 @@ export async function createTemplateProject(context: ExtensionContext) {
 
     ensureDirSync(objFolderUri.fsPath);
     writeFileSync(makefileUri.fsPath, makefileResourceFileContent);
+
+    if (openCreatedFolderAfterCreation) {
+      writeFileSync(gameFileUri.fsPath, "");
+      await context.globalState.update(PENDING_TEMPLATE_PROJECT_FILE_OPEN_KEY, {
+        gameFileUri: gameFileUri.toString(),
+        snippet: gamefileResourceFileContent,
+      } as PendingTemplateProjectFileOpen);
+      // Reuse the current window so the newly created project becomes the active workspace.
+      await commands.executeCommand("vscode.openFolder", firstWorkspaceFolder, false);
+      return;
+    }
+
     writeFileSync(gameFileUri.fsPath, "");
-
-    const gameFilecontent = new SnippetString(gamefileResourceFileContent);
-
-    await workspace
-      .openTextDocument(gameFileUri.fsPath)
-      .then((doc) => window.showTextDocument(doc))
-      .then((editor) => editor.insertSnippet(gameFilecontent, new Position(0, 0)));
+    await openGameFileWithTemplateSnippet(gameFileUri, gamefileResourceFileContent);
   }
+}
+
+export function isProjectFolderOpenInWorkspace(projectFolder: Uri, workspaceFolders: readonly WorkspaceFolder[] | undefined) {
+  if (!workspaceFolders?.length) {
+    return false;
+  }
+
+  return workspaceFolders.some((folder) => folder.uri.fsPath === projectFolder.fsPath);
+}
+
+export async function openPendingTemplateProjectFile(context: ExtensionContext) {
+  const pending = context.globalState.get<PendingTemplateProjectFileOpen | undefined>(PENDING_TEMPLATE_PROJECT_FILE_OPEN_KEY);
+
+  if (!pending?.gameFileUri || !pending.snippet) {
+    return;
+  }
+
+  await context.globalState.update(PENDING_TEMPLATE_PROJECT_FILE_OPEN_KEY, undefined);
+  const gameFileUri = Uri.parse(pending.gameFileUri);
+
+  if (!existsSync(gameFileUri.fsPath)) {
+    return;
+  }
+
+  writeFileSync(gameFileUri.fsPath, "");
+  await openGameFileWithTemplateSnippet(gameFileUri, pending.snippet);
+}
+
+export async function openGameFileWithTemplateSnippet(gameFileUri: Uri, templateSnippetText: string) {
+  const gameFilecontent = new SnippetString(templateSnippetText);
+
+  const document = await workspace.openTextDocument(gameFileUri.fsPath);
+  const editor = await window.showTextDocument(document);
+  await editor.insertSnippet(gameFilecontent, new Position(0, 0));
 }

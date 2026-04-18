@@ -30,7 +30,10 @@ import { LocalStorageService } from "./modules/local-storage-service";
 import { validateCompilerPath, validateUserSettings } from "./modules/validations";
 import { ExtensionStateStore, extensionState } from "./modules/state";
 import { extractAllQuotes } from "./modules/commands/extract-quotes";
-import { createTemplateProject as createProject } from "./modules/commands/create-template-project";
+import {
+  createTemplateProject as createProject,
+  openPendingTemplateProjectFile,
+} from "./modules/commands/create-template-project";
 import { installTracker } from "./modules/commands/install-tracker";
 import { analyzeTextAtPosition } from "./modules/commands/decoration-analyzer";
 import { addFileToProject } from "./modules/commands/add-file-to-project";
@@ -42,7 +45,7 @@ import {
   ReplayScriptTreeDataProvider,
 } from "./modules/replay-script";
 import { downloadAndInstallExtension as dlInstallExtension } from "./modules/commands/ifarchive-extensions";
-import { initiallyParseTadsProject } from "./modules/parsing";
+import { initiallyParseTadsProject, shouldAttemptInitialParse } from "./modules/parsing";
 import { insertLocalAssignment } from "./modules/snippets/snippet-insert-local-assignment";
 import { selectTads2MainFile, setMakeFile } from "./modules/makefile-utils";
 import { offsetSymbols } from "./modules/offset-symbols";
@@ -108,6 +111,7 @@ export function setVisualEditor(tads3VisualEditorPanel: WebviewPanel) {
 }
 
 export let client: LanguageClient;
+const TADS_PROJECT_CONTEXT_KEY = "tads3.isTadsProject";
 
 ///////////////////////////
 // Extension starting point
@@ -129,6 +133,8 @@ export async function activate(ctx: ExtensionContext) {
   registerExtensionCommands(ctx, extensionState);
   registerVscodeSpecificProviders(ctx);
   registerVirtualDocumentProvider(ctx);
+  await updateTadsProjectCommandContext();
+  await openPendingTemplateProjectFile(ctx);
 
   await registerWorkspaceAndWindowHooks(ctx, client, cancelToken);
 
@@ -301,32 +307,46 @@ async function registerWorkspaceAndWindowHooks(
         lastChosenTextDocument = event.document;
         client.info(`Last chosen editor changed to: ${event.document.uri}`);
       }
+      void updateTadsProjectCommandContext();
     }),
   );
 
-  if (await validateUserSettings()) {
-    const status = await initiallyParseTadsProject(
-      extensionState.gameFileSystemWatcher,
-      client,
-      ctx,
-      extensionState,
-      serverProcessCancelTokenSource,
-      diagnosticsCollection,
-    );
-    if (!status) {
-      client.warn(`Initial parsing of the project failed, check previous messages for details`);
-      return;
-    }
+  ctx.subscriptions.push(
+    workspace.onDidChangeWorkspaceFolders((_event: WorkspaceFoldersChangeEvent) => {
+      void updateTadsProjectCommandContext();
+    }),
+  );
 
-    if (workspace.getConfiguration("tads3").get("enableScriptFiles")) {
-      // Only register a ReplayScriptTreeDataProvider if it is a tads3 project,
-      // Since that will create a folder for Scripts if there is not already one.
-      ctx.subscriptions.push(
-        window.createTreeView("tads3ScriptTree", {
-          treeDataProvider: new ReplayScriptTreeDataProvider(ctx),
-        }),
-      );
-    }
+  if (!(await shouldAttemptInitialParse())) {
+    client.info(`Skipping initial parsing because no TADS project indicators were found`);
+    return;
+  }
+
+  if (!(await validateUserSettings())) {
+    return;
+  }
+
+  const status = await initiallyParseTadsProject(
+    extensionState.gameFileSystemWatcher,
+    client,
+    ctx,
+    extensionState,
+    serverProcessCancelTokenSource,
+    diagnosticsCollection,
+  );
+  if (!status) {
+    client.warn(`Initial parsing of the project failed, check previous messages for details`);
+    return;
+  }
+
+  if (workspace.getConfiguration("tads3").get("enableScriptFiles")) {
+    // Only register a ReplayScriptTreeDataProvider if it is a tads3 project,
+    // Since that will create a folder for Scripts if there is not already one.
+    ctx.subscriptions.push(
+      window.createTreeView("tads3ScriptTree", {
+        treeDataProvider: new ReplayScriptTreeDataProvider(ctx),
+      }),
+    );
   }
 }
 
@@ -335,6 +355,8 @@ async function onDidSaveTextDocument(
   extensionState: ExtensionStateStore,
   client: LanguageClient,
 ) {
+  void updateTadsProjectCommandContext();
+
   if (extensionState.isDiagnosing()) {
     client.warn(`Still diagnosing, parsing is skipped this time around`);
     return;
@@ -398,4 +420,9 @@ export async function findImageByPattern(askIfMoreMatchesFound: boolean): Promis
   }
 
   return undefined;
+}
+
+async function updateTadsProjectCommandContext() {
+  const isTadsProjectContext = await shouldAttemptInitialParse();
+  await commands.executeCommand("setContext", TADS_PROJECT_CONTEXT_KEY, isTadsProjectContext);
 }
