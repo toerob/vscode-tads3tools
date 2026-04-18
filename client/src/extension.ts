@@ -42,7 +42,7 @@ import {
   ReplayScriptTreeDataProvider,
 } from "./modules/replay-script";
 import { downloadAndInstallExtension as dlInstallExtension } from "./modules/commands/ifarchive-extensions";
-import { initiallyParseTadsProject } from "./modules/parsing";
+import { initiallyParseTadsProject, shouldAttemptInitialParse } from "./modules/parsing";
 import { insertLocalAssignment } from "./modules/snippets/snippet-insert-local-assignment";
 import { selectTads2MainFile, setMakeFile } from "./modules/makefile-utils";
 import { offsetSymbols } from "./modules/offset-symbols";
@@ -304,29 +304,36 @@ async function registerWorkspaceAndWindowHooks(
     }),
   );
 
-  if (await validateUserSettings()) {
-    const status = await initiallyParseTadsProject(
-      extensionState.gameFileSystemWatcher,
-      client,
-      ctx,
-      extensionState,
-      serverProcessCancelTokenSource,
-      diagnosticsCollection,
-    );
-    if (!status) {
-      client.warn(`Initial parsing of the project failed, check previous messages for details`);
-      return;
-    }
+  if (!(await shouldAttemptInitialParse())) {
+    client.info(`Skipping initial parsing because no TADS project indicators were found`);
+    return;
+  }
 
-    if (workspace.getConfiguration("tads3").get("enableScriptFiles")) {
-      // Only register a ReplayScriptTreeDataProvider if it is a tads3 project,
-      // Since that will create a folder for Scripts if there is not already one.
-      ctx.subscriptions.push(
-        window.createTreeView("tads3ScriptTree", {
-          treeDataProvider: new ReplayScriptTreeDataProvider(ctx),
-        }),
-      );
-    }
+  if (!(await validateUserSettings())) {
+    return;
+  }
+
+  const status = await initiallyParseTadsProject(
+    extensionState.gameFileSystemWatcher,
+    client,
+    ctx,
+    extensionState,
+    serverProcessCancelTokenSource,
+    diagnosticsCollection,
+  );
+  if (!status) {
+    client.warn(`Initial parsing of the project failed, check previous messages for details`);
+    return;
+  }
+
+  if (workspace.getConfiguration("tads3").get("enableScriptFiles")) {
+    // Only register a ReplayScriptTreeDataProvider if it is a tads3 project,
+    // Since that will create a folder for Scripts if there is not already one.
+    ctx.subscriptions.push(
+      window.createTreeView("tads3ScriptTree", {
+        treeDataProvider: new ReplayScriptTreeDataProvider(ctx),
+      }),
+    );
   }
 }
 

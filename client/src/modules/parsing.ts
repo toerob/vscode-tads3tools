@@ -17,6 +17,19 @@ import { basename, dirname } from "path";
 import { validateTads2Settings } from "./validations";
 import { DependencyNode } from "../models/DependencyNode";
 
+export async function shouldAttemptInitialParse() {
+  if (!workspace.workspaceFolders?.length) {
+    return false;
+  }
+
+  if (window.activeTextEditor?.document?.languageId === "tads3") {
+    return true;
+  }
+
+  const makefiles = await workspace.findFiles("**/*.t3m", "**/{node_modules,.git}/**", 1);
+  return makefiles.length > 0;
+}
+
 export async function initiallyParseTadsProject(
   gameFileWatcher: FileSystemWatcher,
   client: LanguageClient,

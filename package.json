@@ -26,10 +26,11 @@
   },
   "main": "./client/out/extension",
   "activationEvents": [
-    "onLanguage",
+    "onLanguage:tads3",
     "onDebugResolve:tads3",
     "onDebugDynamicConfigurations:tads3",
-    "onCommand:extension.tads3-debug.getProgramName"
+    "onCommand:extension.tads3-debug.getProgramName",
+    "onCommand:tads3.createTads3TemplateProject"
   ],
   "capabilities": {
     "untrustedWorkspaces": {
