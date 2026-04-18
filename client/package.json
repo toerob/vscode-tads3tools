@@ -3,7 +3,7 @@
   "description": "VSCode client of a language server for",
   "author": "Tomas Öberg",
   "license": "MIT",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "publisher": "vscode",
   "repository": {
     "type": "git",

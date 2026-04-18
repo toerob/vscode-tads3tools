@@ -154,10 +154,10 @@ function processPreprocessedResult(
     }
   };
 
-  // Iterate lines without building a full split-array:
-  // Split on plain "\n" — the lookbehind in wholeLineRegExp cannot match
-  // position-0 newlines and would mis-index preprocessed output.
-  const lines = result.split("\n");
+  // Iterate lines without building a full split-array.
+  // Split on /\r?\n/ so both LF and CRLF are handled consistently, while
+  // still avoiding wholeLineRegExp lookbehind edge cases at position 0.
+  const lines = result.split(/\r?\n/);
 
   for (const line of lines) {
     if (line.startsWith(lineMarker)) {
@@ -242,7 +242,8 @@ function countRowsOfUnprocessedFiles(
  * (e.g. adv3.h) get included multiple times during preprocessing, making the
  * preprocessed version much longer than the original.
  *
- * Both sides are measured as `split("\n").length` so comparison is consistent.
+ * Both sides are measured with `split(/\r?\n/).length` so LF/CRLF inputs
+ * are compared consistently.
  */
 function postProcessPreprocessedResult(
   unprocessedRowsMap: Map<string, number>,
@@ -261,7 +262,7 @@ function postProcessPreprocessedResult(
       continue;
     }
 
-    const processedLines = preprocessedText.split("\n");
+    const processedLines = preprocessedText.split(/\r?\n/);
 
     if (processedLines.length !== unprocessedRows) {
       if (processedLines.length > unprocessedRows) {
@@ -291,7 +292,8 @@ function mapMacroDefinitions(filename: string, connection?: any) {
   readFile(fp, (err, data) => {
     if (err) return;
     const uriPath = onWindowsPlatform ? URI.file(filename).path : filename;
-    const rows = data.toString().split("\n");
+    // Parse source using either LF or CRLF line endings.
+    const rows = data.toString().split(/\r?\n/);
     rows.forEach((row, idx) => {
       const result = defineRegExp.exec(row);
       if (result !== null && result.length >= 2) {

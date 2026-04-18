@@ -1,11 +1,15 @@
 import { readFileSync } from "fs";
 import { join } from "path";
-import { describe, it, expect } from "@jest/globals";
+import * as childProcess from "child_process";
+import { describe, it, expect, jest } from "@jest/globals";
 import { wholeLineRegExp } from "../../src/parser/preprocessor";
+import { preprocessTads3Files } from "../../src/parser/preprocessor";
+import { CaseInsensitiveMap } from "../../src/modules/CaseInsensitiveMap";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const FIXTURES = join(__dirname, "../fixtures/preprocessor");
+const CRLF_REGRESSION_FIXTURES = join(FIXTURES, "crlf-regression");
 
 function readLines(filePath: string): string[] {
   // Use plain \n split so 0-based array indices correspond 1:1 to file line numbers.
@@ -24,6 +28,139 @@ function fixture(name: string) {
 function countMatches(lines: string[], pattern: RegExp): number {
   return lines.filter(l => pattern.test(l)).length;
 }
+
+/**
+ * Mocks t3make preprocessor output by intercepting child_process.exec calls and emitting the provided output string as stdout, followed by a close event. 
+ */
+function mockExecWithOutput(output: string) {
+  return jest.spyOn(childProcess, "exec").mockImplementation(() => {
+    let stdoutDataHandler: ((data: string) => void) | undefined;
+    let closeHandler: (() => void) | undefined;
+
+    const child = {
+      stdout: {
+        on: (event: string, cb: (data: string) => void) => {
+          if (event === "data") stdoutDataHandler = cb;
+          return child.stdout;
+        },
+      },
+      on: (event: string, cb: () => void) => {
+        if (event === "close") closeHandler = cb;
+        return child;
+      },
+    } as any;
+
+    process.nextTick(() => {
+      stdoutDataHandler?.(output);
+      closeHandler?.();
+    });
+
+    return child;
+  });
+}
+
+// ── preprocessTads3Files regression tests ───────────────────────────────────
+
+describe("preprocessTads3Files — CRLF compatibility", () => {
+  it("parses CRLF t3make output with CaseInsensitiveMap cache and preserves line mapping", async () => {
+    const gameFile = join(CRLF_REGRESSION_FIXTURES, "main.t");
+    const makefile = join(CRLF_REGRESSION_FIXTURES, "Makefile.t3m");
+    const compilerOutput =
+      `#line 1 \"${gameFile}\"\r\n` +
+      `first\r\n` +
+      `#line 3 \"${gameFile}\"\r\n` +
+      `third\r\n`;
+
+    const execSpy = mockExecWithOutput(compilerOutput);
+    try {
+      const cache = new CaseInsensitiveMap<string, string>();
+      await preprocessTads3Files(makefile, cache, "t3make");
+
+      const mapped = cache.get(gameFile);
+      const mappedUpper = cache.get(gameFile.toUpperCase());
+
+      expect(mapped).toBeTruthy();
+      expect(mappedUpper).toBe(mapped);
+
+      const lines = mapped!.split("\n");
+      expect(lines[0]).toBe("first");
+      expect(lines[1]).toBe("");
+      expect(lines[2]).toBe("third");
+    } finally {
+      execSpy.mockRestore();
+    }
+  });
+
+  it("keeps #charset placeholder row when compiler output is CRLF", async () => {
+    const gameFile = join(CRLF_REGRESSION_FIXTURES, "charset.t");
+    const makefile = join(CRLF_REGRESSION_FIXTURES, "Makefile.t3m");
+    const compilerOutput =
+      `#line 1 \"${gameFile}\"\r\n` +
+      `#charset \"us-ascii\"\r\n` +
+      `payload\r\n` +
+      `tail\r\n`;
+
+    const execSpy = mockExecWithOutput(compilerOutput);
+    try {
+      const cache = new Map<string, string>();
+      await preprocessTads3Files(makefile, cache, "t3make");
+
+      const mapped = cache.get(gameFile);
+      expect(mapped).toBeTruthy();
+
+      const lines = mapped!.split("\n");
+      expect(lines[0]).toBe("");
+      expect(lines[1]).toBe("payload");
+      expect(lines[2]).toBe("tail");
+    } finally {
+      execSpy.mockRestore();
+    }
+  });
+
+  it("handles CRLF output switching between multiple files and supports case-insensitive key lookup", async () => {
+    const fileA = join(CRLF_REGRESSION_FIXTURES, "a.t");
+    const fileB = join(CRLF_REGRESSION_FIXTURES, "b.t");
+    const makefile = join(CRLF_REGRESSION_FIXTURES, "Makefile.t3m");
+
+    const compilerOutput =
+      `#line 1 \"${fileA}\"\r\n` +
+      `A-one\r\n` +
+      `#line 1 \"${fileB}\"\r\n` +
+      `B-one\r\n` +
+      `#line 3 \"${fileA}\"\r\n` +
+      `A-three\r\n` +
+      `#line 3 \"${fileB}\"\r\n` +
+      `B-three\r\n`;
+
+    const execSpy = mockExecWithOutput(compilerOutput);
+    try {
+      const cache = new CaseInsensitiveMap<string, string>();
+      await preprocessTads3Files(makefile, cache, "t3make");
+
+      const mappedA = cache.get(fileA);
+      const mappedB = cache.get(fileB);
+      const mappedAUpper = cache.get(fileA.toUpperCase());
+      const mappedBUpper = cache.get(fileB.toUpperCase());
+
+      expect(mappedA).toBeTruthy();
+      expect(mappedB).toBeTruthy();
+      expect(mappedAUpper).toBe(mappedA);
+      expect(mappedBUpper).toBe(mappedB);
+
+      const linesA = mappedA!.split("\n");
+      const linesB = mappedB!.split("\n");
+      expect(linesA[0]).toBe("A-one");
+      expect(linesA[1]).toBe("");
+      expect(linesA[2]).toBe("A-three");
+      expect(linesB[0]).toBe("B-one");
+      expect(linesB[1]).toBe("");
+      expect(linesB[2]).toBe("B-three");
+    } finally {
+      execSpy.mockRestore();
+    }
+  });
+
+});
 
 // ── Line count invariant ──────────────────────────────────────────────────────
 //
