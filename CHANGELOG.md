@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.1
+
+### Fixed
+
+- **Preprocessor line-ending regression on Windows** — fixed `preprocessTads3Files` handling of CRLF input/output so line mapping remains correct across files and directives.
+
 ## 0.8.0
 
 ### Added
