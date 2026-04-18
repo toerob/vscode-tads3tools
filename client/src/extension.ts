@@ -30,7 +30,10 @@ import { LocalStorageService } from "./modules/local-storage-service";
 import { validateCompilerPath, validateUserSettings } from "./modules/validations";
 import { ExtensionStateStore, extensionState } from "./modules/state";
 import { extractAllQuotes } from "./modules/commands/extract-quotes";
-import { createTemplateProject as createProject } from "./modules/commands/create-template-project";
+import {
+  createTemplateProject as createProject,
+  openPendingTemplateProjectFile,
+} from "./modules/commands/create-template-project";
 import { installTracker } from "./modules/commands/install-tracker";
 import { analyzeTextAtPosition } from "./modules/commands/decoration-analyzer";
 import { addFileToProject } from "./modules/commands/add-file-to-project";
@@ -108,6 +111,7 @@ export function setVisualEditor(tads3VisualEditorPanel: WebviewPanel) {
 }
 
 export let client: LanguageClient;
+const TADS_PROJECT_CONTEXT_KEY = "tads3.isTadsProject";
 
 ///////////////////////////
 // Extension starting point
@@ -129,6 +133,8 @@ export async function activate(ctx: ExtensionContext) {
   registerExtensionCommands(ctx, extensionState);
   registerVscodeSpecificProviders(ctx);
   registerVirtualDocumentProvider(ctx);
+  await updateTadsProjectCommandContext();
+  await openPendingTemplateProjectFile(ctx);
 
   await registerWorkspaceAndWindowHooks(ctx, client, cancelToken);
 
@@ -301,6 +307,13 @@ async function registerWorkspaceAndWindowHooks(
         lastChosenTextDocument = event.document;
         client.info(`Last chosen editor changed to: ${event.document.uri}`);
       }
+      void updateTadsProjectCommandContext();
+    }),
+  );
+
+  ctx.subscriptions.push(
+    workspace.onDidChangeWorkspaceFolders((_event: WorkspaceFoldersChangeEvent) => {
+      void updateTadsProjectCommandContext();
     }),
   );
 
@@ -342,6 +355,8 @@ async function onDidSaveTextDocument(
   extensionState: ExtensionStateStore,
   client: LanguageClient,
 ) {
+  void updateTadsProjectCommandContext();
+
   if (extensionState.isDiagnosing()) {
     client.warn(`Still diagnosing, parsing is skipped this time around`);
     return;
@@ -405,4 +420,9 @@ export async function findImageByPattern(askIfMoreMatchesFound: boolean): Promis
   }
 
   return undefined;
+}
+
+async function updateTadsProjectCommandContext() {
+  const isTadsProjectContext = await shouldAttemptInitialParse();
+  await commands.executeCommand("setContext", TADS_PROJECT_CONTEXT_KEY, isTadsProjectContext);
 }
