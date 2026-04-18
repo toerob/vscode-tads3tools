@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "fs";
-import { workspace, ExtensionContext, window, Uri, Position, SnippetString } from "vscode";
+import { workspace, ExtensionContext, window, Uri, Position, SnippetString, commands, WorkspaceFolder } from "vscode";
 import { writeFileSync } from "fs";
 import { ensureDirSync } from "fs-extra";
 import { extensionState } from "../state";
@@ -14,6 +14,7 @@ export async function createTemplateProject(context: ExtensionContext) {
 
   if (projectFolder?.length > 0 && projectFolder[0] !== undefined) {
     const firstWorkspaceFolder = projectFolder[0];
+    const openCreatedFolderAfterCreation = !isProjectFolderOpenInWorkspace(firstWorkspaceFolder);
 
     const makefileUri = Uri.joinPath(firstWorkspaceFolder, "Makefile.t3m");
     const gameFileUri = Uri.joinPath(firstWorkspaceFolder, "gameMain.t");
@@ -53,7 +54,12 @@ export async function createTemplateProject(context: ExtensionContext) {
 
     ensureDirSync(objFolderUri.fsPath);
     writeFileSync(makefileUri.fsPath, makefileResourceFileContent);
-    writeFileSync(gameFileUri.fsPath, "");
+    writeFileSync(gameFileUri.fsPath, openCreatedFolderAfterCreation ? gamefileResourceFileContent : "");
+
+    if (openCreatedFolderAfterCreation) {
+      await commands.executeCommand("vscode.openFolder", firstWorkspaceFolder, false);
+      return;
+    }
 
     const gameFilecontent = new SnippetString(gamefileResourceFileContent);
 
@@ -62,4 +68,8 @@ export async function createTemplateProject(context: ExtensionContext) {
       .then((doc) => window.showTextDocument(doc))
       .then((editor) => editor.insertSnippet(gameFilecontent, new Position(0, 0)));
   }
+}
+
+export function isProjectFolderOpenInWorkspace(projectFolder: Uri, workspaceFolders: readonly WorkspaceFolder[] = workspace.workspaceFolders) {
+  return workspaceFolders?.some((folder) => folder.uri.fsPath === projectFolder.fsPath) ?? false;
 }
