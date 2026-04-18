@@ -54,12 +54,15 @@ export async function createTemplateProject(context: ExtensionContext) {
 
     ensureDirSync(objFolderUri.fsPath);
     writeFileSync(makefileUri.fsPath, makefileResourceFileContent);
-    writeFileSync(gameFileUri.fsPath, openCreatedFolderAfterCreation ? gamefileResourceFileContent : "");
 
     if (openCreatedFolderAfterCreation) {
+      writeFileSync(gameFileUri.fsPath, gamefileResourceFileContent);
+      // Reuse the current window so the newly created project becomes the active workspace.
       await commands.executeCommand("vscode.openFolder", firstWorkspaceFolder, false);
       return;
     }
+
+    writeFileSync(gameFileUri.fsPath, "");
 
     const gameFilecontent = new SnippetString(gamefileResourceFileContent);
 
