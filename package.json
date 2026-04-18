@@ -4,6 +4,7 @@
   "author": "Tomas Öberg",
   "license": "MIT",
   "version": "0.8.1",
+  "packageManager": "npm@11.7.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/toerob/vscode-tads3tools.git"
@@ -743,8 +744,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "unzipper": "^0.11.4",
-    "vsce": "^2.15.0",
-    "yarn": "^1.22.22"
+    "vsce": "^2.15.0"
   },
   "jest": {
     "collectCoverageFrom": [

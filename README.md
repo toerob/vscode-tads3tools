@@ -14,6 +14,13 @@ Install via the VS Code marketplace — search for "tads3tools" in the Extension
 
 Windows-specific instructions are [here](docs/installing-vscode-tads3-tools-on-windows.md).
 
+## Development
+
+This repository uses npm as the package manager.
+
+- Use `npm` for install, build, test, and publish workflows.
+- Do not add or update Yarn lockfiles for this project.
+
 ## Getting started
 
 Open a TADS 3 project folder in VS Code, or create one via the command palette (`Ctrl+Shift+P`): **"Tads3 command: Create a new Tads3 template project"**.
