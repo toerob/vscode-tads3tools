@@ -730,7 +730,7 @@
     "lcov-result-merger": "^5.0.1",
     "mocha": "^11.3.0",
     "prettier": "^3.2.5",
-    "three": "^0.180.0",
+    "three": "^0.184.0",
     "ts-jest": "^29.1.5",
     "typescript": "^5.4.5"
   },
