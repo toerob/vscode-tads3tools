@@ -38,6 +38,13 @@
     "virtualWorkspaces": false
   },
   "contributes": {
+    "iconThemes": [
+      {
+        "id": "tads3-icons",
+        "label": "TADS3 Icons",
+        "path": "./resources/tads3-icon-theme.json"
+      }
+    ],
     "views": {
       "explorer": [
         {
@@ -118,7 +125,11 @@
           ".h",
           ".t3m"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./resources/icons/tads3-t.svg",
+          "dark": "./resources/icons/tads3-t-dark.svg"
+        }
       }
     ],
     "grammars": [
@@ -126,28 +137,6 @@
         "language": "tads3",
         "scopeName": "source.tads3",
         "path": "./syntaxes/tads3.tmLanguage.json"
-      }
-    ],
-    "customEditors": [
-      {
-        "viewType": "tads3.visualEdit",
-        "displayName": "Tads3 Visual Editor",
-        "selector": [
-          {
-            "filenamePattern": "*.{t,h}"
-          }
-        ],
-        "priority": "option"
-      },
-      {
-        "viewType": "tads3.customEditor",
-        "displayName": "Tads3 Custom Editor",
-        "selector": [
-          {
-            "filenamePattern": "*.{t,h}"
-          }
-        ],
-        "priority": "option"
       }
     ],
     "commands": [

@@ -1,0 +1,32 @@
+{
+  "iconDefinitions": {
+    "_tads3_t":     { "iconPath": "./icons/tads3-t.svg" },
+    "_tads3_h":     { "iconPath": "./icons/tads3-h.svg" },
+    "_tads3_t3m":   { "iconPath": "./icons/tads3-t3m.svg" },
+    "_tads3_t3":    { "iconPath": "./icons/tads3-t3.svg" },
+    "_tads3_t_dk":  { "iconPath": "./icons/tads3-t-dark.svg" },
+    "_tads3_h_dk":  { "iconPath": "./icons/tads3-h-dark.svg" },
+    "_tads3_t3m_dk":{ "iconPath": "./icons/tads3-t3m-dark.svg" },
+    "_tads3_t3_dk": { "iconPath": "./icons/tads3-t3-dark.svg" }
+  },
+  "light": {
+    "fileExtensions": {
+      "t":   "_tads3_t",
+      "h":   "_tads3_h",
+      "t3m": "_tads3_t3m",
+      "t3":  "_tads3_t3"
+    },
+    "languageIds": {
+      "tads3": "_tads3_t"
+    }
+  },
+  "fileExtensions": {
+    "t":   "_tads3_t_dk",
+    "h":   "_tads3_h_dk",
+    "t3m": "_tads3_t3m_dk",
+    "t3":  "_tads3_t3_dk"
+  },
+  "languageIds": {
+    "tads3": "_tads3_t_dk"
+  }
+}

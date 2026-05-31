@@ -8,5 +8,6 @@
 	},
 	"files.exclude": {
     "resources/": true
-  }
+  },
+	"workbench.iconTheme": "tads3-icons"
 }
