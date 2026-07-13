@@ -1,10 +1,17 @@
 # Changelog
 
-## 0.8.1
+## 0.8.2
+
+### Added
+
+- **File icon theme** — light/dark themed file icons for TADS3 file types (`.t`, `.h`, `.t3`, `.t3m`).
 
 ### Fixed
 
 - **Preprocessor line-ending regression on Windows** — fixed `preprocessTads3Files` handling of CRLF input/output so line mapping remains correct across files and directives.
+- **Various TADS3 grammar parsing gaps** (surfaced via adv3lite, but not specific to it) — the Tads3v2 grammar now handles: anonymous object expressions with semicolon-separated properties (`(object: Super { a=1; b=2; })`), `for`-in loops with extra/reordered counter locals and no-`local` bindings, `foreach` without `local`, trailing commas in call args, `[badness N]` qualifiers nested in grammar alternations, `step` used as an identifier, and comma-operator statements.
+- **Preprocessor could drop a file's trailing `;`** — `postProcessPreprocessedResult`'s line-count trim could cut a genuine terminating `;` when preprocessing surplus (from macro-expansion line drift) landed mid-file instead of at the end; it's now recovered when evidence of a real terminator being cut is detected.
+- **for-in/foreach loop variables missing from scope locals** — `local x` in `for (local x in ...)` and `foreach (local x in ...)` are now registered as visible locals (go-to-definition, locals-at-cursor).
 
 ## 0.8.0
 
