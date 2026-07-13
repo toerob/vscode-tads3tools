@@ -68,6 +68,7 @@ item:
     LEFT_PAREN item+ RIGHT_PAREN
     | item BITWISE_OR
     | BITWISE_OR item
+    | qualifiers   // e.g. ([badness 500] 'dig' | 'dig' 'in') — not just leading in itemList
     | expr
     | STAR
 ;
@@ -161,7 +162,7 @@ templatePrefixOp
 ;
 
 array:
-    argExpr (COMMA argExpr)*;
+    argExpr (COMMA argExpr)* COMMA?;   // trailing comma allowed: f(a, b,)
 
 argExpr:
     name=ID COLON expr SPREAD?  // named/labeled argument — plain ID only keeps SLL to 2-token lookahead
@@ -172,10 +173,25 @@ argExpr:
 // at both positions).  We capture both: the outer list covers the common case
 // "Room 'name' { ... }", the inner list (inside objectBody) covers the rare case
 // "Room { 'name' ... }".
+// Curly-brace bodies (both object/class bodies and the anonymous-object
+// expression form `(object: Super { ... })`) tolerate an optional ';' after
+// each member — unlike the classic ';'-terminated body below, the '}' is an
+// unambiguous end marker, so a per-member ';' can't be confused with it.
 curlyObjectBody:
     template+=templateExpr*
-    LEFT_CURLY objectBody SEMICOLON? RIGHT_CURLY;
+    LEFT_CURLY
+        (template+=templateExpr*)
+        (
+            (functions+=functionDeclaration
+            | properties+=property
+            | propertySets+=propertySet
+            ) SEMICOLON?
+        )*
+    RIGHT_CURLY;
 
+// Classic body: exactly one terminating ';' for the whole declaration, no
+// curly braces. `property` must NOT swallow a trailing ';' here, or it
+// starves this required SEMICOLON (there's no '}' to disambiguate against).
 semiColonEndedObjectBody:
     objectBody
     SEMICOLON
@@ -245,7 +261,6 @@ stats:
     | doWhileStatement
     | whileStatement
     | switchStatement
-    | forInStatement
     | forEachStatement
     | sayStatement
     | emptyStatement
@@ -292,13 +307,8 @@ switchCase:
 throwStatement:
     THROW expr SEMICOLON;
 
-forInStatement:
-    FOR LEFT_PAREN LOCAL identifierAtom IN iterable=expr
-        (SEMICOLON cond=expr? SEMICOLON forUpdate?)?
-        RIGHT_PAREN codeBlock;
-
 forEachStatement:
-    FOREACH LEFT_PAREN expr IN expr RIGHT_PAREN codeBlock;
+    FOREACH LEFT_PAREN (isLocal=LOCAL localName=identifierAtom | variable=expr) IN iterable=expr RIGHT_PAREN codeBlock;
 
 returnStatement: RETURN expr? SEMICOLON;
 
@@ -310,8 +320,15 @@ whileStatement:
     WHILE LEFT_PAREN expr? RIGHT_PAREN codeBlock
 ;
 
+// Classic 'for (init; cond; update)' AND for-in 'for (local x in list, ...)' share this one
+// rule: a 'local x in expr' binding can appear anywhere in the comma-separated init list
+// (e.g. adv3lite's `for(local i = 1, local item in lst;; ++i)`), and both forms can carry
+// the same optional '; cond; update' tail — so there is no separate top-level shape to
+// distinguish on. See forInitItem for how a for-in binding is spotted among the items.
 forStatement:
-    FOR LEFT_PAREN forInit? SEMICOLON cond=expr? SEMICOLON forUpdate? RIGHT_PAREN codeBlock
+    FOR LEFT_PAREN forInit?
+        (SEMICOLON cond=expr? SEMICOLON forUpdate?)?
+    RIGHT_PAREN codeBlock
 ;
 
 forUpdate:
@@ -323,7 +340,9 @@ forInit:
 ;
 
 forInitItem:
-    LOCAL localVarDecl
+    LOCAL forInName=identifierAtom IN iterable=expr   // for-in binding, declares x: local x in expr
+    | forInName=identifierAtom IN iterable=expr        // for-in binding, reuses existing x: x in expr
+    | LOCAL localVarDecl                               // local x [= expr]
     | expr
 ;
 
@@ -333,8 +352,11 @@ tryCatchStatement:
     (FINALLY codeBlock)?;
 
 
+// Comma-operator statement: `--m, ++spCnt;` sequences two expressions, discarding
+// the first's value (same comma already supported in forUpdate, just at statement level).
 emptyStatement:
-    expr? SEMICOLON;
+    expr (COMMA expr)* SEMICOLON
+    | SEMICOLON;
 
 sayStatement: DSTR SEMICOLON;
 
@@ -507,7 +529,7 @@ identifierAtom:
 // Keywords that TADS3 allows to be used as identifiers in many contexts.
 // Extend as new real-world cases are discovered.
 softKeyword:
-    IN | STRING
+    IN | STRING | STEP
 ;
 
 params:

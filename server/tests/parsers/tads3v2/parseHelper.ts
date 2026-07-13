@@ -152,7 +152,10 @@ export function parseFor(source: string): AstNode {
 
 export function parseForIn(source: string): AstNode {
   const parser = makeParser(source);
-  return visit(parser, parser.forInStatement());
+  // for-in loops are parsed by the same forStatement rule as classic for loops —
+  // the AST visitor distinguishes them by whether a 'local x in expr' binding is
+  // present among the init-list items.
+  return visit(parser, parser.forStatement());
 }
 
 export function parseForEach(source: string): AstNode {

@@ -148,4 +148,18 @@ modify grammar predicate(Go):
     : GoProd
 ;`);
   });
+
+  it('grammar with a [badness N] qualifier nested inside a parenthesized alternation', () => {
+    // Regression: adv3lite parser.t VerbRule(Dig) — [badness 500] previously only
+    // worked as the leading qualifier of a whole itemList, not inside '(...)'.
+    assertParses(`
+grammar predicate(Dig):
+    ([badness 500] 'dig' | 'dig' 'in') singleDobj
+    : VerbProduction
+    action = Dig
+    verbPhrase = 'dig/digging (in what)'
+    missingQ = 'what do you want to dig in'
+    dobjReply = inSingleNoun
+;`);
+  });
 });

@@ -247,3 +247,39 @@ describe('Tads3v2AstScopeBuilder — intrinsic declarations', () => {
     expect(appendText.calls).toEqual([]);
   });
 });
+
+// Regression: `ForInStmt.name` and `ForEachStmt.variable` (when locally declared)
+// were never registered in scope.locals — collectLocals had no case for either
+// and its generic default descent only picks up fields that look like AstNode,
+// which a plain `name: string` field doesn't. Fixed by adding explicit cases.
+describe('Tads3v2AstScopeBuilder — for-in / foreach loop variables in scope.locals', () => {
+  function localsOf(source: string): string[] {
+    const program = parseSource(source);
+    const builder = new Tads3v2AstScopeBuilder();
+    builder.build(program);
+    const scope = builder.scopes.get('foo') as FunctionScope;
+    return scope.locals.map(l => l.name);
+  }
+
+  it('for (local x in list) registers x as a local', () => {
+    expect(localsOf(`foo() { for (local x in list) { } }`)).toContain('x');
+  });
+
+  it('for (x in list) — reusing an existing variable — does not register x again', () => {
+    expect(localsOf(`foo() { local x; for (x in list) { } }`)).toEqual(['x']);
+  });
+
+  it('for (local i = 1, local item in lst ; ; ++i) registers both i and item', () => {
+    const names = localsOf(`foo() { for (local i = 1, local item in lst ; ; ++i) { } }`);
+    expect(names).toContain('i');
+    expect(names).toContain('item');
+  });
+
+  it('foreach (local x in list) registers x as a local', () => {
+    expect(localsOf(`foo() { foreach (local x in list) { } }`)).toContain('x');
+  });
+
+  it('foreach (x in list) — reusing an existing variable — does not register x again', () => {
+    expect(localsOf(`foo() { local x; foreach (x in list) { } }`)).toEqual(['x']);
+  });
+});

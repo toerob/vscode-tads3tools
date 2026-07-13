@@ -20,7 +20,10 @@
 import {
   AstNode,
   BlockNode,
+  ForEachStmtNode,
+  ForInStmtNode,
   FunctionDeclNode,
+  IdentifierNode,
   IntrinsicDeclNode,
   LocalDeclListNode,
   LocalDeclNode,
@@ -295,6 +298,9 @@ export class Tads3v2AstScopeBuilder {
 
       case 'ForInStmt':
         r(node.iterable);
+        node.extraLocals.forEach((d: LocalDeclNode) => { if (d.init) r(d.init); });
+        if (node.condition) r(node.condition);
+        if (node.update)    r(node.update);
         r(node.body);
         return;
 
@@ -474,6 +480,37 @@ export class Tads3v2AstScopeBuilder {
           locals.push({ name: decl.name, declarationLine: line });
           if (decl.init) r(decl.init);
         }
+        return;
+      }
+
+      // `foreach (local x in list)` declares `x`; `foreach (x in list)` merely
+      // references a pre-existing one (generic default descent handles that case).
+      case 'ForEachStmt': {
+        const n = node as ForEachStmtNode;
+        if (n.isLocal && n.variable.kind === 'Identifier') {
+          locals.push({ name: (n.variable as IdentifierNode).name, declarationLine: n.range?.start?.line ?? 0 });
+        } else {
+          r(n.variable);
+        }
+        r(n.iterable);
+        r(n.body);
+        return;
+      }
+
+      // `for (local x in list)` declares `x`; `for (x in list)` merely references
+      // a pre-existing one (same distinction as ForEachStmt above). `name` is a
+      // plain string (not an AstNode), so unlike ForEachStmt's `variable` there's
+      // nothing to recurse into for the non-local case — just skip registration.
+      case 'ForInStmt': {
+        const n = node as ForInStmtNode;
+        if (n.isLocal) {
+          locals.push({ name: n.name, declarationLine: n.range?.start?.line ?? 0 });
+        }
+        r(n.iterable);
+        n.extraLocals.forEach(r);
+        if (n.condition) r(n.condition);
+        if (n.update)    r(n.update);
+        r(n.body);
         return;
       }
 

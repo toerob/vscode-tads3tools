@@ -18,7 +18,6 @@ import {
   EnclosedExprCodeBlockContext,
   ExprContext,
   ForEachStatementContext,
-  ForInStatementContext,
   ForStatementContext,
   ForInitContext,
   ForInitItemContext,
@@ -374,8 +373,6 @@ export class Tads3v2AstVisitor
   }
 
   visitForStatement(ctx: ForStatementContext): AstNode {
-    const initCtx   = ctx.forInit();
-    const init      = initCtx ? this.visit(initCtx) : null;
     const condition = ctx._cond ? this.visit(ctx._cond) : null;
     // forUpdate is zero or more comma-separated expressions; fold into a Block if multiple
     const updateCtx = ctx.forUpdate();
@@ -385,6 +382,25 @@ export class Tads3v2AstVisitor
       update = exprs.length === 1 ? exprs[0] : { kind: 'Block', body: exprs } satisfies BlockNode;
     }
     const body = this.visit(ctx.codeBlock());
+
+    // A 'local x in expr' binding can appear anywhere in the comma-separated init
+    // list (e.g. `for (local i = 1, local item in lst ; ; ++i)`), not just first —
+    // spot it among the raw items before visiting, since it changes the node kind.
+    const initCtx = ctx.forInit();
+    const items = initCtx ? initCtx.forInitItem() : [];
+    const bindingCtx = items.find(item => item.IN() !== undefined);
+
+    if (bindingCtx) {
+      const name = bindingCtx._forInName.text;
+      const isLocal = !!bindingCtx.LOCAL();
+      const iterable = this.visit(bindingCtx._iterable);
+      const extraLocals = items
+        .filter(item => item !== bindingCtx)
+        .map(item => this.forInitItemToLocalDecl(item));
+      return { kind: 'ForInStmt', name, isLocal, iterable, extraLocals, condition, update, body } satisfies ForInStmtNode;
+    }
+
+    const init = initCtx ? this.visit(initCtx) : null;
     return { kind: 'ForStmt', init, condition, update, body } satisfies ForStmtNode;
   }
 
@@ -411,19 +427,28 @@ export class Tads3v2AstVisitor
     return { kind: 'LocalDecl', name, init } satisfies LocalDeclNode;
   }
 
-  visitForInStatement(ctx: ForInStatementContext): AstNode {
-    const name = ctx.identifierAtom().text;
-    const iterable = this.visit(ctx._iterable);
-    const body = this.visit(ctx.codeBlock());
-    return { kind: 'ForInStmt', name, iterable, body } satisfies ForInStmtNode;
+  // Convert a forInitItem that sits alongside a for-in binding (never the binding
+  // itself — the caller filters that out) into a LocalDecl. Real-world usage is
+  // always 'local x [= expr]'; a bare expr item is treated as an unnamed local so
+  // its evaluation-order side effect is still preserved.
+  private forInitItemToLocalDecl(ctx: ForInitItemContext): LocalDeclNode {
+    const d = ctx.localVarDecl();
+    if (d) {
+      const initCtx = d.expr();
+      return { kind: 'LocalDecl', name: d.identifierAtom().text, init: initCtx ? this.visit(initCtx) : null };
+    }
+    const exprCtx = ctx.expr();
+    return { kind: 'LocalDecl', name: '', init: exprCtx ? this.visit(exprCtx) : null };
   }
 
   visitForEachStatement(ctx: ForEachStatementContext): AstNode {
-    const exprs = ctx.expr();
-    const variable = this.visit(exprs[0]);
-    const iterable = this.visit(exprs[1]);
+    const isLocal = !!ctx._isLocal;
+    const variable: AstNode = isLocal
+      ? { kind: 'Identifier', name: ctx._localName.text } satisfies IdentifierNode
+      : this.visit(ctx._variable);
+    const iterable = this.visit(ctx._iterable);
     const body = this.visit(ctx.codeBlock());
-    return { kind: 'ForEachStmt', variable, iterable, body } satisfies ForEachStmtNode;
+    return { kind: 'ForEachStmt', variable, isLocal, iterable, body } satisfies ForEachStmtNode;
   }
 
   visitBreakStatement(ctx: BreakStatementContext): AstNode {
@@ -469,8 +494,11 @@ export class Tads3v2AstVisitor
   }
 
   visitEmptyStatement(ctx: EmptyStatementContext): AstNode {
-    const exprCtx = ctx.expr();
-    return exprCtx ? this.visit(exprCtx) : this.defaultResult();
+    // Comma-operator statement `--m, ++spCnt;` sequences 2+ expressions; fold
+    // into a Block (same pattern used for forUpdate's comma-separated list).
+    const exprs = ctx.expr().map(e => this.visit(e));
+    if (exprs.length === 0) return this.defaultResult();
+    return exprs.length === 1 ? exprs[0] : { kind: 'Block', body: exprs } satisfies BlockNode;
   }
 
   visitAssignmentStatement(ctx: AssignmentStatementContext): AstNode {
@@ -869,7 +897,7 @@ export class Tads3v2AstVisitor
       });
     }
 
-    const body = this.buildObjectBody(ctx.curlyObjectBody()?.objectBody() ?? ctx.semiColonEndedObjectBody()?.objectBody()!);
+    const body = this.buildObjectBody(ctx.curlyObjectBody() ?? ctx.semiColonEndedObjectBody()?.objectBody()!);
     this.currentScope = outerScope;
     this.currentObjectId = outerObjectId;
 
@@ -886,7 +914,7 @@ export class Tads3v2AstVisitor
     return { kind: 'ObjectDecl', isModify, isReplace, isClass, isTransient, level, id, superTypes, body, range: this.rangeOf(ctx) } satisfies ObjectDeclNode;
   }
 
-  private buildObjectBody(ctx: ObjectBodyContext): ObjectBodyNode {
+  private buildObjectBody(ctx: ObjectBodyContext | CurlyObjectBodyContext): ObjectBodyNode {
     // Extract otherSide from template expressions: `->targetName` on the object body.
     // e.g. `myDoor: Door ->masterDoor;` — the `->masterDoor` is a template expr.
     if (this.currentObjectId) {
@@ -918,7 +946,7 @@ export class Tads3v2AstVisitor
     if (ctx.COLON()) {
       const nestedSuperType = ctx._objectName ? ctx._objectName.text : null;
       const bodyCtx = ctx.curlyObjectBody();
-      const nestedBody = bodyCtx ? this.buildObjectBody(bodyCtx.objectBody()) : { kind: 'ObjectBody' as const, items: [] };
+      const nestedBody = bodyCtx ? this.buildObjectBody(bodyCtx) : { kind: 'ObjectBody' as const, items: [] };
       return { kind: 'PropertyDecl', name, isStatic: false, value: null, nestedSuperType, nestedBody, range: this.rangeOf(ctx) } satisfies PropertyDeclNode;
     }
 
@@ -1016,7 +1044,7 @@ export class Tads3v2AstVisitor
     const paramNames = ctx.paramsWithWildcard()
       ? this.collectParamsWithWildcard(ctx.paramsWithWildcard()!)
       : [];
-    const body = this.buildObjectBody(ctx.curlyObjectBody().objectBody());
+    const body = this.buildObjectBody(ctx.curlyObjectBody());
     return { kind: 'PropertySet', pattern, paramNames, body, range: this.rangeOf(ctx) } satisfies PropertySetNode;
   }
 

@@ -10,6 +10,7 @@ import { CaseInsensitiveMap } from "../../src/modules/CaseInsensitiveMap";
 
 const FIXTURES = join(__dirname, "../fixtures/preprocessor");
 const CRLF_REGRESSION_FIXTURES = join(FIXTURES, "crlf-regression");
+const TRIM_REGRESSION_FIXTURES = join(FIXTURES, "trim-regression");
 
 function readLines(filePath: string): string[] {
   // Use plain \n split so 0-based array indices correspond 1:1 to file line numbers.
@@ -160,6 +161,53 @@ describe("preprocessTads3Files — CRLF compatibility", () => {
     }
   });
 
+});
+
+// ── Trailing ';' recovery after trim ───────────────────────────────────────────
+//
+// Regression: adv3lite's actor.t ends with `stanceInitializer: PreinitObject
+// ... ;` — a declaration whose trailing ';' is the very last line of the file.
+// A multi-line macro call earlier in the file (a wrapped DMsg(...) string
+// argument) makes t3make's raw -P output carry 2 more lines than the real file
+// for that trailing segment, so postProcessPreprocessedResult's line-count trim
+// (needed for the documented repeated-include case) cuts the ';' off along with
+// the genuine surplus. Since a bare ';' is always a valid top-level directive,
+// re-appending one when the trim leaves the output not ending in ';' recovers
+// this case without risking anything for genuinely broken truncations (which
+// still fail on their own missing braces/tokens regardless).
+
+describe("preprocessTads3Files — trailing ';' recovery after trim", () => {
+  it("re-appends a trailing ';' dropped by the line-count trim", async () => {
+    const gameFile = join(TRIM_REGRESSION_FIXTURES, "tail.t");
+    const makefile = join(TRIM_REGRESSION_FIXTURES, "Makefile.t3m");
+    // tail.t on disk is 5 lines (obj: Super / { / } / ; / <trailing newline>).
+    // This mocked raw output reconstructs to 6 lines — 2 padding lines simulate
+    // the macro-expansion drift, pushing the real ';' past the trim cutoff.
+    const compilerOutput =
+      `#line 1 "${gameFile}"\n` +
+      `obj: Super\n` +
+      `{\n` +
+      `extra1\n` +
+      `extra2\n` +
+      `}\n` +
+      `;\n`;
+
+    const execSpy = mockExecWithOutput(compilerOutput);
+    try {
+      const cache = new Map<string, string>();
+      await preprocessTads3Files(makefile, cache, "t3make");
+
+      const mapped = cache.get(gameFile);
+      expect(mapped).toBeTruthy();
+      expect(mapped!.trimEnd().endsWith(";")).toBe(true);
+
+      const lines = mapped!.split("\n");
+      expect(lines[0]).toBe("obj: Super");
+      expect(lines[4]).toBe("};");
+    } finally {
+      execSpy.mockRestore();
+    }
+  });
 });
 
 // ── Line count invariant ──────────────────────────────────────────────────────

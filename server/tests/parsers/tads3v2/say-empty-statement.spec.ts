@@ -39,6 +39,15 @@ describe('emptyStatement → expression as statement', () => {
       args: [num('1'), num('2')],
     });
   });
+
+  // Regression: adv3lite messages.t — `while (...) --m, ++spCnt;` uses the
+  // comma operator to sequence two expressions as a single bare statement.
+  it('parses a comma-operator statement x, y; as a Block of both expressions', () => {
+    expect(parseEmptyStatement('x, y;')).toMatchObject({
+      kind: 'Block',
+      body: [id('x'), id('y')],
+    });
+  });
 });
 
 describe('emptyStatement → bare semicolon', () => {

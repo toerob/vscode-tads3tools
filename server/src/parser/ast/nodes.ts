@@ -384,13 +384,25 @@ export interface ForStmtNode extends BaseNode {
 export interface ForInStmtNode extends BaseNode {
   kind: 'ForInStmt';
   name: string;
+  // True for `for (local x in list)` — `name` is a fresh declaration, not a
+  // reference to a pre-existing one (e.g. `for (x in list)`).
+  isLocal: boolean;
   iterable: AstNode;
+  // Extra init-list items alongside the binding, e.g. `local i = 1` in
+  // `for (local i = 1, local item in lst ; ; ++i)` — the binding can appear
+  // anywhere in the comma list, not just first.
+  extraLocals: LocalDeclNode[];
+  condition: AstNode | null;
+  update: AstNode | null;
   body: AstNode;
 }
 
 export interface ForEachStmtNode extends BaseNode {
   kind: 'ForEachStmt';
   variable: AstNode;
+  // True for `foreach (local x in list)` — `variable` is a fresh declaration,
+  // not a reference to a pre-existing one.
+  isLocal: boolean;
   iterable: AstNode;
   body: AstNode;
 }

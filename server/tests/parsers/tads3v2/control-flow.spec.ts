@@ -11,6 +11,9 @@ import {
   parseContinue,
   parseGoto,
   parseLabel,
+  parseLocalDecl,
+  parseParams,
+  parsePostfix,
 } from './parseHelper';
 import { AstNode, BinaryOpKind } from '../../../src/parser/ast/nodes';
 
@@ -126,6 +129,18 @@ describe('forInStatement', () => {
       body: block(),
     });
   });
+
+  // Regression: adv3lite swedish.t — `for(i = 1, obj in objList ; ; ++i)` reuses
+  // pre-existing variables for both the counter and the binding, neither prefixed
+  // with 'local'. Mirrors forEachStatement's already-supported non-local form.
+  it('parses for (x in items) {} — binding without local, reusing an existing variable', () => {
+    expect(parseForIn('for (x in items) {}')).toMatchObject({
+      kind: 'ForInStmt',
+      name: 'x',
+      iterable: id('items'),
+      body: block(),
+    });
+  });
 });
 
 // ── forEachStatement ─────────────────────────────────────────────────────────
@@ -135,9 +150,51 @@ describe('forEachStatement', () => {
     expect(parseForEach('foreach (x in items) {}')).toMatchObject({
       kind: 'ForEachStmt',
       variable: id('x'),
+      isLocal: false,
       iterable: id('items'),
       body: block(),
     });
+  });
+
+  // Regression: adv3lite messages.t — `foreach (local c in CustomMessages.all)`
+  // declares the loop variable inline instead of referencing a pre-existing one.
+  it('parses foreach (local x in items) {}', () => {
+    expect(parseForEach('foreach (local x in items) {}')).toMatchObject({
+      kind: 'ForEachStmt',
+      variable: id('x'),
+      isLocal: true,
+      iterable: id('items'),
+      body: block(),
+    });
+  });
+});
+
+// ── 'step' as an ordinary identifier ────────────────────────────────────────
+//
+// Regression: adv3lite swe_messages.t uses `step` as a local/param/member
+// name. STEP is a reserved lexer token (only meaningful in
+// `for (x in a..b step c)`), so without softening it, any use of `step` as
+// an identifier anywhere in the file derailed parsing from that point on.
+
+describe("'step' as an ordinary identifier", () => {
+  it('parses local step = expr;', () => {
+    expect(parseLocalDecl('local step = 1;')).toMatchObject(decl('step', num('1')));
+  });
+
+  it('parses step as a function parameter', () => {
+    expect(parseParams('step')).toMatchObject([{ kind: 'Param', name: 'step' }]);
+  });
+
+  it('parses step as a member access', () => {
+    expect(parsePostfix('x.step')).toMatchObject({
+      kind: 'MemberAccess',
+      object: id('x'),
+      member: id('step'),
+    });
+  });
+
+  it('still parses step as the range-step keyword', () => {
+    expect(parseFor('for (x = 1..10 step 2) {}')).toMatchObject({ kind: 'ForStmt' });
   });
 });
 

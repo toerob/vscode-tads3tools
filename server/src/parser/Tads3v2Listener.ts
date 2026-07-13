@@ -59,7 +59,6 @@ import { LabelStatementContext } from "./Tads3v2Parser";
 import { SwitchStatementContext } from "./Tads3v2Parser";
 import { SwitchCaseContext } from "./Tads3v2Parser";
 import { ThrowStatementContext } from "./Tads3v2Parser";
-import { ForInStatementContext } from "./Tads3v2Parser";
 import { ForEachStatementContext } from "./Tads3v2Parser";
 import { ReturnStatementContext } from "./Tads3v2Parser";
 import { DoWhileStatementContext } from "./Tads3v2Parser";
@@ -751,17 +750,6 @@ export interface Tads3v2Listener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitThrowStatement?: (ctx: ThrowStatementContext) => void;
-
-	/**
-	 * Enter a parse tree produced by `Tads3v2Parser.forInStatement`.
-	 * @param ctx the parse tree
-	 */
-	enterForInStatement?: (ctx: ForInStatementContext) => void;
-	/**
-	 * Exit a parse tree produced by `Tads3v2Parser.forInStatement`.
-	 * @param ctx the parse tree
-	 */
-	exitForInStatement?: (ctx: ForInStatementContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `Tads3v2Parser.forEachStatement`.

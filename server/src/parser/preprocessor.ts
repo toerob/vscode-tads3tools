@@ -266,8 +266,28 @@ function postProcessPreprocessedResult(
 
     if (processedLines.length !== unprocessedRows) {
       if (processedLines.length > unprocessedRows) {
-        // Trim: preprocessed is longer (repeated includes, etc.)
-        preprocessedFilesCacheMap.set(filename, processedLines.slice(0, unprocessedRows).join("\n"));
+        // Trim: preprocessed is longer (repeated includes, macro-expansion line
+        // drift, etc.) — usually just one harmless trailing blank line from the
+        // raw output's final newline, which this trim already handled correctly
+        // before the check below existed.
+        //
+        // Occasionally the surplus originates mid-file (e.g. a wrapped macro-call
+        // argument spanning more raw output lines than source lines), which shifts
+        // a genuine trailing ';' past the trim cutoff along with the real excess
+        // — e.g. `objName: Super { ... }` needs that final ';' to close the
+        // declaration. Only recover it when a dropped line is actually a lone
+        // ';' (evidence a real terminator was cut, not just blank padding); a
+        // bare ';' is always a valid top-level directive in TADS3, so re-adding
+        // it here can only help. Never trigger on the ordinary blank-line case,
+        // or this would wrongly stamp ';' onto every file that legitimately
+        // doesn't need one (e.g. one ending in a plain function's `}`).
+        const trimmed = processedLines.slice(0, unprocessedRows);
+        const dropped = processedLines.slice(unprocessedRows);
+        const lastLine = trimmed[trimmed.length - 1] ?? "";
+        if (dropped.some(l => l.trim() === ";") && !lastLine.trimEnd().endsWith(";")) {
+          trimmed[trimmed.length - 1] = lastLine + ";";
+        }
+        preprocessedFilesCacheMap.set(filename, trimmed.join("\n"));
       } else {
         // Pad: preprocessed is shorter — append blank lines to align positions
         const blankRows = unprocessedRows - processedLines.length;

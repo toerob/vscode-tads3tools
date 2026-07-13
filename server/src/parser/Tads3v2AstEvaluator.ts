@@ -327,16 +327,20 @@ export class Tads3v2AstEvaluator {
         const items = this.toIterable(iterable);
         if (!items) return UNKNOWN;
         const loopEnv = env.child();
+        for (const decl of node.extraLocals) this.evalNode(decl, loopEnv);
         let last: TadsValue = NIL;
         for (const item of items) {
           loopEnv.define(node.name, item);
+          const cond = node.condition ? this.evalNode(node.condition, loopEnv) : TRUE;
+          if (cond.type === 'unknown' || !this.isTruthy(cond)) break;
           try {
             last = this.evalNode(node.body, loopEnv);
           } catch (e) {
             if (e instanceof BreakSignal)    break;
-            if (e instanceof ContinueSignal) continue;
-            throw e;
+            if (e instanceof ContinueSignal) { /* fall through to update */ }
+            else throw e;
           }
+          if (node.update) this.evalNode(node.update, loopEnv);
         }
         return last;
       }
