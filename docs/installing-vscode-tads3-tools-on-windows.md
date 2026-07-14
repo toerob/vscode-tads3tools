@@ -23,24 +23,12 @@ Make sure these are the same for both the User and Workspace!
 #### Tads2 > Compiler: Path
 `t3make`
 
-#### Tads3 > Adv3: Library
-`[folder where you installed the TADS 3 workbench]\lib\adv3`
-
-#### Tads3 > Adv3 Lite: Library
-***Note**: You need to install Adv3Lite first if you want to use it! [Download here](https://github.com/EricEve/adv3lite/releases/latest) and put it in the folder where you installed the TADS 3 workbench within the `\lib` folder.*
-
-`[folder where you installed the TADS 3 workbench]\lib\adv3Lite`
+***Note**: If you want to use Adv3Lite, [download it here](https://github.com/EricEve/adv3lite/releases/latest) and put it in the folder where you installed the TADS 3 workbench, within the `\lib` folder.*
 
 #### Tads3: Game Runner Interpreter
 Fill this out if you want to have the game run in your terminal.
 
 `t3run.exe -plain`
-
-#### Tads3: Include
-`[folder where you installed the TADS 3 workbench]\include`
-
-#### Tads3: Lib
-`[folder where you installed the TADS 3 workbench]\lib`
 
 
 5. Go to the search bar at the top of VSCode and type `> Edits: Tads3 command: Create a new Tads3 template project`
