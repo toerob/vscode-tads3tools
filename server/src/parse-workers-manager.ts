@@ -176,8 +176,7 @@ export async function preprocessAndParseTads3Files(
   const configuration = await connection.workspace.getConfiguration("tads3");
   const maxNumberOfParseWorkerThreads = configuration["maxNumberOfParseWorkerThreads"];
   const parseOnlyTheWorkspaceFiles = configuration["parseOnlyTheWorkspaceFiles"];
-  const useExperimentalParser = configuration["useExperimentalParser"] !== false;
-  const workerPath = useExperimentalParser ? "./workerV2" : "./worker";
+  const workerPath = "./workerV2" 
 
   if (parseOnlyTheWorkspaceFiles) {
     allFilePaths = allFilePaths.filter((x) => x.startsWith(baseDir));

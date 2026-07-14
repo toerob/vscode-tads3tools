@@ -363,12 +363,6 @@
           "maximum": 20,
           "description": "Set the maximum number of worker threads that takes care of the parsing. An optimal number depends on the hardware. "
         },
-        "tads3.useExperimentalParser": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": true,
-          "description": "Use the experimental Tads3v2 parser (workerV2). Disable to fall back to the original parser. Requires a restart after change."
-        },
         "tads3.parseOnlyTheWorkspaceFiles": {
           "scope": "resource",
           "type": "boolean",
