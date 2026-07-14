@@ -202,10 +202,6 @@
         "category": "Editor"
       },
       {
-        "command": "tads3.clearCache",
-        "title": "Tads3 command: Clear cache for standard libraries adv3/adv3Lite. "
-      },
-      {
         "command": "tads3.downloadAndInstallExtension",
         "title": "Tads3 command: Download and install extension(s)"
       },
@@ -432,12 +428,6 @@
           "default": false,
           "description": "Shows preprocessed rows above as CodeLens when they differ from original source code."
         },
-        "tads3.enableLibraryCache": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": false,
-          "description": "Enables caching of preprocessed library files to improve performance."
-        },
         "tads3.ifArchiveExtensionURL": {
           "scope": "window",
           "type": "string",
@@ -629,7 +619,6 @@
     "vscode:prepublish": "npm run compile",
     "antlr4ts": "npm run antlr4ts_t2;npm run antlr4ts_t3",
     "antlr4ts_t2": "antlr4ts -visitor server/src/parser/Tads2.g4",
-    "antlr4ts_t3": "antlr4ts -visitor server/src/parser/Tads3.g4",
     "antlr4ts_t3v2": "antlr4ts -visitor server/src/parser/Tads3v2.g4",
     "build": "vsce package --no-yarn",
     "compile:tsc": "tsc -b",

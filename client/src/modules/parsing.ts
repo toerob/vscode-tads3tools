@@ -145,7 +145,6 @@ export async function sendParseTads2Request(
   serverProcessCancelTokenSource = new CancellationTokenSource();
   extensionState.setPreprocessing(true);
   await client.sendRequest("request/parseTads2Documents", {
-    globalStoragePath: ctx.globalStorageUri.fsPath,
     mainFileLocation: extensionState.getTads2MainFile().fsPath,
     filePaths,
     token: serverProcessCancelTokenSource.token,
@@ -162,7 +161,6 @@ export async function sendParseTads3Request(
   serverProcessCancelTokenSource = new CancellationTokenSource();
   extensionState.setPreprocessing(true);
   await client.sendRequest("request/parseDocuments", {
-    globalStoragePath: ctx.globalStorageUri.fsPath,
     makefileLocation: extensionState.getChosenMakefileUri().fsPath,
     filePaths: filePaths,
     token: serverProcessCancelTokenSource.token,

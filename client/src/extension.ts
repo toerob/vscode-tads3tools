@@ -10,18 +10,14 @@ import {
   languages,
   WebviewPanel,
   TextEditorSelectionChangeEvent,
-  version,
   workspace,
   debug,
-  WorkspaceFoldersChangeEvent,
-  RelativePattern,
 } from "vscode";
 
 import { TransportKind } from "vscode-languageclient/node";
 import { LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
 
 import {
-  onDidChange,
   openInVisualEditor,
   setupVisualEditorResponseHandler,
 } from "./modules/visual-editor/visual-editor";
@@ -49,7 +45,6 @@ import { offsetSymbols } from "./modules/offset-symbols";
 import { setupClientNotifications } from "./modules/client-notifications";
 import { diagnoseAndParseTads2, diagnoseAndParseTads3 } from "./modules/diagnosing";
 import { switchToTads3CustomEditor } from "./modules/custom-editor";
-import { clearCache, clearCacheOnVersionChange } from "./modules/cache";
 import { closeAllTerminalsNamed, toggleRunnerOnChanges } from "./modules/game-monitor";
 import { showPreprocessedText as showPrep } from "./modules/commands/show-preprocessed";
 import { evaluateSelection } from "./modules/commands/evaluate-selection";
@@ -113,8 +108,6 @@ export let client: LanguageClient;
 // Extension starting point
 ///////////////////////////
 export async function activate(ctx: ExtensionContext) {
-  await clearCacheOnVersionChange(ctx, version);
-
   const serverOptions = getServerConfiguration(ctx);
   const clientOptions = getClientOptions();
 
@@ -240,7 +233,6 @@ function registerExtensionCommands(ctx: ExtensionContext, state: ExtensionStateS
     commands.registerCommand("tads3.analyzeTextAtPosition", () => analyzeTextAtPosition()),
     commands.registerCommand("tads3.extractAllQuotes", () => extractAllQuotes(ctx)),
     commands.registerCommand("tads3.installTracker", () => installTracker(ctx)),
-    commands.registerCommand("tads3.clearCache", () => clearCache(ctx.globalStorageUri.fsPath)),
     commands.registerCommand("tads3.replayScript", (params) => replayScript(params)),
     commands.registerCommand("tads3.restartReplayScript", (p) => replayScript(p, true)),
     commands.registerCommand("tads3.openReplayScript", (params) => openReplayScript(params)),

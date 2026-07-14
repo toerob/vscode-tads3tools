@@ -10,12 +10,11 @@ All commands are accessible via the command palette (`Ctrl+Shift+P` / `Cmd+Shift
 | `tads3.addFileToProject` | Add a new source file to the current project and register it in the Makefile. |
 | `tads3.setMakefile` | Choose which `.t3m` Makefile to use when there are several in the project. |
 
-## Parsing & cache
+## Parsing
 
 | Command | Description |
 |---|---|
 | `tads2.parseTads2Project` | Manually trigger a full parse of a TADS 2 project. |
-| `tads3.clearCache` | Clear the cached library symbols for `adv3`/`adv3Lite`. Useful if the cache gets out of sync. |
 
 ## Editing & code intelligence
 

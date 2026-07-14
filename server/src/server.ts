@@ -46,9 +46,6 @@ const posTagger = require("wink-pos-tagger");
 interface Tads3Settings {
   maxNumberOfProblems: number;
   enablePreprocessorCodeLens: boolean;
-  include: string;
-  lib: string;
-  enableLibraryCache: boolean;
 }
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
@@ -57,9 +54,6 @@ interface Tads3Settings {
 const defaultSettings: Tads3Settings = {
   maxNumberOfProblems: 1000,
   enablePreprocessorCodeLens: false,
-  include: "/usr/local/share/frobtads/tads3/include/",
-  lib: "/usr/local/share/frobtads/tads3/lib/",
-  enableLibraryCache: false,
 };
 
 let globalSettings: Tads3Settings = defaultSettings;
@@ -379,10 +373,9 @@ connection.onRequest("request/analyzeText/findNouns", async (params: any) => {
 
 connection.onRequest(
   "request/parseDocuments",
-  async ({ globalStoragePath, makefileLocation, filePaths, token }: any) => {
+  async ({ makefileLocation, filePaths, token }: any) => {
     serverState.tadsVersion = 3;
-    const useCachedLibrary = globalSettings.enableLibraryCache;
-    await preprocessAndParseTads3Files(globalStoragePath, makefileLocation, filePaths, token, useCachedLibrary);
+    await preprocessAndParseTads3Files(makefileLocation, filePaths, token);
   },
 );
 
@@ -393,9 +386,9 @@ connection.onRequest("request/offsetSymbols", ({ filePath, line, offset }: any) 
 
 connection.onRequest(
   "request/parseTads2Documents",
-  async ({ globalStoragePath, mainFileLocation, filePaths, token }: any) => {
+  async ({ mainFileLocation, filePaths, token }: any) => {
     serverState.tadsVersion = 2;
-    await preprocessAndParseTads2Files(globalStoragePath, mainFileLocation, filePaths, token);
+    await preprocessAndParseTads2Files(mainFileLocation, filePaths, token);
   },
 );
 
