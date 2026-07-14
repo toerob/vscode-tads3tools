@@ -426,30 +426,6 @@
           "default": "t3make",
           "description": "Path to the tads3 compiler (t3make). "
         },
-        "tads3.adv3.library": {
-          "scope": "window",
-          "type": "string",
-          "default": "/usr/local/share/frobtads/tads3/lib/adv3/",
-          "description": "Path to adv3 library files. "
-        },
-        "tads3.adv3Lite.library": {
-          "scope": "window",
-          "type": "string",
-          "default": "/usr/local/share/frobtads/tads3/lib/adv3Lite/",
-          "description": "Path to adv3Lite library files. "
-        },
-        "tads3.lib": {
-          "scope": "window",
-          "type": "string",
-          "default": "/usr/local/share/frobtads/tads3/lib/",
-          "description": "Path the tads3 library files. "
-        },
-        "tads3.include": {
-          "scope": "window",
-          "type": "string",
-          "default": "/usr/local/share/frobtads/tads3/include/",
-          "description": "Path the tads3 include files. "
-        },
         "tads3.enablePreprocessorCodeLens": {
           "scope": "resource",
           "type": "boolean",
