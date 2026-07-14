@@ -2,7 +2,7 @@ import { setupMockedEnvironment, setupTextDocuments } from "./test-utilities";
 
 setupMockedEnvironment();
 
-import { expect } from "@jest/globals";
+import { beforeEach, describe, expect, it } from "@jest/globals";
 import { Range, DocumentSymbol, SymbolKind, Location } from "vscode-languageserver";
 import { TadsSymbolManager } from "../../src/modules/symbol-manager";
 import { onDefinition } from "../../src/modules/definitions";

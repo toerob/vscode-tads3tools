@@ -1,24 +1,8 @@
-import { CharStreams, CommonTokenStream } from "antlr4ts";
-import { ParseTreeWalker } from "antlr4ts/tree/ParseTreeWalker";
 import { ShallowParser } from "../../src/modules/ShallowParser";
 import { beforeAll, it, expect, describe } from "@jest/globals";
 import { DocumentSymbol, SymbolKind } from "vscode-languageserver";
 import { readFileSync } from "fs";
-import { Tads3Lexer } from '../../src/parser/Tads3Lexer';
-import { Tads3Parser } from '../../src/parser/Tads3Parser';
-import { Tads3SymbolListener } from '../../src/parser/Tads3SymbolListener';
-
-function parseTextWithTads3SymbolListener(text: string) {
-  const input = CharStreams.fromString(text);
-  const lexer = new Tads3Lexer(input);
-  const tokenStream = new CommonTokenStream(lexer);
-  const parser = new Tads3Parser(tokenStream);
-  const parseTreeWalker = new ParseTreeWalker();
-  const listener = new Tads3SymbolListener();
-  const parseTree = parser.program();
-  parseTreeWalker.walk(listener, parseTree);
-  return { parseTree, listener };
-}
+import { parseSymbols } from "./tads3v2/parseHelper";
 
 function findSymbol(symbols: DocumentSymbol[], name: string): DocumentSymbol | undefined {
   return symbols.find((s) => s.name === name);
@@ -33,16 +17,15 @@ function findProperty(parent: DocumentSymbol, name: string): DocumentSymbol | un
 }
 
 describe("Standard library parsing integration tests", () => {
-  let listener: Tads3SymbolListener;
+  let symbols: DocumentSymbol[];
 
   beforeAll(() => {
     const preprocessedDoc = readFileSync("tests/fixtures/actor.t").toString();
-    const result = parseTextWithTads3SymbolListener(preprocessedDoc);
-    listener = result.listener;
+    symbols = parseSymbols(preprocessedDoc);
   });
 
   it("parses actor.t and verifies all classes and functions", () => {
-    const classNames = listener.symbols.filter((x) => x.kind === SymbolKind.Class).map((x) => x.name);
+    const classNames = symbols.filter((x) => x.kind === SymbolKind.Class).map((x) => x.name);
 
     const expectedClassNames = [
       "Topic", "FollowInfo", "Posture", "TopicDatabase", "ActorTopicDatabase", "SuggestedTopic",
@@ -69,7 +52,7 @@ describe("Standard library parsing integration tests", () => {
     }
 
     const expectedFunctionNames = ["setPlayer", "setRootPOV"];
-    const functionNames = listener.symbols.filter((x) => x.kind === SymbolKind.Function).map((x) => x.name);
+    const functionNames = symbols.filter((x) => x.kind === SymbolKind.Function).map((x) => x.name);
     for (let i = 0; i < functionNames.length; i++) {
       expect(expectedFunctionNames[i]).toBe(functionNames[i]);
     }
@@ -81,7 +64,7 @@ describe("Standard library parsing integration tests", () => {
     //   state_ = nil                  (line 1970)
     //   node_ = nil                   (line 1971)
     //   time_ = nil                   (line 1972)
-    const cls = findSymbol(listener.symbols, "PendingConvInfo");
+    const cls = findSymbol(symbols, "PendingConvInfo");
     expect(cls).toBeDefined();
     expect(cls!.kind).toBe(SymbolKind.Class);
 
@@ -104,7 +87,7 @@ describe("Standard library parsing integration tests", () => {
     //   isReady = true                      (line 1979) -- property
     //   isDone = nil                        (line 1980) -- property
     //   agendaOrder = 100                   (line 1981) -- property
-    const cls = findSymbol(listener.symbols, "AgendaItem");
+    const cls = findSymbol(symbols, "AgendaItem");
     expect(cls).toBeDefined();
 
     const getActor = findMethod(cls!, "getActor");
@@ -135,7 +118,7 @@ describe("Standard library parsing integration tests", () => {
     //   matchList = ...                  (line 1248) -- property
     //   matchScore = 200                 (line 1249) -- property
     //   impliesGreeting = nil            (line 1250) -- property
-    const cls = findSymbol(listener.symbols, "ActorHelloTopic");
+    const cls = findSymbol(symbols, "ActorHelloTopic");
     expect(cls).toBeDefined();
 
     const noteInvocation = findMethod(cls!, "noteInvocation");
@@ -154,7 +137,7 @@ describe("Standard library parsing integration tests", () => {
     //   - nested if/else blocks
     //   - a lambda {x: findMatchObj(x, topic)} inside indexWhich(...)
     // None of these should produce extra Method children; only methods explicitly declared in the class body should appear.
-    const cls = findSymbol(listener.symbols, "TopicMatchTopic");
+    const cls = findSymbol(symbols, "TopicMatchTopic");
     expect(cls).toBeDefined();
 
     const matchTopic = findMethod(cls!, "matchTopic");
@@ -177,20 +160,23 @@ describe("Standard library parsing integration tests", () => {
     //   verify()  → verifyDobjTellAbout   (line 3828, } on 3831)
     //   check()   → checkDobjTellAbout    (line 3832, } on 3836)
     //   action()  → actionDobjTellAbout   (line 3837, } on 3841)
-    const cls = findSymbol(listener.symbols, "Actor");
+    const cls = findSymbol(symbols, "Actor");
     expect(cls).toBeDefined();
 
-    const verify = findMethod(cls!, "verifyDobjTellAbout");
+    const propertyset = cls!.children?.find((c) => c.name === "*DobjTellAbout");
+    expect(propertyset).toBeDefined();
+
+    const verify = findMethod(propertyset!, "verifyDobjTellAbout");
     expect(verify).toBeDefined();
     expect(verify!.range.start.line).toBe(3828 - 1);
     expect(verify!.range.end.line).toBe(3831 - 1);
 
-    const check = findMethod(cls!, "checkDobjTellAbout");
+    const check = findMethod(propertyset!, "checkDobjTellAbout");
     expect(check).toBeDefined();
     expect(check!.range.start.line).toBe(3832 - 1);
     expect(check!.range.end.line).toBe(3836 - 1);
 
-    const action = findMethod(cls!, "actionDobjTellAbout");
+    const action = findMethod(propertyset!, "actionDobjTellAbout");
     expect(action).toBeDefined();
     expect(action!.range.start.line).toBe(3837 - 1);
     expect(action!.range.end.line).toBe(3841 - 1);
@@ -203,7 +189,7 @@ describe("Standard library parsing integration tests", () => {
     //       defaultConvResponse(...);              (line 3848)
     //   }                                          (line 3849)
     // }                                            (line 3850) → stop: 3849
-    const cls = findSymbol(listener.symbols, "Actor");
+    const cls = findSymbol(symbols, "Actor");
     expect(cls).toBeDefined();
 
     const handleConversation = findMethod(cls!, "handleConversation");
@@ -215,14 +201,14 @@ describe("Standard library parsing integration tests", () => {
   it("verifies setPlayer is a top-level function with correct range", () => {
     // setPlayer(actor)  (line 3966) → start: 3965
     // }                 (line 3970) → stop: 3969
-    const setPlayer = findSymbol(listener.symbols, "setPlayer");
+    const setPlayer = findSymbol(symbols, "setPlayer");
     expect(setPlayer).toBeDefined();
     expect(setPlayer!.kind).toBe(SymbolKind.Function);
     expect(setPlayer!.range.start.line).toBe(3966 - 1);
     expect(setPlayer!.range.end.line).toBe(3970 - 1);
 
     // Must not be a child of any class/object
-    for (const sym of listener.symbols) {
+    for (const sym of symbols) {
       if (sym.children) {
         expect(sym.children.find((c) => c.name === "setPlayer")).toBeUndefined();
       }

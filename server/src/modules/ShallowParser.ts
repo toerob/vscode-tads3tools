@@ -2,7 +2,7 @@
  *  Simple parser for TADS3 objects detailing hierarchy
  */
 import { CharStreams, CommonTokenStream, Token } from "antlr4ts";
-import { Tads3Lexer } from "../parser/Tads3Lexer";
+import { Tads3v2Lexer } from "../parser/Tads3v2Lexer";
 
 type BlockKind = "object" | "function" | "method" | "block";
 
@@ -53,7 +53,7 @@ export class ShallowParser {
     }
 
     const input = CharStreams.fromString(text + "\n");
-    const lexer = new Tads3Lexer(input);
+    const lexer = new Tads3v2Lexer(input);
     const tokens = new CommonTokenStream(lexer);
     tokens.fill();
 
@@ -118,10 +118,10 @@ export class ShallowParser {
 
       if (!currentEntry) continue;
 
-      if (token.type === Tads3Lexer.ID) {
+      if (token.type === Tads3v2Lexer.ID) {
         // Skip ahead past whitespace to find the next meaningful token
         let nextIdx = idx + 1;
-        while (nextIdx < tokensSize && tokens.get(nextIdx).type === Tads3Lexer.WS) nextIdx++;
+        while (nextIdx < tokensSize && tokens.get(nextIdx).type === Tads3v2Lexer.WS) nextIdx++;
 
         if (nextIdx >= tokensSize) continue;
 
@@ -153,18 +153,25 @@ export class ShallowParser {
         // not ':'.  When the regex captured a (tag) suffix, scan past the parenthesised tag in
         // the token stream to find the colon that actually marks the object declaration.
         let colonIdx = nextIdx;
-        if (leadingSymbolMatch?.[3] && next.type === Tads3Lexer.LEFT_PAREN) {
+        if (leadingSymbolMatch?.[3] && next.type === Tads3v2Lexer.LEFT_PAREN) {
           let depth = 0;
           for (let j = nextIdx; j < tokensSize; j++) {
             const t = tokens.get(j).type;
-            if (t === Tads3Lexer.LEFT_PAREN) depth++;
-            else if (t === Tads3Lexer.RIGHT_PAREN && --depth === 0) { colonIdx = j + 1; break; }
+            if (t === Tads3v2Lexer.LEFT_PAREN) depth++;
+            else if (t === Tads3v2Lexer.RIGHT_PAREN && --depth === 0) {
+              colonIdx = j + 1;
+              break;
+            }
           }
-          while (colonIdx < tokensSize && tokens.get(colonIdx).type === Tads3Lexer.WS) colonIdx++;
+          while (colonIdx < tokensSize && tokens.get(colonIdx).type === Tads3v2Lexer.WS) colonIdx++;
         }
         const colonCandidate = tokens.get(colonIdx);
 
-        if (token.text && isLineStart && (next.type === Tads3Lexer.COLON || colonCandidate?.type === Tads3Lexer.COLON)) {
+        if (
+          token.text &&
+          isLineStart &&
+          (next.type === Tads3v2Lexer.COLON || colonCandidate?.type === Tads3v2Lexer.COLON)
+        ) {
           // ── Object declaration: name : superclass  (or grammar name(tag) : ...) ──
           const objectName = token.text;
           currentEntry.events.startsObject = true;
@@ -186,16 +193,16 @@ export class ShallowParser {
 
           // For inline objects (no immediate '{'), set owner so body lines get the right owner.
           // Use the token after whichever colon was the declaration colon.
-          const afterColonStart = colonCandidate?.type === Tads3Lexer.COLON ? colonIdx + 1 : nextIdx + 1;
+          const afterColonStart = colonCandidate?.type === Tads3v2Lexer.COLON ? colonIdx + 1 : nextIdx + 1;
           let checkIdx = afterColonStart;
-          while (checkIdx < tokensSize && tokens.get(checkIdx).type === Tads3Lexer.WS) checkIdx++;
+          while (checkIdx < tokensSize && tokens.get(checkIdx).type === Tads3v2Lexer.WS) checkIdx++;
           const tokenAfterColon = tokens.get(checkIdx);
-          if (tokenAfterColon && tokenAfterColon.type !== Tads3Lexer.LEFT_CURLY) {
+          if (tokenAfterColon && tokenAfterColon.type !== Tads3v2Lexer.LEFT_CURLY) {
             state.owner = objectName;
           }
         } else if (isLineStart && state.braceDepth === 0) {
           // ── Potential method/function signature: name(...) or name { ──
-          if (next.type === Tads3Lexer.LEFT_PAREN || next.type === Tads3Lexer.LEFT_CURLY) {
+          if (next.type === Tads3v2Lexer.LEFT_PAREN || next.type === Tads3v2Lexer.LEFT_CURLY) {
             // Mark pending object as having seen a method before its '{' was found
             if (state.pendingBraceStack.length > 0) {
               state.pendingBraceStack[state.pendingBraceStack.length - 1].seenPropOrMethod = true;
@@ -203,12 +210,12 @@ export class ShallowParser {
             methodSigLine = line;
           }
         }
-      } else if (token.type === Tads3Lexer.ASSIGN) {
+      } else if (token.type === Tads3v2Lexer.ASSIGN) {
         // Property assignment '=' at the top level of an object body means inline-style
         if (state.braceDepth === 0 && state.pendingBraceStack.length > 0) {
           state.pendingBraceStack[state.pendingBraceStack.length - 1].seenPropOrMethod = true;
         }
-      } else if (token.type === Tads3Lexer.DSTR) {
+      } else if (token.type === Tads3v2Lexer.DSTR) {
         // Double-quoted string used as inline property shorthand (e.g. desc) at top level
         if (state.braceDepth === 0 && state.pendingBraceStack.length > 0) {
           state.pendingBraceStack[state.pendingBraceStack.length - 1].seenPropOrMethod = true;
@@ -216,23 +223,17 @@ export class ShallowParser {
         // If a method signature was seen recently (same or previous line) and no '{' has
         // appeared since, this DSTR is the body of a headless method (codeBlock: stats).
         // Flag it so the following SEMICOLON is not mistaken for an object terminator.
-        if (
-          state.braceDepth === 0 &&
-          methodSigLine !== -1 &&
-          (methodSigLine === line || methodSigLine === line - 1)
-        ) {
+        if (state.braceDepth === 0 && methodSigLine !== -1 && (methodSigLine === line || methodSigLine === line - 1)) {
           headlessMethodActive = true;
           methodSigLine = -1;
         }
-      } else if (token.type === Tads3Lexer.LEFT_CURLY) {
+      } else if (token.type === Tads3v2Lexer.LEFT_CURLY) {
         currentEntry.events.opensBrace = true;
         state.braceDepth += 1;
 
         // Determine what kind of block this '{' opens
         const pending =
-          state.pendingBraceStack.length > 0
-            ? state.pendingBraceStack[state.pendingBraceStack.length - 1]
-            : null;
+          state.pendingBraceStack.length > 0 ? state.pendingBraceStack[state.pendingBraceStack.length - 1] : null;
 
         let frameKind: BlockKind;
         let frameObjectId: string | undefined;
@@ -263,7 +264,7 @@ export class ShallowParser {
         if (frameKind !== "object" && currentObjectId && lastLineWithObject !== line) {
           currentEntry.owner = state.owner;
         }
-      } else if (token.type === Tads3Lexer.RIGHT_CURLY) {
+      } else if (token.type === Tads3v2Lexer.RIGHT_CURLY) {
         state.braceDepth -= 1;
         const frame = state.blockStack.pop();
 
@@ -285,7 +286,7 @@ export class ShallowParser {
         } else if (currentObjectId && state.braceDepth > 0) {
           currentEntry.owner = state.owner;
         }
-      } else if (token.type === Tads3Lexer.SEMICOLON) {
+      } else if (token.type === Tads3v2Lexer.SEMICOLON) {
         if (headlessMethodActive && state.braceDepth === 0) {
           // This ';' terminates the single-statement body of a headless method — not the object.
           headlessMethodActive = false;

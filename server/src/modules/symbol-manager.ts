@@ -4,13 +4,11 @@ import { URI } from "vscode-uri";
 import { filterForStandardLibraryFiles } from "./utils";
 import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { pathExistsSync } from "fs-extra";
-import { ExtendedDocumentSymbolProperties } from "../parser/Tads3SymbolListener";
 import { DocumentSymbolWithScope, ExpressionType, FilePathAndSymbols, PropertyValueMap, SimpleValue } from "./types";
 import { TemplateItemNode } from "../parser/ast/nodes";
 import { MapNodeData } from "./mapcrawling/MapNodeData";
 import { FunctionScope } from "../parser/Tads3v2AstScopeBuilder";
 import { getDefineMacrosMap } from '../parser/preprocessor';
-import { get } from 'http';
 
 export class TadsSymbolManager {
   public symbols: Map<string, DocumentSymbol[]>|CaseInsensitiveMap<string,DocumentSymbol[]>;
@@ -95,6 +93,7 @@ export class TadsSymbolManager {
     });
   }
 
+  /*
   getAdditionalProperties(symbol: DocumentSymbol): ExtendedDocumentSymbolProperties | undefined {
     for (const keys of this.additionalProperties.keys()) {
       const localAdditionalProps = this.additionalProperties.get(keys);
@@ -104,7 +103,7 @@ export class TadsSymbolManager {
       }
     }
     return undefined;
-  }
+  }*/
 
   /**
    * Look up the statically-extracted value of a named property on a named object.
@@ -158,7 +157,7 @@ export class TadsSymbolManager {
     }
     return {};
   }
-
+  /*
   getParent(symbol: DocumentSymbol | undefined): DocumentSymbol | undefined {
     return symbol ? symbolManager.getAdditionalProperties(symbol)?.parent ?? undefined : undefined;
   }
@@ -187,7 +186,7 @@ export class TadsSymbolManager {
       }
     }
     return contextChain;
-  }
+  }*/
 
   findSymbolsByNameArray(name: string[]): { symbol: DocumentSymbol; filePath: string }[] {
     const symbols: { symbol: DocumentSymbol; filePath: string }[] = [];
