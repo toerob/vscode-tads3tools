@@ -3,7 +3,7 @@
   "description": "VSCode client of a language server for",
   "author": "Tomas Öberg",
   "license": "MIT",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "publisher": "vscode",
   "repository": {
     "type": "git",
@@ -20,7 +20,6 @@
     "@types/unzipper": "^0.10.9",
     "axios": "^1.15.2",
     "fs-extra": "^11.2.0",
-    "litegraph.js": "^0.7.18",
     "minimist": ">=1.2.8",
     "mobx": "^6.12.3",
     "rxjs": "^7.8.1",

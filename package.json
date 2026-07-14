@@ -3,7 +3,7 @@
   "description": "Language server extension for Tads3",
   "author": "Tomas Öberg",
   "license": "MIT",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "packageManager": "npm@11.7.0",
   "repository": {
     "type": "git",
@@ -663,7 +663,6 @@
     "test:unit": "TS_NODE_PROJECT=test/tsconfig.json mocha --config .mocharc.json"
   },
   "devDependencies": {
-    "@types/cytoscape": "^3.21.9",
     "@types/mocha": "^10.0.6",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -686,8 +685,6 @@
     "@types/unzipper": "^0.10.9",
     "@types/vscode": "^1.89.0",
     "@xyflow/react": "^12.10.1",
-    "cytoscape": "^3.33.1",
-    "litegraph.js": "^0.7.18",
     "npm": "^11.7.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

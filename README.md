@@ -121,15 +121,6 @@ Fetches TADS 3 extensions from the IF Archive and installs them into the project
 
 ## Attributions
 
-- [Microsoft LSP sample](https://github.com/microsoft/vscode-extension-samples/tree/main/lsp-sample) — MIT
-- [ANTLR4](https://github.com/antlr/antlr4) — BSD 3-Clause
-- [antlr4ts](https://github.com/tunnelvisionlabs/antlr4ts) — BSD
-- [LiteGraph](https://github.com/jagenjo/litegraph.js) — MIT
-- [RxJS](https://github.com/ReactiveX/rxjs) — Apache-2.0
-- [fuzzysort](https://github.com/farzher/fuzzysort) — MIT
-- [wink-pos-tagger](https://github.com/winkjs/wink-pos-tagger) — MIT
-- [threads.js](https://github.com/andywer/threads.js) — MIT
-- [Axios](https://github.com/axios/axios) — MIT
 - TADS 3 tmLanguage by Sam Win-Mason, ported from Sublime Text plugin by VoidPhantom — UNLICENSE
 
 ## License

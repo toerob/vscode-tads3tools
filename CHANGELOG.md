@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.3
+
+- Removed the now-unused `tads3.useExperimentalParser` setting and the unused `litegraph.js`/`cytoscape` dependencies
+
 ## 0.8.2
 
 ### Added
