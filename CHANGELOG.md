@@ -8,10 +8,21 @@
 
 ### Fixed
 
-- **Preprocessor line-ending regression on Windows** — fixed `preprocessTads3Files` handling of CRLF input/output so line mapping remains correct across files and directives.
-- **Various TADS3 grammar parsing gaps** (surfaced via adv3lite, but not specific to it) — the Tads3v2 grammar now handles: anonymous object expressions with semicolon-separated properties (`(object: Super { a=1; b=2; })`), `for`-in loops with extra/reordered counter locals and no-`local` bindings, `foreach` without `local`, trailing commas in call args, `[badness N]` qualifiers nested in grammar alternations, `step` used as an identifier, and comma-operator statements.
+- **Various TADS3 grammar parsing gaps** the Tads3v2 grammar now handles: anonymous object expressions with semicolon-separated properties (`(object: Super { a=1; b=2; })`), `for`-in loops with extra/reordered counter locals and no-`local` bindings, `foreach` without `local`, trailing commas in call args, `[badness N]` qualifiers nested in grammar alternations, `step` used as an identifier, and comma-operator statements.
 - **Preprocessor could drop a file's trailing `;`** — `postProcessPreprocessedResult`'s line-count trim could cut a genuine terminating `;` when preprocessing surplus (from macro-expansion line drift) landed mid-file instead of at the end; it's now recovered when evidence of a real terminator being cut is detected.
 - **for-in/foreach loop variables missing from scope locals** — `local x` in `for (local x in ...)` and `foreach (local x in ...)` are now registered as visible locals (go-to-definition, locals-at-cursor).
+
+### Removed
+
+- **Original Tads3 parser/lexer** — the pre-Tads3v2 ANTLR grammar and generated parser/lexer/listener/visitor files under `server/src/parser` have been deleted now that the Tads3v2 AST-based pipeline (`workerV2`) fully covers standard-library parsing. `Tads3v2.g4` is now the only grammar source.
+- **Cached library feature** — dropped disk caching of parsed adv3/adv3Lite library symbols (`tads3.enableLibraryCache` setting, `tads3.clearCache` command) along with its supporting code in `parse-workers-manager.ts`. It added complexity without a clear performance win now that parsing is fast.
+- **Unused configuration settings** — removed `tads3.adv3.library`, `tads3.adv3Lite.library`, `tads3.lib`, and `tads3.include`, none of which were ever read by the extension.
+
+## 0.8.1
+
+### Fixed
+
+- **Preprocessor line-ending regression on Windows** — fixed `preprocessTads3Files` handling of CRLF input/output so line mapping remains correct across files and directives.
 
 ## 0.8.0
 
