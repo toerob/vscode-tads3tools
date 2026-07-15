@@ -327,7 +327,7 @@ function mapMacroDefinitions(filename: string, connection?: any) {
         }
         defineMacrosMap.set(result[1], {
           row: idx,
-          uri: uriPath,
+          uri: URI.file(filename).toString(),
           endLine: idx + macroDefAdditionalRows,
         });
       }
